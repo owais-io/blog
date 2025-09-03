@@ -121,17 +121,81 @@ export const mdxComponents = {
     <hr className="my-8 border-gray-200 dark:border-gray-700" {...props} />
   ),
   
-  // Custom callout component
+  // Custom div with className support for MDX
+  div: (props: any) => {
+    // Pass through className and other props for custom styling
+    return <div {...props} />
+  },
+
+  // Enhanced callout component
   Callout: ({ children, type = 'info' }: { children: React.ReactNode; type?: 'info' | 'warning' | 'error' | 'success' }) => {
     const styles = {
-      info: 'bg-blue-50 border-blue-200 text-blue-800',
-      warning: 'bg-yellow-50 border-yellow-200 text-yellow-800',
-      error: 'bg-red-50 border-red-200 text-red-800',
-      success: 'bg-green-50 border-green-200 text-green-800',
+      info: {
+        bg: 'bg-blue-50 dark:bg-blue-900/20',
+        border: 'border-blue-200 dark:border-blue-700',
+        text: 'text-blue-800 dark:text-blue-200',
+        icon: '💡'
+      },
+      warning: {
+        bg: 'bg-yellow-50 dark:bg-yellow-900/20',
+        border: 'border-yellow-200 dark:border-yellow-700',
+        text: 'text-yellow-800 dark:text-yellow-200',
+        icon: '⚠️'
+      },
+      error: {
+        bg: 'bg-red-50 dark:bg-red-900/20',
+        border: 'border-red-200 dark:border-red-700',
+        text: 'text-red-800 dark:text-red-200',
+        icon: '🚨'
+      },
+      success: {
+        bg: 'bg-green-50 dark:bg-green-900/20',
+        border: 'border-green-200 dark:border-green-700',
+        text: 'text-green-800 dark:text-green-200',
+        icon: '✅'
+      }
+    }
+    
+    const currentStyle = styles[type]
+    
+    return (
+      <div className={`border-l-4 p-4 mb-6 rounded-r-lg ${currentStyle.bg} ${currentStyle.border} ${currentStyle.text}`}>
+        <div className="flex items-start space-x-3">
+          <span className="text-lg flex-shrink-0 mt-0.5">{currentStyle.icon}</span>
+          <div className="flex-1">{children}</div>
+        </div>
+      </div>
+    )
+  },
+
+  // YouTube component
+  YouTube: ({ id, title }: { id: string; title?: string }) => (
+    <div className="my-8">
+      <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+        <iframe
+          className="absolute inset-0 w-full h-full rounded-lg"
+          src={`https://www.youtube.com/embed/${id}`}
+          title={title || 'YouTube video'}
+          frameBorder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        />
+      </div>
+    </div>
+  ),
+
+  // Highlight box component
+  HighlightBox: ({ children, color = 'blue' }: { children: React.ReactNode; color?: 'blue' | 'green' | 'yellow' | 'red' | 'purple' }) => {
+    const colors = {
+      blue: 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-700',
+      green: 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700',
+      yellow: 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-700',
+      red: 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-700',
+      purple: 'bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-700'
     }
     
     return (
-      <div className={`border-l-4 p-4 mb-6 rounded-r-lg ${styles[type]}`}>
+      <div className={`p-6 rounded-lg border-2 my-6 ${colors[color]}`}>
         {children}
       </div>
     )
