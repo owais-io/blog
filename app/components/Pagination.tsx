@@ -51,12 +51,12 @@ export default function Pagination({ currentPage, totalPages, tag }: PaginationP
         {currentPage > 1 ? (
           <Link
             href={createPageUrl(currentPage - 1)}
-            className="relative inline-flex items-center px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:text-gray-700 hover:bg-gray-50 transition-colors"
+            className="relative inline-flex items-center px-3 py-2 text-sm font-medium text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           >
             Previous
           </Link>
         ) : (
-          <span className="relative inline-flex items-center px-3 py-2 text-sm font-medium text-gray-300 bg-white border border-gray-300 rounded-md cursor-not-allowed">
+          <span className="relative inline-flex items-center px-3 py-2 text-sm font-medium text-gray-300 dark:text-gray-600 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md cursor-not-allowed">
             Previous
           </span>
         )}
@@ -68,7 +68,7 @@ export default function Pagination({ currentPage, totalPages, tag }: PaginationP
               return (
                 <span
                   key={`dots-${index}`}
-                  className="relative inline-flex items-center px-2 py-2 text-sm font-medium text-gray-700"
+                  className="relative inline-flex items-center px-2 py-2 text-sm font-medium text-gray-700 dark:text-gray-300"
                 >
                   ...
                 </span>
@@ -84,8 +84,8 @@ export default function Pagination({ currentPage, totalPages, tag }: PaginationP
                 href={createPageUrl(pageNumber)}
                 className={`relative inline-flex items-center px-3 py-2 text-sm font-medium border rounded-md transition-colors ${
                   isActive
-                    ? 'bg-blue-600 text-white border-blue-600'
-                    : 'text-gray-700 bg-white border-gray-300 hover:text-gray-900 hover:bg-gray-50'
+                    ? 'bg-blue-600 dark:bg-blue-700 text-white border-blue-600 dark:border-blue-700'
+                    : 'text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`}
               >
                 {pageNumber}
@@ -98,12 +98,12 @@ export default function Pagination({ currentPage, totalPages, tag }: PaginationP
         {currentPage < totalPages ? (
           <Link
             href={createPageUrl(currentPage + 1)}
-            className="relative inline-flex items-center px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:text-gray-700 hover:bg-gray-50 transition-colors"
+            className="relative inline-flex items-center px-3 py-2 text-sm font-medium text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           >
             Next
           </Link>
         ) : (
-          <span className="relative inline-flex items-center px-3 py-2 text-sm font-medium text-gray-300 bg-white border border-gray-300 rounded-md cursor-not-allowed">
+          <span className="relative inline-flex items-center px-3 py-2 text-sm font-medium text-gray-300 dark:text-gray-600 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md cursor-not-allowed">
             Next
           </span>
         )}

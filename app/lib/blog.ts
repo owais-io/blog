@@ -142,3 +142,88 @@ export function getPostsMeta(page = 1, limit = 10, tag?: string): {
     totalPosts,
   }
 }
+
+export function getRelatedPosts(currentSlug: string, limit = 4): BlogPostMeta[] {
+  const allPosts = getAllPosts()
+  const currentPost = allPosts.find(post => post.slug === currentSlug)
+  
+  if (!currentPost) {
+    return []
+  }
+  
+  // Exclude the current post
+  const otherPosts = allPosts.filter(post => post.slug !== currentSlug)
+  
+  if (otherPosts.length === 0) {
+    return []
+  }
+  
+  // Calculate tag similarity scores
+  const postsWithScores = otherPosts.map(post => {
+    const commonTags = post.tags.filter(tag => 
+      currentPost.tags.includes(tag)
+    ).length
+    
+    return {
+      post,
+      score: commonTags,
+    }
+  })
+  
+  // Sort by tag similarity (highest first), then by date (newest first)
+  postsWithScores.sort((a, b) => {
+    if (a.score !== b.score) {
+      return b.score - a.score // Higher score first
+    }
+    return new Date(b.post.date).getTime() - new Date(a.post.date).getTime() // Newer first
+  })
+  
+  // Hybrid approach:
+  // 1. First try to get posts with at least 2 shared tags
+  const highSimilarity = postsWithScores.filter(item => item.score >= 2)
+  
+  // 2. If not enough, include posts with at least 1 shared tag
+  const mediumSimilarity = postsWithScores.filter(item => item.score >= 1)
+  
+  // 3. Fallback to recent posts if still not enough
+  const allSorted = postsWithScores
+  
+  let relatedPosts: BlogPostMeta[] = []
+  
+  if (highSimilarity.length >= limit) {
+    // We have enough high-similarity posts
+    relatedPosts = highSimilarity.slice(0, limit).map(item => ({
+      slug: item.post.slug,
+      title: item.post.title,
+      description: item.post.description,
+      date: item.post.date,
+      tags: item.post.tags,
+      readingTime: item.post.readingTime,
+      published: item.post.published,
+    }))
+  } else if (mediumSimilarity.length >= limit) {
+    // Use posts with at least 1 shared tag
+    relatedPosts = mediumSimilarity.slice(0, limit).map(item => ({
+      slug: item.post.slug,
+      title: item.post.title,
+      description: item.post.description,
+      date: item.post.date,
+      tags: item.post.tags,
+      readingTime: item.post.readingTime,
+      published: item.post.published,
+    }))
+  } else {
+    // Fallback to most recent posts
+    relatedPosts = allSorted.slice(0, limit).map(item => ({
+      slug: item.post.slug,
+      title: item.post.title,
+      description: item.post.description,
+      date: item.post.date,
+      tags: item.post.tags,
+      readingTime: item.post.readingTime,
+      published: item.post.published,
+    }))
+  }
+  
+  return relatedPosts
+}

@@ -1,5 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
+import CodeBlock from './CodeBlock'
 
 export const mdxComponents = {
   // Custom components
@@ -18,23 +19,23 @@ export const mdxComponents = {
   
   // Override default HTML elements
   h1: (props: any) => (
-    <h1 className="text-3xl font-bold text-gray-900 mb-6 mt-8 first:mt-0" {...props} />
+    <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6 mt-8 first:mt-0" {...props} />
   ),
   
   h2: (props: any) => (
-    <h2 className="text-2xl font-semibold text-gray-900 mb-4 mt-8" {...props} />
+    <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4 mt-8" {...props} />
   ),
   
   h3: (props: any) => (
-    <h3 className="text-xl font-semibold text-gray-900 mb-3 mt-6" {...props} />
+    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6" {...props} />
   ),
   
   h4: (props: any) => (
-    <h4 className="text-lg font-semibold text-gray-900 mb-2 mt-4" {...props} />
+    <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 mt-4" {...props} />
   ),
   
   p: (props: any) => (
-    <p className="text-gray-700 leading-relaxed mb-4" {...props} />
+    <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4" {...props} />
   ),
   
   a: (props: any) => {
@@ -45,7 +46,7 @@ export const mdxComponents = {
       return (
         <a
           {...props}
-          className="text-blue-600 hover:text-blue-800 underline"
+          className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline"
           target="_blank"
           rel="noopener noreferrer"
         />
@@ -55,7 +56,7 @@ export const mdxComponents = {
     return (
       <Link
         href={props.href}
-        className="text-blue-600 hover:text-blue-800 underline"
+        className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline"
         {...props}
       />
     )
@@ -70,18 +71,18 @@ export const mdxComponents = {
   ),
   
   li: (props: any) => (
-    <li className="text-gray-700" {...props} />
+    <li className="text-gray-700 dark:text-gray-300" {...props} />
   ),
   
   blockquote: (props: any) => (
-    <blockquote className="border-l-4 border-blue-500 pl-4 py-2 mb-4 italic text-gray-600 bg-gray-50 rounded-r-lg" {...props} />
+    <blockquote className="border-l-4 border-blue-500 dark:border-blue-400 pl-4 py-2 mb-4 italic text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 rounded-r-lg" {...props} />
   ),
   
   code: (props: any) => {
     // Check if it's inline code or code block
     if (typeof props.children === 'string' && !props.children.includes('\n')) {
       return (
-        <code className="bg-gray-100 px-2 py-1 rounded text-sm font-mono text-gray-800" {...props} />
+        <code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm font-mono text-gray-800 dark:text-gray-200" {...props} />
       )
     }
     
@@ -91,7 +92,7 @@ export const mdxComponents = {
   },
   
   pre: (props: any) => (
-    <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto mb-6 text-sm" {...props} />
+    <CodeBlock {...props} />
   ),
   
   table: (props: any) => (
@@ -101,23 +102,23 @@ export const mdxComponents = {
   ),
   
   thead: (props: any) => (
-    <thead className="bg-gray-50" {...props} />
+    <thead className="bg-gray-50 dark:bg-gray-800" {...props} />
   ),
   
   tbody: (props: any) => (
-    <tbody className="bg-white divide-y divide-gray-200" {...props} />
+    <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700" {...props} />
   ),
   
   th: (props: any) => (
-    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" {...props} />
+    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider" {...props} />
   ),
   
   td: (props: any) => (
-    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700" {...props} />
+    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300" {...props} />
   ),
   
   hr: (props: any) => (
-    <hr className="my-8 border-gray-200" {...props} />
+    <hr className="my-8 border-gray-200 dark:border-gray-700" {...props} />
   ),
   
   // Custom callout component
