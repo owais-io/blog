@@ -33,13 +33,20 @@ export function getPostDate(frontmatterDate: string | undefined, filePath: strin
     const parsedDate = new Date(frontmatterDate)
     if (isNaN(parsedDate.getTime())) {
       console.warn(`Invalid date in frontmatter for ${filePath}: ${frontmatterDate}`)
-      return getFileDateISO(filePath)
+      // Fallback to current date if frontmatter date is invalid
+      return new Date().toISOString()
     }
     return frontmatterDate
   }
   
-  // No date in frontmatter, use file timestamp
-  return getFileDateISO(filePath)
+  // No date in frontmatter, try file timestamp (but this fails on Vercel)
+  try {
+    return getFileDateISO(filePath)
+  } catch (error) {
+    // File timestamp failed (likely on Vercel), use current date as fallback
+    console.warn(`Could not get file date for ${filePath}, using current date`)
+    return new Date().toISOString()
+  }
 }
 
 /**

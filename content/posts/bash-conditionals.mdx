@@ -1,6 +1,7 @@
 ---
 title: "Bash Conditional Statements: Making Decisions in Your Scripts"
 description: "Master if-else statements in bash scripting. Learn file testing with -f, string testing with -z, and build intelligent scripts that make decisions based on conditions."
+date: "2025-09-04"
 tags: ["bash", "conditionals", "if-else", "file-testing", "string-testing", "bash-logic"]
 published: true
 author: "Owais"
@@ -492,6 +493,7 @@ done
 ```
 
 # Numeric comparison operators
+```bash
 if [ "$number1" -eq "$number2" ]; then
     echo "✅ Numbers are equal"
 elif [ "$number1" -gt "$number2" ]; then
@@ -503,8 +505,10 @@ else
     difference=$((number2 - number1))
     echo "   Difference: $difference"
 fi
+```
 
 # Additional numeric tests
+```bash
 if [ "$number1" -ge 100 ]; then
     echo "✅ First number is 100 or greater"
 fi
