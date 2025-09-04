@@ -2,6 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import matter from 'gray-matter'
 import readingTime from 'reading-time'
+import { getPostDate } from './dateUtils'
 
 export interface BlogPost {
   slug: string
@@ -41,11 +42,14 @@ export function getAllPosts(): BlogPost[] {
       const fileContents = fs.readFileSync(fullPath, 'utf8')
       const { data, content } = matter(fileContents)
 
+      // Get date from frontmatter or file timestamp
+      const postDate = getPostDate(data.date, fullPath)
+
       return {
         slug,
         title: data.title || 'Untitled',
         description: data.description || '',
-        date: data.date || new Date().toISOString(),
+        date: postDate,
         tags: data.tags || [],
         content,
         readingTime: readingTime(content).text,
@@ -74,11 +78,14 @@ export function getPostBySlug(slug: string): BlogPost | null {
     const fileContents = fs.readFileSync(fullPath, 'utf8')
     const { data, content } = matter(fileContents)
 
+    // Get date from frontmatter or file timestamp
+    const postDate = getPostDate(data.date, fullPath)
+
     return {
       slug,
       title: data.title || 'Untitled',
       description: data.description || '',
-      date: data.date || new Date().toISOString(),
+      date: postDate,
       tags: data.tags || [],
       content,
       readingTime: readingTime(content).text,

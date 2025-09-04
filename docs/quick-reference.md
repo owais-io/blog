@@ -6,11 +6,13 @@
 ---
 title: "Compelling Title (Under 60 Chars)"
 description: "Clear description for SEO (150-160 chars)"
-date: "2024-01-01T10:00:00.000Z"
 tags: ["tag1", "tag2", "tag3"]
 author: "Your Name"
 category: "Development"
 published: true
+
+# OPTIONAL: date auto-generated from file timestamp if omitted
+# date: "2024-01-01T10:00:00.000Z"
 ---
 ```
 

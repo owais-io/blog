@@ -1,0 +1,348 @@
+---
+title: "Creating and Executing Your First Bash Script: A Complete Beginner's Guide"
+description: "Learn how to create, make executable, and run your first bash script on Linux. Understand file permissions, shebangs, and common execution methods with practical examples."
+tags: ["bash", "linux", "scripting", "beginner", "shell"]
+published: true
+author: "Owais"
+category: "Bash"
+seo:
+  canonical: "https://owais.io/blog/creating-your-first-bash-script"
+  keywords: ["bash script", "linux scripting", "shell scripting", "chmod", "file permissions", "shebang"]
+toc: true
+---
+
+Ever wondered how to create your own bash scripts but felt overwhelmed by the process? You're in the right place. Creating and executing bash scripts is one of the fundamental skills every Linux user should master, yet many beginners struggle with the basics of file permissions and script execution.
+
+<Callout type="info">
+🎯 **What You'll Learn**: In this hands-on guide, you'll discover:
+- How to create a simple bash script from scratch
+- The importance of the shebang (`#!/bin/bash`) line
+- Different methods to execute bash scripts
+- Understanding and managing file permissions with `chmod`
+- Common execution errors and how to fix them
+
+**Time to read**: ~5 minutes | **Difficulty**: Beginner
+</Callout>
+
+## 🚀 Getting Started with Bash Scripts
+
+Bash scripts are simple text files containing a series of commands that the bash shell can execute. They're incredibly powerful for automating repetitive tasks, system administration, and building complex workflows.
+
+<div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900 dark:to-indigo-900 p-6 rounded-lg my-6">
+
+### Prerequisites
+
+Before we dive in, make sure you have:
+- Access to a Linux terminal (CentOS, Ubuntu, or any Linux distribution)
+- Basic familiarity with terminal commands like `ls`, `cat`, and `vi`
+- Understanding of file system navigation
+
+</div>
+
+## 📝 Step 1: Creating Your First Script
+
+Let's start by creating a simple "Hello World" script. First, we'll create an empty file:
+
+```bash
+touch hello.sh
+```
+
+The `.sh` extension is a convention that indicates this is a shell script, though it's not strictly required for execution.
+
+<Callout type="success">
+✅ **Best Practice**: Always use the `.sh` extension for bash scripts to make their purpose clear to other developers and system administrators.
+</Callout>
+
+## ✏️ Step 2: Writing the Script Content
+
+Now let's edit our script using a text editor. We'll use `vi` in this example:
+
+```bash
+vi hello.sh
+```
+
+Inside the editor, add the following content:
+
+```bash title="hello.sh" showLineNumbers
+#!/bin/bash
+echo "Hello World!"
+```
+
+Let's break down what each line does:
+
+### Understanding the Shebang (`#!/bin/bash`)
+
+The first line `#!/bin/bash` is called a "shebang" or "hashbang". It tells the system which interpreter to use when executing the script.
+
+<div className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900 dark:to-orange-900 p-6 rounded-lg my-6">
+
+### 🔍 Why the Shebang Matters
+
+Without the shebang, the system might try to execute your script with the wrong interpreter. You can check your default shell with:
+
+```bash
+echo $SHELL
+```
+
+Most Linux systems use `/bin/bash` by default, but it's always better to be explicit.
+
+</div>
+
+### The Echo Command
+
+The `echo` command simply prints text to the terminal. It's one of the most basic and useful commands in shell scripting.
+
+## 🏃‍♂️ Step 3: Executing Your Script
+
+There are two main ways to execute a bash script:
+
+### Method 1: Using the Bash Command
+
+```bash
+bash hello.sh
+```
+
+This method works immediately because you're explicitly telling bash to interpret the file:
+
+```bash
+$ bash hello.sh
+Hello World!
+```
+
+<Callout type="info">
+💡 **How it works**: When you use `bash hello.sh`, you're passing the script as an argument to the bash interpreter. The file doesn't need execute permissions for this method.
+</Callout>
+
+### Method 2: Direct Execution (Requires Execute Permissions)
+
+The more common method is to execute the script directly:
+
+```bash
+./hello.sh
+```
+
+However, if you try this immediately after creating the script, you'll encounter a permission error:
+
+```bash
+$ ./hello.sh
+bash: ./hello.sh: Permission denied
+```
+
+## 🔐 Step 4: Understanding File Permissions
+
+Let's examine why we got that permission error by checking the file permissions:
+
+```bash
+ls -l hello.sh
+```
+
+You'll see output similar to this:
+
+```bash
+-rw-r--r--. 1 centos9 centos9 32 Sep  4 13:08 hello.sh
+```
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-8">
+
+<div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+
+#### 📖 Understanding Permission Format
+```
+-rw-r--r--
+```
+- First character: File type (`-` = regular file)
+- Next 3: Owner permissions (`rw-` = read, write)
+- Next 3: Group permissions (`r--` = read only)
+- Last 3: Others permissions (`r--` = read only)
+
+</div>
+
+<div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+
+#### 🔍 Permission Letters
+- `r` = Read permission
+- `w` = Write permission  
+- `x` = Execute permission
+- `-` = Permission not granted
+
+</div>
+
+</div>
+
+Notice that there's no `x` (execute) permission for anyone. That's why we got the "Permission denied" error.
+
+## 🛠️ Step 5: Making Your Script Executable
+
+To fix the permission issue, we need to add execute permissions using the `chmod` command:
+
+```bash
+chmod +x hello.sh
+```
+
+Now let's check the permissions again:
+
+```bash
+ls -l hello.sh
+```
+
+You should see something like:
+
+```bash
+-rwxr-xr-x. 1 centos9 centos9 32 Sep  4 13:08 hello.sh
+```
+
+Notice the `x` permissions have been added! Now we can execute the script directly:
+
+```bash
+./hello.sh
+```
+
+And you'll see:
+
+```bash
+$ ./hello.sh
+Hello World!
+```
+
+<Callout type="success">
+🎉 **Success!** Your script now runs directly without needing to call `bash` explicitly.
+</Callout>
+
+## 🧠 Understanding Different chmod Options
+
+The `chmod +x` command is just one way to modify permissions. Here are some common variations:
+
+<div className="overflow-x-auto my-6">
+
+| Command | Effect | Use Case |
+|---------|---------|----------|
+| `chmod +x file` | Add execute permission for all | Quick way to make script executable |
+| `chmod 755 file` | rwxr-xr-x | Standard for executable scripts |
+| `chmod 744 file` | rwxr--r-- | Executable only by owner |
+| `chmod u+x file` | Add execute for user only | More restrictive approach |
+
+</div>
+
+<Callout type="warning">
+⚠️ **Security Note**: Be cautious when adding execute permissions. Only make files executable when necessary, and consider who needs access to run them.
+</Callout>
+
+## 🔄 Complete Workflow Summary
+
+Let's review the complete process from start to finish:
+
+```bash title="Complete bash script creation workflow" showLineNumbers
+# 1. Create the script file
+touch hello.sh
+
+# 2. Edit the script (using vi, nano, or any text editor)
+vi hello.sh
+# Add: #!/bin/bash
+# Add: echo "Hello World!"
+
+# 3. Check your shell (optional)
+echo $SHELL
+
+# 4. Test with bash command (works without execute permissions)
+bash hello.sh
+
+# 5. Try direct execution (will fail initially)
+./hello.sh  # Permission denied
+
+# 6. Check current permissions
+ls -l hello.sh
+
+# 7. Add execute permissions
+chmod +x hello.sh
+
+# 8. Execute the script directly
+./hello.sh  # Success!
+```
+
+## 🚨 Common Pitfalls and Solutions
+
+<details>
+<summary><strong>Permission Denied Error</strong></summary>
+
+**Symptoms**: `bash: ./script.sh: Permission denied`
+**Cause**: Script file lacks execute permissions  
+**Solution**: Add execute permissions with `chmod +x script.sh`
+
+</details>
+
+<details>
+<summary><strong>Command Not Found</strong></summary>
+
+**Symptoms**: `bash: script.sh: command not found`
+**Cause**: Trying to execute without `./` prefix or script not in PATH
+**Solution**: Use `./script.sh` or move script to a directory in your PATH
+
+</details>
+
+<details>
+<summary><strong>Bad Interpreter Error</strong></summary>
+
+**Symptoms**: `bad interpreter: /bin/bash: no such file or directory`
+**Cause**: Incorrect shebang path
+**Solution**: Verify bash location with `which bash` and update shebang accordingly
+
+</details>
+
+## 🎯 Key Takeaways
+
+<div className="bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-900 dark:to-blue-900 p-6 rounded-lg my-8">
+
+### ✅ Remember These Points
+
+1. **Shebang is Essential**: Always start bash scripts with `#!/bin/bash`
+2. **Two Execution Methods**: Use `bash script.sh` or make executable with `chmod +x`
+3. **Permissions Matter**: Scripts need execute permissions for direct execution
+4. **Use .sh Extension**: Follow the convention for clarity and organization
+5. **Security First**: Only add necessary permissions and be mindful of who can execute your scripts
+
+</div>
+
+## 📖 Further Reading
+
+### Official Resources
+- [Bash Manual](https://www.gnu.org/software/bash/manual/)
+- [Advanced Bash-Scripting Guide](https://tldp.org/LDP/abs/html/)
+- [Shell Scripting Tutorial](https://www.shellscript.sh/)
+
+### Community Resources  
+- [Bash Guide for Beginners](https://tldp.org/LDP/Bash-Beginners-Guide/html/)
+- [Stack Overflow - Bash Tag](https://stackoverflow.com/questions/tagged/bash)
+- [Reddit - r/bash](https://reddit.com/r/bash)
+
+---
+
+<Callout type="success">
+🎉 **Congratulations!** You've successfully created and executed your first bash script. You now understand the fundamentals of script creation, file permissions, and different execution methods.
+
+**How did this tutorial help you?** Share your thoughts or questions in the comments below!
+</Callout>
+
+## 💬 Discussion
+
+I'd love to hear about your bash scripting journey:
+
+- What's the first practical script you plan to create?
+- Have you encountered any permission issues in the past?
+- What bash scripting topics would you like me to cover next?
+- Any automation tasks you're looking to script?
+
+**Connect with me**:
+- 🐙 [GitHub](https://github.com/owais-io) - See more bash examples
+- 📧 [Contact](https://owais.io/contact) - In-depth scripting discussions
+
+<div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg mt-8">
+
+**📬 Never miss a tutorial!** New Linux and bash scripting guides published weekly. Each tutorial includes practical examples and real-world scenarios.
+
+[**Subscribe to the newsletter →**](https://owais.io/newsletter)
+
+</div>
+
+---
+
+*This post was originally published on September 4, 2024. Last updated: September 4, 2024.*

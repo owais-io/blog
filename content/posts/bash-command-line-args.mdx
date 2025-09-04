@@ -1,0 +1,587 @@
+---
+title: "Bash Command Line Arguments: Building Flexible Scripts with Parameters"
+description: "Master command line arguments in bash scripts. Learn to handle single and multiple parameters, validate input, and build professional command-line tools with proper error handling."
+tags: ["bash", "command-line-arguments", "parameters", "script-validation", "exit-codes"]
+published: true
+author: "Owais"
+category: "Bash"
+seo:
+  canonical: "https://owais.io/blog/bash-command-line-arguments-guide"
+  keywords: ["bash command line arguments", "bash parameters", "bash $1 $2", "bash $@", "script validation", "exit codes"]
+toc: true
+---
+
+Command line arguments transform your bash scripts from static programs into flexible, reusable tools. Instead of hardcoding values or always prompting for input, you can make your scripts accept parameters directly when they're executed, just like professional command-line utilities.
+
+<Callout type="info">
+🎯 **What You'll Learn**: In this comprehensive guide, you'll discover:
+- How to access and use command line arguments in bash scripts
+- The difference between `$1`, `$2`, `$@`, and `$#` special variables
+- Proper argument validation and error handling techniques
+- When to use `exit 1` vs continuing script execution
+- Building scripts that handle single and multiple parameters
+- Best practices for user-friendly error messages
+
+**Time to read**: ~9 minutes | **Difficulty**: Intermediate
+</Callout>
+
+## 🚀 Understanding Command Line Arguments
+
+Command line arguments are values you pass to a script when you run it. They make scripts flexible and allow users to provide different inputs without modifying the script itself.
+
+<div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900 dark:to-indigo-900 p-6 rounded-lg my-6">
+
+### Prerequisites
+
+Before we dive in, make sure you have:
+- Completed the [Interactive Bash Scripts](https://owais.io/blog/bash-user-input-guide) tutorial
+- Understanding of bash variables and basic script structure
+- Familiarity with loops (we'll cover the `for` loop in context)
+
+</div>
+
+## 📝 Your First Argument-Based Script
+
+Let's start with a simple greeting script that accepts a name as a command line argument:
+
+```bash title="greet.sh" showLineNumbers
+#!/bin/bash
+if [ -z "$1" ]; then
+    echo "Usage: ./greet.sh <name>"
+    exit 1
+fi
+name=$1
+echo "Hello $name!"
+```
+
+When you run this script:
+
+```bash
+# Without arguments - shows usage message
+$ ./greet.sh
+Usage: ./greet.sh <name>
+
+# With argument - greets the user
+$ ./greet.sh John
+Hello John!
+```
+
+## 🔍 Special Variables for Arguments
+
+Bash provides several special variables to work with command line arguments:
+
+<div className="overflow-x-auto my-6">
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `$0` | Script name | `./greet.sh` |
+| `$1`, `$2`, `$3`... | Individual arguments | `John`, `Bob`, `Alice` |
+| `$@` | All arguments as separate strings | `"John" "Bob" "Alice"` |
+| `$*` | All arguments as single string | `"John Bob Alice"` |
+| `$#` | Number of arguments | `3` |
+
+</div>
+
+### Accessing Individual Arguments
+
+```bash title="argument-examples.sh" showLineNumbers
+#!/bin/bash
+
+echo "Script name: $0"
+echo "First argument: $1"
+echo "Second argument: $2"
+echo "Third argument: $3"
+echo "Number of arguments: $#"
+echo "All arguments: $@"
+```
+
+Running this script:
+```bash
+$ ./argument-examples.sh Alice Bob Charlie
+Script name: ./argument-examples.sh
+First argument: Alice
+Second argument: Bob
+Third argument: Charlie
+Number of arguments: 3
+All arguments: Alice Bob Charlie
+```
+
+## 🛡️ Argument Validation Strategies
+
+### Single Argument Validation
+
+Let's examine our greeting script's validation approach:
+
+```bash title="single-arg-validation.sh" showLineNumbers
+#!/bin/bash
+
+# Method 1: Check if first argument is empty
+if [ -z "$1" ]; then
+    echo "Usage: ./greet.sh <name>"
+    exit 1
+fi
+
+name=$1
+echo "Hello $name!"
+```
+
+<Callout type="info">
+💡 **Understanding the Check**: The `-z "$1"` test returns true if the first argument is empty or doesn't exist. This is the most common way to validate required arguments.
+</Callout>
+
+### Multiple Arguments Validation
+
+For scripts that accept multiple arguments, we can check the argument count:
+
+```bash title="multiple-args-validation.sh" showLineNumbers
+#!/bin/bash
+
+# Method 2: Check argument count
+if [ $# -eq 0 ]; then
+    echo "Usage: ./greet.sh <name1> <name2> ..."
+    exit 1
+fi
+
+# Process each argument
+for name in "$@"; do
+    echo "Hello, $name!"
+done
+```
+
+Testing with different argument counts:
+```bash
+# No arguments
+$ ./greet.sh
+Usage: ./greet.sh <name1> <name2> ...
+
+# Single argument
+$ ./greet.sh John
+Hello, John!
+
+# Multiple arguments
+$ ./greet.sh John Bob Eve
+Hello, John!
+Hello, Bob!
+Hello, Eve!
+```
+
+## 🚦 Exit Codes: When to Use exit 1
+
+### Understanding Exit Codes
+
+Exit codes communicate script success or failure to the system and other programs:
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-8">
+
+<div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-green-200 dark:border-green-700">
+
+#### ✅ Exit Code 0
+- **Meaning**: Success
+- **When**: Script completed normally
+- **Usage**: Default exit (or explicit `exit 0`)
+
+</div>
+
+<div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-red-200 dark:border-red-700">
+
+#### ❌ Exit Code 1 (or non-zero)
+- **Meaning**: Error/Failure
+- **When**: Invalid input, missing requirements
+- **Usage**: `exit 1` (or other non-zero numbers)
+
+</div>
+
+</div>
+
+### Script with exit 1 (Recommended for Tools)
+
+```bash title="with-exit-code.sh" showLineNumbers
+#!/bin/bash
+
+if [ $# -eq 0 ]; then
+    echo "Error: No arguments supplied"
+    echo "Usage: ./greet.sh <name1> <name2> ..."
+    exit 1  # Stop execution and signal error
+fi
+
+for name in "$@"; do
+    echo "Hello, $name!"
+done
+
+# Implicit exit 0 (success)
+```
+
+**Benefits of using exit 1:**
+- Other scripts can detect if your script failed
+- Prevents further processing when requirements aren't met
+- Professional behavior expected in command-line tools
+- Enables proper error handling in automated systems
+
+### Script without exit (Alternative Approach)
+
+```bash title="without-exit-code.sh" showLineNumbers
+#!/bin/bash
+
+if [ $# -eq 0 ]; then
+    echo "Error: No arguments supplied"
+    echo "Usage: ./greet.sh <name1> <name2> ..."
+    echo "Using default greeting instead..."
+    echo "Hello, Guest!"
+else
+    for name in "$@"; do
+        echo "Hello, $name!"
+    done
+fi
+```
+
+**When to avoid exit 1:**
+- Interactive scripts where you want to continue
+- Scripts that can provide default behavior
+- Educational or demonstration scripts
+- When the "error" isn't truly critical
+
+<Callout type="success">
+✅ **Best Practice**: Use `exit 1` for validation errors in production scripts and command-line tools. It makes your scripts more reliable and professional.
+</Callout>
+
+## 🎯 Advanced Argument Handling
+
+### Handling Optional Arguments
+
+```bash title="optional-arguments.sh" showLineNumbers
+#!/bin/bash
+
+# Required argument
+if [ -z "$1" ]; then
+    echo "Error: Username is required"
+    echo "Usage: $0 <username> [greeting] [punctuation]"
+    exit 1
+fi
+
+username=$1
+greeting=${2:-"Hello"}        # Default to "Hello" if not provided
+punctuation=${3:-"!"}         # Default to "!" if not provided
+
+echo "$greeting $username$punctuation"
+```
+
+Testing optional arguments:
+```bash
+$ ./optional-arguments.sh Alice
+Hello Alice!
+
+$ ./optional-arguments.sh Bob "Good morning"
+Good morning Bob!
+
+$ ./optional-arguments.sh Charlie "Hey there" "."
+Hey there Charlie.
+```
+
+### Argument Count Validation
+
+```bash title="exact-arg-count.sh" showLineNumbers
+#!/bin/bash
+
+# Require exactly 2 arguments
+if [ $# -ne 2 ]; then
+    echo "Error: Expected exactly 2 arguments, got $#"
+    echo "Usage: $0 <first_name> <last_name>"
+    exit 1
+fi
+
+first_name=$1
+last_name=$2
+echo "Full name: $first_name $last_name"
+```
+
+### Range-Based Validation
+
+```bash title="range-validation.sh" showLineNumbers
+#!/bin/bash
+
+# Require between 1 and 5 arguments
+if [ $# -lt 1 ] || [ $# -gt 5 ]; then
+    echo "Error: Expected 1-5 arguments, got $#"
+    echo "Usage: $0 <name1> [name2] [name3] [name4] [name5]"
+    exit 1
+fi
+
+echo "Greeting $# people:"
+for name in "$@"; do
+    echo "Hello, $name!"
+done
+```
+
+## 🛠️ Real-World Examples
+
+### Example 1: File Backup Script
+
+```bash title="backup-files.sh" showLineNumbers
+#!/bin/bash
+
+# Validate arguments
+if [ $# -lt 2 ]; then
+    echo "Error: Insufficient arguments"
+    echo "Usage: $0 <source_file1> [source_file2] ... <destination_directory>"
+    echo "Example: $0 file1.txt file2.txt /backup/"
+    exit 1
+fi
+
+# Get destination (last argument)
+destination="${!#}"
+
+# Check if destination exists and is a directory
+if [ ! -d "$destination" ]; then
+    echo "Error: Destination '$destination' is not a valid directory"
+    exit 1
+fi
+
+# Process all files except the last argument (destination)
+file_count=0
+for ((i=1; i<$#; i++)); do
+    source_file="${!i}"
+    
+    if [ -f "$source_file" ]; then
+        cp "$source_file" "$destination"
+        echo "Backed up: $source_file -> $destination"
+        file_count=$((file_count + 1))
+    else
+        echo "Warning: File '$source_file' not found, skipping..."
+    fi
+done
+
+echo "Backup completed. $file_count files copied to $destination"
+```
+
+### Example 2: System Information Script
+
+```bash title="sysinfo.sh" showLineNumbers
+#!/bin/bash
+
+# Default to showing all info if no arguments
+if [ $# -eq 0 ]; then
+    echo "Showing all system information..."
+    show_all=true
+else
+    show_all=false
+fi
+
+show_system_info() {
+    echo "=== System Information ==="
+    uname -a
+    echo ""
+}
+
+show_memory_info() {
+    echo "=== Memory Information ==="
+    free -h
+    echo ""
+}
+
+show_disk_info() {
+    echo "=== Disk Information ==="
+    df -h
+    echo ""
+}
+
+# Process arguments or show all
+if [ "$show_all" = true ]; then
+    show_system_info
+    show_memory_info
+    show_disk_info
+else
+    for arg in "$@"; do
+        case $arg in
+            system|sys)
+                show_system_info
+                ;;
+            memory|mem)
+                show_memory_info
+                ;;
+            disk|storage)
+                show_disk_info
+                ;;
+            *)
+                echo "Warning: Unknown option '$arg'"
+                echo "Valid options: system, memory, disk"
+                ;;
+        esac
+    done
+fi
+```
+
+Usage examples:
+```bash
+$ ./sysinfo.sh                    # Show all information
+$ ./sysinfo.sh system memory      # Show only system and memory info
+$ ./sysinfo.sh disk               # Show only disk information
+```
+
+## 🎨 Professional Error Messages
+
+### Clear Usage Instructions
+
+```bash title="professional-usage.sh" showLineNumbers
+#!/bin/bash
+
+show_usage() {
+    echo "Usage: $(basename $0) [OPTIONS] <command> [arguments...]"
+    echo ""
+    echo "Commands:"
+    echo "  create <name>     Create a new item"
+    echo "  delete <name>     Delete an item"
+    echo "  list              List all items"
+    echo ""
+    echo "Options:"
+    echo "  -h, --help        Show this help message"
+    echo "  -v, --verbose     Enable verbose output"
+    echo ""
+    echo "Examples:"
+    echo "  $0 create my-item"
+    echo "  $0 delete old-item"
+    echo "  $0 --verbose list"
+}
+
+# Check for help flags
+case "$1" in
+    -h|--help)
+        show_usage
+        exit 0
+        ;;
+esac
+
+# Validate minimum arguments
+if [ $# -eq 0 ]; then
+    echo "Error: No command specified"
+    echo ""
+    show_usage
+    exit 1
+fi
+
+# Rest of script logic...
+```
+
+### Descriptive Error Messages
+
+```bash title="descriptive-errors.sh" showLineNumbers
+#!/bin/bash
+
+validate_email() {
+    local email=$1
+    if [[ ! $email =~ ^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$ ]]; then
+        return 1
+    fi
+    return 0
+}
+
+if [ $# -ne 2 ]; then
+    echo "Error: Invalid number of arguments"
+    echo "Expected: 2 arguments (name and email)"
+    echo "Received: $# arguments"
+    echo ""
+    echo "Usage: $0 <full_name> <email_address>"
+    echo "Example: $0 'John Doe' 'john@example.com'"
+    exit 1
+fi
+
+name="$1"
+email="$2"
+
+# Validate name
+if [ ${#name} -lt 2 ]; then
+    echo "Error: Name too short"
+    echo "Name must be at least 2 characters long"
+    echo "Provided: '$name' (${#name} characters)"
+    exit 1
+fi
+
+# Validate email
+if ! validate_email "$email"; then
+    echo "Error: Invalid email format"
+    echo "Provided: '$email'"
+    echo "Expected format: user@domain.com"
+    exit 1
+fi
+
+echo "Valid input received:"
+echo "Name: $name"
+echo "Email: $email"
+```
+
+## 🧪 Testing Your Scripts
+
+### Testing Different Scenarios
+
+```bash title="test-runner.sh" showLineNumbers
+#!/bin/bash
+
+script_to_test="./greet.sh"
+
+echo "=== Testing Argument Handling ==="
+echo ""
+
+echo "Test 1: No arguments"
+$script_to_test
+echo "Exit code: $?"
+echo ""
+
+echo "Test 2: Single argument"
+$script_to_test "Alice"
+echo "Exit code: $?"
+echo ""
+
+echo "Test 3: Multiple arguments"
+$script_to_test "John" "Bob" "Eve"
+echo "Exit code: $?"
+echo ""
+
+echo "Test 4: Argument with spaces"
+$script_to_test "John Doe"
+echo "Exit code: $?"
+echo ""
+```
+
+<Callout type="info">
+💡 **Testing Tip**: The `$?` variable contains the exit code of the last executed command. Use it to verify your error handling works correctly.
+</Callout>
+
+## 🎯 Key Takeaways
+
+<div className="bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-900 dark:to-blue-900 p-6 rounded-lg my-8">
+
+### ✅ Remember These Points
+
+1. **Always Validate Arguments**: Check for required parameters before processing
+2. **Use Clear Error Messages**: Help users understand what went wrong and how to fix it
+3. **Exit with Proper Codes**: Use `exit 1` for errors, `exit 0` (or no exit) for success
+4. **Quote Variables**: Always use `"$@"` and `"$1"` to handle arguments with spaces
+5. **Provide Usage Instructions**: Show users how to use your script when they make mistakes
+
+</div>
+
+## 📖 Further Reading
+
+### Official Resources
+- [Bash Manual - Positional Parameters](https://www.gnu.org/software/bash/manual/html_node/Positional-Parameters.html)
+- [Advanced Bash-Scripting Guide - Command Line Arguments](https://tldp.org/LDP/abs/html/othertypesv.html)
+
+---
+
+<Callout type="success">
+🎉 **Fantastic Progress!** You now understand how to build flexible bash scripts that accept command line arguments, validate input properly, and handle errors gracefully. This is a major step toward creating professional command-line tools.
+</Callout>
+
+## 💬 Discussion
+
+I'd love to hear about your command-line scripting projects:
+
+- What's the most useful parameterized script you've created or want to create?
+- How do you prefer to handle optional vs required arguments?
+- Have you encountered any tricky argument parsing scenarios?
+- What command-line tools inspire your scripting approach?
+
+**Connect with me**:
+- 🐙 [GitHub](https://github.com/owais-io) - Command-line script examples and templates
+- 📧 [Contact](https://owais.io/contact) - Advanced scripting questions and discussions
+
+---
