@@ -1,0 +1,556 @@
+---
+title: "Bash Conditional Statements: Making Decisions in Your Scripts"
+description: "Master if-else statements in bash scripting. Learn file testing with -f, string testing with -z, and build intelligent scripts that make decisions based on conditions."
+tags: ["bash", "conditionals", "if-else", "file-testing", "string-testing", "bash-logic"]
+published: true
+author: "Owais"
+category: "Bash"
+seo:
+  canonical: "https://owais.io/blog/bash-conditionals-guide"
+  keywords: ["bash if statement", "bash conditionals", "bash -f test", "bash -z test", "file testing bash", "string testing bash"]
+toc: true
+---
+
+Every powerful script needs the ability to make decisions. Conditional statements allow your bash scripts to examine conditions and choose different paths of execution, making them intelligent and responsive to different situations.
+
+<Callout type="info">
+🎯 **What You'll Learn**: In this comprehensive guide, you'll discover:
+- How to use if-else statements to make decisions in bash scripts
+- File testing with the `-f` operator to check if files exist
+- String testing with the `-z` operator to check for empty values
+- Combining multiple conditions with logical operators
+- Real-world examples of conditional logic in action
+- Best practices for writing readable and maintainable conditional code
+</Callout>
+
+## 🚀 Understanding Bash Conditionals
+
+Conditional statements allow your scripts to execute different code blocks based on whether certain conditions are true or false. They're the foundation of decision-making in programming and essential for building intelligent automation scripts.
+
+<div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900 dark:to-indigo-900 p-6 rounded-lg my-6">
+
+### Prerequisites
+
+Before we dive in, make sure you have:
+- Completed the [Command Line Arguments](https://owais.io/blog/bash-command-line-arguments-guide) tutorial
+- Understanding of bash variables and basic script structure
+- Familiarity with file operations in Linux
+
+</div>
+
+## 📝 Your First Conditional Script
+
+Let's start with a practical example - a script that checks if a file exists:
+
+```bash title="check_file.sh" showLineNumbers
+#!/bin/bash
+FILENAME="example.txt"
+if [ -f "$FILENAME" ]; then
+    echo "File exists"
+else
+    echo "File not found."
+fi
+```
+
+When you run this script with different file conditions:
+
+```bash
+# When example.txt doesn't exist
+$ ./check_file.sh
+File not found.
+
+# Create the file
+$ touch example.txt
+
+# Now run the script again
+$ ./check_file.sh
+File exists
+
+# Remove the file
+$ rm example.txt
+
+# Run once more
+$ ./check_file.sh
+File not found.
+```
+
+## 🏗️ Anatomy of an If Statement
+
+Let's break down the structure of a bash conditional statement:
+
+```bash title="if-statement-structure.sh" showLineNumbers
+#!/bin/bash
+
+# Basic if statement structure
+if [ condition ]; then
+    # Code to execute if condition is true
+    echo "Condition is true"
+fi
+
+# If-else statement structure
+if [ condition ]; then
+    # Code for true condition
+    echo "Condition is true"
+else
+    # Code for false condition
+    echo "Condition is false"
+fi
+
+# If-elif-else statement structure
+if [ condition1 ]; then
+    echo "First condition is true"
+elif [ condition2 ]; then
+    echo "Second condition is true"
+else
+    echo "No conditions are true"
+fi
+```
+
+<Callout type="success">
+✅ **Syntax Notes**: 
+- Always put spaces around the square brackets: `[ condition ]`
+- The semicolon before `then` is required when using single-line format
+- Each `if` must have a corresponding `fi` to close the block
+</Callout>
+
+## 🔍 File Testing with -f
+
+The `-f` operator is one of the most useful file testing operators in bash. It checks if a path exists and is a regular file (not a directory or special file).
+
+### Understanding -f Testing
+
+```bash title="file-testing-examples.sh" showLineNumbers
+#!/bin/bash
+
+# Test different file scenarios
+test_file() {
+    local filename=$1
+    echo "Testing: $filename"
+    
+    if [ -f "$filename" ]; then
+        echo "✅ '$filename' exists and is a regular file"
+    else
+        echo "❌ '$filename' does not exist or is not a regular file"
+    fi
+    echo ""
+}
+
+# Test various scenarios
+test_file "regular_file.txt"
+test_file "nonexistent_file.txt"
+test_file "/etc"  # This is a directory, not a file
+test_file "/dev/null"  # This is a special file
+```
+
+### Practical File Testing Examples
+
+```bash title="advanced-file-testing.sh" showLineNumbers
+#!/bin/bash
+
+CONFIG_FILE="/etc/myapp/config.conf"
+LOG_DIR="/var/log/myapp"
+BACKUP_SCRIPT="/usr/local/bin/backup.sh"
+
+echo "=== System Check ==="
+
+# Check if config file exists
+if [ -f "$CONFIG_FILE" ]; then
+    echo "✅ Configuration file found"
+    
+    # Additional check: is it readable?
+    if [ -r "$CONFIG_FILE" ]; then
+        echo "✅ Configuration file is readable"
+    else
+        echo "⚠️  Configuration file exists but is not readable"
+    fi
+else
+    echo "❌ Configuration file missing: $CONFIG_FILE"
+    echo "Creating default configuration..."
+    # mkdir -p "$(dirname "$CONFIG_FILE")"
+    # echo "# Default config" > "$CONFIG_FILE"
+fi
+
+# Check if log directory exists
+if [ -d "$LOG_DIR" ]; then
+    echo "✅ Log directory exists"
+else
+    echo "❌ Log directory missing: $LOG_DIR"
+    echo "Creating log directory..."
+    # mkdir -p "$LOG_DIR"
+fi
+
+# Check if backup script exists and is executable
+if [ -f "$BACKUP_SCRIPT" ]; then
+    if [ -x "$BACKUP_SCRIPT" ]; then
+        echo "✅ Backup script is ready to run"
+    else
+        echo "⚠️  Backup script exists but is not executable"
+        echo "Run: chmod +x $BACKUP_SCRIPT"
+    fi
+else
+    echo "❌ Backup script not found: $BACKUP_SCRIPT"
+fi
+```
+
+## 📝 String Testing with -z
+
+The `-z` operator tests if a string is empty (zero length). This is crucial for validating user input and ensuring variables have values before using them.
+
+### Understanding -z Testing
+
+```bash title="string-testing-examples.sh" showLineNumbers
+#!/bin/bash
+
+# Function to test string values
+test_string() {
+    local value=$1
+    local description=$2
+    
+    echo "Testing: $description"
+    echo "Value: '$value'"
+    
+    if [ -z "$value" ]; then
+        echo "❌ String is empty or unset"
+    else
+        echo "✅ String has content (${#value} characters)"
+    fi
+    echo ""
+}
+
+# Test different string scenarios
+test_string "" "Empty string"
+test_string "   " "String with spaces"
+test_string "Hello World" "Normal string"
+
+# Test unset variable
+unset empty_var
+test_string "$empty_var" "Unset variable"
+
+# Test variable with value
+set_var="Some content"
+test_string "$set_var" "Set variable"
+```
+
+### Revisiting Command Line Argument Validation
+
+Remember our previous tutorials where we used `-z` to validate command line arguments? Let's see it in action:
+
+```bash title="argument-validation-detailed.sh" showLineNumbers
+#!/bin/bash
+
+echo "=== Command Line Argument Validation ==="
+
+# Method 1: Check if first argument is empty using -z
+if [ -z "$1" ]; then
+    echo "❌ First argument is missing or empty"
+    echo "Usage: $0 <username> [email]"
+    exit 1
+else
+    echo "✅ First argument provided: '$1'"
+fi
+
+username=$1
+
+# Method 2: Check optional second argument
+if [ -z "$2" ]; then
+    echo "⚠️  Email not provided, using default"
+    email="user@example.com"
+else
+    echo "✅ Email provided: '$2'"
+    email=$2
+fi
+
+echo ""
+echo "Final values:"
+echo "Username: $username"
+echo "Email: $email"
+```
+
+<Callout type="info">
+💡 **Why Quote Variables**: Always use `"$variable"` in tests. If the variable contains spaces or is empty, unquoted variables can cause syntax errors in your conditional statements.
+</Callout>
+
+## 🔗 Combining Conditions
+
+### Logical Operators
+
+You can combine multiple conditions using logical operators:
+
+```bash title="logical-operators.sh" showLineNumbers
+#!/bin/bash
+
+filename="$1"
+min_size="$2"
+
+# Combine multiple conditions with AND (&&)
+if [ -f "$filename" ] && [ -r "$filename" ]; then
+    echo "✅ File exists and is readable"
+    
+    # Check file size if min_size is provided
+    if [ -n "$min_size" ]; then
+        file_size=$(stat -c%s "$filename" 2>/dev/null)
+        if [ "$file_size" -gt "$min_size" ]; then
+            echo "✅ File size ($file_size bytes) meets minimum requirement"
+        else
+            echo "⚠️  File size ($file_size bytes) is below minimum ($min_size bytes)"
+        fi
+    fi
+    
+elif [ -f "$filename" ] && [ ! -r "$filename" ]; then
+    echo "❌ File exists but is not readable"
+elif [ -d "$filename" ]; then
+    echo "❌ Path exists but is a directory, not a file"
+else
+    echo "❌ File does not exist"
+fi
+
+# Combine conditions with OR (||)
+if [ -z "$filename" ] || [ -z "$min_size" ]; then
+    echo ""
+    echo "Usage: $0 <filename> <min_size_bytes>"
+    echo "Example: $0 document.txt 1024"
+fi
+```
+
+### Nested Conditions
+
+```bash title="nested-conditions.sh" showLineNumbers
+#!/bin/bash
+
+username="$1"
+password="$2"
+
+if [ -n "$username" ]; then
+    echo "Username provided: $username"
+    
+    if [ -n "$password" ]; then
+        echo "Password provided"
+        
+        # Check password strength
+        if [ ${#password} -ge 8 ]; then
+            echo "✅ Password meets length requirement"
+            
+            # Check for numbers in password
+            if [[ "$password" =~ [0-9] ]]; then
+                echo "✅ Password contains numbers"
+                echo "✅ Strong password detected"
+            else
+                echo "⚠️  Password should contain at least one number"
+            fi
+        else
+            echo "❌ Password too short (minimum 8 characters)"
+        fi
+    else
+        echo "❌ Password is required"
+    fi
+else
+    echo "❌ Username is required"
+    echo "Usage: $0 <username> <password>"
+    exit 1
+fi
+```
+
+## 🎯 Real-World Conditional Examples
+
+### Example 1: Backup Script with Smart Decisions
+
+```bash title="smart-backup.sh" showLineNumbers
+#!/bin/bash
+
+SOURCE_DIR="$1"
+BACKUP_DIR="$2"
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+
+# Validate required arguments
+if [ -z "$SOURCE_DIR" ] || [ -z "$BACKUP_DIR" ]; then
+    echo "Usage: $0 <source_directory> <backup_directory>"
+    exit 1
+fi
+
+# Check if source directory exists
+if [ ! -d "$SOURCE_DIR" ]; then
+    echo "Error: Source directory '$SOURCE_DIR' does not exist"
+    exit 1
+fi
+
+# Check if source directory is readable
+if [ ! -r "$SOURCE_DIR" ]; then
+    echo "Error: Cannot read from source directory '$SOURCE_DIR'"
+    exit 1
+fi
+
+# Create backup directory if it doesn't exist
+if [ ! -d "$BACKUP_DIR" ]; then
+    echo "Creating backup directory: $BACKUP_DIR"
+    mkdir -p "$BACKUP_DIR"
+    
+    # Check if directory creation was successful
+    if [ ! -d "$BACKUP_DIR" ]; then
+        echo "Error: Failed to create backup directory"
+        exit 1
+    fi
+fi
+
+# Check available space
+available_space=$(df "$BACKUP_DIR" | awk 'NR==2 {print $4}')
+source_size=$(du -s "$SOURCE_DIR" | awk '{print $1}')
+
+if [ "$available_space" -lt "$source_size" ]; then
+    echo "Warning: Insufficient disk space for backup"
+    echo "Available: ${available_space}KB, Required: ${source_size}KB"
+    
+    read -p "Continue anyway? (y/N): " confirm
+    if [[ ! $confirm =~ ^[Yy]$ ]]; then
+        echo "Backup cancelled"
+        exit 1
+    fi
+fi
+
+# Perform the backup
+backup_name="backup_${TIMESTAMP}.tar.gz"
+backup_path="$BACKUP_DIR/$backup_name"
+
+echo "Creating backup: $backup_path"
+if tar -czf "$backup_path" -C "$(dirname "$SOURCE_DIR")" "$(basename "$SOURCE_DIR")"; then
+    echo "✅ Backup completed successfully"
+    echo "Backup size: $(du -h "$backup_path" | cut -f1)"
+else
+    echo "❌ Backup failed"
+    exit 1
+fi
+```
+
+### Example 2: System Health Monitor
+
+```bash title="health-monitor.sh" showLineNumbers
+#!/bin/bash
+
+# Configuration
+CPU_THRESHOLD=80
+MEMORY_THRESHOLD=90
+DISK_THRESHOLD=85
+
+echo "=== System Health Monitor ==="
+echo "Timestamp: $(date)"
+echo ""
+
+# Check CPU usage
+cpu_usage=$(top -bn1 | grep "Cpu(s)" | awk '{print $2}' | cut -d'%' -f1)
+cpu_usage_int=${cpu_usage%.*}  # Convert to integer
+
+echo "CPU Usage: ${cpu_usage}%"
+if [ "$cpu_usage_int" -gt "$CPU_THRESHOLD" ]; then
+    echo "❌ HIGH CPU USAGE ALERT!"
+    echo "   Threshold: ${CPU_THRESHOLD}%, Current: ${cpu_usage}%"
+else
+    echo "✅ CPU usage is normal"
+fi
+echo ""
+
+# Check memory usage
+memory_info=$(free | grep Mem)
+total_memory=$(echo $memory_info | awk '{print $2}')
+used_memory=$(echo $memory_info | awk '{print $3}')
+memory_percentage=$((used_memory * 100 / total_memory))
+
+echo "Memory Usage: ${memory_percentage}%"
+if [ "$memory_percentage" -gt "$MEMORY_THRESHOLD" ]; then
+    echo "❌ HIGH MEMORY USAGE ALERT!"
+    echo "   Threshold: ${MEMORY_THRESHOLD}%, Current: ${memory_percentage}%"
+else
+    echo "✅ Memory usage is normal"
+fi
+echo ""
+
+# Check disk usage for root partition
+disk_usage=$(df / | awk 'NR==2 {print $5}' | cut -d'%' -f1)
+
+echo "Disk Usage (/): ${disk_usage}%"
+if [ "$disk_usage" -gt "$DISK_THRESHOLD" ]; then
+    echo "❌ HIGH DISK USAGE ALERT!"
+    echo "   Threshold: ${DISK_THRESHOLD}%, Current: ${disk_usage}%"
+    
+    # Show largest directories
+    echo "   Largest directories in /:"
+    du -h / --max-depth=1 2>/dev/null | sort -hr | head -5
+else
+    echo "✅ Disk usage is normal"
+fi
+echo ""
+
+# Check critical services
+services=("sshd" "NetworkManager" "firewalld")
+echo "Service Status:"
+
+for service in "${services[@]}"; do
+    if systemctl is-active --quiet "$service"; then
+        echo "✅ $service is running"
+    else
+        echo "❌ $service is not running"
+    fi
+done
+```
+
+# Numeric comparison operators
+if [ "$number1" -eq "$number2" ]; then
+    echo "✅ Numbers are equal"
+elif [ "$number1" -gt "$number2" ]; then
+    echo "✅ $number1 is greater than $number2"
+    difference=$((number1 - number2))
+    echo "   Difference: $difference"
+else
+    echo "✅ $number1 is less than $number2"
+    difference=$((number2 - number1))
+    echo "   Difference: $difference"
+fi
+
+# Additional numeric tests
+if [ "$number1" -ge 100 ]; then
+    echo "✅ First number is 100 or greater"
+fi
+
+if [ "$number2" -le 10 ]; then
+    echo "✅ Second number is 10 or less"
+fi
+```
+
+## 🎯 Key Takeaways
+
+<div className="bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-900 dark:to-blue-900 p-6 rounded-lg my-8">
+
+### ✅ Remember These Points
+
+1. **Always Quote Variables**: Use `"$variable"` in conditions to handle empty values and spaces
+2. **File Testing with -f**: Use `-f` to check if regular files exist before operations
+3. **String Testing with -z**: Use `-z` to validate that required strings are not empty
+4. **Combine Conditions**: Use `&&` (AND) and `||` (OR) to create complex logical tests
+5. **Provide Clear Feedback**: Make your conditional branches give users helpful information
+
+</div>
+
+## 📖 Further Reading
+
+### Official Resources
+- [Bash Manual - Conditional Constructs](https://www.gnu.org/software/bash/manual/html_node/Conditional-Constructs.html)
+- [Advanced Bash-Scripting Guide - Tests](https://tldp.org/LDP/abs/html/tests.html)
+
+---
+
+<Callout type="success">
+🎉 **Excellent Work!** You now understand how to make your bash scripts intelligent with conditional statements. You can test files with `-f`, validate strings with `-z`, and build complex decision-making logic.
+</Callout>
+
+## 💬 Discussion
+
+I'd love to hear about your conditional scripting experiences:
+
+- What's the most complex conditional logic you've implemented or want to build?
+- How do you prefer to handle error conditions in your scripts?
+- Have you found any creative uses for file or string testing operators?
+- What real-world automation problems are you solving with conditionals?
+
+**Connect with me**:
+- 🐙 [GitHub](https://github.com/owais-io) - Conditional logic examples and templates
+- 📧 [Contact](https://owais.io/contact) - Advanced conditional logic discussions
+
+---
