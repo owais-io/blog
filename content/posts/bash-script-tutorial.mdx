@@ -1,7 +1,6 @@
 ---
 title: "Creating and Executing Your First Bash Script: A Complete Beginner's Guide"
 description: "Learn how to create, make executable, and run your first bash script on Linux. Understand file permissions, shebangs, and common execution methods with practical examples."
-date: "2025-08-15"
 tags: ["bash", "linux", "scripting", "beginner", "shell"]
 published: true
 author: "Owais"
@@ -208,21 +207,6 @@ Hello World!
 <Callout type="success">
 🎉 **Success!** Your script now runs directly without needing to call `bash` explicitly.
 </Callout>
-
-## 🧠 Understanding Different chmod Options
-
-The `chmod +x` command is just one way to modify permissions. Here are some common variations:
-
-<div className="overflow-x-auto my-6">
-
-| Command | Effect | Use Case |
-|---------|---------|----------|
-| `chmod +x file` | Add execute permission for all | Quick way to make script executable |
-| `chmod 755 file` | rwxr-xr-x | Standard for executable scripts |
-| `chmod 744 file` | rwxr--r-- | Executable only by owner |
-| `chmod u+x file` | Add execute for user only | More restrictive approach |
-
-</div>
 
 <Callout type="warning">
 ⚠️ **Security Note**: Be cautious when adding execute permissions. Only make files executable when necessary, and consider who needs access to run them.
