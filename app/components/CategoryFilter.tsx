@@ -1,21 +1,21 @@
 import Link from 'next/link'
 
-interface TagFilterProps {
-  tags: string[]
-  selectedTag?: string
+interface CategoryFilterProps {
+  categories: string[]
+  selectedCategory?: string
   basePath?: string
 }
 
-export default function TagFilter({ tags, selectedTag, basePath = '/tags' }: TagFilterProps) {
+export default function CategoryFilter({ categories, selectedCategory, basePath = '/' }: CategoryFilterProps) {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Filter by Tag</h3>
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Filter by Category</h3>
       
       <div className="space-y-2">
         <Link
           href={basePath}
           className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-            !selectedTag
+            !selectedCategory
               ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'
               : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700'
           }`}
@@ -23,23 +23,23 @@ export default function TagFilter({ tags, selectedTag, basePath = '/tags' }: Tag
           All Posts
         </Link>
         
-        {tags.map((tag) => (
+        {categories.map((category) => (
           <Link
-            key={tag}
-            href={`${basePath}?tag=${encodeURIComponent(tag)}`}
+            key={category}
+            href={`${basePath}?category=${encodeURIComponent(category)}`}
             className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-              selectedTag === tag
+              selectedCategory === category
                 ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'
                 : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700'
             }`}
           >
-            {tag}
+            {category}
           </Link>
         ))}
       </div>
       
-      {tags.length === 0 && (
-        <p className="text-gray-500 dark:text-gray-400 text-sm">No tags available</p>
+      {categories.length === 0 && (
+        <p className="text-gray-500 dark:text-gray-400 text-sm">No categories available</p>
       )}
     </div>
   )

@@ -1,11 +1,11 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
 import { format } from 'date-fns'
-import { getPostsMeta, getAllCategories } from './lib/blog'
-import CategoryFilter from './components/CategoryFilter'
-import Pagination from './components/Pagination'
+import { getPostsMeta, getAllCategories } from '../lib/blog'
+import CategoryFilter from '../components/CategoryFilter'
+import Pagination from '../components/Pagination'
 
-interface HomePageProps {
+interface CategoriesPageProps {
   searchParams: {
     page?: string
     category?: string
@@ -13,11 +13,11 @@ interface HomePageProps {
 }
 
 export const metadata: Metadata = {
-  title: 'Home',
-  description: 'Welcome to Owais.io - A personal blog sharing insights on technology, development, and life.',
+  title: 'Categories',
+  description: 'Browse posts by categories - Find articles organized by topic areas.',
 }
 
-export default function HomePage({ searchParams }: HomePageProps) {
+export default function CategoriesPage({ searchParams }: CategoriesPageProps) {
   const currentPage = parseInt(searchParams.page || '1', 10)
   const selectedCategory = searchParams.category
   
@@ -30,7 +30,7 @@ export default function HomePage({ searchParams }: HomePageProps) {
         {/* Sidebar - Categories */}
         <div className="lg:col-span-1">
           <div className="sticky top-24">
-            <CategoryFilter categories={allCategories} selectedCategory={selectedCategory} />
+            <CategoryFilter categories={allCategories} selectedCategory={selectedCategory} basePath="/categories" />
           </div>
         </div>
 
@@ -39,10 +39,10 @@ export default function HomePage({ searchParams }: HomePageProps) {
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white sm:text-4xl">
-              Welcome to my blog
+              Browse by Categories
             </h1>
             <p className="mt-4 text-lg text-gray-600 dark:text-gray-300">
-              Sharing thoughts on technology, development, and life.
+              Explore articles organized by categories and topic areas.
             </p>
           </div>
 
@@ -70,10 +70,10 @@ export default function HomePage({ searchParams }: HomePageProps) {
               </p>
               {selectedCategory && (
                 <Link
-                  href="/"
+                  href="/categories"
                   className="mt-4 inline-flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
                 >
-                  ← View all posts
+                  ← View all categories
                 </Link>
               )}
             </div>
@@ -136,6 +136,7 @@ export default function HomePage({ searchParams }: HomePageProps) {
                 currentPage={currentPage}
                 totalPages={totalPages}
                 category={selectedCategory}
+                basePath="/categories"
               />
             </div>
           )}

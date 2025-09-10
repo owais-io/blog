@@ -4,14 +4,33 @@ interface PaginationProps {
   currentPage: number
   totalPages: number
   tag?: string
+  category?: string
+  basePath?: string
+  preserveParams?: Record<string, string>
 }
 
-export default function Pagination({ currentPage, totalPages, tag }: PaginationProps) {
+export default function Pagination({ currentPage, totalPages, tag, category, basePath = '/', preserveParams }: PaginationProps) {
   const createPageUrl = (page: number) => {
     const params = new URLSearchParams()
-    params.set('page', page.toString())
+    
+    // Add page parameter only if it's not page 1
+    if (page > 1) {
+      params.set('page', page.toString())
+    }
+    
+    // Legacy support for single tag/category
     if (tag) params.set('tag', tag)
-    return `/?${params.toString()}`
+    if (category) params.set('category', category)
+    
+    // New support for preserving multiple parameters
+    if (preserveParams) {
+      Object.entries(preserveParams).forEach(([key, value]) => {
+        if (value) params.set(key, value)
+      })
+    }
+    
+    const queryString = params.toString()
+    return queryString ? `${basePath}?${queryString}` : basePath
   }
 
   const getVisiblePages = () => {

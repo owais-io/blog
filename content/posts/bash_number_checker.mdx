@@ -1,0 +1,379 @@
+---
+title: "Building a Number Checker Script: Bash If-Elif-Else and String Testing"
+description: "Learn to build a practical bash script that validates input and compares numbers using if-elif-else statements. Master the -z operator for checking empty strings and command line arguments."
+date: "2025-09-09T13:54:00.000Z"
+tags: ["bash", "if-elif-else", "number-comparison", "string-testing", "command-line-validation"]
+published: true
+author: "Owais"
+category: "Bash"
+seo:
+  canonical: "https://owais.io/blog/bash-number-checker-script"
+  keywords: ["bash if elif else", "bash number comparison", "bash -z operator", "command line validation", "bash numeric conditions"]
+toc: true
+---
+
+Building practical scripts that can handle different scenarios is where bash scripting becomes truly powerful. In this tutorial, we'll create a number checker script that demonstrates input validation and multiple conditional paths using if-elif-else statements.
+
+<Callout type="info">
+🎯 **What You'll Learn**: In this hands-on tutorial, you'll discover:
+- How to use the `-z` operator to check for empty command line arguments
+- Building if-elif-else chains for multiple conditions
+- Numeric comparison operators for number evaluation
+- Input validation patterns for robust script behavior
+- Creating user-friendly error messages and usage instructions
+
+**Time to read**: ~7 minutes | **Difficulty**: Beginner to Intermediate
+</Callout>
+
+## 🚀 Building the Number Checker Script
+
+Let's create a practical script that takes a number as input and tells us whether it's above 10, exactly 10, or below 10. This script will demonstrate proper input validation and multiple conditional branches.
+
+<div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900 dark:to-indigo-900 p-6 rounded-lg my-6">
+
+### Prerequisites
+
+Before we begin, make sure you have:
+- Completed previous tutorials in the [Bash Scripting Fundamentals](https://owais.io/blog/bash-conditionals-guide) series
+- Understanding of basic bash conditionals and command line arguments
+- Access to a Linux terminal with bash
+
+</div>
+
+## 📝 Step 1: Create the Script File
+
+Let's start by creating our script file:
+
+```bash
+touch numbercheck.sh
+```
+
+This creates an empty file called `numbercheck.sh` that we'll use for our number checking script.
+
+## ✏️ Step 2: Write the Script Logic
+
+Open the file with nano (or your preferred text editor):
+
+```bash
+nano numbercheck.sh
+```
+
+Add the following script content:
+
+```bash title="numbercheck.sh" showLineNumbers
+#!/bin/bash
+if [ -z "$1" ]; then
+	echo "No number provided. Usage: ./numbercheck.sh <number>"
+	exit 1
+fi
+number=$1
+if [ $number -gt 10 ]; then
+	echo "Above 10"
+elif [ $number -eq 10 ]; then
+	echo "Exactly 10"
+else
+	echo "Below 10"
+fi
+```
+
+Let's examine what this script does step by step.
+
+## 🔍 Understanding the -z Operator
+
+The `-z` operator is a string testing operator that checks if a string is empty (has zero length).
+
+### How -z Works
+
+```bash
+# -z returns true if the string is empty
+if [ -z "$variable" ]; then
+    echo "Variable is empty"
+fi
+```
+
+In our script:
+```bash
+if [ -z "$1" ]; then
+    echo "No number provided. Usage: ./numbercheck.sh <number>"
+    exit 1
+fi
+```
+
+<Callout type="info">
+💡 **Understanding -z**: The `-z "$1"` test checks if the first command line argument is empty or doesn't exist. If no argument is provided when running the script, `$1` will be empty, making the `-z` test return true.
+</Callout>
+
+### Why We Use -z for Validation
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-8">
+
+<div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-green-200 dark:border-green-700">
+
+#### ✅ With -z Validation
+```bash
+# User runs: ./script.sh
+if [ -z "$1" ]; then
+    echo "Please provide a number"
+    exit 1
+fi
+# Script stops here with helpful message
+```
+
+</div>
+
+<div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-red-200 dark:border-red-700">
+
+#### ❌ Without -z Validation
+```bash
+# User runs: ./script.sh
+number=$1  # number is empty
+if [ $number -gt 10 ]; then
+    # Error: unary operator expected
+fi
+```
+
+</div>
+
+</div>
+
+## 🔢 Step 3: Make the Script Executable
+
+After saving the script, make it executable:
+
+```bash
+chmod +x numbercheck.sh
+```
+
+Now the script can be run directly with `./numbercheck.sh`.
+
+## 🧪 Step 4: Test the Script
+
+Let's test our script with different inputs to see how it behaves:
+
+### Test 1: Number Above 10
+
+```bash
+$ ./numbercheck.sh 15
+Above 10
+```
+
+The script correctly identifies that 15 is greater than 10.
+
+### Test 2: Number Exactly 10
+
+```bash
+$ ./numbercheck.sh 10
+Exactly 10
+```
+
+The script recognizes when the input is exactly 10.
+
+### Test 3: Number Below 10
+
+```bash
+$ ./numbercheck.sh 5
+Below 10
+```
+
+The script identifies that 5 is less than 10.
+
+### Test 4: No Argument Provided
+
+```bash
+$ ./numbercheck.sh
+No number provided. Usage: ./numbercheck.sh <number>
+```
+
+The `-z` validation catches the missing argument and provides a helpful usage message.
+
+## 🏗️ Understanding the Script Structure
+
+Let's break down the complete script logic:
+
+### Input Validation Block
+
+```bash title="Input Validation" showLineNumbers
+if [ -z "$1" ]; then
+	echo "No number provided. Usage: ./numbercheck.sh <number>"
+	exit 1
+fi
+```
+
+- **Line 1**: Check if first argument is empty using `-z`
+- **Line 2**: Display error message and usage instructions
+- **Line 3**: Exit with error code 1 to indicate failure
+
+### Variable Assignment
+
+```bash title="Variable Assignment"
+number=$1
+```
+
+After validation, we know `$1` contains a value, so we assign it to a descriptive variable name.
+
+### Multiple Condition Chain
+
+```bash title="If-Elif-Else Chain" showLineNumbers
+if [ $number -gt 10 ]; then
+	echo "Above 10"
+elif [ $number -eq 10 ]; then
+	echo "Exactly 10"
+else
+	echo "Below 10"
+fi
+```
+
+This demonstrates the if-elif-else structure:
+- **if**: First condition to check
+- **elif**: Additional condition (else-if)
+- **else**: Fallback for all other cases
+- **fi**: End of the conditional block
+
+## 🔄 How the Script Execution Flows
+
+Let's trace through different execution paths:
+
+### Path 1: Valid Number Above 10
+
+```bash title="Execution Flow for ./numbercheck.sh 15"
+1. Check if $1 is empty → false (contains "15")
+2. Assign number=15
+3. Check if 15 > 10 → true
+4. Execute: echo "Above 10"
+5. Skip elif and else blocks
+6. Script ends successfully
+```
+
+### Path 2: Valid Number Equal to 10
+
+```bash title="Execution Flow for ./numbercheck.sh 10"
+1. Check if $1 is empty → false (contains "10")
+2. Assign number=10
+3. Check if 10 > 10 → false
+4. Check if 10 = 10 → true
+5. Execute: echo "Exactly 10"
+6. Skip else block
+7. Script ends successfully
+```
+
+### Path 3: Valid Number Below 10
+
+```bash title="Execution Flow for ./numbercheck.sh 5"
+1. Check if $1 is empty → false (contains "5")
+2. Assign number=5
+3. Check if 5 > 10 → false
+4. Check if 5 = 10 → false
+5. Execute else block: echo "Below 10"
+6. Script ends successfully
+```
+
+### Path 4: No Argument Provided
+
+```bash title="Execution Flow for ./numbercheck.sh"
+1. Check if $1 is empty → true (no argument provided)
+2. Execute: echo "No number provided..."
+3. Execute: exit 1
+4. Script terminates with error code 1
+```
+
+## 🎯 Why This Pattern Is Useful
+
+This script demonstrates several important bash scripting patterns:
+
+### Robust Input Validation
+
+```bash
+# Always check if required arguments exist
+if [ -z "$1" ]; then
+    echo "Error message with usage instructions"
+    exit 1
+fi
+```
+
+### Clear User Feedback
+
+```bash
+# Provide helpful messages for different outcomes
+echo "Above 10"      # Clear, concise output
+echo "Exactly 10"    # Specific case handling
+echo "Below 10"      # Covers remaining cases
+```
+
+### Logical Flow Control
+
+```bash
+# Use if-elif-else for mutually exclusive conditions
+if [ condition1 ]; then
+    # Handle first case
+elif [ condition2 ]; then
+    # Handle second case
+else
+    # Handle all other cases
+fi
+```
+
+## 🧪 Testing Different Scenarios
+
+Let's verify our script handles edge cases correctly:
+
+```bash title="Complete Testing Session"
+# Test various numbers
+$ ./numbercheck.sh 100
+Above 10
+
+$ ./numbercheck.sh 11
+Above 10
+
+$ ./numbercheck.sh 10
+Exactly 10
+
+$ ./numbercheck.sh 9
+Below 10
+
+$ ./numbercheck.sh 0
+Below 10
+
+$ ./numbercheck.sh -5
+Below 10
+
+# Test validation
+$ ./numbercheck.sh
+No number provided. Usage: ./numbercheck.sh <number>
+```
+
+<Callout type="success">
+✅ **Script Validation**: Our script correctly handles positive numbers, negative numbers, zero, and missing arguments. The `-z` operator ensures we never try to do numeric comparisons on empty values.
+</Callout>
+
+## 🎯 Key Takeaways
+
+<div className="bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-900 dark:to-blue-900 p-6 rounded-lg my-8">
+
+### ✅ Remember These Points
+
+1. **Use -z for Empty Checks**: The `-z` operator tests if a string is empty or unset
+2. **Validate Before Processing**: Always check arguments before using them in operations  
+3. **If-Elif-Else Structure**: Use elif for additional conditions instead of nested if statements
+4. **Numeric Comparisons**: Use `-gt`, `-eq`, `-lt` for comparing numbers
+5. **User-Friendly Messages**: Provide clear feedback and usage instructions
+
+</div>
+
+<Callout type="success">
+🎉 **Great Work!** You've built a practical number checker script that demonstrates input validation with `-z` and multi-way decision making with if-elif-else. These patterns form the foundation of robust bash scripting.
+
+**What number-checking logic will you add next?** Share your script ideas in the comments!
+</Callout>
+
+## 💬 Discussion
+
+I'd love to hear about your script building experience:
+
+- What other validation scenarios have you encountered?
+- How do you prefer to handle invalid input in your scripts?
+- What practical scripts are you building with if-elif-else logic?
+- Any creative uses for the `-z` operator you've discovered?
+
+**Connect with me**:
+- 🐙 [GitHub](https://github.com/owais-io) - Number checker script and variations
+- 📧 [Contact](https://owais.io/contact) - Script validation questions and discussions

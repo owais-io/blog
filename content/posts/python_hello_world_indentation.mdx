@@ -1,0 +1,323 @@
+---
+title: "Your First Python Program: Hello World and Understanding Indentation"
+description: "Learn to create and run your first Python program. Master Python's critical indentation rules through hands-on examples and understand how proper formatting affects code execution."
+date: "2025-09-09T09:55:00.000Z"
+tags: ["python", "hello-world", "indentation", "beginner", "syntax", "first-program"]
+published: true
+author: "Owais"
+category: "Python"
+seo:
+  canonical: "https://owais.io/blog/python-hello-world-indentation"
+  keywords: ["python hello world", "python indentation", "first python program", "python syntax", "indentation error python"]
+toc: true
+---
+
+Every programming journey begins with a simple "Hello, World!" program. In Python, this first program teaches you not just how to display text, but also introduces one of Python's most distinctive features: indentation-based code structure.
+
+<Callout type="info">
+🎯 **What You'll Learn**: In this hands-on tutorial, you'll discover:
+- How to create and run your first Python program
+- The importance of Python's indentation rules
+- How to use conditional statements with proper formatting
+- Common indentation errors and how to fix them
+- Best practices for Python code structure and readability
+- Using VS Code for Python development
+
+</Callout>
+
+## 🚀 Creating Your First Python Program
+
+Let's start by creating a simple Python file and running your first program. This hands-on approach will give you immediate feedback and build confidence.
+
+<div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900 dark:to-indigo-900 p-6 rounded-lg my-6">
+
+### Prerequisites
+
+Before we begin, make sure you have:
+- Completed the [Python Installation & Environment Setup](https://owais.io/blog/python-installation-setup-guide) tutorial
+- Python 3 installed and working on your system
+- A text editor or IDE (VS Code recommended)
+- Basic familiarity with terminal/command prompt
+
+</div>
+
+## 📝 Step 1: Create Your Python File
+
+Let's start by creating a Python file in your terminal:
+
+```bash
+touch hello.py
+ls
+```
+
+You should see your newly created `hello.py` file listed in the directory.
+
+<Callout type="success">
+✅ **File Extension**: Python files use the `.py` extension. This tells your system and editor that the file contains Python code.
+</Callout>
+
+## 💻 Step 2: Open Your Development Environment
+
+Open your current directory in VS Code (or your preferred editor):
+
+```bash
+code .
+```
+
+This command opens VS Code with your current directory, allowing you to edit the `hello.py` file directly.
+
+## 🎯 Step 3: Your First "Hello World" Program
+
+Let's add some content to your Python file. Start with the classic "Hello World" program:
+
+```python title="hello.py - Version 1" showLineNumbers
+print("Hello world!")
+```
+
+Now run your program from the terminal:
+
+```bash
+$ python hello.py
+Hello world!
+```
+
+🎉 **Congratulations!** You've just written and executed your first Python program!
+
+### Understanding the print() Function
+
+The `print()` function is one of Python's built-in functions that displays text to the console:
+
+```python title="print-examples.py" showLineNumbers
+# Basic print statement
+print("Hello world!")
+
+# Print with variables
+name = "Alice"
+print("Hello", name)
+
+# Print multiple items
+print("Hello", "world", "from", "Python!")
+
+# Print with formatting
+age = 25
+print(f"I am {age} years old")
+```
+
+## 🔀 Step 4: Adding Conditional Logic
+
+Now let's enhance our program by adding a conditional statement. Update your `hello.py` file:
+
+```python title="hello.py - Version 2" showLineNumbers
+if True:
+    print("This will always print because the condition is true")
+print("Hello world!")
+```
+
+Run the updated program:
+
+```bash
+$ python hello.py
+This will always print because the condition is true
+Hello world!
+```
+
+Notice how both lines are printed - the conditional statement executes first, then the regular print statement.
+
+## ⚠️ Step 5: Understanding Python Indentation
+
+Here's where Python differs from many other programming languages. Let's intentionally create an indentation error to understand this crucial concept:
+
+```python title="hello.py - Incorrect Indentation" showLineNumbers
+if True:
+print("This will always print because the condition is true")
+print("Hello world!")
+```
+
+When you run this version:
+
+```bash
+$ python hello.py
+  File "/home/centos9/Razzaq-Labs-II/random/hello.py", line 2
+    print("This will always print because the condition is true")
+    ^
+IndentationError: expected an indented block
+```
+
+<Callout type="error">
+❌ **IndentationError**: This error occurs because Python expects the code inside the `if` block to be indented. Unlike other languages that use braces `{}`, Python uses indentation to define code blocks.
+</Callout>
+
+## 🎯 Step 6: Fixing the Indentation
+
+Let's fix the indentation error by properly indenting the code inside the `if` block:
+
+```python title="hello.py - Correct Indentation" showLineNumbers
+if True:
+    print("This will always print because the condition is true")
+print("Hello world!")
+```
+
+Now when you run the program:
+
+```bash
+$ python hello.py
+This will always print because the condition is true
+Hello world!
+```
+
+Perfect! The program runs without errors and produces the expected output.
+
+## 📏 Understanding Python's Indentation Rules
+
+### Why Indentation Matters
+
+Python uses indentation to determine which statements belong together in a block. This makes Python code highly readable but requires careful attention to spacing.
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-8">
+
+<div className="bg-green-50 dark:bg-green-900/20 p-6 rounded-lg">
+
+#### ✅ Correct Indentation
+```python
+if True:
+    print("Inside if block")
+    print("Also inside if block")
+print("Outside if block")
+
+for i in range(3):
+    print(f"Loop iteration {i}")
+    if i == 1:
+        print("Special case")
+print("After loop")
+```
+
+</div>
+
+<div className="bg-red-50 dark:bg-red-900/20 p-6 rounded-lg">
+
+#### ❌ Incorrect Indentation
+```python
+if True:
+print("Missing indentation")
+
+for i in range(3):
+    print(f"Loop iteration {i}")
+  print("Inconsistent indentation")
+
+if True:
+    print("First line")
+        print("Too much indentation")
+```
+
+</div>
+
+</div>
+
+<Callout type="success">
+✅ **PEP 8 Standard**: Python's official style guide (PEP 8) recommends using 4 spaces for indentation. Most Python editors can be configured to follow this automatically.
+</Callout>
+
+## 🚨 Common Indentation Errors and Solutions
+
+<details>
+<summary><strong>IndentationError: expected an indented block</strong></summary>
+
+**Problem**: Missing indentation after `:` (colon)
+
+```python
+# Wrong
+if True:
+print("Hello")
+
+# Correct
+if True:
+    print("Hello")
+```
+
+**Solution**: Add 4 spaces before the code that should be inside the block.
+
+</details>
+
+<details>
+<summary><strong>IndentationError: unindent does not match any outer indentation level</strong></summary>
+
+**Problem**: Inconsistent indentation levels
+
+```python
+# Wrong
+if True:
+    print("First line")
+  print("Wrong indentation")
+
+# Correct
+if True:
+    print("First line")
+    print("Correct indentation")
+```
+
+**Solution**: Ensure all lines at the same level use identical indentation.
+
+</details>
+
+<details>
+<summary><strong>TabError: inconsistent use of tabs and spaces</strong></summary>
+
+**Problem**: Mixing tabs and spaces for indentation
+
+```python
+# Wrong (mixing tabs and spaces - hard to see!)
+if True:
+    print("Using spaces")
+	print("Using tab")
+
+# Correct (consistent spaces)
+if True:
+    print("Using spaces")
+    print("Also using spaces")
+```
+
+**Solution**: Configure your editor to show whitespace and use only spaces (4 spaces recommended).
+
+</details>
+
+## 🎯 Key Takeaways
+
+<div className="bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-900 dark:to-blue-900 p-6 rounded-lg my-8">
+
+### ✅ Remember These Points
+
+1. **Indentation is Syntax**: In Python, indentation is not just for readability - it's part of the language syntax
+2. **4 Spaces Standard**: Use 4 spaces for each indentation level (PEP 8 recommendation)
+3. **Consistency is Key**: All lines at the same level must have identical indentation
+4. **Colon Indicates Block**: After `:` (colon), the next line should be indented
+5. **Editor Configuration**: Set up your editor to help with consistent indentation
+
+</div>
+
+## 📖 Further Reading
+
+### Official Resources
+- [Python Tutorial - First Steps](https://docs.python.org/3/tutorial/introduction.html)
+- [PEP 8 Style Guide](https://pep8.org/)
+- [Python Indentation Documentation](https://docs.python.org/3/reference/lexical_analysis.html#indentation)
+
+---
+
+<Callout type="success">
+🎉 **Excellent Progress!** You've successfully created your first Python program and learned one of Python's most important concepts: indentation. This foundation will serve you well as you continue learning Python.
+
+**What program do you want to create next?** Share your ideas in the comments!
+</Callout>
+
+## 💬 Discussion
+
+I'd love to hear about your first Python programming experience:
+
+- What was your biggest "aha!" moment about Python indentation?
+- Have you encountered any tricky indentation errors?
+- What other programming languages have you used, and how does Python compare?
+- What type of programs are you excited to build with Python?
+
+**Connect with me**:
+- 🐙 [GitHub](https://github.com/owais-io) - Python examples and beginner projects
+- 📧 [Contact](https://owais.io/contact) - Python learning questions and discussions

@@ -10,6 +10,7 @@ export interface BlogPost {
   description: string
   date: string
   tags: string[]
+  category: string
   content: string
   readingTime: string
   published: boolean
@@ -21,6 +22,7 @@ export interface BlogPostMeta {
   description: string
   date: string
   tags: string[]
+  category: string
   readingTime: string
   published: boolean
 }
@@ -51,6 +53,7 @@ export function getAllPosts(): BlogPost[] {
         description: data.description || '',
         date: postDate,
         tags: data.tags || [],
+        category: data.category || '',
         content,
         readingTime: readingTime(content).text,
         published: data.published !== false,
@@ -87,6 +90,7 @@ export function getPostBySlug(slug: string): BlogPost | null {
       description: data.description || '',
       date: postDate,
       tags: data.tags || [],
+      category: data.category || '',
       content,
       readingTime: readingTime(content).text,
       published: data.published !== false,
@@ -108,6 +112,19 @@ export function getAllTags(): string[] {
   return Array.from(tags).sort()
 }
 
+export function getAllCategories(): string[] {
+  const posts = getAllPosts()
+  const categories = new Set<string>()
+  
+  posts.forEach(post => {
+    if (post.category) {
+      categories.add(post.category)
+    }
+  })
+  
+  return Array.from(categories).sort()
+}
+
 export function getPostsByTag(tag: string): BlogPost[] {
   const posts = getAllPosts()
   return posts.filter(post => 
@@ -115,7 +132,14 @@ export function getPostsByTag(tag: string): BlogPost[] {
   )
 }
 
-export function getPostsMeta(page = 1, limit = 10, tag?: string): {
+export function getPostsByCategory(category: string): BlogPost[] {
+  const posts = getAllPosts()
+  return posts.filter(post => 
+    post.category.toLowerCase() === category.toLowerCase()
+  )
+}
+
+export function getPostsMeta(page = 1, limit = 10, tag?: string, category?: string): {
   posts: BlogPostMeta[]
   totalPages: number
   currentPage: number
@@ -125,6 +149,8 @@ export function getPostsMeta(page = 1, limit = 10, tag?: string): {
   
   if (tag) {
     posts = getPostsByTag(tag)
+  } else if (category) {
+    posts = getPostsByCategory(category)
   }
   
   const totalPosts = posts.length
@@ -138,6 +164,114 @@ export function getPostsMeta(page = 1, limit = 10, tag?: string): {
     description: post.description,
     date: post.date,
     tags: post.tags,
+    category: post.category,
+    readingTime: post.readingTime,
+    published: post.published,
+  }))
+  
+  return {
+    posts: paginatedPosts,
+    totalPages,
+    currentPage: page,
+    totalPosts,
+  }
+}
+
+// Get categories that have posts with the specified tags
+export function getCategoriesByTags(tags: string[]): string[] {
+  if (!tags || tags.length === 0) {
+    return getAllCategories()
+  }
+  
+  const posts = getAllPosts()
+  const categories = new Set<string>()
+  
+  posts.forEach(post => {
+    // Check if post has any of the selected tags
+    const hasSelectedTag = tags.some(tag => 
+      post.tags.map(t => t.toLowerCase()).includes(tag.toLowerCase())
+    )
+    
+    if (hasSelectedTag && post.category) {
+      categories.add(post.category)
+    }
+  })
+  
+  return Array.from(categories).sort()
+}
+
+// Get tags that are in posts with the specified categories
+export function getTagsByCategories(categories: string[]): string[] {
+  if (!categories || categories.length === 0) {
+    return getAllTags()
+  }
+  
+  const posts = getAllPosts()
+  const tags = new Set<string>()
+  
+  posts.forEach(post => {
+    // Check if post belongs to any of the selected categories
+    const hasSelectedCategory = categories.some(category => 
+      post.category.toLowerCase() === category.toLowerCase()
+    )
+    
+    if (hasSelectedCategory) {
+      post.tags.forEach(tag => tags.add(tag))
+    }
+  })
+  
+  return Array.from(tags).sort()
+}
+
+// Get posts filtered by both tags and categories
+export function getPostsByTagsAndCategories(tags?: string[], categories?: string[]): BlogPost[] {
+  let posts = getAllPosts()
+  
+  if (tags && tags.length > 0) {
+    posts = posts.filter(post => 
+      tags.some(tag => 
+        post.tags.map(t => t.toLowerCase()).includes(tag.toLowerCase())
+      )
+    )
+  }
+  
+  if (categories && categories.length > 0) {
+    posts = posts.filter(post => 
+      categories.some(category => 
+        post.category.toLowerCase() === category.toLowerCase()
+      )
+    )
+  }
+  
+  return posts
+}
+
+// Updated getPostsMeta to handle multiple tags and categories
+export function getPostsMetaAdvanced(
+  page = 1, 
+  limit = 10, 
+  tags?: string[], 
+  categories?: string[]
+): {
+  posts: BlogPostMeta[]
+  totalPages: number
+  currentPage: number
+  totalPosts: number
+} {
+  let posts = getPostsByTagsAndCategories(tags, categories)
+  
+  const totalPosts = posts.length
+  const totalPages = Math.ceil(totalPosts / limit)
+  const startIndex = (page - 1) * limit
+  const endIndex = startIndex + limit
+  
+  const paginatedPosts = posts.slice(startIndex, endIndex).map(post => ({
+    slug: post.slug,
+    title: post.title,
+    description: post.description,
+    date: post.date,
+    tags: post.tags,
+    category: post.category,
     readingTime: post.readingTime,
     published: post.published,
   }))
@@ -205,6 +339,7 @@ export function getRelatedPosts(currentSlug: string, limit = 4): BlogPostMeta[] 
       description: item.post.description,
       date: item.post.date,
       tags: item.post.tags,
+      category: item.post.category,
       readingTime: item.post.readingTime,
       published: item.post.published,
     }))
@@ -216,6 +351,7 @@ export function getRelatedPosts(currentSlug: string, limit = 4): BlogPostMeta[] 
       description: item.post.description,
       date: item.post.date,
       tags: item.post.tags,
+      category: item.post.category,
       readingTime: item.post.readingTime,
       published: item.post.published,
     }))
@@ -227,6 +363,7 @@ export function getRelatedPosts(currentSlug: string, limit = 4): BlogPostMeta[] 
       description: item.post.description,
       date: item.post.date,
       tags: item.post.tags,
+      category: item.post.category,
       readingTime: item.post.readingTime,
       published: item.post.published,
     }))
