@@ -1,63 +1,233 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --color-primary: 59 130 246;
+    --color-accent: 34 197 94;
+    --color-warning: 245 158 11;
+    --color-surface: 255 255 255;
+    --color-text: 17 24 39;
+    --color-text-muted: 107 114 128;
+    --gradient-primary: linear-gradient(135deg, rgb(59 130 246) 0%, rgb(99 102 241) 100%);
+    --gradient-accent: linear-gradient(135deg, rgb(34 197 94) 0%, rgb(59 130 246) 100%);
+    --shadow-primary: 0 4px 14px 0 rgba(59, 130, 246, 0.15);
+    --shadow-accent: 0 4px 14px 0 rgba(34, 197, 94, 0.15);
+  }
+
+  .dark {
+    --color-primary: 96 165 250;
+    --color-accent: 74 222 128;
+    --color-warning: 251 191 36;
+    --color-surface: 17 24 39;
+    --color-text: 249 250 251;
+    --color-text-muted: 156 163 175;
+    --gradient-primary: linear-gradient(135deg, rgb(96 165 250) 0%, rgb(139 92 246) 100%);
+    --gradient-accent: linear-gradient(135deg, rgb(74 222 128) 0%, rgb(96 165 250) 100%);
+    --shadow-primary: 0 4px 14px 0 rgba(96, 165, 250, 0.2);
+    --shadow-accent: 0 4px 14px 0 rgba(74, 222, 128, 0.2);
+  }
+
   html {
     scroll-behavior: smooth;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   }
   
   body {
-    @apply text-gray-900 bg-white dark:text-gray-100 dark:bg-gray-900;
+    @apply font-sans text-gray-900 bg-white dark:text-gray-100 dark:bg-gray-950 antialiased;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    background-image: 
+      radial-gradient(at 40% 20%, rgba(59, 130, 246, 0.05) 0px, transparent 50%),
+      radial-gradient(at 80% 0%, rgba(34, 197, 94, 0.05) 0px, transparent 50%),
+      radial-gradient(at 0% 50%, rgba(99, 102, 241, 0.05) 0px, transparent 50%);
+  }
+
+  .dark body {
+    background-image: 
+      radial-gradient(at 40% 20%, rgba(96, 165, 250, 0.1) 0px, transparent 50%),
+      radial-gradient(at 80% 0%, rgba(74, 222, 128, 0.08) 0px, transparent 50%),
+      radial-gradient(at 0% 50%, rgba(139, 92, 246, 0.08) 0px, transparent 50%);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+
+  ::selection {
+    @apply bg-primary-200 dark:bg-primary-800;
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-gray-100 dark:bg-gray-800;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-400 dark:bg-gray-600 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-500 dark:bg-gray-500;
   }
 }
 
 @layer components {
-  .prose-custom {
-    @apply prose prose-gray dark:prose-invert max-w-none;
+  .btn {
+    @apply inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
+  }
+
+  .btn-primary {
+    @apply btn bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500 shadow-md hover:shadow-lg active:scale-95;
+  }
+
+  .btn-secondary {
+    @apply btn bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 focus:ring-gray-500;
+  }
+
+  .btn-ghost {
+    @apply btn text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 focus:ring-gray-500;
+  }
+
+  .card {
+    @apply bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-soft hover:shadow-medium transition-all duration-300;
+  }
+
+  .card-elevated {
+    @apply card shadow-medium hover:shadow-large hover:-translate-y-1;
+  }
+
+  .tag {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium transition-all duration-200;
+  }
+
+  .tag-primary {
+    @apply tag bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-200 hover:bg-primary-200 dark:hover:bg-primary-900/50;
+  }
+
+  .tag-accent {
+    @apply tag bg-accent-100 dark:bg-accent-900/30 text-accent-800 dark:text-accent-200 hover:bg-accent-200 dark:hover:bg-accent-900/50;
+  }
+
+  .tag-warning {
+    @apply tag bg-warning-100 dark:bg-warning-900/30 text-warning-800 dark:text-warning-200 hover:bg-warning-200 dark:hover:bg-warning-900/50;
+  }
+
+  .link {
+    @apply text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 underline decoration-2 underline-offset-2 transition-all duration-200 hover:decoration-primary-600 dark:hover:decoration-primary-400;
+  }
+
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary-600 to-accent-600 dark:from-primary-400 dark:to-accent-400 bg-clip-text text-transparent;
+  }
+
+  .glass {
+    @apply bg-white/70 dark:bg-gray-900/70 backdrop-blur-md border border-white/20 dark:border-gray-700/20;
+  }
+
+  .prose-enhanced {
+    @apply prose prose-lg prose-gray dark:prose-invert max-w-none;
+  }
+
+  .prose-enhanced h1 {
+    @apply text-4xl md:text-5xl font-bold text-gray-900 dark:text-gray-100 mb-6 leading-tight;
   }
   
-  .prose-custom h1 {
-    @apply text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4;
+  .prose-enhanced h2 {
+    @apply text-2xl md:text-3xl font-semibold text-gray-900 dark:text-gray-100 mb-4 mt-12 leading-tight border-b border-gray-200 dark:border-gray-700 pb-2;
   }
   
-  .prose-custom h2 {
-    @apply text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-3 mt-8;
+  .prose-enhanced h3 {
+    @apply text-xl md:text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-3 mt-8 leading-tight;
   }
   
-  .prose-custom h3 {
-    @apply text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2 mt-6;
+  .prose-enhanced h4 {
+    @apply text-lg md:text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2 mt-6 leading-tight;
   }
   
-  .prose-custom p {
-    @apply text-gray-700 dark:text-gray-300 leading-relaxed mb-4;
+  .prose-enhanced p {
+    @apply text-gray-700 dark:text-gray-300 leading-relaxed mb-6 text-lg;
   }
   
-  .prose-custom a {
-    @apply text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline;
+  .prose-enhanced a {
+    @apply link;
   }
   
-  .prose-custom ul, .prose-custom ol {
-    @apply mb-4 pl-6;
+  .prose-enhanced ul, .prose-enhanced ol {
+    @apply mb-6 pl-6 space-y-2;
   }
   
-  .prose-custom li {
-    @apply mb-2 text-gray-700 dark:text-gray-300;
+  .prose-enhanced li {
+    @apply text-gray-700 dark:text-gray-300 leading-relaxed;
   }
   
-  .prose-custom blockquote {
-    @apply border-l-4 border-gray-300 dark:border-gray-600 pl-4 italic text-gray-600 dark:text-gray-400 mb-4;
+  .prose-enhanced blockquote {
+    @apply border-l-4 border-primary-400 dark:border-primary-600 pl-6 italic text-gray-600 dark:text-gray-400 mb-6 bg-primary-50/50 dark:bg-primary-900/20 py-4 rounded-r-lg;
   }
   
-  .prose-custom code {
-    @apply bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm font-mono text-gray-800 dark:text-gray-200;
+  .prose-enhanced code {
+    @apply bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-md text-sm font-mono text-primary-600 dark:text-primary-400 font-medium;
   }
   
-  .prose-custom pre {
-    @apply bg-gray-100 dark:bg-gray-900 p-4 rounded-lg overflow-x-auto mb-4;
+  .prose-enhanced pre {
+    @apply bg-gray-900 dark:bg-gray-950 p-6 rounded-xl overflow-x-auto mb-6 border border-gray-700 dark:border-gray-800;
   }
   
-  .prose-custom pre code {
-    @apply bg-transparent px-0 py-0;
+  .prose-enhanced pre code {
+    @apply bg-transparent px-0 py-0 text-gray-300 dark:text-gray-200;
+  }
+
+  .prose-enhanced img {
+    @apply rounded-xl shadow-medium;
+  }
+
+  .prose-enhanced table {
+    @apply border-collapse border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden;
+  }
+
+  .prose-enhanced th {
+    @apply bg-gray-100 dark:bg-gray-800 font-semibold text-left p-3;
+  }
+
+  .prose-enhanced td {
+    @apply p-3 border-t border-gray-200 dark:border-gray-700;
+  }
+
+
+  .shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .shimmer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.4),
+      transparent
+    );
+    animation: shimmer 2s infinite;
+  }
+
+  .dark .shimmer::before {
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.1),
+      transparent
+    );
   }
 }
