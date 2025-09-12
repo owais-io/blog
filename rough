@@ -1,0 +1,433 @@
+[centos9@localhost random 15:37:08]$ docker run -it --name temp-container ubuntu:20.04 bash
+Unable to find image 'ubuntu:20.04' locally
+20.04: Pulling from library/ubuntu
+13b7e930469f: Pull complete 
+Digest: sha256:8feb4d8ca5354def3d8fce243717141ce31e2c428701f6682bd2fafe15388214
+Status: Downloaded newer image for ubuntu:20.04
+root@a10794aab816:/# echo "This is temporary data" > /tmp/test-file.txt
+root@a10794aab816:/# cat /tmp/test-file.txt 
+This is temporary data
+root@a10794aab816:/# ls -la /tmp/
+total 4
+drwxrwxrwt. 1 root root 27 Sep 12 14:35 .
+drwxr-xr-x. 1 root root 17 Sep 12 14:34 ..
+-rw-r--r--. 1 root root 23 Sep 12 14:35 test-file.txt
+root@a10794aab816:/# exit
+exit
+[centos9@localhost random 19:35:25]$ docker rm temp-container 
+temp-container
+[centos9@localhost random 19:35:38]$ docker run -it --name temp-container2 ubuntu:20.04 bash
+root@6ee6549942ed:/# ls -la /tmp/
+total 0
+drwxrwxrwt. 2 root root 6 Apr  4 02:09 .
+drwxr-xr-x. 1 root root 6 Sep 12 14:36 ..
+root@6ee6549942ed:/# cat /tmp/test-file.txt
+cat: /tmp/test-file.txt: No such file or directory
+root@6ee6549942ed:/# exit
+exit
+[centos9@localhost random 19:36:33]$ docker rm temp-container2
+temp-container2
+[centos9@localhost random 19:36:44]$ #hence proved that there is no data persistence, here comes the docker volumes
+[centos9@localhost random 19:37:12]$ docker volume ls
+DRIVER    VOLUME NAME
+local     persist
+[centos9@localhost random 19:37:22]$ docker volume create my-persistent-data
+my-persistent-data
+[centos9@localhost random 19:37:47]$ docker volume ls
+DRIVER    VOLUME NAME
+local     my-persistent-data
+local     persist
+[centos9@localhost random 19:37:55]$ docker volume inspect my-persistent-data 
+[
+    {
+        "CreatedAt": "2025-09-12T19:37:47+05:00",
+        "Driver": "local",
+        "Labels": null,
+        "Mountpoint": "/var/lib/docker/volumes/my-persistent-data/_data",
+        "Name": "my-persistent-data",
+        "Options": null,
+        "Scope": "local"
+    }
+]
+[centos9@localhost random 19:38:04]$ docker volume create database-data
+database-data
+[centos9@localhost random 19:38:23]$ docker volume create app-logs
+app-logs
+[centos9@localhost random 19:38:35]$ docker volume create app-config
+app-config
+[centos9@localhost random 19:38:48]$ docker volume ls
+DRIVER    VOLUME NAME
+local     app-config
+local     app-logs
+local     database-data
+local     my-persistent-data
+local     persist
+[centos9@localhost random 19:38:54]$ docker run -it --name persistent-container -v my-persistent-data:/data ubuntu:20.04 baash
+docker: Error response from daemon: failed to create task for container: failed to create shim task: OCI runtime create failed: runc create failed: unable to start container process: error during container init: exec: "baash": executable file not found in $PATH: unknown
+
+Run 'docker run --help' for more information
+[centos9@localhost random 19:39:38]$ docker run -it --name persistent-container -v my-persistent-data:/data ubuntu:20.04 bash
+docker: Error response from daemon: Conflict. The container name "/persistent-container" is already in use by container "c2c34f5bc1ead02d326c08760df88459c077792bb9f9f1343b63666fe22e0f81". You have to remove (or rename) that container to be able to reuse that name.
+
+Run 'docker run --help' for more information
+[centos9@localhost random 19:39:44]$ docker rm -f persistent-container
+persistent-container
+[centos9@localhost random 19:40:14]$ docker run -it --name persistent-container -v my-persistent-data:/data ubuntu:20.04 bash
+root@8c4b0d76f3ef:/# cd /data
+root@8c4b0d76f3ef:/data# echo "This data will persist!" > persistent-file.txt
+root@8c4b0d76f3ef:/data# echo "Container ID: $(hostname)" >> persistent-file.txt
+root@8c4b0d76f3ef:/data# date >> persistent-file.txt 
+root@8c4b0d76f3ef:/data# ls -la
+total 4
+drwxr-xr-x. 2 root root 33 Sep 12 14:40 .
+drwxr-xr-x. 1 root root 18 Sep 12 14:40 ..
+-rw-r--r--. 1 root root 80 Sep 12 14:41 persistent-file.txt
+root@8c4b0d76f3ef:/data# cat persistent-file.txt 
+This data will persist!
+Container ID: 8c4b0d76f3ef
+Fri Sep 12 14:41:38 UTC 2025
+root@8c4b0d76f3ef:/data# exit
+exit
+[centos9@localhost random 19:42:01]$ docker rm persistent-container 
+persistent-container
+[centos9@localhost random 19:42:09]$ docker run -it --name new-persistent-container -v my-persistent-data:/data ubuntu:20.04 bash
+root@2d773d1fa2a8:/# cd /data
+root@2d773d1fa2a8:/data# ls -la
+total 4
+drwxr-xr-x. 2 root root 33 Sep 12 14:40 .
+drwxr-xr-x. 1 root root 18 Sep 12 14:44 ..
+-rw-r--r--. 1 root root 80 Sep 12 14:41 persistent-file.txt
+root@2d773d1fa2a8:/data# cat persistent-file.txt 
+This data will persist!
+Container ID: 8c4b0d76f3ef
+Fri Sep 12 14:41:38 UTC 2025
+root@2d773d1fa2a8:/data# exit
+exit
+[centos9@localhost random 19:44:38]$ docker run -it --name multi-volume-container -v database-data:/var/lib/database -v app-logs:/var/log/app -v app-config:/etc/app ubuntu:20.04 bash
+root@b74ec1acac45:/# mkdir -p /var/lib/database
+root@b74ec1acac45:/# echo "user_data=sample" > /var/lib/database/users.db
+root@b74ec1acac45:/# mkdir -p /var/log/app
+root@b74ec1acac45:/# echo "$(date): Application started" > /var/log/app/app.log
+root@b74ec1acac45:/# mkdir -p /etc/app
+root@b74ec1acac45:/# echo "debug=true" > /etc/app/config.ini
+root@b74ec1acac45:/# echo "port=8080" >> /etc/app/config.ini
+root@b74ec1acac45:/# ls -la /var/lib/database/
+total 4
+drwxr-xr-x. 2 root root 22 Sep 12 14:48 .
+drwxr-xr-x. 1 root root 22 Sep 12 14:47 ..
+-rw-r--r--. 1 root root 17 Sep 12 14:48 users.db
+root@b74ec1acac45:/# ls -la /var/log/app/     
+total 4
+drwxr-xr-x. 2 root root 21 Sep 12 14:49 .
+drwxr-xr-x. 1 root root 17 Sep 12 14:47 ..
+-rw-r--r--. 1 root root 50 Sep 12 14:49 app.log
+root@b74ec1acac45:/# ls -la /etc/app/    
+total 4
+drwxr-xr-x. 2 root root 24 Sep 12 14:50 .
+drwxr-xr-x. 1 root root 17 Sep 12 14:47 ..
+-rw-r--r--. 1 root root 21 Sep 12 14:50 config.ini
+root@b74ec1acac45:/# exit
+exit
+[centos9@localhost random 19:51:14]$ docker rm multi-volume-container
+multi-volume-container
+[centos9@localhost random 19:51:24]$ docker run -d --name web-server -v my-persistent-data:/usr/share/nginx/html -p 8080:80 nginx:alpine
+23ba28c2720eb8a66cd2928837e8801cae6f9c008db74c7750eb8bd74cc62fe5
+[centos9@localhost random 19:52:17]$ docker run --rm -v my-persistent-data:/data ubuntu:20.04 bash -c "echo '<h1>Hello from Persistent Volume!</h1>' > /data/index.html"
+bash: !: event not found
+[centos9@localhost random 19:54:25]$ docker run --rm -v my-persistent-data:/data ubuntu:20.04 bash -c "echo '<h1>Hello from Persistent Volume</h1>' > /data/index.html"
+[centos9@localhost random 19:55:21]$ curl http://localhost:8080
+<h1>Hello from Persistent Volume</h1>
+[centos9@localhost random 19:55:36]$ docker stop web-server 
+web-server
+[centos9@localhost random 19:55:46]$ docker rm web-server 
+web-server
+[centos9@localhost random 19:55:51]$ docker run -d --name web-server-new -v my-persistent-data:/usr/share/nginx/html -p 8080:80 nginx:alpine
+b562cb8d429d6a82b93ce2f0bba6a5c7beba26fc6a430398454738419ca4856d
+[centos9@localhost random 19:57:01]$ curl http://localhost:8080
+<h1>Hello from Persistent Volume</h1>
+[centos9@localhost random 19:57:09]$ docker stop web-server-new 
+web-server-new
+[centos9@localhost random 19:57:21]$ docker rm web-server-new 
+web-server-new
+[centos9@localhost random 19:57:24]$ docker volume inspect my-persistent-data 
+[
+    {
+        "CreatedAt": "2025-09-12T19:37:47+05:00",
+        "Driver": "local",
+        "Labels": null,
+        "Mountpoint": "/var/lib/docker/volumes/my-persistent-data/_data",
+        "Name": "my-persistent-data",
+        "Options": null,
+        "Scope": "local"
+    }
+]
+[centos9@localhost random 19:57:38]$ docker volume ls
+DRIVER    VOLUME NAME
+local     app-config
+local     app-logs
+local     database-data
+local     my-persistent-data
+local     persist
+[centos9@localhost random 19:57:47]$ docker volume inspect --format="{{.Mountpoint}}"
+docker: 'docker volume inspect' requires at least 1 argument
+
+Usage:  docker volume inspect [OPTIONS] VOLUME [VOLUME...]
+
+See 'docker volume inspect --help' for more information
+[centos9@localhost random 19:58:10]$ docker volume inspect --format {{.Mountpoint}}"
+> exit
+> ^C
+[centos9@localhost random 19:58:37]$ docker volume inspect my-persistent-data --format {{.Mountpoint}}"
+> ^C
+[centos9@localhost random 19:59:18]$ docker volume inspect my-persistent-data --format "{{.Mountpoint}}"
+/var/lib/docker/volumes/my-persistent-data/_data
+[centos9@localhost random 19:59:22]$ docker volume inspect my-persistent-data --format="{{.Mountpoint}}"
+/var/lib/docker/volumes/my-persistent-data/_data
+[centos9@localhost random 19:59:33]$ docker volume inspect my-persistent-data --format="{{.Driver}}"
+local
+[centos9@localhost random 19:59:44]$ VOLUME_PATH=$(docker volume inspect my-persistent-data --format'{{.Mountpoint}}')
+unknown flag: --format{{.Mountpoint}}
+
+Usage:  docker volume inspect [OPTIONS] VOLUME [VOLUME...]
+
+Run 'docker volume inspect --help' for more information
+[centos9@localhost random 20:09:28]$ VOLUME_PATH=$(docker volume inspect my-persistent-data --format '{{.Mountpoint}}')
+[centos9@localhost random 20:09:56]$ echo "Volume is mounted at $VOLUME_PATH"
+Volume is mounted at /var/lib/docker/volumes/my-persistent-data/_data
+[centos9@localhost random 20:10:13]$ sudo ls -la $VOLUME_PATH
+[sudo] password for centos9: 
+total 8
+drwxr-xr-x. 2 root root 51 Sep 12 19:55 .
+drwx-----x. 3 root root 19 Sep 12 19:37 ..
+-rw-r--r--. 1 root root 38 Sep 12 19:55 index.html
+-rw-r--r--. 1 root root 80 Sep 12 19:41 persistent-file.txt
+[centos9@localhost random 20:10:31]$ sudo cat $VOLUME_PATH/persistent-file.txt
+This data will persist!
+Container ID: 8c4b0d76f3ef
+Fri Sep 12 14:41:38 UTC 2025
+[centos9@localhost random 20:10:58]$ docker volume prune
+WARNING! This will remove anonymous local volumes not used by at least one container.
+Are you sure you want to continue? [y/N] y
+Total reclaimed space: 0B
+[centos9@localhost random 20:11:17]$ docker volume rm app-logs
+app-logs
+[centos9@localhost random 20:11:30]$ docker ps -0a
+unknown shorthand flag: '0' in -0a
+
+Usage:  docker ps [OPTIONS]
+
+Run 'docker ps --help' for more information
+[centos9@localhost random 20:11:40]$ docker ps -a
+CONTAINER ID   IMAGE          COMMAND   CREATED          STATUS                      PORTS     NAMES
+2d773d1fa2a8   ubuntu:20.04   "bash"    27 minutes ago   Exited (0) 27 minutes ago             new-persistent-container
+[centos9@localhost random 20:11:43]$ docker volume rm app-config
+app-config
+[centos9@localhost random 20:12:12]$ docker volume rm database-data
+database-data
+[centos9@localhost random 20:12:27]$ docker run --rm -v my-persistent-data:/data -v $(pwd):/backup ubuntu:20.04 tar czf /backup/volume-backup.tar.gz -C /data .
+[centos9@localhost random 20:13:39]$ ls -la volume-backup.tar.gz 
+-rw-r--r--. 1 root root 289 Sep 12 20:13 volume-backup.tar.gz
+[centos9@localhost random 20:13:47]$ docker volume create restored-volume
+restored-volume
+[centos9@localhost random 20:14:03]$ docker run --rm -v restored-volume:/data -v $(pwd):/backup ubuntu:20.04 bash -c "cd /data && tar xzf /backup/volume-backup.tar.gz"
+[centos9@localhost random 20:15:15]$ docker run --rm -v restored-volume:/data ubuntu:20.04 bash -c "ls -la /data && cat /data/persistent-file.txt"
+total 8
+drwxr-xr-x. 2 root root 51 Sep 12 14:55 .
+drwxr-xr-x. 1 root root 18 Sep 12 15:16 ..
+-rw-r--r--. 1 root root 38 Sep 12 14:55 index.html
+-rw-r--r--. 1 root root 80 Sep 12 14:41 persistent-file.txt
+This data will persist!
+Container ID: 8c4b0d76f3ef
+Fri Sep 12 14:41:38 UTC 2025
+[centos9@localhost random 20:16:32]$ docker volume create mysql-data 
+mysql-data
+[centos9@localhost random 20:16:52]$ docker run -d --name mysql-db -e MYSQL_ROOT_PASSWORD=mypassword -e MYSQL_DATABASE=testdb -v mysql-data:/var/lib/mysql mysql:8.0
+Unable to find image 'mysql:8.0' locally
+8.0: Pulling from library/mysql
+500d7b2546c4: Pull complete 
+48934deb9770: Pull complete 
+021b6107b9d0: Pull complete 
+13ed16089ebc: Pull complete 
+e32dcaa70f77: Pull complete 
+72a465986d66: Pull complete 
+27fa9cc59961: Pull complete 
+8a27c0ce790f: Pull complete 
+390885da77e4: Pull complete 
+1ca2ca504238: Pull complete 
+d8f78235dcb8: Pull complete 
+Digest: sha256:d2fdd0af28933c6f28475ff3b7defdbc0e0475d9f7346b5115b8d3abf8848a1d
+Status: Downloaded newer image for mysql:8.0
+812cd7d99ae3b05caadbbe400839c502752f614dd9728ec594a2880c3394518d
+[centos9@localhost random 20:25:00]$ sleep 30
+[centos9@localhost random 20:25:34]$ docker exec -it mysql-db mysql -uroot -pmypassword testdb
+mysql: [Warning] Using a password on the command line interface can be insecure.
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 8
+Server version: 8.0.43 MySQL Community Server - GPL
+
+Copyright (c) 2000, 2025, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> CREATE TABLE users (
+    ->     id INT AUTO_INCREMENT PRIMARY KEY,
+    ->     name VARCHAR(100),
+    ->     email VARCHAR(100)
+    -> );
+Query OK, 0 rows affected (0.23 sec)
+
+mysql> 
+mysql> INSERT INTO users (name, email) VALUES 
+    -> ('John Doe', 'john@example.com'),
+    -> ('Jane Smith', 'jane@example.com');
+Query OK, 2 rows affected (0.02 sec)
+Records: 2  Duplicates: 0  Warnings: 0
+
+mysql> 
+mysql> SELECT * FROM users;
++----+------------+------------------+
+| id | name       | email            |
++----+------------+------------------+
+|  1 | John Doe   | john@example.com |
+|  2 | Jane Smith | jane@example.com |
++----+------------+------------------+
+2 rows in set (0.00 sec)
+
+mysql> exit
+Bye
+[centos9@localhost random 20:26:33]$ docker stop mysql-db
+mysql-db
+[centos9@localhost random 20:26:50]$ docker rm mysql-db
+mysql-db
+[centos9@localhost random 20:26:55]$ docker run -d --name mysql-db-new \
+  -e MYSQL_ROOT_PASSWORD=mypassword \
+  -e MYSQL_DATABASE=testdb \
+  -v mysql-data:/var/lib/mysql \
+  mysql:8.0
+7ca1999f26b36fe5438fd64062347759167a4f641425cf3f4681e6a7f0faec3d
+[centos9@localhost random 20:27:11]$ sleep 30
+[centos9@localhost random 20:27:45]$ docker exec -it mysql-db-new mysql -uroot -pmypassword testdb
+mysql: [Warning] Using a password on the command line interface can be insecure.
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 8
+Server version: 8.0.43 MySQL Community Server - GPL
+
+Copyright (c) 2000, 2025, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> SELECT * FROM users;
++----+------------+------------------+
+| id | name       | email            |
++----+------------+------------------+
+|  1 | John Doe   | john@example.com |
+|  2 | Jane Smith | jane@example.com |
++----+------------+------------------+
+2 rows in set (0.01 sec)
+
+mysql> exit
+Bye
+[centos9@localhost random 20:28:01]$ docker volume create app-logs-demo
+app-logs-demo
+[centos9@localhost random 20:28:13]$ docker run -d --name log-generator \
+  -v app-logs-demo:/var/log/app \
+  ubuntu:20.04 \
+  bash -c "while true; do echo \$(date): Log entry >> /var/log/app/application.log; sleep 5; done"
+e86695a4add2ab534122a6eb62eb1c14b7c92940df55cfa6d567984f97cf4642
+[centos9@localhost random 20:28:29]$ docker exec log-generator tail -f /var/log/app/application.log
+Fri Sep 12 15:28:29 UTC 2025: Log entry
+Fri Sep 12 15:28:34 UTC 2025: Log entry
+Fri Sep 12 15:28:39 UTC 2025: Log entry
+Fri Sep 12 15:28:44 UTC 2025: Log entry
+Fri Sep 12 15:28:49 UTC 2025: Log entry
+^C[centos9@localhost random 20:28:53]docker stop log-generatoror
+
+^C[centos9@localhost random 20:29:08]$ docker stop log-generator
+log-generator
+[centos9@localhost random 20:29:13]$ docker rm log-generator
+log-generator
+[centos9@localhost random 20:29:20]$ docker run -d --name log-generator-new \
+  -v app-logs-demo:/var/log/app \
+  ubuntu:20.04 \
+  bash -c "while true; do echo \$(date): New container log >> /var/log/app/application.log; sleep 5; done"
+71f7c0e28b414b8db4fbee55e0b1964fb51e26cbb04cdbc70ddb3a4792b75680
+[centos9@localhost random 20:29:32]$ docker exec log-generator-new cat /var/log/app/application.log
+Fri Sep 12 15:28:29 UTC 2025: Log entry
+Fri Sep 12 15:28:34 UTC 2025: Log entry
+Fri Sep 12 15:28:39 UTC 2025: Log entry
+Fri Sep 12 15:28:44 UTC 2025: Log entry
+Fri Sep 12 15:28:49 UTC 2025: Log entry
+Fri Sep 12 15:28:54 UTC 2025: Log entry
+Fri Sep 12 15:28:59 UTC 2025: Log entry
+Fri Sep 12 15:29:04 UTC 2025: Log entry
+Fri Sep 12 15:29:09 UTC 2025: Log entry
+Fri Sep 12 15:29:32 UTC 2025: New container log
+Fri Sep 12 15:29:37 UTC 2025: New container log
+Fri Sep 12 15:29:42 UTC 2025: New container log
+[centos9@localhost random 20:29:43]$ docker volume create app-config-demo
+app-config-demo
+[centos9@localhost random 20:30:02]$ docker run --rm -v app-config-demo:/config ubuntu:20.04 \
+  bash -c "echo 'server_port=8080' > /config/app.conf && echo 'debug_mode=true' >> /config/app.conf"
+[centos9@localhost random 20:30:11]$ docker run -d --name config-app \
+  -v app-config-demo:/etc/app \
+  ubuntu:20.04 \
+  bash -c "while true; do echo 'Reading config:'; cat /etc/app/app.conf; sleep 10; done"
+70095f13753f96b353ddfe70a624ffb7442e25642a4db2e1c1de1a9816c7347f
+[centos9@localhost random 20:30:23]$ docker logs config-app
+Reading config:
+server_port=8080
+debug_mode=true
+[centos9@localhost random 20:30:31]$ docker run --rm -v app-config-demo:/config ubuntu:20.04 \
+  bash -c "echo 'server_port=9090' > /config/app.conf && echo 'debug_mode=false' >> /config/app.conf"
+[centos9@localhost random 20:30:42]$ docker stop config-app
+config-app
+[centos9@localhost random 20:31:02]$ docker rm config-app
+config-app
+[centos9@localhost random 20:31:06]$ docker run -d --name config-app-new \
+  -v app-config-demo:/etc/app \
+  ubuntu:20.04 \
+  bash -c "while true; do echo 'Reading config:'; cat /etc/app/app.conf; sleep 10; done"
+6dcbc724dc3e41d5b78c319028908a893432bba39b1e32e5702f137d46e50ddd
+[centos9@localhost random 20:31:18]$ docker logs config-app-new
+Reading config:
+server_port=9090
+debug_mode=false
+[centos9@localhost random 20:31:27]$ docker stop $(docker ps -q) 2>/dev/null || true
+6dcbc724dc3e
+71f7c0e28b41
+7ca1999f26b3
+[centos9@localhost random 20:32:16]$ docker rm $(docker ps -aq) 2>/dev/null || true
+6dcbc724dc3e
+71f7c0e28b41
+7ca1999f26b3
+2d773d1fa2a8
+[centos9@localhost random 20:32:25]$ docker volume ls
+DRIVER    VOLUME NAME
+local     app-config-demo
+local     app-logs-demo
+local     my-persistent-data
+local     mysql-data
+local     persist
+local     restored-volume
+[centos9@localhost random 20:32:33]$ docker volume rm my-persistent-data mysql-data app-logs-demo app-config-demo restored-volume 2>/dev/null || true
+my-persistent-data
+mysql-data
+app-logs-demo
+app-config-demo
+restored-volume
+[centos9@localhost random 20:32:45]$ docker volume prune -f
+Total reclaimed space: 0B
+[centos9@localhost random 20:32:54]$ rm -f volume-backup.tar.gz
+[centos9@localhost random 20:33:03]$ 
+
