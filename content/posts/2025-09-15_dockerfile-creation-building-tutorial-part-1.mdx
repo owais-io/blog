@@ -1,0 +1,767 @@
+---
+title: "Dockerfile Mastery: Complete Guide to Building Docker Images - Part 1"
+description: "Master Dockerfile creation from scratch. Learn every instruction, best practices, and build optimization techniques with hands-on examples and real CLI outputs."
+date: "2025-09-15T00:00:00.000Z"
+tags: ["docker", "dockerfile", "container-building", "docker-build", "devops", "containerization"]
+published: true
+author: "Owais"
+category: "Docker"
+seo:
+  canonical: "https://owais.io/blog/dockerfile-creation-building-tutorial-part-1"
+  keywords: ["dockerfile tutorial", "docker build guide", "dockerfile instructions", "container image building", "docker best practices"]
+toc: true
+---
+
+The Dockerfile is the blueprint for creating Docker images. It's a text file containing a series of instructions that Docker uses to automatically build images. Understanding every aspect of Dockerfile creation is crucial for building efficient, secure, and maintainable containerized applications.
+
+<Callout type="info">
+🎯 **What You'll Master in Part 1**: This comprehensive tutorial covers:
+- Understanding Dockerfile fundamentals and syntax
+- Detailed explanation of every Dockerfile instruction
+- Step-by-step creation of a production-ready Dockerfile
+- Docker build process and optimization techniques
+- Layer caching strategies for faster builds
+- Real-world CLI examples with complete outputs
+- Best practices for image size optimization
+</Callout>
+
+<div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900 dark:to-indigo-900 p-6 rounded-lg my-6">
+
+### Prerequisites
+
+Before we begin, ensure you have:
+- Docker installed and running on your system
+- Basic understanding of command-line operations
+- A text editor (nano, vim, or VS Code)
+- Basic familiarity with file systems and permissions
+
+</div>
+
+## 🏗️ Setting Up Our Project Structure
+
+Let's start by creating a well-organized project that will demonstrate Dockerfile creation:
+
+```bash title="Create Project Directory"
+mkdir docker-python-app && cd docker-python-app
+```
+
+Output:
+```
+[centos9@localhost random 19:13:44]$ mkdir docker-python-app
+[centos9@localhost random 19:14:06]$ ls
+docker-python-app
+[centos9@localhost random 19:14:09]$ cd docker-python-app/
+```
+
+```bash title="Create Application Directory Structure"
+mkdir app
+```
+
+Output:
+```
+[centos9@localhost docker-python-app 19:14:13]$ mkdir app
+[centos9@localhost docker-python-app 19:14:22]$ ls -al
+total 0
+drwxr-xr-x. 3 centos9 centos9 17 Sep 13 19:14 .
+drwxr-xr-x. 3 centos9 centos9 31 Sep 13 19:14 ..
+drwxr-xr-x. 2 centos9 centos9  6 Sep 13 19:14 app
+```
+
+## 📝 Creating the Application Files
+
+First, let's create a simple Python web application and requirements file:
+
+```bash title="Navigate to App Directory"
+cd app
+```
+
+Our Python application creates a simple HTTP server that responds with JSON:
+
+```python title="app/app.py"
+#!/usr/bin/env python3
+
+from http.server import HTTPServer, BaseHTTPRequestHandler
+import json
+import os
+
+class SimpleHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header('Content-type', 'application/json')
+        self.end_headers()
+
+        response_data = {
+            "message": "Hello from Dockerized Python App!",
+            "status": "success",
+            "container_info": {
+                "hostname": os.environ.get('HOSTNAME', 'unknown'),
+                "python_version": "3.x"
+            }
+        }
+
+        self.wfile.write(json.dumps(response_data, indent=2).encode())
+
+def run_server():
+    port = int(os.environ.get('PORT', 8080))
+    server = HTTPServer(('0.0.0.0', port), SimpleHandler)
+    print(f"Starting server on port {port}...")
+    print(f"Access the application at http://localhost:{port}")
+    server.serve_forever()
+
+if __name__ == '__main__':
+    run_server()
+```
+
+**What this application does**: Creates an HTTP server that listens on port 8080 and responds with JSON containing application information and container details.
+
+```bash title="Create Requirements File"
+nano requirements.txt
+```
+
+```text title="app/requirements.txt"
+# No external dependencies required for this simple app
+# This file is included as a best practice for Python projects
+```
+
+Let's verify our file structure:
+
+```bash title="View Project Structure"
+cd .. && tree
+```
+
+Output:
+```
+[centos9@localhost docker-python-app 19:16:42]$ tree
+.
+└── app
+    ├── app.py
+    └── requirements.txt
+
+1 directory, 2 files
+```
+
+## 📋 Understanding Dockerfile Basics
+
+A Dockerfile is a text file that contains instructions for building a Docker image. Each instruction creates a new layer in the image, and Docker caches these layers to speed up subsequent builds.
+
+### Dockerfile Instruction Categories
+
+<table className="w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-3 text-left font-semibold">Category</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-3 text-left font-semibold">Instructions</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-3 text-left font-semibold">Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Base Image</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>FROM</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Define the starting point for your image</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Metadata</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>LABEL</code>, <code>MAINTAINER</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Add information about the image</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Environment</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>ENV</code>, <code>WORKDIR</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Set environment variables and working directory</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>File Operations</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>COPY</code>, <code>ADD</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Add files from host to image</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Execution</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>RUN</code>, <code>CMD</code>, <code>ENTRYPOINT</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Execute commands and define runtime behavior</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Network</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>EXPOSE</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Declare ports the container will use</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Security</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>USER</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Set the user for running commands</td>
+    </tr>
+  </tbody>
+</table>
+
+## 🔨 Creating Your First Dockerfile
+
+Let's create a basic Dockerfile and then progressively enhance it:
+
+```bash title="Create Basic Dockerfile"
+nano Dockerfile
+```
+
+### Basic Dockerfile - Step by Step
+
+```dockerfile title="Dockerfile (Basic Version)" showLineNumbers
+# Use official Python runtime as base image
+FROM python:3.11-slim
+
+# Set working directory inside the container
+WORKDIR /usr/src/app
+
+# Copy application files
+COPY app/ .
+
+# Expose the port the app runs on
+EXPOSE 8080
+
+# Define the command to run the application
+CMD ["python", "app.py"]
+```
+
+#### Line-by-Line Breakdown:
+
+**Line 1: `FROM python:3.11-slim`**
+- **Purpose**: Specifies the base image for our Docker image
+- **What it does**: Downloads and uses Python 3.11 with a minimal Ubuntu-based system
+- **Why `slim`**: Reduces image size by excluding unnecessary packages (135MB vs 1GB+ for full image)
+- **Alternative options**: `python:3.11-alpine` (even smaller), `python:3.11` (full version)
+
+**Line 4: `WORKDIR /usr/src/app`**
+- **Purpose**: Sets the working directory inside the container
+- **What it does**: Creates the directory if it doesn't exist and sets it as the current directory
+- **Why this path**: Conventional location for application code in containers
+- **Effect**: All subsequent commands (COPY, RUN, CMD) will execute from this directory
+
+**Line 7: `COPY app/ .`**
+- **Purpose**: Copies files from host system to container image
+- **Syntax**: `COPY <source> <destination>`
+- **What it does**: Copies all contents of the `app/` directory to the current working directory (.)
+- **When it executes**: During image build process, not when container runs
+
+**Line 10: `EXPOSE 8080`**
+- **Purpose**: Documents which port the container will listen on
+- **What it does**: Informs Docker that the container will use port 8080
+- **Important**: This is documentation only - it doesn't actually publish the port
+- **Publishing**: Use `-p 8080:8080` when running the container to map ports
+
+**Line 13: `CMD ["python", "app.py"]`**
+- **Purpose**: Defines the default command to run when the container starts
+- **Syntax**: JSON array format (exec form) - preferred over shell form
+- **What it does**: Runs `python app.py` as the main process
+- **Difference from RUN**: CMD runs when container starts, RUN runs during image build
+
+### Building the Basic Image
+
+Let's build our basic Dockerfile:
+
+```bash title="Build Basic Docker Image"
+docker build -t myimage .
+```
+
+Output:
+```
+[centos9@localhost docker-python-app 19:21:42]$ docker build -t myimage .
+[+] Building 29.8s (11/11) FINISHED                                                                                                                                                                                            docker:default
+ => [internal] load build definition from Dockerfile                                                                                                                                                                                     0.1s
+ => => transferring dockerfile: 431B                                                                                                                                                                                                     0.0s
+ => [internal] load metadata for docker.io/library/python:3.11-slim                                                                                                                                                                      3.5s
+ => [internal] load .dockerignore                                                                                                                                                                                                        0.1s
+ => => transferring context: 2B                                                                                                                                                                                                          0.0s
+ => [1/6] FROM docker.io/library/python:3.11-slim@sha256:a0939570b38cddeb861b8e75d20b1c8218b21562b18f301171904b544e8cf228                                                                                                               21.2s
+ => => resolve docker.io/library/python:3.11-slim@sha256:a0939570b38cddeb861b8e75d20b1c8218b21562b18f301171904b544e8cf228                                                                                                                0.1s
+ => => sha256:a0939570b38cddeb861b8e75d20b1c8218b21562b18f301171904b544e8cf228 10.37kB / 10.37kB                                                                                                                                         0.0s
+ => => sha256:316d89b74c4d467565864be703299878ca7a97893ed44ae45f6acba5af09d154 1.75kB / 1.75kB                                                                                                                                           0.0s
+ => => sha256:c4640ec0986fe463924ebb5351694191eefd91ce3cfea2137e0ed81b6cb88194 5.38kB / 5.38kB                                                                                                                                           0.0s
+ => => sha256:ce1261c6d567efa8e3b457673eeeb474a0a8066df6bb95ca9a6a94a31e219dd3 29.77MB / 29.77MB                                                                                                                                        14.3s
+ => => sha256:11b89692b2085631f6e2407edd8545b033c8e6945837103875d6db484e945b6f 1.29MB / 1.29MB                                                                                                                                           1.5s
+ => => sha256:764e05fe66b6768e40fa2a21d5108eceb8f3f8f2c32463d72c109c54dde0d5c1 14.64MB / 14.64MB                                                                                                                                         9.7s
+ => => sha256:a4aefcec16c5bdc01af2ad1c5341b420d4179f3b825c0dc866367fb43f0d50ac 250B / 250B                                                                                                                                               2.3s
+ => => extracting sha256:ce1261c6d567efa8e3b457673eeeb474a0a8066df6bb95ca9a6a94a31e219dd3                                                                                                                                                3.5s
+ => => extracting sha256:11b89692b2085631f6e2407edd8545b033c8e6945837103875d6db484e945b6f                                                                                                                                                0.4s
+ => => extracting sha256:764e05fe66b6768e40fa2a21d5108eceb8f3f8f2c32463d72c109c54dde0d5c1                                                                                                                                                2.4s
+ => => extracting sha256:a4aefcec16c5bdc01af2ad1c5341b420d4179f3b825c0dc866367fb43f0d50ac                                                                                                                                                0.0s
+ => [internal] load build context                                                                                                                                                                                                        0.1s
+ => => transferring context: 1.38kB                                                                                                                                                                                                      0.0s
+ => [2/6] WORKDIR /usr/src/app                                                                                                                                                                                                           0.4s
+ => [3/6] COPY app/ .                                                                                                                                                                                                                    0.1s
+ => [4/6] RUN chmod +x app.py                                                                                                                                                                                                            0.4s
+ => exporting to image                                                                                                                                                                                                                   0.4s
+ => => exporting layers                                                                                                                                                                                                                  0.4s
+ => => writing image sha256:9a1a399e0a391ea57b1af0096a40495827cf0db2c8326f2fca39fdaddc9fa783                                                                                                                                             0.0s
+ => => naming to docker.io/library/myimage                                                                                                                                                                                               0.0s
+```
+
+#### Understanding the Build Output:
+
+- **Layer Creation**: Each instruction creates a new layer
+- **Base Image Download**: First time pulls the python:3.11-slim image (29.77MB + dependencies)
+- **Context Transfer**: Uploads our application files to Docker daemon
+- **Image Creation**: Final image is created and tagged as 'myimage'
+
+### Viewing the Created Image
+
+```bash title="List Docker Images"
+docker images
+```
+
+Output:
+```
+[centos9@localhost docker-python-app 19:23:41]$ docker images
+REPOSITORY   TAG       IMAGE ID       CREATED          SIZE
+myimage      latest    9a1a399e0a39   18 seconds ago   135MB
+mysql        8.0       6f19538dd7d2   4 days ago       780MB
+ubuntu       latest    802541663949   3 weeks ago      78.1MB
+nginx        alpine    4a86014ec699   4 weeks ago      52.5MB
+alpine       latest    9234e8fb04c4   2 months ago     8.31MB
+ubuntu       20.04     b7bab04fd9aa   5 months ago     72.8MB
+```
+
+**What we see**: Our image is 135MB, built from the python:3.11-slim base image.
+
+### Testing the Basic Image
+
+```bash title="Run the Container"
+docker run -d -p 8080:8080 --name my-python-app myimage
+```
+
+Output:
+```
+[centos9@localhost docker-python-app 19:25:19]$ docker run -d -p 8080:8080 --name my-python-app myimage
+8f0e7f7e79492019dcd4f04548e74ce1f756d43a6af0bb473f17fc30e68b4b31
+```
+
+```bash title="Test the Application"
+curl http://localhost:8080
+```
+
+Output:
+```
+[centos9@localhost docker-python-app 19:25:55]$ curl http://localhost:8080
+{
+  "message": "Hello from Dockerized Python App!",
+  "status": "success",
+  "container_info": {
+    "hostname": "8f0e7f7e7949",
+    "python_version": "3.x"
+  }
+}
+```
+
+<Callout type="success">
+✅ **Success!** Our basic Dockerfile works, but it's missing many production best practices. Let's enhance it.
+</Callout>
+
+## 🚀 Enhanced Dockerfile with Best Practices
+
+Now let's create a production-ready Dockerfile with all the best practices:
+
+```bash title="Create Enhanced Dockerfile"
+cp Dockerfile Dockerfile.backup
+nano Dockerfile
+```
+
+### Production-Ready Dockerfile
+
+```dockerfile title="Dockerfile (Enhanced Version)" showLineNumbers
+# Use official Python runtime as base image
+FROM python:3.11-slim
+
+# Set metadata for the image
+LABEL maintainer="student@alnafi.com"
+LABEL description="Enhanced Python web application with environment variables"
+LABEL version="2.0"
+
+# Set environment variables
+ENV APP_NAME="Dockerized Python Web App"
+ENV APP_VERSION="2.0.0"
+ENV ENVIRONMENT="production"
+ENV DEBUG="false"
+ENV PORT="8080"
+ENV PYTHONUNBUFFERED="1"
+
+# Set working directory inside the container
+WORKDIR /usr/src/app
+
+# Copy requirements file first (for better layer caching)
+COPY app/requirements.txt ./
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY app/ .
+
+# Make the Python script executable
+RUN chmod +x app.py
+
+# Create a non-root user for security
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+RUN chown -R appuser:appuser /usr/src/app
+USER appuser
+
+# Expose the port the app runs on
+EXPOSE $PORT
+
+# Add health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:$PORT/ || exit 1
+
+# Define the command to run the application
+CMD ["python", "app.py"]
+```
+
+### Detailed Line-by-Line Analysis
+
+#### **Lines 4-6: LABEL Instructions**
+```dockerfile
+LABEL maintainer="student@alnafi.com"
+LABEL description="Enhanced Python web application with environment variables"
+LABEL version="2.0"
+```
+
+**Purpose**: Adds metadata to the image
+- **maintainer**: Contact information for the image maintainer
+- **description**: Human-readable description of the image's purpose
+- **version**: Version information for tracking image releases
+- **Best Practice**: Use labels for documentation and automation
+- **Viewing Labels**: Use `docker inspect <image>` to see all labels
+
+#### **Lines 9-15: ENV Instructions**
+```dockerfile
+ENV APP_NAME="Dockerized Python Web App"
+ENV APP_VERSION="2.0.0"
+ENV ENVIRONMENT="production"
+ENV DEBUG="false"
+ENV PORT="8080"
+ENV PYTHONUNBUFFERED="1"
+```
+
+**Purpose**: Sets environment variables that will be available during build and runtime
+- **APP_NAME, APP_VERSION**: Application metadata accessible to the app
+- **ENVIRONMENT**: Defines runtime environment (production/development/staging)
+- **DEBUG**: Controls debug mode behavior
+- **PORT**: Defines which port the application will use
+- **PYTHONUNBUFFERED**: Ensures Python output appears in Docker logs immediately
+- **Best Practice**: Use ENV for configuration that might change between environments
+
+#### **Lines 20-21: Optimized COPY for Layer Caching**
+```dockerfile
+COPY app/requirements.txt ./
+```
+
+**Purpose**: Copy requirements file separately before copying application code
+- **Layer Caching**: If application code changes but requirements don't, this layer is reused
+- **Build Optimization**: Saves time on subsequent builds
+- **Best Practice**: Copy dependency files first, install dependencies, then copy application code
+
+#### **Lines 23-24: RUN Instruction for Dependencies**
+```dockerfile
+RUN pip install --no-cache-dir -r requirements.txt
+```
+
+**Purpose**: Installs Python dependencies
+- **--no-cache-dir**: Prevents pip from caching downloaded packages, reducing image size
+- **Layer Creation**: This creates a new layer with installed dependencies
+- **When it runs**: During image build process, not container runtime
+
+#### **Lines 26-27: Application Code Copy**
+```dockerfile
+COPY app/ .
+```
+
+**Purpose**: Copies application code after dependencies are installed
+- **Layer Position**: Placed after dependency installation for optimal caching
+- **Rebuild Trigger**: Only this layer and subsequent layers rebuild when code changes
+
+#### **Lines 29-30: File Permissions**
+```dockerfile
+RUN chmod +x app.py
+```
+
+**Purpose**: Makes the Python script executable
+- **Security**: Ensures the script has correct execution permissions
+- **Alternative**: Could use `python app.py` in CMD instead
+
+#### **Lines 32-35: Security - Non-Root User**
+```dockerfile
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+RUN chown -R appuser:appuser /usr/src/app
+USER appuser
+```
+
+**Purpose**: Creates and switches to a non-root user for security
+
+**Line 32**: `groupadd -r appuser && useradd -r -g appuser appuser`
+- **groupadd -r**: Creates a system group named 'appuser'
+- **useradd -r**: Creates a system user with no login shell
+- **-g appuser**: Assigns user to the 'appuser' group
+- **Security Benefit**: Prevents privilege escalation attacks
+
+**Line 33**: `chown -R appuser:appuser /usr/src/app`
+- **chown**: Changes file ownership
+- **-R**: Recursive - applies to all files and subdirectories
+- **Purpose**: Gives the appuser ownership of application files
+
+**Line 34**: `USER appuser`
+- **Purpose**: Switches to the non-root user for subsequent instructions
+- **Effect**: All following RUN, CMD, and ENTRYPOINT instructions run as appuser
+
+#### **Line 37: EXPOSE with Variable**
+```dockerfile
+EXPOSE $PORT
+```
+
+**Purpose**: Documents the port using the environment variable
+- **Dynamic Port**: Uses the PORT environment variable set earlier
+- **Flexibility**: Port can be changed by modifying the ENV instruction
+
+#### **Lines 39-41: HEALTHCHECK**
+```dockerfile
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:$PORT/ || exit 1
+```
+
+**Purpose**: Defines how Docker should test if the container is healthy
+
+**Parameters Explained**:
+- **--interval=30s**: Check health every 30 seconds
+- **--timeout=3s**: Each check times out after 3 seconds
+- **--start-period=5s**: Wait 5 seconds before first health check
+- **--retries=3**: Mark unhealthy after 3 consecutive failures
+
+**Health Command**: `curl -f http://localhost:$PORT/ || exit 1`
+- **curl -f**: HTTP request with fail-fast option
+- **|| exit 1**: Exit with error code 1 if curl fails
+- **Result**: Container status shows as "healthy" or "unhealthy"
+
+### Building the Enhanced Image
+
+```bash title="Build Enhanced Docker Image"
+docker build -t myimage:v2 .
+```
+
+Output:
+```
+[centos9@localhost docker-python-app 19:43:12]$ docker build -t myimage:v2 .
+[+] Building 7.3s (13/13) FINISHED                                                                                                                                                                                             docker:default
+ => [internal] load build definition from Dockerfile                                                                                                                                                                                     0.0s
+ => => transferring dockerfile: 1.25kB                                                                                                                                                                                                   0.0s
+ => [internal] load metadata for docker.io/library/python:3.11-slim                                                                                                                                                                      1.8s
+ => [internal] load .dockerignore                                                                                                                                                                                                        0.0s
+ => => transferring context: 2B                                                                                                                                                                                                          0.0s
+ => [1/8] FROM docker.io/library/python:3.11-slim@sha256:a0939570b38cddeb861b8e75d20b1c8218b21562b18f301171904b544e8cf228                                                                                                                0.0s
+ => [internal] load build context                                                                                                                                                                                                        0.0s
+ => => transferring context: 3.19kB                                                                                                                                                                                                      0.0s
+ => CACHED [2/8] WORKDIR /usr/src/app                                                                                                                                                                                                    0.0s
+ => CACHED [3/8] COPY app/requirements.txt ./                                                                                                                                                                                            0.0s
+ => [4/8] RUN pip install --no-cache-dir -r requirements.txt                                                                                                                                                                             3.3s
+ => [5/8] COPY app/ .                                                                                                                                                                                                                    0.1s
+ => [6/8] RUN chmod +x app.py                                                                                                                                                                                                            0.4s
+ => [7/8] RUN groupadd -r appuser && useradd -r -g appuser appuser                                                                                                                                                                       0.5s
+ => [8/8] RUN chown -R appuser:appuser /usr/src/app                                                                                                                                                                                      0.5s
+ => exporting to image                                                                                                                                                                                                                   0.4s
+ => => exporting layers                                                                                                                                                                                                                  0.3s
+ => => writing image sha256:6834d3b63b615dde0bf4956d046244d080353e84656a9922566377274b8f857a                                                                                                                                             0.0s
+ => => naming to docker.io/library/myimage:v2                                                                                                                                                                                            0.0s
+```
+
+#### Build Output Analysis:
+
+- **CACHED layers**: Docker reused layers from previous build
+- **Layer optimization**: Only layers after code change were rebuilt
+- **Build time**: Significantly faster due to layer caching (7.3s vs 29.8s)
+
+## 🔍 Docker Image Analysis and Inspection
+
+### Examining Image Layers
+
+```bash title="View Image History"
+docker history myimage:v2
+```
+
+Output:
+```
+[centos9@localhost docker-python-app 19:24:43]$ docker history myimage
+IMAGE          CREATED              CREATED BY                                      SIZE      COMMENT
+9a1a399e0a39   About a minute ago   CMD ["python" "app.py"]                         0B        buildkit.dockerfile.v0
+<missing>      About a minute ago   EXPOSE map[8080/tcp:{}]                         0B        buildkit.dockerfile.v0
+<missing>      About a minute ago   RUN /bin/sh -c chmod +x app.py # buildkit       970B      buildkit.dockerfile.v0
+<missing>      About a minute ago   COPY app/ . # buildkit                          1.09kB    buildkit.dockerfile.v0
+<missing>      About a minute ago   RUN /bin/sh -c pip install --no-cache-dir -r…   10.7MB    buildkit.dockerfile.v0
+<missing>      About a minute ago   COPY app/requirements.txt ./ # buildkit         119B      buildkit.dockerfile.v0
+<missing>      About a minute ago   WORKDIR /usr/src/app                            0B        buildkit.dockerfile.v0
+<missing>      About a minute ago   LABEL version=1.0                               0B        buildkit.dockerfile.v0
+<missing>      About a minute ago   LABEL description=Simple Python web applicat…   0B        buildkit.dockerfile.v0
+<missing>      About a minute ago   LABEL maintainer=student@alnafi.com             0B        buildkit.dockerfile.v0
+```
+
+#### Layer Size Analysis:
+
+<table className="w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-3 text-left font-semibold">Layer Type</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-3 text-left font-semibold">Size Impact</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-3 text-left font-semibold">Explanation</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Dependency Installation</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">10.7MB</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">pip install creates the largest layer</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Application Code</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">1.09kB</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Our Python application files</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>File Permissions</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">970B</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">chmod creates a small metadata layer</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Requirements File</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">119B</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Small text file</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Metadata Layers</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">0B</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">LABEL, WORKDIR, EXPOSE don't add file content</td>
+    </tr>
+  </tbody>
+</table>
+
+### Detailed Image Inspection
+
+```bash title="Inspect Image Metadata"
+docker inspect myimage:v2
+```
+
+Key sections from the inspection output:
+```json
+[centos9@localhost docker-python-app 19:24:34]$ docker inspect myimage
+[
+    {
+        "Id": "sha256:9a1a399e0a391ea57b1af0096a40495827cf0db2c8326f2fca39fdaddc9fa783",
+        "RepoTags": [
+            "myimage:latest"
+        ],
+        "Created": "2025-09-13T19:23:23.498111638+05:00",
+        "Architecture": "amd64",
+        "Os": "linux",
+        "Size": 135421781,
+        "Config": {
+            "ExposedPorts": {
+                "8080/tcp": {}
+            },
+            "Labels": {
+                "description": "Enhanced Python web application with environment variables",
+                "maintainer": "student@alnafi.com",
+                "version": "2.0"
+            },
+            "Env": [
+                "PATH=/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+                "LANG=C.UTF-8",
+                "APP_NAME=Dockerized Python Web App",
+                "APP_VERSION=2.0.0",
+                "ENVIRONMENT=production",
+                "DEBUG=false",
+                "PORT=8080",
+                "PYTHONUNBUFFERED=1"
+            ],
+            "WorkingDir": "/usr/src/app"
+        }
+    }
+]
+```
+
+#### Key Information from Inspection:
+
+- **Size**: 135,421,781 bytes (~135MB)
+- **Labels**: Our custom metadata is stored
+- **Environment Variables**: All ENV instructions are preserved
+- **ExposedPorts**: Port 8080 is documented
+- **WorkingDir**: Set to /usr/src/app
+
+## 🎯 Dockerfile Optimization Techniques
+
+### Layer Caching Strategy
+
+<table className="w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-3 text-left font-semibold">Optimization Technique</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-3 text-left font-semibold">Implementation</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-3 text-left font-semibold">Benefit</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Requirements First</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Copy requirements.txt before app code</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Reuse dependency layer when only code changes</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Minimize Layers</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Combine RUN commands with &&</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Reduce image size and complexity</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Clean Package Cache</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Use --no-cache-dir with pip</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Smaller image size</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Slim Base Images</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Use python:3.11-slim instead of full</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Significantly smaller base image</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>User Creation Optimization</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Combine user/group creation in one RUN</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Fewer layers, better caching</td>
+    </tr>
+  </tbody>
+</table>
+
+## 📚 Part 1 Summary and Key Takeaways
+
+<div className="bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-900 dark:to-blue-900 p-6 rounded-lg my-8">
+
+### ✅ Dockerfile Mastery Achieved
+
+1. **Dockerfile Structure**: Understanding every instruction type and when to use them
+2. **Layer Optimization**: Implementing caching strategies for faster builds
+3. **Security Best Practices**: Non-root users, proper permissions, and health checks
+4. **Production Readiness**: Metadata, environment variables, and robust configuration
+5. **Build Process**: Complete understanding of how Docker creates images layer by layer
+6. **Image Analysis**: Using inspection tools to understand image composition and optimization opportunities
+
+</div>
+
+## 🚀 Coming Up in Part 2
+
+In **Part 2**, we'll dive deeper into advanced Dockerfile techniques:
+
+- **Multi-stage builds** for optimized production images
+- **Advanced RUN instruction techniques** and command chaining
+- **ENTRYPOINT vs CMD** detailed comparison and use cases
+- **Volume and networking** configuration in Dockerfiles
+- **Build arguments and dynamic configuration**
+- **Security scanning and vulnerability management**
+- **Performance optimization** and troubleshooting techniques
+
+<Callout type="success">
+🎉 **Congratulations!** You now have a solid foundation in Dockerfile creation and can build production-ready Docker images with confidence.
+
+**Ready for advanced techniques?** Part 2 will teach you professional-level Dockerfile patterns used in enterprise environments.
+</Callout>
+
+---
+
+*Continue to Part 2 to master advanced Dockerfile techniques that will make your containers production-ready and highly optimized!*

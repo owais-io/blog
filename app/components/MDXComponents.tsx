@@ -2,6 +2,18 @@ import Image from 'next/image'
 import Link from 'next/link'
 import CodeBlock from './CodeBlock'
 
+// Utility function to generate heading IDs
+function generateHeadingId(text: string): string {
+  if (!text) return ''
+
+  return text
+    .toLowerCase()
+    .replace(/[^\w\s\-]/g, '') // Remove special chars except word chars, spaces, hyphens
+    .replace(/\s+/g, '-')      // Replace spaces with hyphens
+    .replace(/-+/g, '-')       // Replace multiple hyphens with single
+    .replace(/^-|-$/g, '')     // Remove leading/trailing hyphens
+}
+
 export const mdxComponents = {
   // Custom components
   Image: (props: any) => (
@@ -17,22 +29,66 @@ export const mdxComponents = {
     />
   ),
   
-  // Override default HTML elements
-  h1: (props: any) => (
-    <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6 mt-8 first:mt-0" {...props} />
-  ),
-  
-  h2: (props: any) => (
-    <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4 mt-8" {...props} />
-  ),
-  
-  h3: (props: any) => (
-    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6" {...props} />
-  ),
-  
-  h4: (props: any) => (
-    <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 mt-4" {...props} />
-  ),
+  // Override default HTML elements with automatic ID generation
+  h1: (props: any) => {
+    const text = typeof props.children === 'string' ? props.children : ''
+    const id = props.id || generateHeadingId(text)
+
+    return (
+      <h1
+        id={id}
+        className="text-3xl font-bold text-gray-900 dark:text-white mb-6 mt-8 first:mt-0 scroll-mt-24"
+        {...props}
+      >
+        {props.children}
+      </h1>
+    )
+  },
+
+  h2: (props: any) => {
+    const text = typeof props.children === 'string' ? props.children : ''
+    const id = props.id || generateHeadingId(text)
+
+    return (
+      <h2
+        id={id}
+        className="text-2xl font-semibold text-gray-900 dark:text-white mb-4 mt-8 scroll-mt-24"
+        {...props}
+      >
+        {props.children}
+      </h2>
+    )
+  },
+
+  h3: (props: any) => {
+    const text = typeof props.children === 'string' ? props.children : ''
+    const id = props.id || generateHeadingId(text)
+
+    return (
+      <h3
+        id={id}
+        className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6 scroll-mt-24"
+        {...props}
+      >
+        {props.children}
+      </h3>
+    )
+  },
+
+  h4: (props: any) => {
+    const text = typeof props.children === 'string' ? props.children : ''
+    const id = props.id || generateHeadingId(text)
+
+    return (
+      <h4
+        id={id}
+        className="text-lg font-semibold text-gray-900 dark:text-white mb-2 mt-4 scroll-mt-24"
+        {...props}
+      >
+        {props.children}
+      </h4>
+    )
+  },
   
   p: (props: any) => (
     <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4" {...props} />
@@ -79,16 +135,8 @@ export const mdxComponents = {
   ),
   
   code: (props: any) => {
-    // Check if it's inline code or code block
-    if (typeof props.children === 'string' && !props.children.includes('\n')) {
-      return (
-        <code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm font-mono text-gray-800 dark:text-gray-200" {...props} />
-      )
-    }
-    
-    return (
-      <code className="font-mono" {...props} />
-    )
+    // For inline code, let CSS handle styling to avoid conflicts
+    return <code {...props} />
   },
   
   pre: (props: any) => (

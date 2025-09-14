@@ -3,6 +3,7 @@ import path from 'path'
 import matter from 'gray-matter'
 import readingTime from 'reading-time'
 import { getPostDate } from './dateUtils'
+import { extractTableOfContents, addHeadingIds, type TOCData } from './toc'
 
 export interface BlogPost {
   slug: string
@@ -14,6 +15,8 @@ export interface BlogPost {
   content: string
   readingTime: string
   published: boolean
+  toc: TOCData
+  tocEnabled: boolean
 }
 
 export interface BlogPostMeta {
@@ -25,6 +28,7 @@ export interface BlogPostMeta {
   category: string
   readingTime: string
   published: boolean
+  tocEnabled: boolean
 }
 
 const postsDirectory = path.join(process.cwd(), 'content/posts')
@@ -47,6 +51,13 @@ export function getAllPosts(): BlogPost[] {
       // Get date from frontmatter or file timestamp
       const postDate = getPostDate(data.date, fullPath)
 
+      // Extract table of contents
+      const tocData = extractTableOfContents(content)
+      const tocEnabled = data.toc === true || (data.toc !== false && tocData.headings.length >= 3)
+
+      // Add heading IDs to content for anchor links
+      const processedContent = tocEnabled ? addHeadingIds(content) : content
+
       return {
         slug,
         title: data.title || 'Untitled',
@@ -54,9 +65,11 @@ export function getAllPosts(): BlogPost[] {
         date: postDate,
         tags: data.tags || [],
         category: data.category || '',
-        content,
+        content: processedContent,
         readingTime: readingTime(content).text,
         published: data.published !== false,
+        toc: tocData,
+        tocEnabled,
       }
     })
 
@@ -84,6 +97,13 @@ export function getPostBySlug(slug: string): BlogPost | null {
     // Get date from frontmatter or file timestamp
     const postDate = getPostDate(data.date, fullPath)
 
+    // Extract table of contents
+    const tocData = extractTableOfContents(content)
+    const tocEnabled = data.toc === true || (data.toc !== false && tocData.headings.length >= 3)
+
+    // Add heading IDs to content for anchor links
+    const processedContent = tocEnabled ? addHeadingIds(content) : content
+
     return {
       slug,
       title: data.title || 'Untitled',
@@ -91,9 +111,11 @@ export function getPostBySlug(slug: string): BlogPost | null {
       date: postDate,
       tags: data.tags || [],
       category: data.category || '',
-      content,
+      content: processedContent,
       readingTime: readingTime(content).text,
       published: data.published !== false,
+      toc: tocData,
+      tocEnabled,
     }
   } catch (error) {
     console.error(`Error reading post ${slug}:`, error)
@@ -167,6 +189,7 @@ export function getPostsMeta(page = 1, limit = 10, tag?: string, category?: stri
     category: post.category,
     readingTime: post.readingTime,
     published: post.published,
+    tocEnabled: post.tocEnabled,
   }))
   
   return {
@@ -274,6 +297,7 @@ export function getPostsMetaAdvanced(
     category: post.category,
     readingTime: post.readingTime,
     published: post.published,
+    tocEnabled: post.tocEnabled,
   }))
   
   return {
@@ -370,6 +394,7 @@ export function getRelatedPosts(currentSlug: string, limit = 4): BlogPostMeta[] 
       category: item.post.category,
       readingTime: item.post.readingTime,
       published: item.post.published,
+      tocEnabled: item.post.tocEnabled,
     }))
     relatedPosts = relatedPosts.concat(toAdd)
   }
