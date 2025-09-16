@@ -29,7 +29,7 @@ export default function Header() {
     { href: '/', label: 'Home' },
     { href: '/tags', label: 'Tags' },
     { href: '/about', label: 'About' },
-    { href: '/projects', label: 'Projects' },
+    // { href: '/projects', label: 'Projects' },
   ]
 
   return (
@@ -70,7 +70,7 @@ export default function Header() {
                   )}
                 </Link>
               ))}
-              <a
+              {/* <a
                 href="/resume.pdf"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -80,7 +80,7 @@ export default function Header() {
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                 </svg>
-              </a>
+              </a> */}
             </div>
             <div className="ml-4 pl-4 border-l border-gray-200 dark:border-gray-700">
               <ThemeToggle />
@@ -137,7 +137,7 @@ export default function Header() {
                 {item.label}
               </Link>
             ))}
-            <a
+            {/* <a
               href="/resume.pdf"
               target="_blank"
               rel="noopener noreferrer"
@@ -145,7 +145,7 @@ export default function Header() {
               onClick={() => setIsMenuOpen(false)}
             >
               Resume ↗
-            </a>
+            </a> */}
           </div>
         </div>
       </nav>

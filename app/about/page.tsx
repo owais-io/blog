@@ -15,7 +15,7 @@ export default function AboutPage() {
           <div className="text-center mb-8">
             <div className="mx-auto mb-6">
               <Image
-                src="/profile.jpg"
+                src="/profile.png"
                 alt="Owais"
                 width={120}
                 height={120}
@@ -36,42 +36,48 @@ export default function AboutPage() {
             <div className="grid gap-8 md:gap-12">
               <section>
                 <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">Who I Am</h2>
+                <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+                  I'm an AIOps Engineer and DevSecOps Engineer with a passion for infusing AI into systems,
+                  architecture, cloud deployments, and security to create intelligent automation. What I consider
+                  an AIOps engineer is a person of systems, architecture, cloud, deployments, security and then
+                  infuse AI into all of it to automate it. The term is still evolving, and while people may
+                  disagree with my interpretation, I believe this is where the field is heading.
+                </p>
                 <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                  I'm a passionate software developer with a love for creating meaningful digital experiences. 
-                  My journey in technology has taken me through various domains, from web development to 
-                  system architecture, always with a focus on building solutions that make a difference.
+                  I haven't been a tech person from the beginning. I was a well-versed Financial Accountant who
+                  started transitioning to tech in 2020 when I first read about Artificial Intelligence in the
+                  Daily Dawn Newspaper in Karachi. That article triggered extensive research and led me to
+                  purchase my first Python course on Udemy. Now in 2025, I'm a qualified AIOps Engineer holding
+                  a UK Eduqual Level-6 diploma (equivalent to BSc Hons) and currently seeking admission for MSc
+                  in Robotics to fully leverage AI and automation.
                 </p>
               </section>
 
               <section>
                 <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">What I Do</h2>
                 <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
-                  Currently, I work as a full-stack developer, crafting applications with modern technologies 
-                  like React, Next.js, Node.js, and various cloud platforms. I'm particularly interested in:
+                  As an AIOps and DevSecOps Engineer, I work with technologies that span the entire spectrum
+                  of modern infrastructure and automation. I'm a daring person (which some might consider
+                  stupidity), and this daring helps me explore new pathways and push boundaries. My expertise includes:
                 </p>
                 <ul className="list-disc list-inside space-y-2 text-gray-700 dark:text-gray-300 ml-4">
-                  <li>Modern web development and user experience design</li>
-                  <li>Cloud architecture and scalable system design</li>
-                  <li>Open source contributions and community building</li>
-                  <li>Continuous learning and sharing knowledge</li>
+                  <li>Python programming and Mathematics/Algebra for AI implementations</li>
+                  <li>Linux systems administration and Bash scripting</li>
+                  <li>Cloud platforms (AWS, Azure) and containerization with Docker</li>
+                  <li>AI-driven automation and intelligent monitoring systems</li>
+                  <li>Security integration throughout the DevOps pipeline</li>
+                  <li>Systems architecture and scalable infrastructure design</li>
                 </ul>
               </section>
 
               <section>
                 <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">Why I Write</h2>
                 <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                  This blog serves as my digital notebook where I document my learning journey, share 
-                  insights from projects I've worked on, and explore new technologies. Writing helps me 
-                  organize my thoughts and hopefully provides value to others facing similar challenges.
-                </p>
-              </section>
-
-              <section>
-                <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">Beyond Code</h2>
-                <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                  When I'm not coding, you'll find me reading about emerging technologies, contributing to 
-                  open source projects, or exploring new places. I believe in maintaining a healthy 
-                  work-life balance and am always curious about how technology can improve our daily lives.
+                  This blog serves as my platform to share daily tutorials about AI, Cloud, Operating Systems,
+                  and related technologies. I document my learning journey, share insights from real-world
+                  implementations, and explore the intersection of AI with infrastructure automation. Writing
+                  helps me organize my thoughts and hopefully provides value to others navigating the evolving
+                  landscape of AIOps and intelligent automation.
                 </p>
               </section>
 
@@ -84,7 +90,7 @@ export default function AboutPage() {
                 
                 <div className="flex flex-wrap gap-4">
                   <a
-                    href="mailto:hello@owais.io"
+                    href="mailto:owais.abbasi9@gmail.com"
                     className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                   >
                     <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -93,7 +99,7 @@ export default function AboutPage() {
                     Email
                   </a>
                   <a
-                    href="https://github.com/owais"
+                    href="https://github.com/owais-io"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
@@ -103,7 +109,7 @@ export default function AboutPage() {
                     </svg>
                     GitHub
                   </a>
-                  <a
+                  {/* <a
                     href="https://twitter.com/owais"
                     target="_blank"
                     rel="noopener noreferrer"
@@ -113,7 +119,7 @@ export default function AboutPage() {
                       <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
                     </svg>
                     Twitter
-                  </a>
+                  </a> */}
                 </div>
               </section>
             </div>

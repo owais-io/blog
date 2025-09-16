@@ -194,9 +194,9 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
                     <Link href="/about" className="btn-ghost text-sm">
                       About Me
                     </Link>
-                    <Link href="/projects" className="btn-ghost text-sm">
+                    {/* <Link href="/projects" className="btn-ghost text-sm">
                       Projects
-                    </Link>
+                    </Link> */}
                   </div>
                 </div>
               </div>
