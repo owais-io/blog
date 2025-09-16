@@ -78,12 +78,15 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
       </div>
 
       {/* Main Layout Container */}
+      {/* <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8"> */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
         <div className="flex gap-8 py-8">
 
           {/* Desktop TOC Sidebar */}
           {post.tocEnabled && post.toc.hasContent && (
             <aside className="hidden lg:block w-80 flex-shrink-0">
+            {/* <aside className="hidden lg:block w-80 flex-shrink-0"> */}
               <div className="sticky top-24">
                 <TableOfContents headings={post.toc.headings} />
               </div>
@@ -95,6 +98,7 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
             {/* Article Header */}
             <header className="mb-12 text-center">
               <div className="max-w-4xl mx-auto">
+              {/* <div className="max-w-5xl mx-auto"> */}
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-6 leading-tight">
                   {post.title}
                 </h1>
@@ -152,6 +156,7 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
 
             {/* Article Content */}
             <article className="max-w-4xl mx-auto">
+            {/* <article className="max-w-7xl mx-auto"> */}
               <div className="prose-enhanced max-w-none">
                 <MDXRemote source={post.content} components={mdxComponents} />
               </div>

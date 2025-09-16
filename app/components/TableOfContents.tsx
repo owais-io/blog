@@ -43,6 +43,31 @@ export default function TableOfContents({ headings, className = '' }: TableOfCon
     }
   }, [headings])
 
+  // Auto-scroll TOC to keep active item in view
+  useEffect(() => {
+    if (!activeId || !mounted) return
+
+    const activeButton = document.querySelector(`button[aria-label="Navigate to ${headings.find(h => h.anchor === activeId)?.text}"]`)
+    const tocContainer = document.querySelector('.toc-scrollable-container')
+
+    if (activeButton && tocContainer) {
+      const containerRect = tocContainer.getBoundingClientRect()
+      const buttonRect = activeButton.getBoundingClientRect()
+
+      // Check if button is outside the visible area
+      const isAbove = buttonRect.top < containerRect.top
+      const isBelow = buttonRect.bottom > containerRect.bottom
+
+      if (isAbove || isBelow) {
+        activeButton.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+          inline: 'nearest'
+        })
+      }
+    }
+  }, [activeId, headings, mounted])
+
   const scrollToHeading = (anchor: string) => {
     const element = document.getElementById(anchor)
     if (element) {
@@ -76,7 +101,7 @@ export default function TableOfContents({ headings, className = '' }: TableOfCon
 
       {/* Scrollable Content */}
       <div
-        className="px-6 py-4 overflow-y-auto scrollbar-thin"
+        className="px-6 py-4 overflow-y-auto scrollbar-thin toc-scrollable-container"
         style={{
           maxHeight: 'calc(100vh - 16rem)',
           scrollbarWidth: 'thin',
@@ -173,6 +198,30 @@ export function CompactTableOfContents({ headings, className = '' }: TableOfCont
     }
   }, [headings])
 
+  // Auto-scroll TOC to keep active item in view (for compact version)
+  useEffect(() => {
+    if (!activeId || !mounted || !isOpen) return
+
+    const activeButton = document.querySelector(`.compact-toc-container button[aria-label*="${headings.find(h => h.anchor === activeId)?.text}"]`)
+    const tocContainer = document.querySelector('.compact-toc-scrollable')
+
+    if (activeButton && tocContainer) {
+      const containerRect = tocContainer.getBoundingClientRect()
+      const buttonRect = activeButton.getBoundingClientRect()
+
+      const isAbove = buttonRect.top < containerRect.top
+      const isBelow = buttonRect.bottom > containerRect.bottom
+
+      if (isAbove || isBelow) {
+        activeButton.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+          inline: 'nearest'
+        })
+      }
+    }
+  }, [activeId, headings, mounted, isOpen])
+
   const scrollToHeading = (anchor: string) => {
     const element = document.getElementById(anchor)
     if (element) {
@@ -242,7 +291,7 @@ export function CompactTableOfContents({ headings, className = '' }: TableOfCont
       </button>
 
       {isOpen && (
-        <div className="fixed inset-x-4 top-20 bottom-20 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl z-50 flex flex-col">
+        <div className="fixed inset-x-4 top-20 bottom-20 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl z-50 flex flex-col compact-toc-container">
           <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center">
@@ -263,7 +312,7 @@ export function CompactTableOfContents({ headings, className = '' }: TableOfCont
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-4">
+          <div className="flex-1 overflow-y-auto p-4 compact-toc-scrollable">
             <ul className="space-y-1">
               {headings.map((heading) => {
                 const isActive = activeId === heading.anchor
