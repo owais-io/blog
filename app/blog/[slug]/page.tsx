@@ -1,6 +1,7 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { format } from 'date-fns'
 import { getPostBySlug, getAllPosts, getRelatedPosts } from '../../lib/blog'
 import { MDXRemote } from 'next-mdx-remote/rsc'
@@ -180,15 +181,21 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
             {/* Author Bio */}
             <section className="max-w-4xl mx-auto bg-gradient-to-r from-primary-50 to-accent-50 dark:from-gray-900 dark:to-gray-800 rounded-2xl p-8 mb-16">
               <div className="flex flex-col sm:flex-row items-center gap-6">
-                <div className="w-20 h-20 bg-gradient-to-br from-primary-500 to-accent-500 rounded-full flex items-center justify-center text-white text-2xl font-bold">
-                  O
+                <div className="w-20 h-20 rounded-full overflow-hidden">
+                  <Image
+                    src="/profile.png"
+                    alt="Owais"
+                    width={80}
+                    height={80}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 <div className="text-center sm:text-left">
                   <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
                     Written by Owais
                   </h3>
                   <p className="text-gray-600 dark:text-gray-300 mb-4 leading-relaxed">
-                    Passionate developer sharing insights on technology, development, and the art of building great software.
+                    Passionate AIOps Engineer sharing insights on AI, OS, Cloud and Security.
                   </p>
                   <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
                     <Link href="/about" className="btn-ghost text-sm">

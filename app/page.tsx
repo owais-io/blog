@@ -36,10 +36,10 @@ export default function HomePage({ searchParams }: HomePageProps) {
               <span className="text-gradient">blog</span>
             </h1>
             <p className="text-xl sm:text-2xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed">
-              Sharing thoughts on technology, development, and life.
+              Sharing daily tutorials on AI, Cloud, Operating Systems, and related technologies.
               <br />
               <span className="text-lg text-gray-500 dark:text-gray-400">
-                Exploring the intersection of code, creativity, and innovation.
+                Exploring the intersection of AI with infrastructure automation and intelligent systems.
               </span>
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
