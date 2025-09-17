@@ -1,27 +1,93 @@
-Who I Am
-Hey! I’m an AIOps and DevSecOps Engineer who loves making systems, cloud setups, and security smarter with AI. I see AIOps as taking everything — systems, cloud, deployments, security — and adding AI to automate it all. Not everyone may define it this way, but I think that’s where the industry is heading, and I’m excited to be part of it.
+[centos9@localhost random 01:52:28]$ nano lists.py
+[centos9@localhost random 01:53:39]$ cat lists.py 
+fruits = ["apple", "banana", "cherry"]
 
-I didn’t start in tech at all — I used to be a Financial Accountant. Everything changed in 2020 when I read an article about AI in Dawn newspaper in Karachi. That one article hooked me. I started researching like crazy, bought my first Python course on Udemy, and slowly moved into tech. Fast forward to 2025, I’m a qualified AIOps Engineer with a UK Eduqual Level-6 diploma (same as a BSc Hons) and now I’m looking to start an MSc in Robotics so I can go deeper into AI and automation.
+print("Initial list of fruits:", fruits)
 
-What I Do
-I work across everything in modern infrastructure and automation — cloud, containers, security, scripting, you name it. I like experimenting and trying new things (sometimes it feels risky, but that’s how I grow).
+[centos9@localhost random 01:53:41]$ python lists.py 
+Initial list of fruits: ['apple', 'banana', 'cherry']
+[centos9@localhost random 01:53:44]$ nano lists.py 
+[centos9@localhost random 01:54:29]$ cat lists.py 
+fruits = ["apple", "banana", "cherry"]
 
-Here’s what I usually work with:
+print("Initial list of fruits:", fruits)
 
-Python and math for AI projects
+fruits.append("orange")
 
-Linux admin and Bash scripting
+print("List after appending 'orange':", fruits)
 
-AWS & Azure cloud setups, plus Docker
 
-AI-driven automation and monitoring
+[centos9@localhost random 01:54:31]$ python lists.py 
+Initial list of fruits: ['apple', 'banana', 'cherry']
+List after appending 'orange': ['apple', 'banana', 'cherry', 'orange']
+[centos9@localhost random 01:54:34]$ nano lists.py 
+[centos9@localhost random 01:55:16]$ cat lists.py 
+fruits = ["apple", "banana", "cherry"]
 
-Securing DevOps pipelines end-to-end
+print("Initial list of fruits:", fruits)
 
-Designing scalable systems and architecture
+fruits.append("orange")
 
-Why I Write
-This blog is where I share my journey. I post tutorials, tips, and real-world lessons on AI, cloud, and operating systems. Writing helps me organize what I learn and hopefully makes things easier for anyone else learning the same stuff.
+print("List after appending 'orange':", fruits)
 
-Beyond Code
-When I’m not at my laptop, I’m usually reading about new tech, trying to contribute to open-source projects, or just exploring new places. I believe work-life balance matters and I’m always curious about how tech can make everyday life easier.
+fruits.remove("banana")
+
+print("List after removing 'banana':", fruits)
+
+[centos9@localhost random 01:55:17]$ python lists.py 
+Initial list of fruits: ['apple', 'banana', 'cherry']
+List after appending 'orange': ['apple', 'banana', 'cherry', 'orange']
+List after removing 'banana': ['apple', 'cherry', 'orange']
+[centos9@localhost random 01:55:19]$ nano lists.py 
+[centos9@localhost random 01:55:46]$ cat lists.py 
+fruits = ["apple", "banana", "cherry"]
+
+print("Initial list of fruits:", fruits)
+
+fruits.append("orange")
+
+print("List after appending 'orange':", fruits)
+
+fruits.remove("banana")
+
+print("List after removing 'banana':", fruits)
+
+fruits.sort()
+
+print("Sorted list of fruits:", fruits)
+[centos9@localhost random 01:55:48]$ python lists.py 
+Initial list of fruits: ['apple', 'banana', 'cherry']
+List after appending 'orange': ['apple', 'banana', 'cherry', 'orange']
+List after removing 'banana': ['apple', 'cherry', 'orange']
+Sorted list of fruits: ['apple', 'cherry', 'orange']
+[centos9@localhost random 01:55:53]$ nano lists.py 
+[centos9@localhost random 01:56:27]$ cat lists.py 
+fruits = ["apple", "banana", "cherry"]
+
+print("Initial list of fruits:", fruits)
+
+fruits.append("orange")
+
+print("List after appending 'orange':", fruits)
+
+fruits.remove("banana")
+
+print("List after removing 'banana':", fruits)
+
+fruits.sort()
+
+print("Sorted list of fruits:", fruits)
+
+for fruit in fruits:
+	print("Fruit:", fruit)
+[centos9@localhost random 01:56:29]$ python lists.py 
+Initial list of fruits: ['apple', 'banana', 'cherry']
+List after appending 'orange': ['apple', 'banana', 'cherry', 'orange']
+List after removing 'banana': ['apple', 'cherry', 'orange']
+Sorted list of fruits: ['apple', 'cherry', 'orange']
+Fruit: apple
+Fruit: cherry
+Fruit: orange
+[centos9@localhost random 01:56:32]$ #similarly explain insert() and pop() as well and explain and compare the difference of all these methods of list
+[centos9@localhost random 01:57:20]$ 
+

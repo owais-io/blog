@@ -148,3 +148,7 @@ amplify/
 
 # Turbo
 .turbo
+
+/terraform
+
+rough

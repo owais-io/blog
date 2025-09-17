@@ -1,0 +1,543 @@
+---
+title: "Testing Python Data Science Packages: Practical Examples with NumPy, Pandas, and Scikit-learn"
+description: "Learn how to test and verify your Python data science installation with practical examples. Create your first NumPy arrays, Pandas DataFrames, and load Scikit-learn datasets."
+date: "2025-09-18T01:15:00.000Z"
+tags: ["python", "data-science", "numpy", "pandas", "scikit-learn", "testing", "examples", "practical"]
+published: true
+author: "Owais"
+category: "Data Science"
+seo:
+  canonical: "https://owais.io/blog/testing-python-data-science-packages-practical-examples"
+  keywords: ["python data science examples", "numpy arrays", "pandas dataframes", "scikit-learn datasets", "python testing", "data science basics"]
+toc: true
+---
+
+After successfully installing NumPy, Pandas, and Scikit-learn, it's crucial to verify that everything works correctly. This hands-on guide demonstrates how to test your installation by creating practical examples with each package, complete with explanations of the code and output.
+
+<Callout type="info">
+🎯 **What You'll Learn**: In this practical tutorial, you'll discover:
+- How to create and test Python scripts for each data science package
+- Understanding NumPy arrays and their basic operations
+- Working with Pandas DataFrames for data manipulation
+- Loading and exploring datasets with Scikit-learn
+- Interpreting output and verifying successful installations
+- Best practices for organizing test scripts
+</Callout>
+
+## 🛠️ Setting Up Test Environment
+
+Before we start testing our packages, let's understand the workflow for creating and running test scripts on a Linux system.
+
+### Creating Test Files
+
+We'll create separate test files for each package to isolate functionality and make debugging easier.
+
+## 🔢 Testing NumPy: Array Operations
+
+Let's start with NumPy, the foundation of numerical computing in Python.
+
+### Creating the NumPy Test Script
+
+```bash
+touch test_numpy.py
+```
+
+**What this command does:**
+- `touch` creates an empty file named `test_numpy.py`
+- If the file already exists, it updates the timestamp
+- This is the standard way to create new files in Linux
+
+### Editing the Script
+
+```bash
+nano test_numpy.py
+```
+
+After editing in nano (a terminal-based text editor), let's examine what we created:
+
+```bash
+cat test_numpy.py
+```
+
+**Output:**
+```python
+import numpy as np
+
+array = np.array([1,2,3,4,5])
+
+print(f"NumPy array: {array}")
+```
+
+### Understanding the NumPy Test Code
+
+Let's break down each line of our NumPy test:
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Line</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Code</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Purpose</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">1</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>import numpy as np</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Imports NumPy library with alias 'np' (standard convention)</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">2</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>array = np.array([1,2,3,4,5])</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Creates a NumPy array from a Python list</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">3</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>print(f"NumPy array: &#123;array&#125;")</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Displays the array using f-string formatting</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### Running the NumPy Test
+
+```bash
+python test_numpy.py
+```
+
+**Output:**
+```
+NumPy array: [1 2 3 4 5]
+```
+
+**What the output tells us:**
+
+1. **Successful Import**: NumPy imported without errors
+2. **Array Creation**: The `np.array()` function worked correctly
+3. **Data Type**: Notice no commas between numbers – this is NumPy's array representation
+4. **Memory Efficiency**: NumPy arrays are more compact than Python lists
+
+<Callout type="success">
+✅ **NumPy Test Success**: The output confirms that NumPy is working correctly. The array displays as `[1 2 3 4 5]` without commas, which is NumPy's standard integer array format.
+</Callout>
+
+## 📊 Testing Pandas: DataFrame Operations
+
+Now let's test Pandas for data manipulation capabilities.
+
+### Creating the Pandas Test Script
+
+```bash
+nano test_pandas.py
+```
+
+Let's examine the Pandas test script:
+
+```bash
+cat test_pandas.py
+```
+
+**Output:**
+```python
+import pandas as pd
+
+data = {'Name': ['Alice', 'Bob'], 'Age': [24, 30]}
+
+df = pd.DataFrame(data)
+
+print(f"Pandas DataFrame:\n{df}")
+```
+
+### Understanding the Pandas Test Code
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Line</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Code</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Explanation</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">1</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>import pandas as pd</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Imports Pandas with standard alias 'pd'</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">2</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>data = &#123;'Name': ['Alice', 'Bob'], 'Age': [24, 30]&#125;</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Creates a Python dictionary with sample data</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">3</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>df = pd.DataFrame(data)</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Converts dictionary to Pandas DataFrame</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">4</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>print(f"Pandas DataFrame:\n&#123;df&#125;")</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Displays the DataFrame with newline formatting</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### Running the Pandas Test
+
+```bash
+python test_pandas.py
+```
+
+**Output:**
+```
+Pandas DataFrame:
+    Name  Age
+0  Alice   24
+1    Bob   30
+```
+
+### Understanding the Pandas Output
+
+Let's analyze what this DataFrame output means:
+
+**Structure Analysis:**
+```
+    Name  Age     ← Column headers
+0  Alice   24     ← Row 0 (index 0)
+1    Bob   30     ← Row 1 (index 1)
+```
+
+**Key Elements:**
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Element</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Description</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Value</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Index</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Row identifiers (leftmost column)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">0, 1</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Columns</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Data categories</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Name, Age</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Data Types</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Automatically inferred</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">String (Name), Integer (Age)</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Alignment</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Automatic column alignment</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Properly formatted table</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<Callout type="info">
+💡 **DataFrame Features**: Notice how Pandas automatically formatted the data into a table structure with proper alignment and automatically assigned row indices (0, 1). This is one of Pandas' key strengths for data analysis.
+</Callout>
+
+## 🤖 Testing Scikit-learn: Dataset Loading
+
+Finally, let's test Scikit-learn with a real dataset.
+
+### Creating the Scikit-learn Test Script
+
+```bash
+nano test_sklearn.py
+```
+
+Let's examine the Scikit-learn test script:
+
+```bash
+cat test_sklearn.py
+```
+
+**Output:**
+```python
+from sklearn.datasets import load_iris
+
+iris = load_iris()
+
+print("Iris dataset, target names:", iris.target_names)
+```
+
+### Understanding the Scikit-learn Test Code
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Line</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Code</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Purpose</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">1</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>from sklearn.datasets import load_iris</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Imports the Iris dataset loader function</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">2</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>iris = load_iris()</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Loads the complete Iris dataset into memory</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">3</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>print("Iris dataset, target names:", iris.target_names)</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Displays the classification categories</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### Running the Scikit-learn Test
+
+```bash
+python test_sklearn.py
+```
+
+**Output:**
+```
+Iris dataset, target names: ['setosa' 'versicolor' 'virginica']
+```
+
+### Understanding the Scikit-learn Output
+
+**What this output reveals:**
+
+1. **Successful Import**: Scikit-learn and its datasets module loaded correctly
+2. **Dataset Access**: The `load_iris()` function worked and returned a dataset object
+3. **Classification Labels**: The Iris dataset contains three species of iris flowers
+4. **Array Format**: Output shows NumPy array format (no commas) containing three string labels
+
+**About the Iris Dataset:**
+- **Classic Dataset**: One of the most famous datasets in machine learning
+- **150 Samples**: 50 samples of each of the three species
+- **4 Features**: Sepal length, sepal width, petal length, petal width
+- **3 Classes**: setosa, versicolor, virginica (iris species)
+
+<Callout type="success">
+✅ **Complete Success**: All three packages are working perfectly! You now have a fully functional Python data science environment ready for serious work.
+</Callout>
+
+## 📁 File Management and Organization
+
+Let's look at how our test files are organized in the system:
+
+### Listing Our Test Files
+
+After creating all test scripts, our directory contains:
+
+```bash
+ls -la *.py
+```
+
+**Expected output (similar to):**
+```
+-rw-rw-r--. 1 centos9 centos9 87 test_numpy.py
+-rw-rw-r--. 1 centos9 centos9 134 test_pandas.py
+-rw-rw-r--. 1 centos9 centos9 89 test_sklearn.py
+```
+
+**File Details:**
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">File</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Size (bytes)</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Purpose</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Complexity</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">test_numpy.py</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">87</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Basic array creation and display</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Simple</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">test_pandas.py</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">134</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">DataFrame creation from dictionary</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Moderate</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">test_sklearn.py</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">89</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Dataset loading and inspection</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Simple</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+## 🧪 Advanced Testing Ideas
+
+Now that basic functionality is confirmed, here are some additional tests you can try:
+
+### Enhanced NumPy Test
+
+```python
+import numpy as np
+
+# Test array operations
+arr1 = np.array([1, 2, 3])
+arr2 = np.array([4, 5, 6])
+
+print(f"Array 1: {arr1}")
+print(f"Array 2: {arr2}")
+print(f"Addition: {arr1 + arr2}")
+print(f"Element-wise multiplication: {arr1 * arr2}")
+print(f"Array shape: {arr1.shape}")
+print(f"Array data type: {arr1.dtype}")
+```
+
+### Enhanced Pandas Test
+
+```python
+import pandas as pd
+
+# Test DataFrame operations
+data = {
+    'Name': ['Alice', 'Bob', 'Charlie', 'Diana'],
+    'Age': [24, 30, 35, 28],
+    'City': ['New York', 'London', 'Tokyo', 'Paris']
+}
+
+df = pd.DataFrame(data)
+
+print("Complete DataFrame:")
+print(df)
+print(f"\nDataFrame shape: {df.shape}")
+print(f"\nColumn names: {list(df.columns)}")
+print(f"\nAge statistics:\n{df['Age'].describe()}")
+```
+
+### Enhanced Scikit-learn Test
+
+```python
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+
+# Load dataset and explore structure
+iris = load_iris()
+
+print(f"Dataset shape: {iris.data.shape}")
+print(f"Number of features: {len(iris.feature_names)}")
+print(f"Feature names: {iris.feature_names}")
+print(f"Target names: {iris.target_names}")
+
+# Test train_test_split functionality
+X_train, X_test, y_train, y_test = train_test_split(
+    iris.data, iris.target, test_size=0.2, random_state=42
+)
+
+print(f"\nTraining set size: {X_train.shape[0]}")
+print(f"Test set size: {X_test.shape[0]}")
+```
+
+## 🔍 Troubleshooting Common Issues
+
+### Import Errors
+
+If you encounter import errors, check:
+
+1. **Package Installation**: Verify packages are installed in the correct environment
+2. **Python Path**: Ensure Python can find the installed packages
+3. **Virtual Environment**: Check if you're in the correct virtual environment
+
+### Version Compatibility
+
+```python
+# Check versions
+import numpy as np
+import pandas as pd
+import sklearn
+
+print(f"NumPy version: {np.__version__}")
+print(f"Pandas version: {pd.__version__}")
+print(f"Scikit-learn version: {sklearn.__version__}")
+```
+
+### Performance Testing
+
+```python
+import time
+import numpy as np
+
+# Test NumPy performance
+start_time = time.time()
+large_array = np.random.random((1000, 1000))
+result = np.sum(large_array)
+end_time = time.time()
+
+print(f"Large array sum: {result:.4f}")
+print(f"Computation time: {end_time - start_time:.4f} seconds")
+```
+
+## 🎯 Key Takeaways
+
+<div className="bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-900 dark:to-blue-900 p-6 rounded-lg my-8">
+
+### ✅ Remember These Points
+
+1. **Test Each Package Separately**: Isolate functionality to identify specific issues
+2. **Understand Output Formats**: Each package has distinct output representations
+3. **Use Standard Aliases**: `np`, `pd`, and `sklearn` are universally recognized
+4. **Start Simple**: Basic tests confirm installation before complex operations
+5. **Incremental Complexity**: Build from simple imports to advanced functionality
+
+</div>
+
+## 📚 Learning Resources
+
+- **NumPy Documentation**: [numpy.org](https://numpy.org/doc/)
+- **Pandas Tutorials**: [pandas.pydata.org](https://pandas.pydata.org/docs/)
+- **Scikit-learn Guide**: [scikit-learn.org](https://scikit-learn.org/stable/)
+- **Jupyter Notebooks**: Consider installing Jupyter for interactive development
+
+---
+
+<Callout type="success">
+🎉 **Testing Complete!** You've successfully verified that NumPy, Pandas, and Scikit-learn are working correctly on your system. Your Python data science environment is now ready for real-world projects and advanced learning.
+
+**Ready for your first data science project?** You now have all the tools needed to start analyzing data, building models, and creating insights!
+</Callout>
+
+## 💬 Discussion
+
+How did your testing experience go?
+
+- Which package output surprised you the most?
+- Have you tried the enhanced testing examples?
+- What type of data science project interests you most?
+- Did you encounter any issues during testing?
+
+**Connect with me**:
+- 🐙 [GitHub](https://github.com/owais-io) - Data science projects and examples
+- 🐦 [Twitter](https://twitter.com/owais_io) - Daily data science tips
+- 📧 [Contact](https://owais.io/contact) - Questions about data science setup
+
+---
+
+*This testing guide provides practical verification methods for your Python data science installation. Regular testing ensures your environment remains functional as you add new packages and update existing ones.*
