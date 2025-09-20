@@ -1,0 +1,857 @@
+---
+title: "Python OOP Advanced Concepts: Class Variables and Inheritance for Real-World Programming"
+description: "Master advanced Python OOP with class variables and inheritance. Learn to create parent-child class relationships, use super(), override methods, and build scalable object-oriented applications with practical examples."
+date: "2025-09-21T02:26:00.000Z"
+tags: ["python", "oop", "inheritance", "class-variables", "super", "method-overriding"]
+published: true
+author: "Owais"
+category: "Python"
+seo:
+  canonical: "https://owais.io/blog/python-oop-advanced-concepts-inheritance"
+  keywords: ["python inheritance", "python class variables", "python super function", "method overriding python", "object oriented programming advanced"]
+toc: true
+---
+
+Building on the fundamentals of Python classes and objects, it's time to explore more advanced OOP concepts that make your code more efficient, organized, and scalable. In this tutorial, we'll dive into class variables and inheritance - two powerful features that distinguish object-oriented programming from simple function-based programming.
+
+<Callout type="info">
+🎯 **What You'll Learn**: In this advanced OOP tutorial, you'll master:
+- The difference between class variables and instance variables
+- How to create and use shared class attributes
+- Understanding inheritance and parent-child class relationships
+- Creating subclasses that extend parent functionality
+- Using the `super()` function to call parent methods
+- Method overriding for customizing inherited behavior
+- Real-world inheritance examples with electric cars
+- Best practices for designing class hierarchies
+</Callout>
+
+## 🔄 Continuing Our OOP Journey
+
+In our previous tutorial, we created basic Car classes with instance variables and methods. Now we'll extend this knowledge with more sophisticated OOP concepts that professional developers use every day.
+
+<div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900 dark:to-indigo-900 p-6 rounded-lg my-6">
+
+### Prerequisites
+
+Before we begin, make sure you have:
+- Understanding of Python classes, objects, and methods from Part 1
+- Python 3 installed and working on your system
+- Completed the basic Car class tutorial
+- A text editor for creating Python files
+
+</div>
+
+## 🏗️ Understanding Class Variables vs Instance Variables
+
+Let's start by exploring the difference between class variables (shared by all objects) and instance variables (unique to each object).
+
+### Creating Our Second OOP File
+
+```bash title="Create a new file for class variables"
+touch oop2.py
+```
+
+Let's examine what happens when we add class variables to our Car class:
+
+```bash title="Edit the new file"
+nano oop2.py
+```
+
+Let's create a Car class with a class variable:
+
+```python title="oop2.py - Car Class with Class Variable" showLineNumbers
+class Car:
+    wheels = 4  # This is a class variable - shared by all cars
+
+    def __init__(self, brand, model):
+        self.brand = brand  # These are instance variables
+        self.model = model  # Unique to each car object
+
+    def drive(self):
+        print(f"The {self.brand} {self.model} is now driving.")
+```
+
+Let's view our file:
+
+```bash title="View the class variable file"
+cat oop2.py
+```
+
+Output:
+```python
+class Car:
+    wheels = 4
+
+    def __init__(self, brand, model):
+        self.brand = brand
+        self.model = model
+
+    def drive(self):
+        print(f"The {self.brand} {self.model} is now driving.")
+```
+
+### Testing Class Variables
+
+Let's add code to test how class variables work:
+
+```bash title="Add test code for class variables"
+nano oop2.py
+```
+
+Our file now includes a test:
+
+```python title="oop2.py - Testing Class Variables" showLineNumbers
+class Car:
+    wheels = 4  # Class variable
+
+    def __init__(self, brand, model):
+        self.brand = brand
+        self.model = model
+
+    def drive(self):
+        print(f"The {self.brand} {self.model} is now driving.")
+
+# Test class variable access
+print(f"Number of wheels: {Car.wheels}")
+```
+
+Let's run this to see class variables in action:
+
+```bash title="Run class variable test"
+python oop2.py
+```
+
+Output:
+```
+Number of wheels: 4
+```
+
+<Callout type="success">
+✅ **Class Variables**: Notice that we accessed `Car.wheels` directly from the class, without creating any objects! Class variables belong to the class itself, not to individual objects.
+</Callout>
+
+## 📊 Class Variables vs Instance Variables Comparison
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead className="bg-gray-50 dark:bg-gray-800">
+    <tr>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Aspect</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Class Variables</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Instance Variables</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Definition</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Defined in class body, outside methods</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Defined inside <code>__init__</code> with <code>self</code></td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Sharing</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Shared by all objects of the class</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Unique to each object instance</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Access</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>ClassName.variable</code> or <code>object.variable</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>object.variable</code> only</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Memory</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">One copy for entire class</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Separate copy for each object</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Use Case</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Constants, counters, shared properties</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Object-specific data</td>
+    </tr>
+  </tbody>
+</table>
+
+## 🚗 Building the Foundation for Inheritance
+
+Before diving into inheritance, let's create a robust parent class. We'll start with our third file:
+
+```bash title="Check current files"
+ls
+```
+
+Output:
+```
+oop1.py  oop2.py
+```
+
+```bash title="Create inheritance example file"
+touch oop3.py
+```
+
+Let's build a comprehensive Car class that will serve as our parent class:
+
+```bash title="Edit the inheritance file"
+nano oop3.py
+```
+
+We'll start with a basic parent class:
+
+```python title="oop3.py - Parent Car Class" showLineNumbers
+class Car:
+    def __init__(self, make, model, year):
+        self.make = make
+        self.model = model
+        self.year = year
+
+    def describe_car(self):
+        print(f"{self.year} {self.make} {self.model}")
+```
+
+Let's view our initial parent class:
+
+```bash title="View parent class"
+cat oop3.py
+```
+
+Output:
+```python
+class Car:
+    def __init__(self, make, model, year):
+        self.make = make
+        self.model = model
+        self.year = year
+
+    def describe_car(self):
+        print(f"{self.year} {self.make} {self.model}")
+```
+
+## 🔄 Creating Your First Inheritance Relationship
+
+Now comes the exciting part - creating a child class that inherits from the parent class. Let's add an ElectricCar class:
+
+```bash title="Add child class"
+nano oop3.py
+```
+
+Our file now includes inheritance:
+
+```python title="oop3.py - Parent and Child Classes" showLineNumbers
+class Car:
+    def __init__(self, make, model, year):
+        self.make = make
+        self.model = model
+        self.year = year
+
+    def describe_car(self):
+        print(f"{self.year} {self.make} {self.model}")
+
+class ElectricCar(Car):  # ElectricCar inherits from Car
+    def __init__(self, make, model, year, battery_size=75):
+        super().__init__(make, model, year)  # Call parent constructor
+        self.battery_size = battery_size  # Add electric-specific attribute
+
+    def describe_battery(self):
+        print(f"This car has a {self.battery_size}-kWh battery.")
+```
+
+Let's view our inheritance structure:
+
+```bash title="View inheritance example"
+cat oop3.py
+```
+
+Output:
+```python
+class Car:
+    def __init__(self, make, model, year):
+        self.make = make
+        self.model = model
+        self.year = year
+
+    def describe_car(self):
+        print(f"{self.year} {self.make} {self.model}")
+
+class ElectricCar(Car):
+    def __init__(self, make, model, year, battery_size=75):
+        super().__init__(make, model, year)
+        self.battery_size = battery_size
+
+    def describe_battery(self):
+        print(f"This car has a {self.battery_size}-kWh battery.")
+```
+
+## 🔍 Understanding Inheritance Components
+
+Let's break down the inheritance syntax:
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead className="bg-gray-50 dark:bg-gray-800">
+    <tr>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Component</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Syntax</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Parent Class</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>class Car:</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Base class that provides common functionality</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Child Class</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>class ElectricCar(Car):</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Inherits all methods and attributes from Car</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>super()</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>super().__init__(make, model, year)</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Calls the parent class constructor</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Additional Attributes</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>self.battery_size = battery_size</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Child-specific attributes not in parent</td>
+    </tr>
+  </tbody>
+</table>
+
+<Callout type="success">
+✅ **The `super()` Function**: This special function allows child classes to call methods from their parent class. It's essential for properly initializing inherited objects.
+</Callout>
+
+## 🎯 Method Overriding: Customizing Inherited Behavior
+
+One of the most powerful features of inheritance is the ability to override parent methods to provide specialized behavior. Let's add method overriding:
+
+```bash title="Add method overriding"
+nano oop3.py
+```
+
+Our enhanced file now includes method overriding:
+
+```python title="oop3.py - With Method Overriding" showLineNumbers
+class Car:
+    def __init__(self, make, model, year):
+        self.make = make
+        self.model = model
+        self.year = year
+
+    def describe_car(self):
+        print(f"{self.year} {self.make} {self.model}")
+
+class ElectricCar(Car):
+    def __init__(self, make, model, year, battery_size=75):
+        super().__init__(make, model, year)
+        self.battery_size = battery_size
+
+    def describe_battery(self):
+        print(f"This car has a {self.battery_size}-kWh battery.")
+
+    def describe_car(self):  # Override parent method
+        super().describe_car()  # Call parent method first
+        self.describe_battery()  # Add electric-specific info
+```
+
+Let's view the complete inheritance example:
+
+```bash title="View complete inheritance example"
+cat oop3.py
+```
+
+Output:
+```python
+class Car:
+    def __init__(self, make, model, year):
+        self.make = make
+        self.model = model
+        self.year = year
+
+    def describe_car(self):
+        print(f"{self.year} {self.make} {self.model}")
+
+class ElectricCar(Car):
+    def __init__(self, make, model, year, battery_size=75):
+        super().__init__(make, model, year)
+        self.battery_size = battery_size
+
+    def describe_battery(self):
+        print(f"This car has a {self.battery_size}-kWh battery.")
+
+    def describe_car(self):
+        super().describe_car()
+        self.describe_battery()
+```
+
+## 🧪 Testing Our Inheritance Implementation
+
+Let's add object creation and method calls to test our inheritance:
+
+```bash title="Add test code"
+nano oop3.py
+```
+
+Our complete file now includes testing:
+
+```python title="oop3.py - Complete with Testing" showLineNumbers
+class Car:
+    def __init__(self, make, model, year):
+        self.make = make
+        self.model = model
+        self.year = year
+
+    def describe_car(self):
+        print(f"{self.year} {self.make} {self.model}")
+
+class ElectricCar(Car):
+    def __init__(self, make, model, year, battery_size=75):
+        super().__init__(make, model, year)
+        self.battery_size = battery_size
+
+    def describe_battery(self):
+        print(f"This car has a {self.battery_size}-kWh battery.")
+
+    def describe_car(self):
+        super().describe_car()
+        self.describe_battery()
+
+my_tesla = ElectricCar('Tesla', 'Model S', 2022)
+my_tesla.describe_car()
+```
+
+Let's view our complete implementation:
+
+```bash title="View complete file"
+cat oop3.py
+```
+
+Output:
+```python
+class Car:
+    def __init__(self, make, model, year):
+        self.make = make
+        self.model = model
+        self.year = year
+
+    def describe_car(self):
+        print(f"{self.year} {self.make} {self.model}")
+
+class ElectricCar(Car):
+    def __init__(self, make, model, year, battery_size=75):
+        super().__init__(make, model, year)
+        self.battery_size = battery_size
+
+    def describe_battery(self):
+        print(f"This car has a {self.battery_size}-kWh battery.")
+
+    def describe_car(self):
+        super().describe_car()
+        self.describe_battery()
+
+my_tesla = ElectricCar('Tesla', 'Model S', 2022)
+my_tesla.describe_car()
+```
+
+Now let's test our inheritance:
+
+```bash title="Test inheritance with default battery"
+python oop3.py
+```
+
+Output:
+```
+2022 Tesla Model S
+This car has a 75-kWh battery.
+```
+
+<Callout type="success">
+🎉 **Inheritance Working!** The ElectricCar object successfully called both the inherited `describe_car()` method from Car and its own `describe_battery()` method.
+</Callout>
+
+## 🔋 Testing with Custom Battery Size
+
+Let's test with a custom battery size to see how parameters work in inheritance:
+
+```bash title="Test with custom battery size"
+nano oop3.py
+```
+
+Let's modify the test to use a custom battery size:
+
+```python title="oop3.py - Test with Custom Battery" showLineNumbers
+class Car:
+    def __init__(self, make, model, year):
+        self.make = make
+        self.model = model
+        self.year = year
+
+    def describe_car(self):
+        print(f"{self.year} {self.make} {self.model}")
+
+class ElectricCar(Car):
+    def __init__(self, make, model, year, battery_size=75):
+        super().__init__(make, model, year)
+        self.battery_size = battery_size
+
+    def describe_battery(self):
+        print(f"This car has a {self.battery_size}-kWh battery.")
+
+    def describe_car(self):
+        super().describe_car()
+        self.describe_battery()
+
+my_tesla = ElectricCar('Tesla', 'Model S', 2022, 100)  # Custom battery size
+my_tesla.describe_car()
+```
+
+Let's view the updated test:
+
+```bash title="View updated test"
+cat oop3.py
+```
+
+Output:
+```python
+class Car:
+    def __init__(self, make, model, year):
+        self.make = make
+        self.model = model
+        self.year = year
+
+    def describe_car(self):
+        print(f"{self.year} {self.make} {self.model}")
+
+class ElectricCar(Car):
+    def __init__(self, make, model, year, battery_size=75):
+        super().__init__(make, model, year)
+        self.battery_size = battery_size
+
+    def describe_battery(self):
+        print(f"This car has a {self.battery_size}-kWh battery.")
+
+    def describe_car(self):
+        super().describe_car()
+        self.describe_battery()
+
+my_tesla = ElectricCar('Tesla', 'Model S', 2022, 100)
+my_tesla.describe_car()
+```
+
+Let's run the test with custom battery:
+
+```bash title="Run test with custom battery"
+python oop3.py
+```
+
+Output:
+```
+2022 Tesla Model S
+This car has a 100-kWh battery.
+```
+
+## 🔄 Understanding the Inheritance Flow
+
+Let's trace through what happens when we create and use an ElectricCar object:
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead className="bg-gray-50 dark:bg-gray-800">
+    <tr>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Step</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Code</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">What Happens</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">1</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>my_tesla = ElectricCar('Tesla', 'Model S', 2022, 100)</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Python creates ElectricCar object</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">2</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>ElectricCar.__init__</code> called</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Child constructor executes</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">3</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>super().__init__(make, model, year)</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Parent constructor called</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">4</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>self.battery_size = 100</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Child-specific attribute set</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">5</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>my_tesla.describe_car()</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Overridden method called</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">6</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>super().describe_car()</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Parent method executes</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">7</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>self.describe_battery()</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Child-specific method executes</td>
+    </tr>
+  </tbody>
+</table>
+
+## 🌟 Real-World Inheritance Example
+
+Let's create a more comprehensive example that shows the power of inheritance:
+
+```python title="vehicle_hierarchy.py - Complete Vehicle System" showLineNumbers
+class Vehicle:
+    """Base class for all vehicles"""
+
+    total_vehicles = 0  # Class variable to count all vehicles
+
+    def __init__(self, make, model, year, color="White"):
+        self.make = make
+        self.model = model
+        self.year = year
+        self.color = color
+        self.is_running = False
+        Vehicle.total_vehicles += 1  # Increment class variable
+
+    def start_engine(self):
+        if not self.is_running:
+            self.is_running = True
+            print(f"The {self.make} {self.model} engine has started.")
+        else:
+            print(f"The {self.make} {self.model} is already running.")
+
+    def stop_engine(self):
+        if self.is_running:
+            self.is_running = False
+            print(f"The {self.make} {self.model} engine has stopped.")
+        else:
+            print(f"The {self.make} {self.model} is already off.")
+
+    def describe_vehicle(self):
+        status = "running" if self.is_running else "parked"
+        print(f"{self.year} {self.color} {self.make} {self.model} - Currently {status}")
+
+    @classmethod
+    def get_total_vehicles(cls):
+        return cls.total_vehicles
+
+class Car(Vehicle):
+    """Standard gasoline car"""
+
+    def __init__(self, make, model, year, color="White", fuel_capacity=50):
+        super().__init__(make, model, year, color)
+        self.fuel_capacity = fuel_capacity
+        self.fuel_level = fuel_capacity  # Start with full tank
+
+    def refuel(self):
+        self.fuel_level = self.fuel_capacity
+        print(f"The {self.make} {self.model} has been refueled to {self.fuel_capacity} liters.")
+
+    def describe_vehicle(self):
+        super().describe_vehicle()
+        print(f"Fuel: {self.fuel_level}/{self.fuel_capacity} liters")
+
+class ElectricCar(Vehicle):
+    """Electric vehicle with battery"""
+
+    def __init__(self, make, model, year, color="White", battery_capacity=75):
+        super().__init__(make, model, year, color)
+        self.battery_capacity = battery_capacity
+        self.battery_level = battery_capacity  # Start fully charged
+        self.charging = False
+
+    def charge_battery(self):
+        if not self.charging:
+            self.charging = True
+            print(f"Started charging the {self.make} {self.model}...")
+            self.battery_level = self.battery_capacity
+            self.charging = False
+            print(f"Charging complete! Battery: {self.battery_capacity} kWh")
+        else:
+            print(f"The {self.make} {self.model} is already charging.")
+
+    def describe_vehicle(self):
+        super().describe_vehicle()
+        print(f"Battery: {self.battery_level}/{self.battery_capacity} kWh")
+        if self.charging:
+            print("Currently charging...")
+
+class Motorcycle(Vehicle):
+    """Two-wheeled motorcycle"""
+
+    def __init__(self, make, model, year, color="Black", engine_size=600):
+        super().__init__(make, model, year, color)
+        self.engine_size = engine_size
+        self.has_sidecar = False
+
+    def add_sidecar(self):
+        if not self.has_sidecar:
+            self.has_sidecar = True
+            print(f"Sidecar added to the {self.make} {self.model}.")
+        else:
+            print(f"The {self.make} {self.model} already has a sidecar.")
+
+    def describe_vehicle(self):
+        super().describe_vehicle()
+        print(f"Engine: {self.engine_size}cc")
+        if self.has_sidecar:
+            print("Equipped with sidecar")
+
+# Test the vehicle hierarchy
+print("=== Creating Vehicles ===")
+regular_car = Car("Toyota", "Camry", 2023, "Blue", 60)
+electric_car = ElectricCar("Tesla", "Model 3", 2023, "Red", 80)
+motorcycle = Motorcycle("Harley-Davidson", "Sportster", 2023, "Black", 883)
+
+print(f"\nTotal vehicles created: {Vehicle.get_total_vehicles()}")
+
+print("\n=== Testing Vehicle Operations ===")
+for vehicle in [regular_car, electric_car, motorcycle]:
+    print(f"\n--- {vehicle.make} {vehicle.model} ---")
+    vehicle.describe_vehicle()
+    vehicle.start_engine()
+    vehicle.describe_vehicle()
+
+    # Test specific methods
+    if isinstance(vehicle, Car) and not isinstance(vehicle, ElectricCar):
+        vehicle.refuel()
+    elif isinstance(vehicle, ElectricCar):
+        vehicle.charge_battery()
+    elif isinstance(vehicle, Motorcycle):
+        vehicle.add_sidecar()
+
+    vehicle.stop_engine()
+```
+
+## 🎯 Best Practices for Inheritance
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead className="bg-gray-50 dark:bg-gray-800">
+    <tr>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Practice</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Why It Matters</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Example</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Use super() consistently</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Ensures proper initialization chain</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>super().__init__(args)</code></td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Follow IS-A relationship</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">ElectricCar IS-A Car makes logical sense</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Car → ElectricCar, Vehicle → Car</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Keep inheritance shallow</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Deep hierarchies become hard to maintain</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Max 3-4 levels deep</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Override thoughtfully</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Maintain expected behavior</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Call super() then add functionality</td>
+    </tr>
+  </tbody>
+</table>
+
+## ⚠️ Common Inheritance Pitfalls
+
+### 1. Forgetting to Call super() in Constructor
+```python title="Wrong - Parent constructor not called"
+class ElectricCar(Car):
+    def __init__(self, make, model, year, battery_size):
+        # Missing super().__init__() - parent attributes won't be set!
+        self.battery_size = battery_size
+```
+
+```python title="Correct - Always call super() first"
+class ElectricCar(Car):
+    def __init__(self, make, model, year, battery_size):
+        super().__init__(make, model, year)  # Initialize parent first
+        self.battery_size = battery_size
+```
+
+### 2. Incorrect Method Overriding
+```python title="Wrong - Completely replacing parent functionality"
+class ElectricCar(Car):
+    def describe_car(self):
+        print(f"Battery: {self.battery_size} kWh")  # Lost car info!
+```
+
+```python title="Correct - Extend parent functionality"
+class ElectricCar(Car):
+    def describe_car(self):
+        super().describe_car()  # Keep parent functionality
+        print(f"Battery: {self.battery_size} kWh")  # Add new info
+```
+
+### 3. Breaking the IS-A Relationship
+```python title="Wrong - Car is not a wheel!"
+class Car(Wheel):  # This doesn't make logical sense
+    pass
+```
+
+```python title="Correct - Car HAS wheels, doesn't inherit from them"
+class Car:
+    def __init__(self):
+        self.wheels = [Wheel(), Wheel(), Wheel(), Wheel()]
+```
+
+## 🎯 Key Takeaways
+
+<div className="bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-900 dark:to-blue-900 p-6 rounded-lg my-8">
+
+### ✅ Remember These Points
+
+1. **Class Variables**: Shared by all instances, defined at class level
+2. **Inheritance**: Child classes inherit all attributes and methods from parents
+3. **super()**: Essential for calling parent class methods properly
+4. **Method Overriding**: Customize inherited behavior while maintaining functionality
+5. **IS-A Relationship**: Inheritance should represent a logical "is a" relationship
+
+</div>
+
+## 🧪 Practice Challenge
+
+Try creating your own inheritance hierarchy:
+
+1. Create a `Shape` base class with `area()` and `perimeter()` methods
+2. Create `Rectangle` and `Circle` child classes that inherit from `Shape`
+3. Override the area and perimeter methods in each child class
+4. Add specific methods like `is_square()` to Rectangle
+5. Test creating objects and calling both inherited and overridden methods
+
+## 🚀 What's Next?
+
+Continue your Python OOP journey with these advanced topics:
+- **Multiple Inheritance**: Inheriting from multiple parent classes
+- **Abstract Base Classes**: Creating interfaces and enforcing method implementation
+- **Property Decorators**: Creating getter/setter methods for controlled attribute access
+- **Class Methods and Static Methods**: Alternative method types for different use cases
+
+<Callout type="success">
+🎉 **Congratulations!** You've mastered Python inheritance and class variables. You can now create sophisticated object hierarchies that share common functionality while adding specialized features. These concepts are fundamental to building large, maintainable applications.
+</Callout>
+
+## 📖 Summary
+
+In this comprehensive tutorial, you learned:
+
+- **Class Variables**: How to create shared attributes across all instances
+- **Inheritance Fundamentals**: Creating parent-child class relationships
+- **Constructor Chaining**: Using `super()` to properly initialize inherited objects
+- **Method Overriding**: Customizing inherited methods for specialized behavior
+- **Real-World Applications**: Building vehicle hierarchies with multiple inheritance levels
+- **Best Practices**: Following IS-A relationships and proper inheritance design
+- **Common Pitfalls**: Avoiding mistakes that break inheritance functionality
+
+---
+
+*Ready to become a Python OOP expert? Explore our complete [Python Programming Series](https://owais.io/tags?tags=python) for more advanced tutorials including multiple inheritance, abstract classes, and design patterns.*
