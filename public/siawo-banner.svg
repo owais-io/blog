@@ -1,0 +1,57 @@
+<svg width="1584" height="396" viewBox="0 0 1584 396" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background gradient -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a202c;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2d3748;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1584" height="396" fill="url(#bgGradient)"/>
+
+  <!-- Left section (1/4 width = 396px) -->
+  <!-- Blog visit text -->
+  <text x="20" y="80" fill="#e2e8f0" font-family="Arial, sans-serif" font-size="20" font-weight="400">visit my blog</text>
+  <text x="20" y="110" fill="#60a5fa" font-family="Arial, sans-serif" font-size="20" font-weight="500">owais.io</text>
+
+  <!-- Separator line -->
+  <line x1="396" y1="40" x2="396" y2="356" stroke="#374151" stroke-width="2"/>
+
+  <!-- Right section (3/4 width starting at 396px) -->
+  <!-- Main title - AIOps Engineer -->
+  <text x="990" y="140" fill="#ffffff" font-family="Arial, sans-serif" font-size="48" font-weight="bold" text-anchor="middle">AIOps Engineer</text>
+
+  <!-- Subtitle 1 - DevSecOps Engineer -->
+  <text x="990" y="190" fill="#94a3b8" font-family="Arial, sans-serif" font-size="24" font-weight="400" text-anchor="middle">DevSecOps Engineer</text>
+
+  <!-- Subtitle 2 - Cloud Engineer -->
+  <text x="990" y="230" fill="#94a3b8" font-family="Arial, sans-serif" font-size="24" font-weight="400" text-anchor="middle">Cloud Engineer</text>
+
+  <!-- Decorative accent line -->
+  <line x1="1200" y1="120" x2="1300" y2="120" stroke="#60a5fa" stroke-width="2" opacity="0.7"/>
+
+  <!-- Decorative dots pattern -->
+  <g opacity="0.3">
+    <circle cx="1400" cy="280" r="2" fill="#4a5568"/>
+    <circle cx="1412" cy="280" r="2" fill="#4a5568"/>
+    <circle cx="1424" cy="280" r="2" fill="#4a5568"/>
+    <circle cx="1436" cy="280" r="2" fill="#4a5568"/>
+    <circle cx="1448" cy="280" r="2" fill="#4a5568"/>
+    <circle cx="1460" cy="280" r="2" fill="#4a5568"/>
+
+    <circle cx="1400" cy="294" r="2" fill="#4a5568"/>
+    <circle cx="1412" cy="294" r="2" fill="#4a5568"/>
+    <circle cx="1424" cy="294" r="2" fill="#4a5568"/>
+    <circle cx="1436" cy="294" r="2" fill="#4a5568"/>
+    <circle cx="1448" cy="294" r="2" fill="#4a5568"/>
+    <circle cx="1460" cy="294" r="2" fill="#4a5568"/>
+
+    <circle cx="1400" cy="308" r="2" fill="#4a5568"/>
+    <circle cx="1412" cy="308" r="2" fill="#4a5568"/>
+    <circle cx="1424" cy="308" r="2" fill="#4a5568"/>
+    <circle cx="1436" cy="308" r="2" fill="#4a5568"/>
+    <circle cx="1448" cy="308" r="2" fill="#4a5568"/>
+    <circle cx="1460" cy="308" r="2" fill="#4a5568"/>
+  </g>
+</svg>
