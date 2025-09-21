@@ -1,0 +1,890 @@
+---
+title: "NumPy Fundamentals for Absolute Beginners: Arrays, Slicing, and Mathematical Operations with Terminal Examples"
+description: "Master NumPy from scratch with hands-on terminal demonstrations. Learn array creation, indexing, slicing, reshaping, and mathematical operations. Includes troubleshooting common import errors and circular import issues."
+date: "2025-09-21T22:50:00.000Z"
+tags: ["numpy", "python", "arrays", "data-science", "mathematical-operations", "slicing"]
+published: true
+author: "Owais"
+category: "Data Science"
+seo:
+  canonical: "https://owais.io/blog/numpy-fundamentals-beginners-arrays-slicing-operations"
+  keywords: ["numpy tutorial", "numpy arrays", "numpy slicing", "python data science", "numpy beginners", "array operations"]
+toc: true
+---
+
+NumPy (Numerical Python) is the foundation of data science in Python. It provides powerful tools for working with arrays and performing mathematical operations efficiently. In this comprehensive tutorial, we'll explore NumPy fundamentals through hands-on terminal examples, including common troubleshooting scenarios that beginners often encounter.
+
+<Callout type="info">
+🎯 **What You'll Learn**: In this practical tutorial, you'll discover:
+- Installing and importing NumPy correctly
+- Creating 1D and 2D arrays from Python lists
+- Understanding and resolving circular import errors
+- Accessing individual elements and array slicing
+- Advanced 2D array slicing with row and column operations
+- Reshaping arrays to change their dimensions
+- Performing mathematical operations like mean and sum
+- Troubleshooting common NumPy installation and naming issues
+- Best practices for NumPy file naming and project organization
+</Callout>
+
+## 🚀 Getting Started with NumPy
+
+Let's begin our NumPy journey by setting up our development environment. We'll follow the exact terminal session that demonstrates both common mistakes and their solutions.
+
+<div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900 dark:to-indigo-900 p-6 rounded-lg my-6">
+
+### Prerequisites
+
+Before we dive in, make sure you have:
+- Python 3.x installed on your system
+- Basic understanding of Python lists and data types
+- Terminal/command line access
+- Text editor (nano, vim, or VS Code)
+- Basic knowledge of Python syntax and variables
+
+</div>
+
+### Opening Our Development Environment
+
+```bash title="Open VS Code in current directory"
+code .
+```
+
+**Command Explanation:**
+- `code .` opens Visual Studio Code in the current directory
+- The `.` represents the current directory
+- This gives us a full development environment for editing files
+
+### Checking Our Workspace
+
+```bash title="List current directory contents"
+ls
+```
+
+**Terminal Output:**
+```
+numpy.py
+```
+
+We can see there's already a file called `numpy.py` in our directory. This will become important later when we encounter a naming conflict!
+
+## 🔨 Creating Our First NumPy Script
+
+Let's examine the existing NumPy script to understand what we're working with:
+
+```bash title="View the NumPy script content"
+cat numpy.py
+```
+
+**Terminal Output:**
+```python
+import numpy as np
+
+arr1 = np.array([1,2,3,4,5])
+print("1D array:" arr1)
+```
+
+**Code Analysis:**
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead className="bg-gray-50 dark:bg-gray-800">
+    <tr>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Line</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Code</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">1</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>import numpy as np</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Import NumPy library with alias 'np'</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">2</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>arr1 = np.array([1,2,3,4,5])</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Create 1D array from Python list</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">3</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>print("1D array:" arr1)</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">⚠️ Syntax Error - Missing comma</td>
+    </tr>
+  </tbody>
+</table>
+
+## 🚨 Encountering and Fixing Syntax Errors
+
+Let's run the script and see what happens:
+
+```bash title="Run the NumPy script"
+python numpy.py
+```
+
+**Terminal Output:**
+```
+  File "/home/centos9/Razzaq-Labs-II/random/numpy.py", line 4
+    print("1D array:" arr1)
+                      ^
+SyntaxError: invalid syntax
+```
+
+**Error Analysis:**
+- **Problem**: Missing comma in the print statement
+- **Location**: Line 4, character position indicated by `^`
+- **Solution**: Add comma between string and variable
+
+The error message tells us exactly what's wrong:
+- **File path**: Shows the exact file with the error
+- **Line number**: Line 4 contains the syntax error
+- **Character position**: The `^` points to where Python detected the problem
+- **Error type**: `SyntaxError` means there's a problem with Python syntax
+
+### Fixing the Syntax Error
+
+Let's check the corrected version:
+
+```bash title="View corrected syntax"
+cat numpy.py
+```
+
+**Terminal Output:**
+```python
+import numpy as np
+
+arr1 = np.array([1,2,3,4,5])
+print("1D array:", arr1)
+```
+
+Notice the crucial difference:
+- **Before**: `print("1D array:" arr1)` ❌
+- **After**: `print("1D array:", arr1)` ✅ (added comma)
+
+## 🔄 The Circular Import Problem
+
+Now let's try running the corrected script:
+
+```bash title="Run corrected script"
+python numpy.py
+```
+
+**Terminal Output:**
+```
+Traceback (most recent call last):
+  File "/home/centos9/Razzaq-Labs-II/random/numpy.py", line 1, in <module>
+    import numpy as np
+  File "/home/centos9/Razzaq-Labs-II/random/numpy.py", line 3, in <module>
+    arr1 = np.array([1,2,3,4,5])
+AttributeError: partially initialized module 'numpy' has no attribute 'array' (most likely due to a circular import)
+```
+
+**Understanding the Circular Import Error:**
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead className="bg-gray-50 dark:bg-gray-800">
+    <tr>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Problem Component</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">What Happens</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Why It Fails</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>File Name</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Our file is named <code>numpy.py</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Conflicts with actual NumPy module name</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Import Statement</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>import numpy as np</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Python imports our file instead of the library</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Result</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Partial initialization failure</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Our file doesn't have <code>array</code> function</td>
+    </tr>
+  </tbody>
+</table>
+
+<Callout type="warning">
+⚠️ **Naming Conflict**: Never name your Python files the same as libraries you want to import. Python will try to import your file instead of the actual library, causing circular import errors.
+</Callout>
+
+## 📦 Checking NumPy Installation
+
+Before fixing the naming issue, let's verify NumPy is properly installed:
+
+```bash title="Install NumPy package"
+pip install numpy
+```
+
+**Terminal Output:**
+```
+Defaulting to user installation because normal site-packages is not writeable
+Requirement already satisfied: numpy in /home/centos9/.local/lib/python3.9/site-packages (2.0.2)
+```
+
+**Installation Output Explanation:**
+- **User installation**: Installing to user directory (not system-wide)
+- **Already satisfied**: NumPy version 2.0.2 is already installed
+- **Location**: Installed in the user's local Python packages directory
+
+Let's see what files are in our directory now:
+
+```bash title="Check directory contents"
+ls
+```
+
+**Terminal Output:**
+```
+numpy.py  __pycache__
+```
+
+**New Files Explained:**
+- **numpy.py**: Our original script file
+- **__pycache__**: Python cache directory created during the failed import attempt
+
+## 🔧 Fixing the Naming Conflict
+
+The solution is to rename our file to avoid the conflict:
+
+```bash title="Rename file to avoid conflict"
+mv numpy.py numpyy.py
+```
+
+**Command Explanation:**
+- `mv` stands for "move" but is used to rename files
+- `numpy.py` is the source filename (conflicting name)
+- `numpyy.py` is the destination filename (safe name)
+- Adding an extra 'y' avoids the naming conflict
+
+Now let's test our renamed script:
+
+```bash title="Run renamed script"
+python numpyy.py
+```
+
+**Terminal Output:**
+```
+1D array: [1 2 3 4 5]
+```
+
+**Success!** The output shows:
+- **Format**: `[1 2 3 4 5]` - NumPy array format (no commas)
+- **Type**: This is a NumPy array, not a Python list
+- **Elements**: Contains integers 1 through 5
+
+<Callout type="success">
+✅ **Problem Solved**: By renaming our file, Python can now properly import the real NumPy library and our code works correctly.
+</Callout>
+
+## 📊 Creating 2D Arrays
+
+Let's expand our script to include 2D arrays. First, let's see the updated content:
+
+```bash title="View updated script with 2D array"
+cat numpyy.py
+```
+
+**Terminal Output:**
+```python
+import numpy as np
+
+arr2 = np.array([[1,2,3],[4,5,6]])
+print("2D Array:")
+print(arr2)
+```
+
+### Understanding 2D Array Creation
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead className="bg-gray-50 dark:bg-gray-800">
+    <tr>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Component</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Code</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Explanation</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Outer List</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>[[1,2,3],[4,5,6]]</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Contains two inner lists (rows)</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>First Row</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>[1,2,3]</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">First row with 3 elements</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Second Row</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>[4,5,6]</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Second row with 3 elements</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Result Shape</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">2 rows × 3 columns</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Creates a 2×3 matrix</td>
+    </tr>
+  </tbody>
+</table>
+
+### Running the 2D Array Example
+
+```bash title="Run script with 2D array"
+python numpyy.py
+```
+
+**Terminal Output:**
+```
+2D Array:
+[[1 2 3]
+ [4 5 6]]
+```
+
+**2D Array Output Analysis:**
+- **Structure**: Two rows displayed vertically
+- **Alignment**: Elements are aligned in columns
+- **Format**: Square brackets show the array structure
+- **Spacing**: NumPy formats arrays for readability
+
+## 🔍 Array Indexing and Element Access
+
+Let's add element access to our script:
+
+```bash title="View script with element access"
+cat numpyy.py
+```
+
+**Terminal Output:**
+```python
+import numpy as np
+
+arr1 = np.array([1,2,3,4,5])
+print("1D array:", arr1)
+
+element = arr1[2]
+print("Accessed Element:", element)
+```
+
+### Understanding Array Indexing
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead className="bg-gray-50 dark:bg-gray-800">
+    <tr>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Array</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Index</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Element</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Note</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">[1,2,3,4,5]</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">0</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">1</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">First element</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">[1,2,3,4,5]</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">1</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">2</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Second element</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">[1,2,3,4,5]</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">2</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">3</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Third element (our example)</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">[1,2,3,4,5]</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">3</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">4</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Fourth element</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">[1,2,3,4,5]</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">4</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">5</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Fifth element</td>
+    </tr>
+  </tbody>
+</table>
+
+### Running the Indexing Example
+
+```bash title="Run script with indexing"
+python numpyy.py
+```
+
+**Terminal Output:**
+```
+1D array: [1 2 3 4 5]
+Accessed Element: 3
+```
+
+**Indexing Explanation:**
+- **Index 2**: Accesses the third element (zero-based indexing)
+- **Value 3**: The element at position 2 in array [1,2,3,4,5]
+- **Zero-based**: Python/NumPy arrays start counting from 0
+
+<Callout type="info">
+ℹ️ **Zero-Based Indexing**: Remember that arrays start counting from 0. So `arr1[2]` gets the 3rd element, not the 2nd element.
+</Callout>
+
+## ✂️ Advanced Array Slicing
+
+Now let's explore 2D array slicing, which is one of NumPy's most powerful features:
+
+```bash title="View script with 2D slicing"
+cat numpyy.py
+```
+
+**Terminal Output:**
+```python
+import numpy as np
+
+arr2 = np.array([[1,2,3],[4,5,6]])
+print("2D Array:")
+print(arr2)
+
+subarray = arr2[0:2, 1:3]
+print("Sliced Array:")
+print(subarray)
+```
+
+### Understanding 2D Array Slicing
+
+The slice `arr2[0:2, 1:3]` needs detailed explanation:
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead className="bg-gray-50 dark:bg-gray-800">
+    <tr>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Component</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Syntax</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Meaning</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Result</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Row Slice</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>0:2</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Rows 0 to 1 (excludes 2)</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Both rows [1,2,3] and [4,5,6]</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Column Slice</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>1:3</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Columns 1 to 2 (excludes 3)</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Columns with values 2,3 and 5,6</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Combined</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>[0:2, 1:3]</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Intersection of rows and columns</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">2×2 subarray</td>
+    </tr>
+  </tbody>
+</table>
+
+### Visual Slicing Breakdown
+
+Let's visualize how the slicing works on our 2D array:
+
+**Original Array:**
+```
+arr2 = [[1, 2, 3],
+        [4, 5, 6]]
+```
+
+**Step-by-Step Slicing:**
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead className="bg-gray-50 dark:bg-gray-800">
+    <tr>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Step</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Operation</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Result</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">1</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Select rows 0:2</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">[[1,2,3], [4,5,6]] (all rows)</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">2</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Select columns 1:3</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">[[2,3], [5,6]] (columns 1 and 2)</td>
+    </tr>
+  </tbody>
+</table>
+
+### Running the Slicing Example
+
+```bash title="Run script with slicing"
+python numpyy.py
+```
+
+**Terminal Output:**
+```
+2D Array:
+[[1 2 3]
+ [4 5 6]]
+Sliced Array:
+[[2 3]
+ [5 6]]
+```
+
+**Slicing Result Analysis:**
+- **Original**: 2×3 array with 6 elements
+- **Sliced**: 2×2 array with 4 elements
+- **Values**: `[[2,3], [5,6]]` - the middle and right columns from both rows
+
+<Callout type="success">
+✅ **Slicing Power**: NumPy slicing allows you to extract any rectangular portion of a 2D array using the `[row_start:row_end, col_start:col_end]` syntax.
+</Callout>
+
+## 🔄 Array Reshaping
+
+Let's explore array reshaping, which changes the dimensions of an array:
+
+```bash title="View script with reshaping"
+cat numpyy.py
+```
+
+**Terminal Output:**
+```python
+import numpy as np
+
+arr1 = np.array([1,2,3,4,5])
+print("1D array:", arr1)
+
+reshaped_array = arr1.reshape(5,1)
+print("Reshaped Array:")
+print(reshaped_array)
+```
+
+### Understanding Array Reshaping
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead className="bg-gray-50 dark:bg-gray-800">
+    <tr>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Component</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Before Reshape</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">After Reshape</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Explanation</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Shape</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">(5,) - 1D with 5 elements</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">(5,1) - 2D with 5 rows, 1 column</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Convert horizontal to vertical</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Elements</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">[1,2,3,4,5]</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">[[1],[2],[3],[4],[5]]</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Same data, different layout</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Total Size</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">5 elements</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">5×1 = 5 elements</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Must be equal</td>
+    </tr>
+  </tbody>
+</table>
+
+### Running the Reshaping Example
+
+```bash title="Run script with reshaping"
+python numpyy.py
+```
+
+**Terminal Output:**
+```
+1D array: [1 2 3 4 5]
+Reshaped Array:
+[[1]
+ [2]
+ [3]
+ [4]
+ [5]]
+```
+
+**Reshaping Result Analysis:**
+- **Original Format**: Horizontal array `[1 2 3 4 5]`
+- **Reshaped Format**: Vertical column with each element on its own row
+- **Structure**: 5 rows × 1 column = column vector
+- **Use Case**: Useful for matrix operations and machine learning
+
+<Callout type="info">
+ℹ️ **Reshape Rule**: The total number of elements must remain the same. For example, 5 elements can become 5×1, 1×5, but not 2×3 (which would need 6 elements).
+</Callout>
+
+## 📊 Mathematical Operations
+
+Let's add mathematical operations to our NumPy exploration:
+
+```bash title="View script with mean calculation"
+cat numpyy.py
+```
+
+**Terminal Output:**
+```python
+import numpy as np
+
+arr1 = np.array([1,2,3,4,5])
+print("1D array:", arr1)
+
+mean_value = np.mean(arr1)
+print("Mean", mean_value)
+```
+
+### Understanding the Mean Calculation
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead className="bg-gray-50 dark:bg-gray-800">
+    <tr>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Step</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Operation</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Calculation</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Result</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">1</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Sum all elements</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">1 + 2 + 3 + 4 + 5</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">15</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">2</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Count elements</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">5 elements</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">5</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">3</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Divide sum by count</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">15 ÷ 5</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">3.0</td>
+    </tr>
+  </tbody>
+</table>
+
+### Running the Mean Calculation
+
+```bash title="Run script with mean"
+python numpyy.py
+```
+
+**Terminal Output:**
+```
+1D array: [1 2 3 4 5]
+Mean 3.0
+```
+
+**Mean Result Analysis:**
+- **Input**: Array [1,2,3,4,5]
+- **Calculation**: (1+2+3+4+5) ÷ 5 = 15 ÷ 5 = 3.0
+- **Output**: 3.0 (float, not integer)
+- **Meaning**: The average value of all elements in the array
+
+## 🧮 Array Sum Operations
+
+Let's add sum operations to explore more mathematical functions:
+
+```bash title="View script with sum calculation"
+cat numpyy.py
+```
+
+**Terminal Output:**
+```python
+import numpy as np
+
+arr2 = np.array([[1,2,3],[4,5,6]])
+print("2D Array:")
+print(arr2)
+
+total_sum = np.sum(arr2)
+print("Total Sum:", total_sum)
+```
+
+### Understanding 2D Array Sum
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead className="bg-gray-50 dark:bg-gray-800">
+    <tr>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Array</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Elements</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Sum Calculation</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Result</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">arr2</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">[[1,2,3],[4,5,6]]</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">1+2+3+4+5+6</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">21</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">First Row</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">[1,2,3]</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">1+2+3</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">6</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Second Row</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">[4,5,6]</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">4+5+6</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">15</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Total</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">All elements</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">6 + 15</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">21</td>
+    </tr>
+  </tbody>
+</table>
+
+### Running the Final Example
+
+```bash title="Run complete script"
+python numpyy.py
+```
+
+**Terminal Output:**
+```
+2D Array:
+[[1 2 3]
+ [4 5 6]]
+Total Sum: 21
+```
+
+**Final Output Analysis:**
+- **All operations successful**: Every NumPy operation worked correctly
+- **Data preservation**: Original arrays remain unchanged unless explicitly modified
+- **Efficient calculations**: NumPy performed all mathematical operations quickly
+- **Type consistency**: Results maintain appropriate data types (float for mean, int for sum)
+
+## 🎯 Common NumPy Operations Summary
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead className="bg-gray-50 dark:bg-gray-800">
+    <tr>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Operation</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Syntax</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Purpose</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Example Result</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Array Creation</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>np.array([1,2,3])</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Convert list to NumPy array</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">[1 2 3]</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Indexing</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>arr[2]</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Access element at index</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">3</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>2D Slicing</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>arr[0:2, 1:3]</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Extract subarray</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">[[2 3] [5 6]]</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Reshaping</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>arr.reshape(5,1)</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Change array dimensions</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Column vector</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Mean</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>np.mean(arr)</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Calculate average</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">3.0</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Sum</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>np.sum(arr)</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Add all elements</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">21</td>
+    </tr>
+  </tbody>
+</table>
+
+## 🚨 Troubleshooting Common Issues
+
+### Issue 1: Circular Import Error
+
+**Problem**: `AttributeError: partially initialized module 'numpy' has no attribute 'array'`
+
+**Cause**: File named `numpy.py` conflicts with the actual NumPy library
+
+**Solution**: Rename your file to something else (e.g., `numpy_tutorial.py`, `my_numpy.py`)
+
+### Issue 2: Syntax Errors in Print Statements
+
+**Problem**: `SyntaxError: invalid syntax`
+
+**Cause**: Missing comma in print statement between string and variable
+
+**Solution**: `print("text", variable)` not `print("text" variable)`
+
+### Issue 3: Import Errors
+
+**Problem**: `ModuleNotFoundError: No module named 'numpy'`
+
+**Cause**: NumPy not installed
+
+**Solution**: `pip install numpy`
+
+## 🎯 Key Takeaways
+
+<div className="bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-900 dark:to-blue-900 p-6 rounded-lg my-8">
+
+### ✅ Remember These Points
+
+1. **Avoid Naming Conflicts**: Never name your files the same as Python libraries
+2. **Zero-Based Indexing**: Arrays start counting from 0, not 1
+3. **Slicing Syntax**: Use `[row_start:row_end, col_start:col_end]` for 2D arrays
+4. **Reshape Rule**: Total elements must remain constant when reshaping
+5. **Mathematical Functions**: NumPy provides efficient functions like `mean()` and `sum()`
+6. **Array vs List**: NumPy arrays display without commas and support mathematical operations
+7. **Import Convention**: Always use `import numpy as np` for consistency
+
+</div>
+
+<Callout type="success">
+🎉 **Congratulations!** You've mastered NumPy fundamentals including array creation, indexing, slicing, reshaping, and mathematical operations. You also learned how to troubleshoot common issues like circular imports and syntax errors. These skills form the foundation for data science, machine learning, and scientific computing in Python.
+</Callout>
+
+## 💬 Practice Challenge
+
+Try these exercises to reinforce your learning:
+
+1. **Array Creation**: Create a 3×4 array with numbers 1-12
+2. **Slicing Practice**: Extract the middle 2×2 portion from your array
+3. **Reshaping Challenge**: Convert a 1D array of 12 elements into different shapes (3×4, 2×6, 12×1)
+4. **Statistics**: Calculate mean, sum, min, and max of a 2D array
+5. **Troubleshooting**: Intentionally create and fix a circular import error
+
+---
+
+*This tutorial recreated real terminal sessions showing NumPy fundamentals in action. Every command, error, and solution was explained in detail to help beginners understand both successful operations and common troubleshooting scenarios.*

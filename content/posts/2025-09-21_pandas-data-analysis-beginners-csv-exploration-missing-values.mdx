@@ -1,0 +1,855 @@
+---
+title: "Pandas Data Analysis for Absolute Beginners: Reading CSV Files, Data Exploration & Missing Values"
+description: "Master pandas fundamentals with step-by-step terminal demonstrations. Learn to read CSV files, explore data structure, generate statistics, and handle missing values with detailed command explanations and output analysis."
+date: "2025-09-21T23:30:00.000Z"
+tags: ["pandas", "python", "data-analysis", "csv", "missing-values", "data-science", "beginners"]
+published: true
+author: "Owais"
+category: "Data Science"
+seo:
+  canonical: "https://owais.io/blog/pandas-data-analysis-beginners-csv-exploration-missing-values"
+  keywords: ["pandas tutorial", "python data analysis", "csv pandas", "missing values pandas", "data exploration", "pandas beginner guide"]
+toc: true
+---
+
+Data analysis is one of the most powerful applications of Python, and pandas is the go-to library for working with structured data. In this comprehensive tutorial, we'll walk through a real terminal session where we explore a CSV dataset, understand its structure, and handle missing values - all explained step by step for absolute beginners.
+
+<Callout type="info">
+🎯 **What You'll Learn**: In this hands-on tutorial, you'll discover:
+- How to set up your workspace for pandas data analysis
+- Reading CSV files into pandas DataFrames
+- Exploring data structure with head() and describe() methods
+- Understanding and interpreting data statistics
+- Identifying missing values in your dataset
+- Cleaning data by removing rows with missing values
+- Interpreting terminal outputs and understanding what each result means
+- Best practices for initial data exploration
+</Callout>
+
+## 🚀 Setting Up Our Data Analysis Environment
+
+### Understanding Our Starting Point
+
+Let's begin by examining our working directory to see what data we have available:
+
+```bash title="Check available files"
+ls
+```
+
+**Terminal Output:**
+```
+data.csv
+```
+
+**Command Explanation:**
+- `ls` lists all files and directories in the current location
+- **Output Analysis**: We can see there's a file called `data.csv` - this is our dataset that we'll be analyzing
+- **File Type**: CSV stands for "Comma-Separated Values" - a common format for storing tabular data
+
+<div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900 dark:to-indigo-900 p-6 rounded-lg my-6">
+
+### Prerequisites
+
+Before we dive in, make sure you have:
+- Python 3.x installed on your system
+- Pandas library installed (`pip install pandas`)
+- Basic understanding of Python variables and functions
+- Familiarity with terminal/command line operations
+- A CSV file to work with (or use our example data structure)
+
+</div>
+
+## 📝 Creating Our First Pandas Script
+
+### Setting Up the Analysis File
+
+```bash title="Create pandas analysis script"
+nano pandas_lab.py
+```
+
+**Command Explanation:**
+- `nano` opens a text editor in the terminal
+- `pandas_lab.py` is the name of our Python script file
+- The `.py` extension tells us this is a Python file
+
+Let's create our initial script to read and display the data:
+
+```python title="pandas_lab.py - Initial Data Reading" showLineNumbers
+import pandas as pd
+
+df = pd.read_csv('data.csv')
+
+print(df.head())
+```
+
+### Breaking Down the Pandas Code
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead className="bg-gray-50 dark:bg-gray-800">
+    <tr>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Code Line</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Purpose</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Explanation</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>import pandas as pd</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Import library</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Brings pandas functionality into our script, 'pd' is a common alias</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>df = pd.read_csv('data.csv')</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Read CSV file</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Creates a DataFrame (df) from the CSV file</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>print(df.head())</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Display data</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Shows the first 5 rows of the dataset</td>
+    </tr>
+  </tbody>
+</table>
+
+### Viewing Our Script Content
+
+```bash title="Check the script content"
+cat pandas_lab.py
+```
+
+**Terminal Output:**
+```python
+import pandas as pd
+
+df = pd.read_csv('data.csv')
+
+print(df.head())
+```
+
+**Command Explanation:**
+- `cat` displays the contents of a file in the terminal
+- This confirms our script was saved correctly
+- We can see the exact code that will be executed
+
+## 🔍 First Data Exploration: Understanding df.head()
+
+### Running Our Initial Script
+
+```bash title="Execute pandas script"
+python pandas_lab.py
+```
+
+**Terminal Output:**
+```
+            name   age   salary   department  experience_years  performance_score           city   join_date
+0  Alice Johnson  28.0  65000.0  Engineering               3.0                8.5       New York  2021-03-15
+1      Bob Smith  34.0  72000.0    Marketing               7.0                7.2  San Francisco  2019-01-20
+2    Carol Davis  29.0      NaN  Engineering               4.0                9.1         Boston  2020-07-10
+3   David Wilson  45.0  95000.0      Finance              12.0                6.8        Chicago  2015-05-30
+4     Emma Brown  31.0  68000.0    Marketing               5.0                NaN        Seattle  2018-11-12
+```
+
+### Understanding the Output Structure
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead className="bg-gray-50 dark:bg-gray-800">
+    <tr>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Column</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Data Type</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Description</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Sample Value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>name</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">String</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Employee full name</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Alice Johnson</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>age</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Float</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Employee age in years</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">28.0</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>salary</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Float</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Annual salary in dollars</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">65000.0</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>department</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">String</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Work department</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Engineering</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>experience_years</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Float</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Years of work experience</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">3.0</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>performance_score</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Float</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Employee performance rating</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">8.5</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>city</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">String</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Employee location</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">New York</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>join_date</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">String</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Date employee joined company</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">2021-03-15</td>
+    </tr>
+  </tbody>
+</table>
+
+<Callout type="warning">
+⚠️ **Important Observation**: Notice the `NaN` values in row 2 (Carol Davis - salary) and row 4 (Emma Brown - performance_score). `NaN` stands for "Not a Number" and represents missing data.
+</Callout>
+
+## 📊 Viewing the Complete Dataset
+
+### Modifying Our Script to See All Data
+
+```bash title="Edit script to show full dataset"
+nano pandas_lab.py
+```
+
+Let's add a line to see the complete dataset:
+
+```python title="pandas_lab.py - Updated Version" showLineNumbers
+import pandas as pd
+
+df = pd.read_csv('data.csv')
+
+print(df.head())
+
+print(df)
+```
+
+### Checking Our Updated Script
+
+```bash title="View updated script"
+cat pandas_lab.py
+```
+
+**Terminal Output:**
+```python
+import pandas as pd
+
+df = pd.read_csv('data.csv')
+
+print(df.head())
+
+print(df)
+```
+
+### Running the Updated Script
+
+```bash title="Execute updated script"
+python pandas_lab.py
+```
+
+**Terminal Output (Full Dataset):**
+```
+            name   age   salary   department  experience_years  performance_score           city   join_date
+0  Alice Johnson  28.0  65000.0  Engineering               3.0                8.5       New York  2021-03-15
+1      Bob Smith  34.0  72000.0    Marketing               7.0                7.2  San Francisco  2019-01-20
+2    Carol Davis  29.0      NaN  Engineering               4.0                9.1         Boston  2020-07-10
+3   David Wilson  45.0  95000.0      Finance              12.0                6.8        Chicago  2015-05-30
+4     Emma Brown  31.0  68000.0    Marketing               5.0                NaN        Seattle  2018-11-12
+              name   age   salary   department  experience_years  performance_score           city   join_date
+0    Alice Johnson  28.0  65000.0  Engineering               3.0                8.5       New York  2021-03-15
+1        Bob Smith  34.0  72000.0    Marketing               7.0                7.2  San Francisco  2019-01-20
+2      Carol Davis  29.0      NaN  Engineering               4.0                9.1         Boston  2020-07-10
+3     David Wilson  45.0  95000.0      Finance              12.0                6.8        Chicago  2015-05-30
+4       Emma Brown  31.0  68000.0    Marketing               5.0                NaN        Seattle  2018-11-12
+5     Frank Miller  38.0  82000.0  Engineering               9.0                8.9         Austin  2017-02-28
+6        Grace Lee   NaN  75000.0      Finance               6.0                7.5         Denver  2019-08-14
+7     Henry Garcia  27.0  58000.0    Marketing               2.0                8.0          Miami  2022-01-05
+8         Ivy Chen  33.0  88000.0  Engineering               8.0                9.3       Portland  2016-09-22
+9      Jack Taylor  42.0  91000.0      Finance               NaN                7.9      Nashville  2014-12-01
+10   Kate Anderson  26.0  55000.0    Marketing               1.0                6.9        Phoenix  2023-03-18
+11  Liam Rodriguez  36.0  79000.0  Engineering               7.0                8.7         Dallas  2018-06-25
+12      Maya Patel  30.0  71000.0      Finance               5.0                8.2            NaN  2020-02-14
+13        Noah Kim  29.0  66000.0    Marketing               3.0                7.8    Los Angeles  2021-04-30
+14    Olivia White  35.0  85000.0  Engineering               9.0                9.0      San Diego  2016-10-12
+15   Paul Thompson  41.0  89000.0      Finance              11.0                7.4        Houston  2013-08-20
+16     Quinn Davis  28.0      NaN    Marketing               2.0                8.1        Atlanta  2022-05-15
+17    Rachel Green  32.0  77000.0  Engineering               6.0                8.8   Philadelphia  2018-12-03
+18      Sam Wilson  39.0  83000.0      Finance              10.0                7.6        Detroit  2015-11-28
+19      Tina Lopez  27.0  62000.0    Marketing               3.0                NaN      Las Vegas  2021-09-10
+```
+
+### Understanding the Complete Dataset
+
+**Key Observations:**
+- **Total Records**: 20 employees (indexed 0-19)
+- **Duplicate Display**: The data appears twice because we have both `df.head()` and `print(df)` in our script
+- **Missing Values**: We can spot several `NaN` values throughout the dataset:
+  - Grace Lee (row 6): Missing age
+  - Jack Taylor (row 9): Missing experience_years
+  - Maya Patel (row 12): Missing city
+  - Quinn Davis (row 16): Missing salary
+  - Tina Lopez (row 19): Missing performance_score
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead className="bg-gray-50 dark:bg-gray-800">
+    <tr>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Department</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Count</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Salary Range</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Engineering</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">7 employees</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">$65,000 - $88,000</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Marketing</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">6 employees</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">$55,000 - $72,000</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Finance</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">7 employees</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">$71,000 - $95,000</td>
+    </tr>
+  </tbody>
+</table>
+
+## 📈 Statistical Analysis with describe()
+
+### Adding Statistical Summary
+
+```bash title="Edit script to add statistical analysis"
+nano pandas_lab.py
+```
+
+Let's replace the full data display with statistical summary:
+
+```python title="pandas_lab.py - Statistical Analysis" showLineNumbers
+import pandas as pd
+
+df = pd.read_csv('data.csv')
+
+print(df.head())
+
+print(df.describe())
+```
+
+### Viewing the Updated Script
+
+```bash title="Check updated script"
+cat pandas_lab.py
+```
+
+**Terminal Output:**
+```python
+import pandas as pd
+
+df = pd.read_csv('data.csv')
+
+print(df.head())
+
+print(df.describe())
+```
+
+### Running Statistical Analysis
+
+```bash title="Execute statistical analysis"
+python pandas_lab.py
+```
+
+**Terminal Output:**
+```
+            name   age   salary   department  experience_years  performance_score           city   join_date
+0  Alice Johnson  28.0  65000.0  Engineering               3.0                8.5       New York  2021-03-15
+1      Bob Smith  34.0  72000.0    Marketing               7.0                7.2  San Francisco  2019-01-20
+2    Carol Davis  29.0      NaN  Engineering               4.0                9.1         Boston  2020-07-10
+3   David Wilson  45.0  95000.0      Finance              12.0                6.8        Chicago  2015-05-30
+4     Emma Brown  31.0  68000.0    Marketing               5.0                NaN        Seattle  2018-11-12
+             age        salary  experience_years  performance_score
+count  19.000000     18.000000         19.000000          18.000000
+mean   33.157895  75611.111111          5.947368           8.094444
+std     5.679037  11783.033110          3.257021           0.770387
+min    26.000000  55000.000000          1.000000           6.800000
+25%    28.500000  66500.000000          3.000000           7.525000
+50%    32.000000  76000.000000          6.000000           8.050000
+75%    37.000000  84500.000000          8.500000           8.775000
+max    45.000000  95000.000000         12.000000           9.300000
+```
+
+### Understanding the Statistical Summary
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead className="bg-gray-50 dark:bg-gray-800">
+    <tr>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Statistic</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Age</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Salary</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Experience Years</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Performance Score</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>count</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">19</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">18</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">19</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">18</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>mean</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">33.16 years</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">$75,611</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">5.95 years</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">8.09/10</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>std</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">5.68 years</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">$11,783</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">3.26 years</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">0.77 points</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>min</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">26 years</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">$55,000</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">1 year</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">6.8/10</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>25%</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">28.5 years</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">$66,500</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">3 years</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">7.53/10</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>50%</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">32 years</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">$76,000</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">6 years</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">8.05/10</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>75%</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">37 years</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">$84,500</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">8.5 years</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">8.78/10</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>max</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">45 years</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">$95,000</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">12 years</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">9.3/10</td>
+    </tr>
+  </tbody>
+</table>
+
+**Key Insights from the Statistics:**
+
+1. **Count Discrepancies**: Notice how salary and performance_score have only 18 valid entries instead of 20, indicating missing values
+2. **Age Distribution**: Employees range from 26-45 years, with an average of 33 years
+3. **Salary Range**: $55,000 to $95,000, with median at $76,000
+4. **Experience**: 1-12 years of experience, median is 6 years
+5. **Performance**: Scores range from 6.8 to 9.3 out of 10, with most employees performing well (mean: 8.09)
+
+<Callout type="info">
+ℹ️ **Statistical Terms Explained**:
+- **count**: Number of non-missing values
+- **mean**: Average value
+- **std**: Standard deviation (measure of spread)
+- **min/max**: Smallest and largest values
+- **25%, 50%, 75%**: Quartiles (percentiles showing data distribution)
+</Callout>
+
+## 🔍 Investigating Missing Values
+
+### Identifying Missing Data
+
+```bash title="Edit script to check missing values"
+nano pandas_lab.py
+```
+
+Let's modify our script to focus on missing values:
+
+```python title="pandas_lab.py - Missing Values Analysis" showLineNumbers
+import pandas as pd
+
+df = pd.read_csv('data.csv')
+
+#print(df.head())
+
+#print(df.describe())
+
+print(df.isnull().sum())
+```
+
+### Running Missing Values Analysis
+
+```bash title="Execute missing values analysis"
+python pandas_lab.py
+```
+
+**Terminal Output:**
+```
+name                 0
+age                  1
+salary               2
+department           0
+experience_years     1
+performance_score    2
+city                 1
+join_date            0
+dtype: int64
+```
+
+### Understanding Missing Values Output
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead className="bg-gray-50 dark:bg-gray-800">
+    <tr>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Column</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Missing Values</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Impact</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Percentage Missing</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>name</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">0</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">No issues - complete data</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">0%</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>age</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">1</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Minor - age analysis affected</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">5%</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>salary</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">2</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Moderate - compensation analysis affected</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">10%</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>department</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">0</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">No issues - complete data</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">0%</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>experience_years</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">1</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Minor - experience analysis affected</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">5%</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>performance_score</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">2</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Moderate - performance analysis affected</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">10%</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>city</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">1</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Minor - location analysis affected</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">5%</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>join_date</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">0</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">No issues - complete data</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">0%</td>
+    </tr>
+  </tbody>
+</table>
+
+**Understanding the Method:**
+- `df.isnull()` creates a DataFrame of True/False values (True where data is missing)
+- `.sum()` counts the True values in each column
+- **Result**: Number of missing values per column
+
+<Callout type="warning">
+⚠️ **Data Quality Assessment**: Our dataset has missing values in 5 out of 8 columns. This is common in real-world data and requires careful handling to avoid biased analysis.
+</Callout>
+
+## 🧹 Cleaning Data: Removing Missing Values
+
+### Creating a Clean Dataset
+
+```bash title="Edit script to clean data"
+nano pandas_lab.py
+```
+
+Let's modify our script to remove rows with missing values:
+
+```python title="pandas_lab.py - Data Cleaning" showLineNumbers
+import pandas as pd
+
+df = pd.read_csv('data.csv')
+
+df_cleaned = df.dropna()
+print(df_cleaned.isnull().sum())
+
+#print(df.head())
+
+#print(df.describe())
+
+#print(df.isnull().sum())
+```
+
+### Viewing the Final Script
+
+```bash title="Check final script"
+cat pandas_lab.py
+```
+
+**Terminal Output:**
+```python
+import pandas as pd
+
+df = pd.read_csv('data.csv')
+
+df_cleaned = df.dropna()
+print(df_cleaned.isnull().sum())
+
+#print(df.head())
+
+#print(df.describe())
+
+#print(df.isnull().sum())
+```
+
+### Running the Cleaned Data Analysis
+
+```bash title="Execute final script"
+python pandas_lab.py
+```
+
+**Terminal Output:**
+```
+name                 0
+age                  0
+salary               0
+department           0
+experience_years     0
+performance_score    0
+city                 0
+join_date            0
+dtype: int64
+```
+
+### Understanding Data Cleaning Results
+
+**What Happened:**
+- `df.dropna()` removed any row that contained at least one missing value
+- **Result**: All columns now show 0 missing values
+- **New DataFrame**: `df_cleaned` contains only complete records
+
+**Impact Analysis:**
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead className="bg-gray-50 dark:bg-gray-800">
+    <tr>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Metric</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Original Dataset</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Cleaned Dataset</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Data Loss</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Total Rows</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">20 employees</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">~14 employees*</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">~30% data loss</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Missing Values</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">7 total missing values</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">0 missing values</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">100% missing values removed</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Data Quality</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Incomplete records</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Complete records only</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Higher quality, smaller sample</td>
+    </tr>
+  </tbody>
+</table>
+
+*Estimated based on the missing value pattern we observed
+
+**Removed Employees:**
+- Carol Davis (missing salary)
+- Emma Brown (missing performance_score)
+- Grace Lee (missing age)
+- Jack Taylor (missing experience_years)
+- Maya Patel (missing city)
+- Quinn Davis (missing salary)
+- Tina Lopez (missing performance_score)
+
+<Callout type="info">
+ℹ️ **Alternative Approaches**: Instead of dropping rows, we could also:
+- Fill missing values with averages (`fillna(df.mean())`)
+- Fill with specific values (`fillna(0)` or `fillna('Unknown')`)
+- Use forward/backward fill methods
+- Apply domain-specific logic for missing data
+</Callout>
+
+## 🎯 Best Practices for Pandas Data Analysis
+
+### Essential Commands Summary
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead className="bg-gray-50 dark:bg-gray-800">
+    <tr>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Command</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Purpose</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">When to Use</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>pd.read_csv()</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Load CSV data</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">First step in any analysis</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>df.head()</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Preview first 5 rows</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Initial data exploration</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>df.describe()</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Statistical summary</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Understanding data distribution</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>df.isnull().sum()</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Count missing values</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Data quality assessment</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>df.dropna()</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Remove missing values</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Data cleaning</td>
+    </tr>
+  </tbody>
+</table>
+
+### Data Analysis Workflow
+
+```python title="Complete Analysis Template" showLineNumbers
+import pandas as pd
+
+# Step 1: Load Data
+df = pd.read_csv('your_data.csv')
+
+# Step 2: Initial Exploration
+print("Dataset Shape:", df.shape)
+print("\nFirst 5 rows:")
+print(df.head())
+
+# Step 3: Data Types and Info
+print("\nDataset Info:")
+print(df.info())
+
+# Step 4: Statistical Summary
+print("\nStatistical Summary:")
+print(df.describe())
+
+# Step 5: Missing Values Analysis
+print("\nMissing Values:")
+print(df.isnull().sum())
+
+# Step 6: Data Cleaning (if needed)
+df_cleaned = df.dropna()  # or other cleaning methods
+
+# Step 7: Verify Cleaned Data
+print("\nCleaned Data Info:")
+print(df_cleaned.isnull().sum())
+```
+
+## 🚨 Common Mistakes to Avoid
+
+### 1. Not Checking Data Types
+
+```python title="Wrong - Assuming data types"
+# Don't assume salary is numeric
+total_salary = df['salary'].sum()  # Might fail if salary is text
+```
+
+```python title="Better - Check and convert types"
+# Check data types first
+print(df.dtypes)
+# Convert if needed
+df['salary'] = pd.to_numeric(df['salary'], errors='coerce')
+```
+
+### 2. Dropping Too Much Data
+
+```python title="Be Careful - Consider alternatives"
+# Don't always drop missing values
+df_cleaned = df.dropna()  # Might lose too much data
+
+# Consider alternatives
+df['age'].fillna(df['age'].mean())  # Fill with average
+df['department'].fillna('Unknown')  # Fill with placeholder
+```
+
+### 3. Not Saving Your Work
+
+```python title="Good Practice - Save cleaned data"
+# Save cleaned dataset
+df_cleaned.to_csv('cleaned_data.csv', index=False)
+
+# Save analysis results
+analysis_summary = df.describe()
+analysis_summary.to_csv('analysis_summary.csv')
+```
+
+## 🎯 Key Takeaways
+
+<div className="bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-900 dark:to-blue-900 p-6 rounded-lg my-8">
+
+### ✅ Remember These Points
+
+1. **Always Start with Exploration**: Use `head()`, `info()`, and `describe()` to understand your data
+2. **Check for Missing Values**: Use `isnull().sum()` before any analysis
+3. **Understand Your Data**: Look at data types, ranges, and distributions
+4. **Clean Thoughtfully**: Don't just drop missing values - consider the impact
+5. **Document Your Process**: Comment your code and save intermediate results
+6. **Verify Results**: Always check your cleaned data to ensure it makes sense
+7. **Save Your Work**: Export cleaned datasets and analysis results
+
+</div>
+
+<Callout type="success">
+🎉 **Congratulations!** You've mastered the fundamentals of pandas data analysis. You can now confidently load CSV files, explore data structure, generate statistical summaries, identify missing values, and clean datasets. These skills form the foundation for all data analysis and data science work in Python.
+</Callout>
+
+---
+
+*This tutorial demonstrated real terminal commands and pandas operations with detailed explanations of every step and output. Each command was explained to help beginners understand not just what to do, but why and how pandas works for data analysis.*
