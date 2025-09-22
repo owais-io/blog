@@ -177,9 +177,9 @@ export default function TagsPageClient({
               {posts.map((post) => (
                 <article key={post.slug} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow">
                   <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mb-3">
-                    <time dateTime={post.date}>
+                    {/* <time dateTime={post.date}>
                       {format(new Date(post.date), 'MMM d, yyyy')}
-                    </time>
+                    </time> */}
                     <span>•</span>
                     <span>{post.readingTime}</span>
                   </div>

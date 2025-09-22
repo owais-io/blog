@@ -111,12 +111,12 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
 
                 <div className="flex flex-wrap items-center justify-center gap-6 text-gray-500 dark:text-gray-400 mb-8">
                   <div className="inline-flex items-center">
-                    <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    {/* <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
                     </svg>
                     <time dateTime={post.date} className="font-medium">
                       {format(new Date(post.date), 'MMMM d, yyyy')}
-                    </time>
+                    </time> */}
                   </div>
                   <span className="w-1 h-1 bg-current rounded-full" />
                   <div className="inline-flex items-center">
@@ -169,9 +169,9 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
                   <p className="text-gray-600 dark:text-gray-400 mb-2">
                     Thank you for reading!
                   </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-500">
+                  {/* <p className="text-sm text-gray-500 dark:text-gray-500">
                     Published on {format(new Date(post.date), 'MMMM d, yyyy')}
-                  </p>
+                  </p> */}
                 </div>
 
                 <div className="flex gap-3">

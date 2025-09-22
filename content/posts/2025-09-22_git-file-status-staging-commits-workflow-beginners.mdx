@@ -693,6 +693,361 @@ Date:   Mon Sep 22 16:50:12 2025 +0500
   </tbody>
 </table>
 
+## 📋 Git File Status & Workflow Quick Reference Cheat Sheet
+
+<div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900 dark:to-pink-900 p-6 rounded-lg my-8">
+
+### 🚀 Essential Git Commands
+
+```bash
+# Check repository status
+git status
+
+# Add files to staging area
+git add filename.txt          # Add specific file
+git add .                     # Add all files in current directory
+git add *.txt                 # Add all .txt files
+
+# Commit changes
+git commit -m "Your message"  # Commit with message
+git commit                    # Open editor for commit message
+
+# View commit history
+git log                       # Full commit history
+git log --oneline            # Compact one-line format
+```
+
+</div>
+
+### 📊 File Status System Reference
+
+<table className="w-full border-collapse border border-gray-300 dark:border-gray-600 my-6">
+  <thead>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Status</th>
+      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">What It Means</th>
+      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Git Status Shows</th>
+      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Next Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 font-semibold text-red-600">Untracked</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">New file Git doesn't know about</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">"Untracked files: filename.txt"</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2"><code>git add filename.txt</code></td>
+    </tr>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 font-semibold text-yellow-600">Modified</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Tracked file has changes</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">"modified: filename.txt"</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2"><code>git add filename.txt</code></td>
+    </tr>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 font-semibold text-blue-600">Staged</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Changes ready to commit</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">"new file: filename.txt" or "modified: filename.txt"</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2"><code>git commit -m "message"</code></td>
+    </tr>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 font-semibold text-green-600">Committed</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Changes saved in repository</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">"working tree clean"</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Continue working</td>
+    </tr>
+  </tbody>
+</table>
+
+### 🔄 Complete Workflow Patterns
+
+#### Pattern 1: Adding New Files
+```bash
+# 1. Create new file
+touch newfile.txt
+echo "content" > newfile.txt
+
+# 2. Check status (will show untracked)
+git status
+
+# 3. Add to staging area
+git add newfile.txt
+
+# 4. Check status (will show staged)
+git status
+
+# 5. Commit
+git commit -m "Add new file with initial content"
+
+# 6. Verify (should show clean working tree)
+git status
+```
+
+#### Pattern 2: Modifying Existing Files
+```bash
+# 1. Edit existing file
+echo "new content" >> existing.txt
+
+# 2. Check status (will show modified)
+git status
+
+# 3. Add changes to staging
+git add existing.txt
+
+# 4. Commit changes
+git commit -m "Update existing file with new content"
+```
+
+#### Pattern 3: Working with Multiple Files
+```bash
+# 1. Modify multiple files
+echo "content1" > file1.txt
+echo "content2" > file2.txt
+echo "content3" > file3.txt
+
+# 2. Check what's changed
+git status
+
+# 3. Stage specific files
+git add file1.txt file2.txt    # Add specific files
+# OR
+git add .                      # Add all files
+
+# 4. Commit with descriptive message
+git commit -m "Add three new configuration files"
+```
+
+### 🎯 Git Status Output Decoder
+
+<table className="w-full border-collapse border border-gray-300 dark:border-gray-600 my-6">
+  <thead>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Git Status Message</th>
+      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">What It Means</th>
+      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">What To Do</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2"><code>"On branch master"</code></td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Shows current branch name</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Information only</td>
+    </tr>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2"><code>"No commits yet"</code></td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Repository has no commit history</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Make your first commit</td>
+    </tr>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2"><code>"Changes to be committed:"</code></td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Files in staging area</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Ready to commit</td>
+    </tr>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2"><code>"Changes not staged:"</code></td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Modified files not yet staged</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Use <code>git add</code> to stage</td>
+    </tr>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2"><code>"Untracked files:"</code></td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">New files Git doesn't track</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Use <code>git add</code> to start tracking</td>
+    </tr>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2"><code>"working tree clean"</code></td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">No changes detected</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Nothing to do</td>
+    </tr>
+  </tbody>
+</table>
+
+### 💡 Command Variations & Tips
+
+<table className="w-full border-collapse border border-gray-300 dark:border-gray-600 my-6">
+  <thead>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Command</th>
+      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">What It Does</th>
+      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">When To Use</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2"><code>git add .</code></td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Add all files in current directory</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">When you want to stage everything</td>
+    </tr>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2"><code>git add *.txt</code></td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Add all .txt files</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">When staging specific file types</td>
+    </tr>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2"><code>git add file1 file2</code></td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Add multiple specific files</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">For selective staging</td>
+    </tr>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2"><code>git log --oneline</code></td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Compact commit history</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Quick overview of commits</td>
+    </tr>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2"><code>git log -n 5</code></td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Show last 5 commits</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Limit log output</td>
+    </tr>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2"><code>git status -s</code></td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Short status format</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Quick status check</td>
+    </tr>
+  </tbody>
+</table>
+
+### 📝 Commit Message Best Practices
+
+#### Good Commit Message Format
+```bash
+# Pattern: [Type]: [Brief description]
+git commit -m "Add: user authentication system"
+git commit -m "Fix: login validation bug"
+git commit -m "Update: README with installation steps"
+git commit -m "Remove: deprecated configuration file"
+```
+
+#### Message Type Examples
+<table className="w-full border-collapse border border-gray-300 dark:border-gray-600 my-6">
+  <thead>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Type</th>
+      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Use When</th>
+      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Example</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2"><strong>Add</strong></td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Creating new files or features</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">"Add contact form validation"</td>
+    </tr>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2"><strong>Fix</strong></td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Correcting bugs or issues</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">"Fix mobile navigation menu"</td>
+    </tr>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2"><strong>Update</strong></td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Modifying existing functionality</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">"Update API endpoint responses"</td>
+    </tr>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2"><strong>Remove</strong></td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Deleting files or features</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">"Remove unused CSS files"</td>
+    </tr>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2"><strong>Refactor</strong></td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Code cleanup without changing functionality</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">"Refactor user service methods"</td>
+    </tr>
+  </tbody>
+</table>
+
+### 🚨 Common Scenarios & Solutions
+
+#### Scenario 1: Accidentally Staged Wrong File
+```bash
+# Problem: Added wrong file to staging
+git add wrong-file.txt
+
+# Solution: Remove from staging (keeps file changes)
+git reset wrong-file.txt
+
+# Then add the correct file
+git add correct-file.txt
+```
+
+#### Scenario 2: Want to See What Changed
+```bash
+# See what files changed (not staged yet)
+git diff
+
+# See what files are staged for commit
+git diff --staged
+
+# See specific file changes
+git diff filename.txt
+```
+
+#### Scenario 3: Check Specific Commit Details
+```bash
+# Show detailed info about latest commit
+git show
+
+# Show specific commit (replace with actual hash)
+git show 4d0a85e
+
+# Show files changed in commit
+git show --name-only 4d0a85e
+```
+
+### 🎯 Daily Workflow Checklist
+
+<div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900 dark:to-blue-900 p-6 rounded-lg my-6">
+
+**Before Starting Work:**
+- [ ] `git status` - Check current state
+- [ ] `git log --oneline -5` - Review recent commits
+
+**During Development:**
+- [ ] Create/edit files as needed
+- [ ] `git status` - See what changed
+- [ ] `git add <files>` - Stage your changes
+- [ ] `git status` - Verify staging area
+- [ ] `git commit -m "Clear message"` - Save snapshot
+
+**After Commits:**
+- [ ] `git log --oneline` - Verify commit was created
+- [ ] `git status` - Confirm clean working tree
+
+</div>
+
+### 🔧 Troubleshooting Quick Fixes
+
+<table className="w-full border-collapse border border-gray-300 dark:border-gray-600 my-6">
+  <thead>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Problem</th>
+      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Symptoms</th>
+      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Solution</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Nothing to commit</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">"working tree clean"</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Make some changes first, then <code>git add</code></td>
+    </tr>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Files not included in commit</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Still showing as modified</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Use <code>git add</code> before <code>git commit</code></td>
+    </tr>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Commit message editor opens</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Text editor instead of command line</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Always use <code>git commit -m "message"</code></td>
+    </tr>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Too many files to add individually</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Many untracked files</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Use <code>git add .</code> to add all</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
 ## 🎯 Key Takeaways
 
 <div className="bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-900 dark:to-blue-900 p-6 rounded-lg my-8">
