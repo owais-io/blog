@@ -1,0 +1,739 @@
+---
+title: "Git File Status & Workflow: Understanding Untracked, Staged, and Modified Files with Real Terminal Examples"
+description: "Complete beginner's guide to Git file status system. Learn about untracked, tracked, modified, and staged files, understand the staging area, make your first commits, and explore git log with detailed terminal output explanations."
+date: "2025-09-22T18:00:00.000Z"
+tags: ["git", "staging", "commits", "workflow", "file-status"]
+published: true
+author: "Owais"
+category: "Version Control"
+seo:
+  canonical: "https://owais.io/blog/git-file-status-staging-commits-workflow-beginners"
+  keywords: ["git file status", "git staging area", "git commit", "git workflow", "untracked files", "git add", "git log"]
+toc: true
+---
+
+Now that you have [Git installed and your first repository created](/blog/2025-09-22_git-installation-setup-first-repository-beginners), it's time to understand how Git tracks files and manages changes. This tutorial follows our real terminal session, explaining every file status, staging operation, and commit with complete detail for absolute beginners.
+
+<Callout type="info">
+🎯 **What You'll Learn**: In this hands-on tutorial, you'll discover:
+- The complete Git file status system (untracked, tracked, modified, staged)
+- What the staging area is and why it exists
+- How to add files to Git tracking with detailed command explanations
+- Making your first commits with meaningful messages
+- Understanding Git log output and commit history
+- Real-world workflow patterns for daily development
+- Every Git status message explained line by line
+**Prerequisites**: Git installed and first repository created (Part 3)
+</Callout>
+
+## 📊 Understanding Git File Status System
+
+### The Four File States in Git
+
+Before we dive into our terminal session, let's understand the four possible states any file can be in within a Git repository:
+
+<table className="w-full border-collapse border border-gray-300 dark:border-gray-600 my-6">
+  <thead>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">File Status</th>
+      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Description</th>
+      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Git's Knowledge</th>
+      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Next Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 font-semibold text-red-600">Untracked</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">File exists but Git doesn't know about it</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Not watching this file</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Use `git add` to start tracking</td>
+    </tr>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 font-semibold text-green-600">Tracked (Unmodified)</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">File is tracked and hasn't changed</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Knows this file, no changes detected</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Nothing - file is up to date</td>
+    </tr>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 font-semibold text-yellow-600">Modified</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">File is tracked and has been changed</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Knows file changed since last commit</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Use `git add` to stage changes</td>
+    </tr>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 font-semibold text-blue-600">Staged</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Changes are ready to be committed</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Changes prepared for next snapshot</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Use `git commit` to save snapshot</td>
+    </tr>
+  </tbody>
+</table>
+
+### Visual File Status Flow
+
+<div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900 dark:to-indigo-900 p-6 rounded-lg my-6">
+
+**File Lifecycle in Git:**
+
+```
+New File → [git add] → Staged → [git commit] → Tracked (Unmodified)
+                         ↑                           ↓
+                    [git add]                   [edit file]
+                         ↑                           ↓
+                      Modified ← ← ← ← ← ← ← ← ← ← ← ← ← ←
+```
+
+**Key Insight**: Files move between these states as you work. Understanding this flow is crucial for effective Git usage.
+
+</div>
+
+## 📁 Creating Your First Files
+
+Let's start by creating some files in our repository and watch how Git reacts:
+
+### Creating the First File
+
+```bash title="Terminal Session: Creating First File"
+[centos9@vbox myproject 16:45:48]$ touch first.txt
+[centos9@vbox myproject 16:46:37]$ nano first.txt
+[centos9@vbox myproject 16:46:45]$ cat first.txt
+hello
+```
+
+**Command Breakdown:**
+- `touch first.txt` - Creates an empty file named "first.txt"
+- `nano first.txt` - Opens the file in the nano text editor
+- `cat first.txt` - Displays the contents of the file
+
+**What happened**: We created a file with the content "hello". Git doesn't know about this file yet.
+
+### Checking Git Status After File Creation
+
+```bash title="Terminal Session: First Git Status with File"
+[centos9@vbox myproject 16:46:58]$ git status
+On branch master
+
+No commits yet
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	first.txt
+
+nothing added to commit but untracked files present (use "git add" to track)
+```
+
+### Understanding the New Git Status Output
+
+<table className="w-full border-collapse border border-gray-300 dark:border-gray-600 my-6">
+  <thead>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Status Line</th>
+      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Meaning</th>
+      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">What Git Is Telling You</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 font-semibold">"Untracked files:"</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Git found files it doesn't track</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">"I see new files but I'm not watching them"</td>
+    </tr>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 font-semibold">"use "git add &lt;file&gt;...""</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Instruction to start tracking</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">"If you want me to track these, use git add"</td>
+    </tr>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 font-semibold">"first.txt"</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Specific untracked file</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">"This is the file I'm not tracking"</td>
+    </tr>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 font-semibold">"nothing added to commit"</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">No changes staged for commit</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">"No files ready to be saved in a snapshot"</td>
+    </tr>
+  </tbody>
+</table>
+
+### Adding a Second File
+
+Let's create another file to see how Git handles multiple untracked files:
+
+```bash title="Terminal Session: Creating Second File"
+[centos9@vbox myproject 16:47:01]$ touch second
+[centos9@vbox myproject 16:47:45]$ git status
+On branch master
+
+No commits yet
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	first.txt
+	second
+
+nothing added to commit but untracked files present (use "git add" to track)
+```
+
+**Key Observation**: Git now shows **both** untracked files. Git detects all files in your working directory and reports their status.
+
+## 📋 Understanding the Staging Area
+
+### What is the Staging Area?
+
+<div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900 dark:to-blue-900 p-6 rounded-lg my-6">
+
+**The Staging Area** (also called "Index") is like a **preparation area** for your next commit. Think of it as:
+
+**Photo Album Analogy:**
+- **Working Directory** = Photos scattered on your desk
+- **Staging Area** = Photos you've selected and arranged for the next album page
+- **Repository** = The completed album pages (commits)
+
+**Why does the staging area exist?**
+- ✅ **Selective Commits**: Choose exactly which changes to include
+- ✅ **Review Changes**: Double-check what you're about to commit
+- ✅ **Organize Work**: Group related changes together
+- ✅ **Flexibility**: Stage some files, continue working on others
+
+</div>
+
+### Adding Files to Staging Area
+
+Let's add our files to the staging area:
+
+```bash title="Terminal Session: Adding Files to Staging"
+[centos9@vbox myproject 16:47:48]$ git add .
+[centos9@vbox myproject 16:48:32]$ # or "git add first.txt second"
+```
+
+**Command Options Explained:**
+- `git add .` - Add **all** files in current directory and subdirectories
+- `git add first.txt second` - Add **specific** files by name
+- `git add *.txt` - Add all files matching a pattern (all .txt files)
+- `git add --all` or `git add -A` - Add all files in the repository
+
+### Checking Status After Staging
+
+```bash title="Terminal Session: Status After git add"
+[centos9@vbox myproject 16:49:15]$ git status
+On branch master
+
+No commits yet
+
+Changes to be committed:
+  (use "git rm --cached <file>..." to unstage)
+	new file:   first.txt
+	new file:   second
+```
+
+### Understanding Staged File Status
+
+<table className="w-full border-collapse border border-gray-300 dark:border-gray-600 my-6">
+  <thead>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Status Change</th>
+      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Before git add</th>
+      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">After git add</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 font-semibold">Section Header</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">"Untracked files:"</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">"Changes to be committed:"</td>
+    </tr>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 font-semibold">File Status</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Listed as untracked</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">"new file:" prefix shows they're staged</td>
+    </tr>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 font-semibold">Next Action</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">"use git add" to track</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">"git rm --cached" to unstage</td>
+    </tr>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 font-semibold">Git's Understanding</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">"I don't know these files"</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">"These files are ready for the next commit"</td>
+    </tr>
+  </tbody>
+</table>
+
+## 💾 Making Your First Commit
+
+### What is a Commit?
+
+A **commit** is like taking a snapshot of your project at a specific moment. Each commit includes:
+
+<div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-lg my-6">
+
+**Every Commit Contains:**
+- 📸 **Snapshot**: Complete state of all staged files
+- 👤 **Author**: Who made this commit (from git config)
+- 📅 **Timestamp**: Exactly when the commit was made
+- 📝 **Message**: Description of what changed and why
+- 🔗 **Parent**: Link to previous commit (building the timeline)
+- 🔢 **Hash**: Unique identifier for this exact commit
+
+</div>
+
+### Creating Your First Commit
+
+```bash title="Terminal Session: First Git Commit"
+[centos9@vbox myproject 16:49:19]$ git commit -m "added files first.txt and second"
+[master (root-commit) c9c6bf3] added files first.txt and second
+ 2 files changed, 1 insertion(+)
+ create mode 100644 first.txt
+ create mode 100644 second
+```
+
+### Breaking Down the Commit Command
+
+<table className="w-full border-collapse border border-gray-300 dark:border-gray-600 my-6">
+  <thead>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Command Part</th>
+      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Purpose</th>
+      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Explanation</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 font-semibold">`git commit`</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Create a commit from staged changes</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Takes a snapshot of all staged files</td>
+    </tr>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 font-semibold">`-m`</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Add message directly on command line</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Avoids opening text editor for message</td>
+    </tr>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 font-semibold">`"added files..."`</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Commit message describing changes</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Should be clear and descriptive</td>
+    </tr>
+  </tbody>
+</table>
+
+### Understanding Git's Commit Response
+
+Let's decode every part of Git's response:
+
+<table className="w-full border-collapse border border-gray-300 dark:border-gray-600 my-6">
+  <thead>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Output Part</th>
+      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Value</th>
+      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Meaning</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 font-semibold">`[master`</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">master</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Commit was made on the master branch</td>
+    </tr>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 font-semibold">`(root-commit)`</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">root-commit</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">This is the very first commit (no parent)</td>
+    </tr>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 font-semibold">`c9c6bf3]`</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">c9c6bf3</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Short hash (first 7 chars of unique commit ID)</td>
+    </tr>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 font-semibold">`2 files changed`</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">2</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Number of files affected by this commit</td>
+    </tr>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 font-semibold">`1 insertion(+)`</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">1</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Number of lines added (the "hello" line)</td>
+    </tr>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 font-semibold">`create mode 100644`</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">100644</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">File permissions (regular file, readable/writable)</td>
+    </tr>
+  </tbody>
+</table>
+
+### Checking Status After Commit
+
+```bash title="Terminal Session: Clean Status After Commit"
+[centos9@vbox myproject 16:50:12]$ git status
+On branch master
+nothing to commit, working tree clean
+```
+
+**What This Means:**
+- **"nothing to commit"**: All changes have been saved in the commit
+- **"working tree clean"**: No modified files, everything matches the last commit
+- **No "No commits yet"**: We now have commit history!
+
+## 📜 Exploring Git Log
+
+### Viewing Commit History
+
+```bash title="Terminal Session: First Git Log"
+[centos9@vbox myproject 16:50:17]$ git log
+commit c9c6bf38440b6bd55fd5d32f8dc37a4b079ce012 (HEAD -> master)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Sep 22 16:50:12 2025 +0500
+
+    added files first.txt and second
+```
+
+### Understanding Git Log Output
+
+<table className="w-full border-collapse border border-gray-300 dark:border-gray-600 my-6">
+  <thead>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Log Element</th>
+      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Value</th>
+      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 font-semibold">commit</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">c9c6bf38440b6bd55fd5d32f8dc37a4b079ce012</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Full unique hash for this commit</td>
+    </tr>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 font-semibold">(HEAD -> master)</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Current position</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">You are here, on master branch</td>
+    </tr>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 font-semibold">Author</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Owais Abbasi &lt;owais.abbasi9@gmail.com&gt;</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Who made this commit (from git config)</td>
+    </tr>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 font-semibold">Date</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Mon Sep 22 16:50:12 2025 +0500</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Exact timestamp with timezone</td>
+    </tr>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 font-semibold">Message</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">added files first.txt and second</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Description of what this commit does</td>
+    </tr>
+  </tbody>
+</table>
+
+## 🔄 Working with Modified Files
+
+Now let's see what happens when we modify existing files:
+
+### Modifying an Existing File
+
+```bash title="Terminal Session: Modifying first.txt"
+[centos9@vbox myproject 16:50:42]$ nano first.txt
+[centos9@vbox myproject 16:51:27]$ cat first.txt
+hello
+
+working
+```
+
+**What we did**: Added a new line "working" to first.txt file.
+
+### Git Status After File Modification
+
+```bash title="Terminal Session: Status with Modified File"
+[centos9@vbox myproject 16:51:29]$ git status
+On branch master
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   first.txt
+
+no changes added to commit (use "git add" and/or "git commit -a")
+```
+
+### Understanding Modified File Status
+
+<table className="w-full border-collapse border border-gray-300 dark:border-gray-600 my-6">
+  <thead>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Status Element</th>
+      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Meaning</th>
+      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">What Git Knows</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 font-semibold">"Changes not staged"</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">File has been modified but not added to staging</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">"I see changes but they're not ready to commit"</td>
+    </tr>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 font-semibold">"modified: first.txt"</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Specific file that has changes</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">"This file is different from last commit"</td>
+    </tr>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 font-semibold">"git restore"</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Option to undo changes</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">"You can undo these changes if you want"</td>
+    </tr>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 font-semibold">"no changes added to commit"</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Nothing in staging area</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">"Nothing ready for next commit yet"</td>
+    </tr>
+  </tbody>
+</table>
+
+### Multiple Modified Files
+
+Let's modify the second file too:
+
+```bash title="Terminal Session: Modifying Multiple Files"
+[centos9@vbox myproject 16:51:35]$ nano second
+[centos9@vbox myproject 16:52:35]$ cat second
+working
+
+[centos9@vbox myproject 16:52:36]$ git status
+On branch master
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   first.txt
+	modified:   second
+
+no changes added to commit (use "git add" and/or "git commit -a")
+```
+
+**Key Observation**: Git tracks **all** modified files and lists them separately. Each file moves through the status system independently.
+
+## 🎯 Selective Staging and Committing
+
+### Staging Only One File
+
+Let's demonstrate selective staging by adding only one file:
+
+```bash title="Terminal Session: Selective Staging"
+[centos9@vbox myproject 16:52:38]$ git add first.txt
+[centos9@vbox myproject 16:52:53]$ git status
+On branch master
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+	modified:   first.txt
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   second
+
+```
+
+### Understanding Mixed Status
+
+This status output shows a crucial Git concept: **files can be in different states simultaneously**:
+
+<table className="w-full border-collapse border border-gray-300 dark:border-gray-600 my-6">
+  <thead>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">File</th>
+      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Status</th>
+      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">What This Means</th>
+      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Next Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 font-semibold">first.txt</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-green-600">Staged (ready to commit)</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Changes will be included in next commit</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Can commit now or stage more files</td>
+    </tr>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 font-semibold">second</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-yellow-600">Modified (not staged)</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Changes exist but won't be in next commit</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Use git add to stage, or leave for later</td>
+    </tr>
+  </tbody>
+</table>
+
+### Committing Staged Changes
+
+```bash title="Terminal Session: Committing Only Staged Files"
+[centos9@vbox myproject 16:52:57]$ git commit -m "update first.txt"
+[master 4d0a85e] update first.txt
+ 1 file changed, 2 insertions(+)
+```
+
+**Important**: Only the staged file (first.txt) was committed. The modified second file remains in the working directory.
+
+### Status After Partial Commit
+
+```bash title="Terminal Session: Status After Partial Commit"
+[centos9@vbox myproject 16:53:49]$ git status
+On branch master
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   second
+
+no changes added to commit (use "git add" and/or "git commit -a")
+```
+
+**Key Insight**: After committing first.txt, it's no longer shown as modified. Only the unstaged file (second) appears in the status.
+
+## 📜 Viewing Complete Git History
+
+Let's look at our commit history with multiple commits:
+
+```bash title="Terminal Session: Git Log with Multiple Commits"
+[centos9@vbox myproject 16:53:53]$ git log
+commit 4d0a85ecd7b063d5c20089e754577481b07772f4 (HEAD -> master)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Sep 22 16:53:49 2025 +0500
+
+    update first.txt
+
+commit c9c6bf38440b6bd55fd5d32f8dc37a4b079ce012
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Sep 22 16:50:12 2025 +0500
+
+    added files first.txt and second
+```
+
+### Understanding Git Log Timeline
+
+<table className="w-full border-collapse border border-gray-300 dark:border-gray-600 my-6">
+  <thead>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Commit Order</th>
+      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Commit Hash</th>
+      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">What Happened</th>
+      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 font-semibold">Latest (top)</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">4d0a85e...</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Updated first.txt file</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">(HEAD -> master) Current position</td>
+    </tr>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 font-semibold">Previous</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">c9c6bf3...</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Initial commit with both files</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Parent of current commit</td>
+    </tr>
+  </tbody>
+</table>
+
+**Key Points:**
+- **Newest commits appear first** (reverse chronological order)
+- **HEAD -> master** shows where you currently are
+- **Each commit has unique hash** for precise identification
+- **Complete timeline** of your project's evolution
+
+## 🎯 Git Workflow Summary
+
+### The Complete Git Workflow
+
+<div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900 dark:to-blue-900 p-6 rounded-lg my-6">
+
+**Daily Git Workflow:**
+
+1. **Create/Edit Files** → Files are **untracked** or **modified**
+2. **`git status`** → See what files have changed
+3. **`git add <files>`** → Move files to **staging area**
+4. **`git status`** → Verify what's staged for commit
+5. **`git commit -m "message"`** → Create snapshot with **meaningful message**
+6. **`git log`** → Review your commit history
+7. **Repeat** → Continue developing with confidence
+
+</div>
+
+### Best Practices for Commit Messages
+
+<table className="w-full border-collapse border border-gray-300 dark:border-gray-600 my-6">
+  <thead>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Quality</th>
+      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Example</th>
+      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Why</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 font-semibold text-green-600">Good</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">"Add user authentication feature"</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Clear, describes what was added</td>
+    </tr>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 font-semibold text-green-600">Good</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">"Fix login bug for mobile users"</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Explains what was fixed and for whom</td>
+    </tr>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 font-semibold text-red-600">Poor</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">"stuff"</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Too vague, no useful information</td>
+    </tr>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 font-semibold text-red-600">Poor</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">"changed file"</td>
+      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Doesn't explain what changed or why</td>
+    </tr>
+  </tbody>
+</table>
+
+## 🎯 Key Takeaways
+
+<div className="bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-900 dark:to-blue-900 p-6 rounded-lg my-8">
+
+### ✅ Essential Concepts Mastered
+
+1. **File Status System**: Understood untracked, modified, staged, and committed states
+
+2. **Staging Area**: Learned why it exists and how to use it for selective commits
+
+3. **Git Commands**: Mastered `git add`, `git commit`, `git status`, and `git log`
+
+4. **Workflow Pattern**: Create → Add → Commit → Repeat with meaningful messages
+
+5. **Selective Commits**: Can stage some files while leaving others for later
+
+6. **History Tracking**: Git log shows complete timeline with author, date, and messages
+
+7. **Status Interpretation**: Can read and understand Git's status messages
+
+</div>
+
+<Callout type="success">
+🎉 **Congratulations!** You now understand the fundamental Git workflow and can:
+- ✅ Track files and understand their status in Git
+- ✅ Use the staging area to prepare commits selectively
+- ✅ Create meaningful commits with descriptive messages
+- ✅ View and interpret your project's commit history
+- ✅ Work with modified files and understand Git's feedback
+- ✅ Follow a professional Git workflow for daily development
+
+You have the foundation for effective version control in any project!
+</Callout>
+
+
+## 💬 Discussion
+
+How was your experience with the Git workflow?
+
+- Which part of the file status system was most confusing initially?
+- Did the staging area concept make sense with the photo album analogy?
+- Have you tried the selective staging workflow in your own projects?
+- What challenges do you face with writing good commit messages?
+- Do you understand why Git shows so much information in its status output?
