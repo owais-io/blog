@@ -201,9 +201,9 @@ export default function TagsPageClient({
                   
                   <div className="flex items-center justify-between">
                     <div className="flex flex-wrap gap-2">
-                      {post.category && (
+                      {post.categories && post.categories.length > 0 && (
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
-                          {post.category}
+                          {post.categories[0]}
                         </span>
                       )}
                       {post.tags.map((tag) => (
