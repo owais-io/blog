@@ -106,15 +106,32 @@ export default function CategoriesPage({ searchParams }: CategoriesPageProps) {
                   
                   <div className="flex items-center justify-between">
                     <div className="flex flex-wrap gap-2">
-                      {post.tags.map((tag) => (
+                      {/* Categories */}
+                      {post.categories.map((category) => (
+                        <Link
+                          key={category}
+                          href={`/categories?category=${encodeURIComponent(category)}`}
+                          className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 hover:bg-green-200 dark:hover:bg-green-800 transition-colors"
+                        >
+                          📁 {category}
+                        </Link>
+                      ))}
+
+                      {/* Tags */}
+                      {post.tags.slice(0, 3).map((tag) => (
                         <Link
                           key={tag}
                           href={`/tags?tag=${encodeURIComponent(tag)}`}
                           className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"
                         >
-                          {tag}
+                          #{tag}
                         </Link>
                       ))}
+                      {post.tags.length > 3 && (
+                        <span className="text-sm text-gray-500 dark:text-gray-400">
+                          +{post.tags.length - 3} tags
+                        </span>
+                      )}
                     </div>
                     
                     <Link

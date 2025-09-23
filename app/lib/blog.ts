@@ -11,7 +11,7 @@ export interface BlogPost {
   description: string
   date: string
   tags: string[]
-  category: string
+  categories: string[]  // Changed from single category to array
   content: string
   readingTime: string
   published: boolean
@@ -25,7 +25,7 @@ export interface BlogPostMeta {
   description: string
   date: string
   tags: string[]
-  category: string
+  categories: string[]  // Changed from single category to array
   readingTime: string
   published: boolean
   tocEnabled: boolean
@@ -36,6 +36,29 @@ const postsDirectory = path.join(process.cwd(), 'content/posts')
 // Ensure posts directory exists
 if (!fs.existsSync(postsDirectory)) {
   fs.mkdirSync(postsDirectory, { recursive: true })
+}
+
+// Helper function to normalize categories from frontmatter
+function normalizeCategories(data: any): string[] {
+  // Handle both new format (categories array) and legacy format (single category)
+  let categories: string[] = []
+
+  if (Array.isArray(data.categories)) {
+    // New format: categories: ["Cat1", "Cat2", "Cat3"]
+    categories = data.categories
+  } else if (data.category && typeof data.category === 'string') {
+    // Legacy format: category: "Single Category"
+    categories = [data.category]
+  } else if (data.categories && typeof data.categories === 'string') {
+    // Handle case where categories is accidentally a string
+    categories = [data.categories]
+  }
+
+  // Validate and clean categories
+  return categories
+    .filter(cat => cat && typeof cat === 'string' && cat.trim().length > 0)
+    .map(cat => cat.trim())
+    .slice(0, 5) // Enforce max 5 categories limit
 }
 
 export function getAllPosts(): BlogPost[] {
@@ -64,7 +87,7 @@ export function getAllPosts(): BlogPost[] {
         description: data.description || '',
         date: postDate,
         tags: data.tags || [],
-        category: data.category || '',
+        categories: normalizeCategories(data),
         content: processedContent,
         readingTime: readingTime(content).text,
         published: data.published !== false,
@@ -110,7 +133,7 @@ export function getPostBySlug(slug: string): BlogPost | null {
       description: data.description || '',
       date: postDate,
       tags: data.tags || [],
-      category: data.category || '',
+      categories: normalizeCategories(data),
       content: processedContent,
       readingTime: readingTime(content).text,
       published: data.published !== false,
@@ -137,13 +160,16 @@ export function getAllTags(): string[] {
 export function getAllCategories(): string[] {
   const posts = getAllPosts()
   const categories = new Set<string>()
-  
+
   posts.forEach(post => {
-    if (post.category) {
-      categories.add(post.category)
-    }
+    // Add all categories from each post (supports both single and multiple categories)
+    post.categories.forEach(category => {
+      if (category && category.trim()) {
+        categories.add(category.trim())
+      }
+    })
   })
-  
+
   return Array.from(categories).sort()
 }
 
@@ -156,8 +182,11 @@ export function getPostsByTag(tag: string): BlogPost[] {
 
 export function getPostsByCategory(category: string): BlogPost[] {
   const posts = getAllPosts()
-  return posts.filter(post => 
-    post.category.toLowerCase() === category.toLowerCase()
+  return posts.filter(post =>
+    // Check if the post has this category in its categories array
+    post.categories.some(postCategory =>
+      postCategory.toLowerCase() === category.toLowerCase()
+    )
   )
 }
 
@@ -186,7 +215,7 @@ export function getPostsMeta(page = 1, limit = 10, tag?: string, category?: stri
     description: post.description,
     date: post.date,
     tags: post.tags,
-    category: post.category,
+    categories: post.categories,
     readingTime: post.readingTime,
     published: post.published,
     tocEnabled: post.tocEnabled,
@@ -215,8 +244,12 @@ export function getCategoriesByTags(tags: string[]): string[] {
       post.tags.map(t => t.toLowerCase()).includes(tag.toLowerCase())
     )
     
-    if (hasSelectedTag && post.category) {
-      categories.add(post.category)
+    if (hasSelectedTag) {
+      post.categories.forEach(category => {
+        if (category) {
+          categories.add(category)
+        }
+      })
     }
   })
   
@@ -234,8 +267,10 @@ export function getTagsByCategories(categories: string[]): string[] {
   
   posts.forEach(post => {
     // Check if post belongs to any of the selected categories
-    const hasSelectedCategory = categories.some(category => 
-      post.category.toLowerCase() === category.toLowerCase()
+    const hasSelectedCategory = categories.some(category =>
+      post.categories.some(postCategory =>
+        postCategory.toLowerCase() === category.toLowerCase()
+      )
     )
     
     if (hasSelectedCategory) {
@@ -260,8 +295,10 @@ export function getPostsByTagsAndCategories(tags?: string[], categories?: string
   
   if (categories && categories.length > 0) {
     posts = posts.filter(post => 
-      categories.some(category => 
-        post.category.toLowerCase() === category.toLowerCase()
+      categories.some(category =>
+        post.categories.some(postCategory =>
+          postCategory.toLowerCase() === category.toLowerCase()
+        )
       )
     )
   }
@@ -294,7 +331,7 @@ export function getPostsMetaAdvanced(
     description: post.description,
     date: post.date,
     tags: post.tags,
-    category: post.category,
+    categories: post.categories,
     readingTime: post.readingTime,
     published: post.published,
     tocEnabled: post.tocEnabled,
@@ -327,11 +364,15 @@ export function getRelatedPosts(currentSlug: string, limit = 4): BlogPostMeta[] 
   const postsWithScores = otherPosts.map(post => {
     let score = 0
     
-    // 1. Category matching (highest priority) - 3 points
-    const sameCategory = post.category && currentPost.category && 
-                        post.category.toLowerCase() === currentPost.category.toLowerCase()
+    // 1. Category matching (highest priority) - 3 points per shared category
+    const sharedCategories = post.categories.filter(category =>
+      currentPost.categories.some(currentCategory =>
+        currentCategory.toLowerCase() === category.toLowerCase()
+      )
+    ).length
+    const sameCategory = sharedCategories > 0
     if (sameCategory) {
-      score += 3
+      score += 3 * sharedCategories // More shared categories = higher score
     }
     
     // 2. Tag similarity (medium priority) - 1 point per shared tag
@@ -391,7 +432,7 @@ export function getRelatedPosts(currentSlug: string, limit = 4): BlogPostMeta[] 
       description: item.post.description,
       date: item.post.date,
       tags: item.post.tags,
-      category: item.post.category,
+      categories: item.post.categories,
       readingTime: item.post.readingTime,
       published: item.post.published,
       tocEnabled: item.post.tocEnabled,

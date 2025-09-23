@@ -161,6 +161,23 @@ export default function HomePage({ searchParams }: HomePageProps) {
                     
                     <div className="flex items-center justify-between">
                       <div className="flex flex-wrap gap-2">
+                        {/* Categories */}
+                        {post.categories.slice(0, 2).map((category) => (
+                          <Link
+                            key={category}
+                            href={`/?category=${encodeURIComponent(category)}`}
+                            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 hover:bg-green-200 dark:hover:bg-green-800 transition-colors"
+                          >
+                            📁 {category}
+                          </Link>
+                        ))}
+                        {post.categories.length > 2 && (
+                          <span className="text-sm text-gray-500 dark:text-gray-400">
+                            +{post.categories.length - 2} categories
+                          </span>
+                        )}
+
+                        {/* Tags */}
                         {post.tags.slice(0, 3).map((tag) => (
                           <Link
                             key={tag}
@@ -172,7 +189,7 @@ export default function HomePage({ searchParams }: HomePageProps) {
                         ))}
                         {post.tags.length > 3 && (
                           <span className="text-sm text-gray-500 dark:text-gray-400">
-                            +{post.tags.length - 3} more
+                            +{post.tags.length - 3} tags
                           </span>
                         )}
                       </div>
