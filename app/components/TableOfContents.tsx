@@ -85,36 +85,26 @@ export default function TableOfContents({ headings, className = '' }: TableOfCon
 
   return (
     <nav
-      className={`bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm ${className}`}
+      className={`${className}`}
       style={{ maxHeight: 'calc(100vh - 8rem)' }}
       aria-label="Table of Contents"
     >
-      {/* Header */}
-      <div className="p-6 pb-4 border-b border-gray-200 dark:border-gray-700">
-        <h3 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center">
-          <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
-          </svg>
-          Table of Contents
-        </h3>
-      </div>
-
       {/* Scrollable Content */}
       <div
-        className="px-6 py-4 overflow-y-auto scrollbar-thin toc-scrollable-container"
+        className="overflow-y-auto scrollbar-thin toc-scrollable-container"
         style={{
-          maxHeight: 'calc(100vh - 16rem)',
+          maxHeight: 'calc(100vh - 8rem)',
           scrollbarWidth: 'thin',
           scrollbarColor: '#d1d5db transparent'
         }}
       >
-        <ul className="space-y-2 text-sm border-l border-gray-200 dark:border-gray-700 pl-4">
+        <ul className="space-y-1 text-sm">
           {headings.map((heading) => {
             const isActive = activeId === heading.anchor
             const levelClasses = {
-              1: 'ml-0 text-gray-900 dark:text-gray-100 font-semibold',
-              2: 'ml-4 text-gray-700 dark:text-gray-300',
-              3: 'ml-8 text-gray-600 dark:text-gray-400',
+              1: 'ml-0 text-gray-900 dark:text-gray-100 font-medium',
+              2: 'ml-4 text-gray-600 dark:text-gray-400',
+              3: 'ml-8 text-gray-500 dark:text-gray-500',
             }
 
             return (
@@ -122,12 +112,11 @@ export default function TableOfContents({ headings, className = '' }: TableOfCon
                 <button
                   onClick={() => scrollToHeading(heading.anchor)}
                   className={`
-                    block w-full text-left py-2 px-3 rounded-md text-sm transition-all duration-200
-                    hover:text-primary-600 dark:hover:text-primary-400
-                    hover:bg-primary-50 dark:hover:bg-primary-900/20
+                    block w-full text-left py-1.5 text-sm transition-colors duration-150
+                    hover:text-gray-900 dark:hover:text-gray-100
                     ${levelClasses[heading.level as keyof typeof levelClasses]}
                     ${isActive
-                      ? 'text-primary-700 dark:text-primary-400 bg-primary-100 dark:bg-primary-900/30 font-medium border-l-2 border-primary-500 -ml-4 pl-6'
+                      ? 'text-sky-600 dark:text-sky-400 border-l-2 border-sky-600 dark:border-sky-400 -ml-px pl-4'
                       : ''
                     }
                   `}
@@ -139,24 +128,6 @@ export default function TableOfContents({ headings, className = '' }: TableOfCon
             )
           })}
         </ul>
-      </div>
-
-      {/* Footer - Progress indicator */}
-      <div className="p-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-        <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
-          <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-          </svg>
-          Reading Progress
-        </div>
-        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-2">
-          <div
-            className="bg-gradient-to-r from-primary-500 to-accent-500 h-2 rounded-full transition-all duration-300"
-            style={{
-              width: activeId ? `${((headings.findIndex(h => h.anchor === activeId) + 1) / headings.length) * 100}%` : '0%'
-            }}
-          />
-        </div>
       </div>
     </nav>
   )
