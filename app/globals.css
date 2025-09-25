@@ -135,7 +135,12 @@
   }
 
   .btn-ghost {
-    @apply btn text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 focus:ring-gray-500;
+    @apply btn text-gray-600 dark:text-gray-400
+           bg-gray-50/50 dark:bg-gray-800/30
+           border border-gray-400/50 dark:border-gray-700/50
+           hover:bg-gray-100 dark:hover:bg-gray-700
+           hover:border-gray-300 dark:hover:border-gray-600
+           focus:ring-gray-500;
   }
 
   .card {
@@ -219,11 +224,33 @@
   }
   
   .prose-enhanced pre {
-    @apply bg-gray-900 dark:bg-gray-950 p-6 rounded-xl overflow-x-auto mb-6 border border-gray-700 dark:border-gray-800;
+    @apply bg-gray-900 dark:bg-gray-900 p-6 rounded-xl overflow-x-auto mb-6 border border-gray-700 dark:border-gray-700;
   }
   
   .prose-enhanced pre code {
-    @apply bg-transparent px-0 py-0 text-gray-300 dark:text-gray-200 text-sm;
+    @apply bg-transparent px-0 py-0 text-gray-300 dark:text-gray-100 text-sm;
+    background: transparent !important;
+  }
+
+  .prose-enhanced pre code::selection {
+    @apply bg-primary-600/30 dark:bg-primary-400/30;
+  }
+
+  /* Fix for code highlighting appearing as selected */
+  .prose-enhanced pre code *,
+  .prose-enhanced pre code span,
+  .prose-enhanced pre code .token {
+    background: transparent !important;
+    color: inherit !important;
+    text-decoration: none !important;
+  }
+
+  /* Override any prose typography code styling */
+  .prose pre code,
+  .prose-lg pre code,
+  .dark .prose pre code,
+  .dark .prose-lg pre code {
+    background-color: transparent !important;
   }
 
   .prose-enhanced img {

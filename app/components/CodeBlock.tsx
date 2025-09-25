@@ -26,7 +26,7 @@ export default function CodeBlock({ children, className, ...props }: CodeBlockPr
   return (
     <div className="relative group">
       <pre
-        className={`bg-gray-900 dark:bg-gray-950 p-6 rounded-xl overflow-x-auto mb-6 border border-gray-700 dark:border-gray-800 ${className || ''}`}
+        className={`bg-gray-900 dark:bg-gray-900 p-6 rounded-xl overflow-x-auto mb-6 border border-gray-700 dark:border-gray-700 ${className || ''}`}
         {...props}
       >
         {children}

@@ -1045,4 +1045,239 @@ With your advanced Dockerfile skills, you're ready for:
 
 ---
 
+## 📋 Docker Commands Cheat Sheet
+
+Here's a comprehensive cheat sheet of all the Docker and bash commands covered in this tutorial:
+
+<table className="w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-3 text-left font-semibold">Category</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-3 text-left font-semibold">Command</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-3 text-left font-semibold">Description</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-3 text-left font-semibold">Example Usage</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>File Operations</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>cp app.py app.py.backup</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Create backup of application file</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Backup before making changes</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>File Operations</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>cp Dockerfile Dockerfile.single-stage</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Backup single-stage Dockerfile</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Keep reference of old version</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>File Operations</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>nano Dockerfile</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Edit Dockerfile with nano editor</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Modify container configuration</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Docker Build</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker build -t myimage:multistage .</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Build multi-stage Docker image</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Create optimized production image</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Docker Build</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker build -t myapp:default .</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Build with default build arguments</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Standard production build</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Docker Build</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker build --build-arg PYTHON_VERSION=3.12 --build-arg APP_ENV=development -t myapp:dev .</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Build with custom build arguments</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Development environment build</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Docker Build</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker build --no-cache -t myapp:prod-latest .</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Build without cache for production</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Ensure fresh production build</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Docker Images</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">{`docker images --format "table {{.Repository}}\\t{{.Tag}}\\t{{.Size}}\\t{{.CreatedAt}}"`}</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">List images with formatted output</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Compare image sizes and creation times</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Docker Images</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">{`docker images --format "table {{.Repository}}\\t{{.Tag}}\\t{{.Size}}" | grep myapp`}</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Filter images by name</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">View only specific application images</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Docker Run</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker run -d -p 8080:8080 --name production-app myapp:prod-latest</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Run container in detached mode</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Start production application</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Docker Run</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker run --rm -d -p 8080:8080 --name test-prod myapp:prod-latest</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Run temporary test container</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Test image before deployment</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Docker Management</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker stop test-prod</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Stop running container</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Gracefully stop test container</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Docker Management</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">{`docker ps --format "table {{.Names}}\\t{{.Status}}\\t{{.Ports}}"`}</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">List running containers</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Monitor container status and ports</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Docker Management</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">{`docker stats --format "table {{.Name}}\\t{{.CPUPerc}}\\t{{.MemUsage}}\\t{{.NetIO}}"`}</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Monitor container resource usage</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Track performance metrics</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Testing</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>curl -f http://localhost:8080/</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Test application endpoint</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Verify application is responding</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Testing</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>curl -s http://localhost:8080 | python3 -m json.tool</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Test and format JSON response</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Verify API response format</td>
+    </tr>
+  </tbody>
+</table>
+
+## 🐋 Dockerfile Instructions Reference
+
+<table className="w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-3 text-left font-semibold">Instruction</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-3 text-left font-semibold">Purpose</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-3 text-left font-semibold">Example</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-3 text-left font-semibold">Best Practice</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>FROM ... AS stagename</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Start new build stage</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>FROM python:3.11-slim AS builder</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Use descriptive stage names</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>ARG variable=default</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Define build-time variables</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>ARG PYTHON_VERSION=3.11</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Provide sensible defaults</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>COPY --from=stage</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Copy from previous stage</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>COPY --from=builder /opt/venv /opt/venv</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Copy only what's needed</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>COPY --chown=user:group</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Set ownership during copy</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>COPY --chown=appuser:appuser app/ .</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Avoid separate chown commands</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>RUN groupadd && useradd</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Create non-root user</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>RUN groupadd -r appuser && useradd -r -g appuser appuser</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Use system users (-r flag)</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>USER username</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Switch to non-root user</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>USER appuser</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Switch after all root operations</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>HEALTHCHECK</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Define health check</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>HEALTHCHECK --interval=30s CMD curl -f http://localhost:8080/</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Use appropriate timeouts</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>ENV key=value</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Set environment variables</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>ENV PYTHONUNBUFFERED=1</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Group related ENV instructions</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>ENTRYPOINT ["cmd"]</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Fixed command execution</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>ENTRYPOINT ["python"]</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Use exec form for signals</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>CMD ["args"]</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Default command or args</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>CMD ["app.py"]</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Combine with ENTRYPOINT for flexibility</td>
+    </tr>
+  </tbody>
+</table>
+
+## 🔧 Build Arguments Quick Reference
+
+<table className="w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-3 text-left font-semibold">Build Argument</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-3 text-left font-semibold">Purpose</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-3 text-left font-semibold">Default Value</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-3 text-left font-semibold">Command Line Usage</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>PYTHON_VERSION</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Python version for base image</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">3.11</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>--build-arg PYTHON_VERSION=3.12</code></td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>BASE_IMAGE_TYPE</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Base image variant</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">slim</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>--build-arg BASE_IMAGE_TYPE=alpine</code></td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>APP_ENV</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Application environment</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">production</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>--build-arg APP_ENV=development</code></td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>INSTALL_DEV_DEPS</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Include development tools</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">false</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>--build-arg INSTALL_DEV_DEPS=true</code></td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>APP_VERSION</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Application version tag</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">1.0.0</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>--build-arg APP_VERSION=2.1.0</code></td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
 *Congratulations on completing this comprehensive Dockerfile mastery series! You now have the skills to create production-ready, optimized, and secure container images that meet enterprise standards.*
