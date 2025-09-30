@@ -1,20 +1,82 @@
 import Link from 'next/link'
+import { getCategoryCounts } from '../lib/blog'
 
 interface CategoryFilterProps {
   categories: string[]
   selectedCategory?: string
   basePath?: string
+  showCounts?: boolean
+  sortOrder?: string
+  showSortOptions?: boolean
 }
 
-export default function CategoryFilter({ categories, selectedCategory, basePath = '/' }: CategoryFilterProps) {
+export default function CategoryFilter({
+  categories,
+  selectedCategory,
+  basePath = '/',
+  showCounts = false,
+  sortOrder = 'recency',
+  showSortOptions = true
+}: CategoryFilterProps) {
+  const categoryCounts = showCounts ? getCategoryCounts() : {}
+
+  const sortOptions = [
+    { value: 'recency', label: 'Recent', icon: '📅', desc: 'Most recently updated' },
+    { value: 'alphabetical', label: 'A-Z', icon: '🔤', desc: 'Alphabetical order' },
+    { value: 'count', label: 'Popular', icon: '📊', desc: 'Most posts first' },
+    { value: 'custom', label: 'Priority', icon: '⭐', desc: 'Custom priority order' }
+  ]
+
+  const currentSort = sortOptions.find(opt => opt.value === sortOrder) || sortOptions[0]
+
+  const buildUrl = (newSort: string) => {
+    const params = new URLSearchParams()
+    if (newSort !== 'recency') params.set('sort', newSort)
+    if (selectedCategory) params.set('category', selectedCategory)
+    const query = params.toString()
+    return query ? `${basePath}?${query}` : basePath
+  }
   return (
     <div className="card p-6">
-      <div className="flex items-center mb-6">
-        <svg className="w-5 h-5 mr-2 text-primary-600 dark:text-primary-400" fill="currentColor" viewBox="0 0 20 20">
-          <path fillRule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-        </svg>
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Categories</h3>
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center">
+          <svg className="w-5 h-5 mr-2 text-primary-600 dark:text-primary-400" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+          </svg>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Categories</h3>
+        </div>
+
+        {/* Current sort indicator */}
+        <div className="text-xs text-gray-500 dark:text-gray-400" title={currentSort.desc}>
+          {currentSort.icon}
+        </div>
       </div>
+
+      {/* Sort options */}
+      {showSortOptions && (
+        <div className="mb-4">
+          <div className="text-xs text-gray-600 dark:text-gray-400 mb-2">Sort by:</div>
+          <div className="grid grid-cols-2 gap-1">
+            {sortOptions.map((option) => (
+              <Link
+                key={option.value}
+                href={buildUrl(option.value)}
+                className={`px-2 py-1.5 rounded text-xs font-medium transition-all duration-200 text-center ${
+                  sortOrder === option.value
+                    ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-200'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+                }`}
+                title={option.desc}
+              >
+                <div className="flex items-center justify-center gap-1">
+                  <span>{option.icon}</span>
+                  <span>{option.label}</span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
       
       <div className="space-y-2">
         <Link
@@ -45,9 +107,16 @@ export default function CategoryFilter({ categories, selectedCategory, basePath 
           >
             <div className="flex items-center justify-between">
               <span className="capitalize">{category}</span>
-              {selectedCategory === category && (
-                <div className="w-2 h-2 bg-primary-600 dark:bg-primary-400 rounded-full" />
-              )}
+              <div className="flex items-center gap-2">
+                {showCounts && (
+                  <span className="text-xs text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">
+                    {categoryCounts[category] || 0}
+                  </span>
+                )}
+                {selectedCategory === category && (
+                  <div className="w-2 h-2 bg-primary-600 dark:bg-primary-400 rounded-full" />
+                )}
+              </div>
             </div>
           </Link>
         ))}

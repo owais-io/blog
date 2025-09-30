@@ -157,20 +157,98 @@ export function getAllTags(): string[] {
   return Array.from(tags).sort()
 }
 
-export function getAllCategories(): string[] {
-  const posts = getAllPosts()
-  const categories = new Set<string>()
+// Category sorting options
+export type CategorySortOrder = 'alphabetical' | 'recency' | 'count' | 'custom'
 
+export function getAllCategories(sortOrder: CategorySortOrder = 'recency'): string[] {
+  const posts = getAllPosts()
+  const categoryData = new Map<string, { lastDate: Date; count: number }>()
+
+  // Collect data for all categories
   posts.forEach(post => {
-    // Add all categories from each post (supports both single and multiple categories)
+    const postDate = new Date(post.date)
     post.categories.forEach(category => {
       if (category && category.trim()) {
-        categories.add(category.trim())
+        const cleanCategory = category.trim()
+        const current = categoryData.get(cleanCategory)
+
+        if (!current) {
+          categoryData.set(cleanCategory, { lastDate: postDate, count: 1 })
+        } else {
+          categoryData.set(cleanCategory, {
+            lastDate: postDate > current.lastDate ? postDate : current.lastDate,
+            count: current.count + 1
+          })
+        }
       }
     })
   })
 
-  return Array.from(categories).sort()
+  const categories = Array.from(categoryData.keys())
+
+  switch (sortOrder) {
+    case 'alphabetical':
+      return categories.sort((a, b) => a.localeCompare(b))
+
+    case 'count':
+      // Sort by post count (descending), then alphabetically
+      return categories.sort((a, b) => {
+        const countA = categoryData.get(a)!.count
+        const countB = categoryData.get(b)!.count
+        const countDiff = countB - countA
+        return countDiff !== 0 ? countDiff : a.localeCompare(b)
+      })
+
+    case 'custom':
+      // Define priority order for important categories
+      const priorityOrder = [
+        'Version Control',
+        'Git',
+        'GitHub',
+        'Development',
+        'Tutorial',
+        'Docker',
+        'Python',
+        'AI',
+        'Artificial Intelligence',
+        'Data Science'
+      ]
+
+      const priorityCategories = priorityOrder.filter(cat => categories.includes(cat))
+      const remainingCategories = categories
+        .filter(cat => !priorityOrder.includes(cat))
+        .sort((a, b) => a.localeCompare(b))
+
+      return [...priorityCategories, ...remainingCategories]
+
+    case 'recency':
+    default:
+      // Sort by most recent date first, then alphabetically for categories with same date
+      return categories.sort((a, b) => {
+        const dateA = categoryData.get(a)!.lastDate
+        const dateB = categoryData.get(b)!.lastDate
+        const dateDiff = dateB.getTime() - dateA.getTime()
+        // If dates are the same, fall back to alphabetical order
+        return dateDiff !== 0 ? dateDiff : a.localeCompare(b)
+      })
+  }
+}
+
+// Helper function to get category counts for display
+export function getCategoryCounts(): Record<string, number> {
+  const posts = getAllPosts()
+  const counts: Record<string, number> = {}
+
+  posts.forEach(post => {
+    post.categories.forEach(category => {
+      if (category && category.trim()) {
+        const cleanCategory = category.trim()
+        counts[cleanCategory] = (counts[cleanCategory] || 0) + 1
+      }
+    })
+  })
+
+  return counts
 }
 
 export function getPostsByTag(tag: string): BlogPost[] {

@@ -1,7 +1,7 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
 import { format } from 'date-fns'
-import { getPostsMeta, getAllCategories } from './lib/blog'
+import { getPostsMeta, getAllCategories, type CategorySortOrder } from './lib/blog'
 import CategoryFilter from './components/CategoryFilter'
 import Pagination from './components/Pagination'
 
@@ -9,6 +9,7 @@ interface HomePageProps {
   searchParams: {
     page?: string
     category?: string
+    sort?: string
   }
 }
 
@@ -20,9 +21,16 @@ export const metadata: Metadata = {
 export default function HomePage({ searchParams }: HomePageProps) {
   const currentPage = parseInt(searchParams.page || '1', 10)
   const selectedCategory = searchParams.category
-  
+
+  // Get sort order from URL parameter, fallback to 'recency'
+  const sortParam = searchParams.sort
+  const categorySortOrder: CategorySortOrder =
+    (sortParam && ['alphabetical', 'recency', 'count', 'custom'].includes(sortParam))
+      ? sortParam as CategorySortOrder
+      : 'recency'
+
   const { posts, totalPages, totalPosts } = getPostsMeta(currentPage, 10, undefined, selectedCategory)
-  const allCategories = getAllCategories()
+  const allCategories = getAllCategories(categorySortOrder)
 
   return (
     <div className="min-h-screen">
@@ -66,7 +74,13 @@ export default function HomePage({ searchParams }: HomePageProps) {
           {/* Sidebar - Categories */}
           <div className="lg:col-span-1">
             <div className="sticky top-24">
-              <CategoryFilter categories={allCategories} selectedCategory={selectedCategory} />
+              <CategoryFilter
+                categories={allCategories}
+                selectedCategory={selectedCategory}
+                showCounts={true}
+                sortOrder={categorySortOrder}
+                showSortOptions={true}
+              />
             </div>
           </div>
 
