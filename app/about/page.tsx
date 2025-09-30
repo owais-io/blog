@@ -33,9 +33,9 @@ export default function AboutPage() {
 
           {/* Content sections */}
           <div className="prose prose-lg prose-gray dark:prose-invert max-w-none">
-            <div className="grid gap-8 md:gap-12">
+            <div className="grid">
               <section>
-                <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">Who I Am</h2>
+                <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">Who I Am</h2>
                 <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
                   I'm an AIOps Engineer and DevSecOps Engineer with a passion for infusing AI into systems,
                   architecture, cloud deployments, and security to create intelligent automation. What I consider
@@ -54,7 +54,7 @@ export default function AboutPage() {
               </section>
 
               <section>
-                <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">What I Do</h2>
+                <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">What I Do</h2>
                 <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
                   As an AIOps and DevSecOps Engineer, I work with technologies that span the entire spectrum
                   of modern infrastructure and automation. I'm a daring person (which some might consider
@@ -71,7 +71,7 @@ export default function AboutPage() {
               </section>
 
               <section>
-                <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">Why I Write</h2>
+                <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">Why I Write</h2>
                 <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
                   This blog serves as my platform to share daily tutorials about AI, Cloud, Operating Systems,
                   and related technologies. I document my learning journey, share insights from real-world
@@ -82,12 +82,31 @@ export default function AboutPage() {
               </section>
 
               <section>
-                <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">Get In Touch</h2>
+                <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">My Education</h2>
+                <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+                  I completed the UK's Eduqual Level 6 Diploma in AIOps from Al Nafi International College, a globally recognized program that's changing careers worldwide. This diploma is:
+                </p>
+                <ul className="list-none space-y-2 text-gray-700 dark:text-gray-300 ml-0 mb-4">
+                  <li>✅ Available online in 17+ languages</li>
+                  <li>✅ Includes free student visa guidance for Master's programs in Computer Science fields across the UK, USA, Canada, and more</li>
+                  <li>✅ Comes with job placement support and a 90-day success plan once you land a role</li>
+                  <li>✅ Offers a 1-year internship experience letter while you study—all with no hidden costs</li>
+                </ul>
+                <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+                  It's not just a diploma—it's a career accelerator.
+                </p>
+                <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                  👉 <a href="https://alnafi.com/?al_aid=6d5529727bec42a" target="_blank" rel="noopener noreferrer" className="text-primary-600 dark:text-primary-400 hover:underline font-medium">Start your journey today with a 7-day free trial</a>
+                </p>
+              </section>
+
+              <section>
+                <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">Get In Touch</h2>
                 <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
-                  I'm always interested in connecting with fellow developers, discussing new projects, 
+                  I'm always interested in connecting with fellow developers, discussing new projects,
                   or simply having a conversation about technology. Feel free to reach out!
                 </p>
-                
+
                 <div className="flex flex-wrap gap-4">
                   <a
                     href="mailto:owais.abbasi9@gmail.com"
