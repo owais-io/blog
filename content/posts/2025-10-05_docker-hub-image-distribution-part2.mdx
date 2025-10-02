@@ -1,0 +1,888 @@
+---
+title: "Docker Hub Image Distribution: Tagging, Pushing, and Deployment Complete Guide (Part 2)"
+description: "Master Docker image tagging strategies, push images to Docker Hub, pull from registries, and deploy containers with volumes. Includes troubleshooting and production best practices."
+date: "2025-10-03T01:29:00.000Z"
+tags: ["docker", "docker-hub", "registry", "deployment", "tagging"]
+published: true
+author: "Owais"
+category: "Docker"
+seo:
+  canonical: "https://owais.io/blog/docker-hub-image-distribution-part2"
+  keywords: ["docker hub", "docker push", "docker pull", "docker tag", "docker registry", "container deployment", "docker login"]
+toc: true
+---
+
+After optimizing your Docker images, the next step is sharing them with your team or deploying them to production. This comprehensive guide teaches you everything about Docker Hub, image tagging, pushing to registries, and deploying containers anywhere.
+
+<Callout type="info">
+🎯 **What You'll Learn**: In this hands-on tutorial, you'll discover:
+- Creating semantic version tags and tag management strategies
+- Logging into Docker Hub and authentication
+- Pushing images to public Docker registries
+- Pulling images from Docker Hub on any machine
+- Running containers with environment variables
+- Mounting volumes for persistent data
+- Monitoring container resource usage
+- Troubleshooting port conflicts and common issues
+- Production deployment best practices
+</Callout>
+
+## 🚀 Why Docker Hub Matters
+
+Docker Hub is the world's largest library and community for container images. It enables:
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Benefit</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Team Collaboration</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Share images across development teams</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>CI/CD Integration</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Automated builds and deployments</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Version Control</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Tag and manage multiple versions</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Public Distribution</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Share open-source projects globally</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Fast Deployment</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Pull and deploy anywhere instantly</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900 dark:to-indigo-900 p-6 rounded-lg my-6">
+
+### Prerequisites
+
+Before we begin, make sure you have:
+- Completed [Part 1: Docker Image Optimization](/blog/2025-10-04_docker-image-optimization-fundamentals-part1)
+- A Docker Hub account (create at [hub.docker.com](https://hub.docker.com))
+- Docker installed and running
+- An optimized image from Part 1 (`mywebapp:1.0.0`)
+
+</div>
+
+## 🏷️ Step 1: Understanding Docker Tags
+
+Tags are labels that identify specific versions of images. Think of them as Git tags or version numbers.
+
+### Tag Anatomy
+
+```
+username/repository:tag
+   │        │         │
+   │        │         └─ Version identifier
+   │        └─────────── Image name
+   └──────────────────── Docker Hub username
+```
+
+### Common Tagging Strategies
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Strategy</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Tag Examples</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Use Case</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Semantic Versioning</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>1.0.0</code>, <code>1.0</code>, <code>1</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Production releases</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Environment Tags</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>dev</code>, <code>staging</code>, <code>prod</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Deployment stages</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Stability Tags</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>latest</code>, <code>stable</code>, <code>beta</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Release channels</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Git-based Tags</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>commit-abc123</code>, <code>branch-main</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">CI/CD pipelines</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### Create Multiple Tags
+
+From Part 1, we have `mywebapp:1.0.0`. Let's create additional tags:
+
+```bash title="Tag Image with Semantic Versions"
+docker tag mywebapp:1.0.0 mywebapp:1.0
+docker tag mywebapp:1.0.0 mywebapp:latest
+docker tag mywebapp:1.0.0 mywebapp:stable
+```
+
+**What this does:**
+- `docker tag [source] [target]`: Creates a new tag pointing to same image
+- All tags reference the **same image** (same IMAGE ID)
+- No additional disk space used
+- Provides different ways to reference the image
+
+### Create Environment-Specific Tags
+
+```bash title="Tag for Different Environments"
+docker tag mywebapp:1.0.0 mywebapp:dev
+docker tag mywebapp:1.0.0 mywebapp:staging
+docker tag mywebapp:1.0.0 mywebapp:prod
+```
+
+### View All Tags
+
+```bash title="List All Image Tags"
+docker images mywebapp
+```
+
+**Expected Output:**
+```
+REPOSITORY   TAG       IMAGE ID       CREATED          SIZE
+mywebapp     1.0       28912d412e73   57 seconds ago   52.5MB
+mywebapp     1.0.0     28912d412e73   57 seconds ago   52.5MB
+mywebapp     latest    28912d412e73   57 seconds ago   52.5MB
+mywebapp     stable    28912d412e73   57 seconds ago   52.5MB
+mywebapp     dev       28912d412e73   58 seconds ago   52.5MB
+mywebapp     staging   28912d412e73   58 seconds ago   52.5MB
+mywebapp     prod      28912d412e73   58 seconds ago   52.5MB
+```
+
+**Key observation**: Notice all tags share the same `IMAGE ID` (28912d412e73) - they're just different names for the same image!
+
+<Callout type="info">
+💡 **Tag Best Practice**: Always create a specific version tag (e.g., `1.0.0`) AND a `latest` tag. This allows users to pin to specific versions or always get the newest release.
+</Callout>
+
+## 🔐 Step 2: Login to Docker Hub
+
+Before pushing images, authenticate with Docker Hub:
+
+```bash title="Login to Docker Hub"
+docker login
+```
+
+**Interactive Authentication Process:**
+```
+USING WEB-BASED LOGIN
+
+i Info → To sign in with credentials on the command line, use 'docker login -u <username>'
+
+Your one-time device confirmation code is: MVGB-ZNXJ
+Press ENTER to open your browser or submit your device code here: https://login.docker.com/activate
+
+Waiting for authentication in the browser…
+
+WARNING! Your credentials are stored unencrypted in '/home/centos9/.docker/config.json'.
+Configure a credential helper to remove this warning. See
+https://docs.docker.com/go/credential-store/
+
+Login Succeeded
+```
+
+**What happens:**
+1. Docker generates a one-time code
+2. Opens browser for authentication
+3. You log in via Docker Hub website
+4. Credentials stored locally
+5. Ready to push/pull images
+
+<Callout type="warning">
+⚠️ **Security Note**: The warning about unencrypted credentials is normal for basic setup. For production, configure a credential helper to securely store Docker Hub tokens.
+</Callout>
+
+### Alternative: Command-Line Login
+
+```bash title="Login with Username"
+docker login -u yourusername
+```
+
+Then enter your password when prompted.
+
+## 📤 Step 3: Tag for Docker Hub
+
+Docker Hub requires images to be tagged with your username:
+
+```bash title="Tag for Docker Hub (Replace with YOUR username)"
+docker tag mywebapp:1.0.0 owaisabbasi/mywebapp:1.0.0
+docker tag mywebapp:1.0.0 owaisabbasi/mywebapp:latest
+```
+
+**Format explained:**
+- `owaisabbasi`: Your Docker Hub username
+- `mywebapp`: Repository name on Docker Hub
+- `1.0.0`/`latest`: Tag version
+
+## 🚀 Step 4: Push Images to Docker Hub
+
+Push your optimized image to Docker Hub:
+
+```bash title="Push Specific Version"
+docker push owaisabbasi/mywebapp:1.0.0
+```
+
+**Expected Output:**
+```
+The push refers to repository [docker.io/owaisabbasi/mywebapp]
+9c1c360a50dd: Pushed
+28b29317ecc4: Pushed
+f9985d3fc94d: Mounted from library/nginx
+d208138be39d: Mounted from library/nginx
+a2b76470e8f1: Mounted from library/nginx
+917b2c97271e: Mounted from library/nginx
+16ca725632e5: Mounted from library/nginx
+7978a9c91f72: Mounted from library/nginx
+b6ff0212304e: Mounted from library/nginx
+418dccb7d85a: Mounted from library/nginx
+1.0.0: digest: sha256:fba817dcf7cf01dda1b4de159b5d5079a5607ff544ec58aee65040e0c3d65ac8 size: 2403
+```
+
+**Understanding the output:**
+- Each line represents a layer being pushed
+- "Pushed" = New layer uploaded
+- "Mounted from library/nginx" = Layer already exists (from base image)
+- Only unique layers are uploaded (saves bandwidth!)
+- Digest = Unique content hash of the image
+
+### Push Latest Tag
+
+```bash title="Push Latest Tag"
+docker push owaisabbasi/mywebapp:latest
+```
+
+**Expected Output:**
+```
+The push refers to repository [docker.io/owaisabbasi/mywebapp]
+9c1c360a50dd: Layer already exists
+28b29317ecc4: Layer already exists
+f9985d3fc94d: Layer already exists
+d208138be39d: Layer already exists
+a2b76470e8f1: Layer already exists
+917b2c97271e: Layer already exists
+16ca725632e5: Layer already exists
+7978a9c91f72: Layer already exists
+b6ff0212304e: Layer already exists
+418dccb7d85a: Layer already exists
+latest: digest: sha256:fba817dcf7cf01dda1b4de159b5d5079a5607ff544ec58aee65040e0c3d65ac8 size: 2403
+```
+
+**Notice**: All layers say "Layer already exists" - Docker is smart enough to not re-upload!
+
+## 🌐 Step 5: Verify on Docker Hub
+
+Visit your Docker Hub repository to see your uploaded images:
+
+```
+https://hub.docker.com/repositories/yourusername
+```
+
+Replace `yourusername` with your actual Docker Hub username.
+
+![Docker Hub Repository](/images/dockerhub.png)
+
+You should see:
+- Your repository name (`mywebapp`)
+- Tags (`1.0.0`, `latest`)
+- Last pushed timestamp
+- Public/Private visibility
+- Image size
+
+## 🔍 Step 6: Search for Your Image
+
+Use Docker search to find your published image:
+
+```bash title="Search Docker Hub"
+docker search owaisabbasi/mywebapp
+```
+
+**Expected Output:**
+```
+NAME                          DESCRIPTION   STARS     OFFICIAL
+owaisabbasi/mywebapp                        0
+milosmaljen/mywebapp                        0
+shadialborsan/mywebapp                      0
+devopsjourney1/mywebapp                     2
+```
+
+Your image is now publicly discoverable!
+
+## 🧹 Step 7: Clean Local Images
+
+Before pulling from Docker Hub, remove local images to simulate a fresh deployment:
+
+```bash title="Remove Local Images"
+docker rmi mywebapp:1.0 mywebapp:dev mywebapp:prod mywebapp:staging owaisabbasi/mywebapp:1.0.0
+```
+
+**Expected Output:**
+```
+Untagged: mywebapp:1.0
+Untagged: mywebapp:dev
+Untagged: mywebapp:prod
+Untagged: mywebapp:staging
+Untagged: owaisabbasi/mywebapp:1.0.0
+Untagged: owaisabbasi/mywebapp@sha256:fba817dcf7cf01dda1b4de159b5d5079a5607ff544ec58aee65040e0c3d65ac8
+Deleted: sha256:28912d412e7322d6a5660178fe819a6762b43cfacd4227c1fa32bec8b60462ff
+```
+
+### Verify Removal
+
+```bash title="Confirm Images Removed"
+docker images | grep mywebapp
+```
+
+Should show no results (or only remaining tags).
+
+## 📥 Step 8: Pull Images from Docker Hub
+
+Pull your images from Docker Hub to any machine:
+
+```bash title="Pull Latest Tag"
+docker pull owaisabbasi/mywebapp:latest
+```
+
+**Expected Output:**
+```
+latest: Pulling from owaisabbasi/mywebapp
+9824c27679d3: Already exists
+6bc572a340ec: Already exists
+403e3f251637: Already exists
+9adfbae99cb7: Already exists
+7a8a46741e18: Already exists
+c9ebe2ff2d2c: Already exists
+a992fbc61ecc: Already exists
+cb1ff4086f82: Already exists
+6ee564430b1d: Already exists
+4da2f98b6445: Already exists
+Digest: sha256:fba817dcf7cf01dda1b4de159b5d5079a5607ff544ec58aee65040e0c3d65ac8
+Status: Downloaded newer image for owaisabbasi/mywebapp:latest
+docker.io/owaisabbasi/mywebapp:latest
+```
+
+### Pull Specific Version
+
+```bash title="Pull Specific Version Tag"
+docker pull owaisabbasi/mywebapp:1.0.0
+```
+
+**Output:**
+```
+1.0.0: Pulling from owaisabbasi/mywebapp
+Digest: sha256:fba817dcf7cf01dda1b4de159b5d5079a5607ff544ec58aee65040e0c3d65ac8
+Status: Downloaded newer image for owaisabbasi/mywebapp:1.0.0
+docker.io/owaisabbasi/mywebapp:1.0.0
+```
+
+### Verify Downloaded Images
+
+```bash title="List Downloaded Images"
+docker images owaisabbasi/mywebapp
+```
+
+**Output:**
+```
+REPOSITORY             TAG       IMAGE ID       CREATED          SIZE
+owaisabbasi/mywebapp   1.0.0     28912d412e73   25 minutes ago   52.5MB
+owaisabbasi/mywebapp   latest    28912d412e73   25 minutes ago   52.5MB
+```
+
+## 🏃 Step 9: Run Container from Docker Hub Image
+
+Deploy your container from the pulled image:
+
+```bash title="Run Container on Port 8080"
+docker run -d -p 8080:80 --name production-webapp owaisabbasi/mywebapp:latest
+```
+
+**Command breakdown:**
+- `run`: Create and start a container
+- `-d`: Detached mode (runs in background)
+- `-p 8080:80`: Map host port 8080 to container port 80
+- `--name production-webapp`: Give container a friendly name
+- `owaisabbasi/mywebapp:latest`: Image to run
+
+**Expected Output:**
+```
+48ba78f3b35b5c3bfef5b7bf83b912e3318d1c9c728134ed3902c3c008314ca8
+```
+
+This long string is the container ID.
+
+### Test the Application
+
+```bash title="Test Web Application"
+curl http://localhost:8080
+```
+
+**Expected Output:**
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Docker Optimization Lab</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .container { max-width: 600px; margin: 0 auto; }
+        h1 { color: #2c3e50; }
+        .info { background: #ecf0f1; padding: 20px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to Docker Optimization Lab</h1>
+        <div class="info">
+            <p>This is a sample web application running in a Docker container.</p>
+            <p>Image optimization techniques help reduce size and improve performance.</p>
+        </div>
+    </div>
+</body>
+</html>
+```
+
+Or use grep to verify specific content:
+
+```bash title="Verify Content"
+curl -s http://localhost:8080 | grep "Docker Optimization Lab"
+```
+
+**Output:**
+```
+    <title>Docker Optimization Lab</title>
+        <h1>Welcome to Docker Optimization Lab</h1>
+```
+
+## 📊 Step 10: Monitor Container
+
+### Check Running Containers
+
+```bash title="List Running Containers"
+docker ps
+```
+
+**Output:**
+```
+CONTAINER ID   IMAGE                         COMMAND                  CREATED          STATUS          PORTS                                     NAMES
+48ba78f3b35b   owaisabbasi/mywebapp:latest   "/docker-entrypoint.…"   26 seconds ago   Up 25 seconds   0.0.0.0:8080->80/tcp, [::]:8080->80/tcp   production-webapp
+```
+
+### View Container Logs
+
+```bash title="Check Container Logs"
+docker logs production-webapp
+```
+
+**Expected Output:**
+```
+/docker-entrypoint.sh: /docker-entrypoint.d/ is not empty, will attempt to perform configuration
+/docker-entrypoint.sh: Looking for shell scripts in /docker-entrypoint.d/
+/docker-entrypoint.sh: Launching /docker-entrypoint.d/10-listen-on-ipv6-by-default.sh
+10-listen-on-ipv6-by-default.sh: info: /etc/nginx/conf.d/default.conf differs from the packaged version
+/docker-entrypoint.sh: Configuration complete; ready for start up
+2025/10/02 20:08:17 [notice] 1#1: using the "epoll" event method
+2025/10/02 20:08:17 [notice] 1#1: nginx/1.29.1
+2025/10/02 20:08:17 [notice] 1#1: start worker processes
+2025/10/02 20:08:17 [notice] 1#1: start worker process 29
+172.17.0.1 - - [02/Oct/2025:20:08:27 +0000] "GET / HTTP/1.1" 200 661 "-" "curl/7.76.1" "-"
+```
+
+### Monitor Resource Usage
+
+```bash title="Check Container Resource Stats"
+docker stats production-webapp --no-stream
+```
+
+**Expected Output:**
+```
+CONTAINER ID   NAME                CPU %     MEM USAGE / LIMIT     MEM %     NET I/O           BLOCK I/O         PIDS
+48ba78f3b35b   production-webapp   0.00%     4.613MiB / 7.501GiB   0.06%     6.03kB / 2.81kB   8.19kB / 12.3kB   5
+```
+
+**Metrics explained:**
+- **CPU %**: Percentage of CPU being used (0% when idle)
+- **MEM USAGE**: Current memory usage (4.6MB - very efficient!)
+- **NET I/O**: Network traffic in/out
+- **BLOCK I/O**: Disk read/write
+- **PIDS**: Number of processes running
+
+## 🔧 Step 11: Advanced Container Operations
+
+### Run with Environment Variables
+
+```bash title="Run with Custom Environment"
+docker run -d -p 8081:80 \
+  --name webapp-custom \
+  -e NGINX_HOST=localhost \
+  -e NGINX_PORT=80 \
+  owaisabbasi/mywebapp:latest
+```
+
+**What this does:**
+- `-e NGINX_HOST=localhost`: Sets environment variable
+- Multiple `-e` flags for multiple variables
+- Container can read these variables
+
+### Run with Volume Mounts
+
+Create custom content and mount it:
+
+```bash title="Create Custom Content"
+mkdir custom-content
+echo "<h1>Custom Content</h1>" > custom-content/custom.html
+```
+
+```bash title="Run with Volume Mount"
+docker run -d -p 8082:80 \
+  --name webapp-volume \
+  -v $(pwd)/custom-content:/usr/share/nginx/html/custom \
+  owaisabbasi/mywebapp:latest
+```
+
+**Volume mount explained:**
+- `-v source:destination`: Mount directory
+- `$(pwd)/custom-content`: Host directory (current directory + custom-content)
+- `/usr/share/nginx/html/custom`: Container directory
+- Changes on host reflect in container immediately!
+
+### Test Multiple Deployments
+
+```bash title="Test All Running Containers"
+curl http://localhost:8080  # Original container
+curl http://localhost:8081  # With environment variables
+curl http://localhost:8082/custom/custom.html  # With volume mount
+```
+
+**Output for volume-mounted container:**
+```
+<h1>Custom Content</h1>
+```
+
+## 🚨 Step 12: Troubleshooting Common Issues
+
+### Issue 1: Port Already in Use
+
+**Error:**
+```
+Error response from daemon: driver failed programming external connectivity on endpoint webapp:
+Bind for 0.0.0.0:8080 failed: port is already allocated
+```
+
+**Solution: Find what's using the port**
+
+```bash title="Check Port Usage (Linux)"
+sudo netstat -tulnp | grep :8080
+```
+
+**Or using ss:**
+```bash title="Check Port with ss"
+sudo ss -tulnp | grep :8080
+```
+
+**Or using lsof:**
+```bash title="Check Port with lsof"
+sudo lsof -i :8080
+```
+
+**Fix options:**
+1. **Stop conflicting service:**
+   ```bash
+   docker stop $(docker ps -q --filter publish=8080)
+   ```
+
+2. **Use different port:**
+   ```bash
+   docker run -d -p 8090:80 --name webapp owaisabbasi/mywebapp:latest
+   ```
+
+### Issue 2: Container Immediately Exits
+
+**Check container status:**
+```bash title="View All Containers (Including Stopped)"
+docker ps -a
+```
+
+**Check logs for errors:**
+```bash title="View Logs of Stopped Container"
+docker logs container-name
+```
+
+**Common causes:**
+- Application crashes
+- Missing files or configuration
+- Permission issues
+
+### Issue 3: Cannot Pull Image
+
+**Error:**
+```
+Error response from daemon: pull access denied for owaisabbasi/mywebapp, repository does not exist or may require 'docker login'
+```
+
+**Solutions:**
+1. Verify repository name is correct
+2. Ensure you're logged in: `docker login`
+3. Check image exists on Docker Hub
+4. Verify image is public (or you have access)
+
+## 🧹 Step 13: Cleanup
+
+### Stop All Running Containers
+
+```bash title="Stop All Containers"
+docker stop $(docker ps -q)
+```
+
+**Output:**
+```
+4477069043b3
+f5bd59801779
+48ba78f3b35b
+```
+
+### Remove All Containers
+
+```bash title="Remove All Stopped Containers"
+docker rm $(docker ps -aq)
+```
+
+### Remove All Images
+
+```bash title="Remove All Images"
+docker rmi $(docker images -q)
+```
+
+### System-Wide Cleanup
+
+```bash title="Remove Unused Resources"
+docker system prune -f
+```
+
+**Expected Output:**
+```
+Deleted build cache objects:
+mnrjzgy5tjqy6u3krteagrrsq
+8qmhcpgzcd400zvavzyz8zxqa
+...
+
+Total reclaimed space: 213.6MB
+```
+
+## 🎯 Production Best Practices
+
+<div className="bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900 dark:to-blue-900 p-6 rounded-lg my-8">
+
+### 1. **Use Specific Tags in Production**
+
+```yaml
+# Bad - unpredictable
+image: owaisabbasi/mywebapp:latest
+
+# Good - reproducible
+image: owaisabbasi/mywebapp:1.0.0
+```
+
+### 2. **Never Use `latest` in Production**
+
+The `latest` tag can change unexpectedly, causing:
+- Inconsistent deployments
+- Difficult rollbacks
+- Debugging nightmares
+
+### 3. **Implement Health Checks**
+
+```dockerfile
+HEALTHCHECK --interval=30s --timeout=3s \
+  CMD curl -f http://localhost/ || exit 1
+```
+
+### 4. **Use Multi-Stage Builds**
+
+- Smaller production images
+- No build tools in runtime
+- Better security
+
+### 5. **Set Resource Limits**
+
+```bash
+docker run -d \
+  --memory="512m" \
+  --cpus="0.5" \
+  mywebapp:1.0.0
+```
+
+### 6. **Use Read-Only Root Filesystem**
+
+```bash
+docker run -d --read-only \
+  -v /tmp \
+  mywebapp:1.0.0
+```
+
+### 7. **Run as Non-Root User**
+
+```dockerfile
+RUN addgroup -g 1001 appgroup && \
+    adduser -S -u 1001 -G appgroup appuser
+USER appuser
+```
+
+### 8. **Scan Images for Vulnerabilities**
+
+```bash
+docker scan owaisabbasi/mywebapp:1.0.0
+```
+
+### 9. **Use Private Registries for Sensitive Apps**
+
+Consider:
+- Docker Hub private repositories
+- AWS ECR
+- Google Container Registry
+- Azure Container Registry
+
+### 10. **Implement Proper Logging**
+
+```bash
+docker run -d \
+  --log-driver=json-file \
+  --log-opt max-size=10m \
+  --log-opt max-file=3 \
+  mywebapp:1.0.0
+```
+
+</div>
+
+## 📊 Complete Command Reference
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Command</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Purpose</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker tag source target</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Create new tag for image</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker login</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Authenticate with Docker Hub</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker push username/image:tag</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Upload image to registry</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker pull username/image:tag</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Download image from registry</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker search keyword</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Search Docker Hub</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker run -d -p host:container image</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Run detached with port mapping</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker run -v host:container image</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Run with volume mount</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker run -e VAR=value image</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Run with environment variable</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker logs container</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">View container logs</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker stats container</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Monitor resource usage</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker stop container</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Stop running container</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker rm container</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Remove stopped container</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker rmi image</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Remove image</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker system prune -f</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Clean up unused resources</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+## 🎓 Key Takeaways
+
+<div className="bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-900 dark:to-blue-900 p-6 rounded-lg my-8">
+
+### ✅ Remember These Points
+
+1. **Tags** are aliases for specific image versions
+2. **Docker Hub** enables global image distribution
+3. **docker push** uploads images to registries
+4. **docker pull** downloads images from anywhere
+5. **Environment variables** customize container behavior
+6. **Volume mounts** provide persistent data storage
+7. **Resource monitoring** tracks container performance
+8. **Port mapping** exposes container services to the host
+9. **Specific version tags** ensure reproducible deployments
+10. **Cleanup regularly** to manage disk space
+
+</div>
+
+## 📖 Further Reading
+
+### Official Resources
+- [Docker Hub Documentation](https://docs.docker.com/docker-hub/)
+- [Image Tagging Best Practices](https://docs.docker.com/engine/reference/commandline/tag/)
+- [Docker Security Guide](https://docs.docker.com/engine/security/)
+
+---
+
+<Callout type="success">
+🎉 **Congratulations!** You've mastered Docker image distribution! You can now tag images, push to Docker Hub, pull from registries, and deploy containers with confidence. Combined with Part 1's optimization techniques, you have everything needed for production-ready Docker deployments.
+</Callout>
+
+## 💬 Discussion
+
+Share your deployment experiences:
+
+- What's your Docker Hub repository strategy?
+- How do you manage image versions in production?
+- Have you encountered port conflicts? How did you solve them?
+- What's your favorite Docker deployment workflow?
+
+**Connect with me**:
+- 🐙 [GitHub](https://github.com/owais-io) - Docker examples and projects
+- 📧 [Contact](https://owais.io/contact) - Questions and collaboration
