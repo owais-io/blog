@@ -5,6 +5,9 @@ export const metadata: Metadata = {
   description: 'Get in touch with Owais - reach out for collaborations, questions, or technology discussions.',
 }
 
+// Static page - no dynamic content
+export const dynamic = 'force-static'
+
 export default function ContactPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

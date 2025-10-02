@@ -6,6 +6,9 @@ export const metadata: Metadata = {
   description: 'Learn more about Owais - developer, writer, and technology enthusiast.',
 }
 
+// Static page - no dynamic content
+export const dynamic = 'force-static'
+
 export default function AboutPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

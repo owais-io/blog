@@ -18,6 +18,10 @@ export const metadata: Metadata = {
   description: 'Welcome to Owais.io - A personal blog sharing insights on technology, development, and life.',
 }
 
+// Force static generation for maximum performance
+export const dynamic = 'force-static'
+export const revalidate = false
+
 export default function HomePage({ searchParams }: HomePageProps) {
   const currentPage = parseInt(searchParams.page || '1', 10)
   const selectedCategory = searchParams.category

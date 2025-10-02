@@ -1,12 +1,24 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
+import dynamic from 'next/dynamic'
 import './globals.css'
 import Header from './components/Header'
 import { ThemeProvider } from './components/ThemeProvider'
-import { Analytics } from '@vercel/analytics/next'
-import { SpeedInsights } from '@vercel/speed-insights/next'
 
-const inter = Inter({ subsets: ['latin'] })
+// Defer analytics to improve initial page load
+const Analytics = dynamic(() => import('@vercel/analytics/next').then(m => m.Analytics), {
+  ssr: false
+})
+const SpeedInsights = dynamic(() => import('@vercel/speed-insights/next').then(m => m.SpeedInsights), {
+  ssr: false
+})
+
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  preload: true,
+  fallback: ['system-ui', 'arial']
+})
 
 export const metadata: Metadata = {
   title: {

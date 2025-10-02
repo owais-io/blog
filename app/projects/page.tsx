@@ -5,6 +5,9 @@ export const metadata: Metadata = {
   description: 'Explore the projects I\'ve worked on - from web applications to open source contributions.',
 }
 
+// Static page - no dynamic content
+export const dynamic = 'force-static'
+
 interface Project {
   id: number
   title: string
