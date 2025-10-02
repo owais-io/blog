@@ -1,0 +1,936 @@
+---
+title: "Docker Compose Advanced Management: Scaling, Load Balancing, and Best Practices (Part 2)"
+description: "Master advanced Docker Compose features including horizontal scaling, Nginx load balancing, custom configuration files, validation, cleanup strategies, override files, and production best practices."
+date: "2025-10-02T23:00:00.000Z"
+tags: ["docker", "docker-compose", "scaling", "load-balancing", "nginx", "production", "devops"]
+published: true
+author: "Owais"
+category: "Docker"
+seo:
+  canonical: "https://owais.io/blog/docker-compose-advanced-management-part2"
+  keywords: ["docker compose scaling", "docker compose load balancer", "nginx load balancing", "docker compose production", "docker compose best practices", "horizontal scaling"]
+toc: true
+---
+
+Once you've mastered the basics of Docker Compose, it's time to explore advanced features that make your applications production-ready. This comprehensive guide covers scaling services, implementing load balancing, using custom configuration files, and following best practices for managing complex multi-container applications.
+
+<Callout type="info">
+🎯 **What You'll Learn**: In this advanced tutorial, you'll discover:
+- Scaling services horizontally for high availability
+- Implementing Nginx as a load balancer
+- Using custom compose file names with `-f` flag
+- Starting and stopping specific services
+- Validating configurations with `docker compose config`
+- Viewing timestamped logs for debugging
+- Executing interactive shell sessions in containers
+- Complete cleanup strategies for volumes and images
+- Using override files for environment-specific configurations
+- Best practices and troubleshooting tips
+</Callout>
+
+## 🚀 Prerequisites
+
+Before proceeding, make sure you've completed Part 1 of this series and have:
+- Docker Compose installed and working
+- A basic docker-compose.yml file running
+- Understanding of services, volumes, and networks
+- The docker-compose-practice project from Part 1
+
+## ⚖️ Step 1: Scaling Services Horizontally
+
+One of Docker Compose's most powerful features is the ability to scale services horizontally by running multiple instances.
+
+### Attempt to Scale with Container Names
+
+Try scaling the webserver service:
+
+```bash title="Attempt to Scale Webserver"
+docker compose up -d --scale webserver=3
+```
+
+**Expected Output (Error):**
+```
+[+] Running 1/1
+ ✔ Container compose-database  Running                                0.0s
+WARNING: The "webserver" service is using the custom container name "compose-webserver".
+Docker requires each container to have a unique name. Remove the custom name to scale the service
+```
+
+**Why this fails:**
+- We used `container_name: compose-webserver` in our configuration
+- Docker requires unique names for each container
+- Scaling needs to create multiple containers with auto-generated names
+
+<Callout type="warning">
+⚠️ **Scaling Limitation**: You cannot use `container_name` in services you want to scale. Remove this parameter to allow Docker Compose to generate unique names automatically.
+</Callout>
+
+### Modify Configuration for Scaling
+
+To enable scaling, we need to:
+1. Remove the `container_name` from the webserver service
+2. Add a load balancer to distribute traffic
+
+Let's create a new configuration file that supports scaling:
+
+```bash title="Rename Existing Config"
+mv docker-compose.yml docker-compose-scaleable.yml
+```
+
+Edit `docker-compose-scaleable.yml` and update it:
+
+```yaml title="docker-compose-scaleable.yml" showLineNumbers
+services:
+  loadbalancer:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - webserver
+    networks:
+      - app-network
+
+  webserver:
+    image: nginx:alpine
+    volumes:
+      - ./web/html:/usr/share/nginx/html:ro
+    depends_on:
+      - database
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  database:
+    image: mysql:8.0
+    container_name: compose-database
+    environment:
+      - MYSQL_ROOT_PASSWORD=rootpassword123
+      - MYSQL_DATABASE=sampleapp
+      - MYSQL_USER=appuser
+      - MYSQL_PASSWORD=apppassword123
+    volumes:
+      - ./database/init:/docker-entrypoint-initdb.d:ro
+      - mysql-data:/var/lib/mysql
+    networks:
+      - app-network
+    restart: unless-stopped
+
+volumes:
+  mysql-data:
+    driver: local
+
+networks:
+  app-network:
+    driver: bridge
+```
+
+**Key changes:**
+- Removed `container_name` from webserver service
+- Added a `loadbalancer` service
+- Load balancer exposes port 8080 to the host
+- Webserver no longer exposes ports directly (traffic goes through load balancer)
+- Database keeps its container name (we won't scale it)
+
+## 🔀 Step 2: Configure Nginx Load Balancer
+
+Create an Nginx configuration file for load balancing:
+
+```bash title="Create Nginx Config"
+touch nginx.conf
+```
+
+Add the following load balancer configuration:
+
+```nginx title="nginx.conf" showLineNumbers
+events {
+    worker_connections 1024;
+}
+
+http {
+    upstream webservers {
+        server webserver:80;
+    }
+
+    server {
+        listen 80;
+
+        location / {
+            proxy_pass http://webservers;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+        }
+    }
+}
+```
+
+**Configuration breakdown:**
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Directive</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Purpose</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>events</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Defines connection processing settings</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>worker_connections 1024</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Maximum simultaneous connections per worker</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>upstream webservers</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Defines backend server pool</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>server webserver:80</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Backend server (uses Docker DNS name)</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>proxy_pass</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Forwards requests to upstream servers</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>proxy_set_header</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Passes original client information to backends</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+## 🎬 Step 3: Launch with Custom Configuration File
+
+Since we renamed our compose file, we need to specify it with the `-f` flag:
+
+```bash title="Start Services with Custom File"
+docker compose -f docker-compose-scaleable.yml up -d
+```
+
+**Expected Output:**
+```
+[+] Running 4/4
+ ✔ Network docker-compose-practice_app-network       Created           0.5s
+ ✔ Container compose-database                        Started           0.8s
+ ✔ Container docker-compose-practice-webserver-1     Started           1.2s
+ ✔ Container docker-compose-practice-loadbalancer-1  Started           1.7s
+```
+
+**What happened:**
+- Network and volume created
+- Database started first
+- One webserver instance created with auto-generated name
+- Load balancer started and connected to webserver
+
+<Callout type="info">
+💡 **Custom File Names**: The `-f` flag allows you to use different compose files for development, staging, and production environments.
+</Callout>
+
+## 📈 Step 4: Scale Webserver to Multiple Instances
+
+Now scale the webserver service to 3 instances:
+
+```bash title="Scale to 3 Webserver Instances"
+docker compose -f docker-compose-scaleable.yml up -d --scale webserver=3
+```
+
+**Expected Output:**
+```
+[+] Running 5/5
+ ✔ Container compose-database                        Running           0.0s
+ ✔ Container docker-compose-practice-webserver-1     Running           0.0s
+ ✔ Container docker-compose-practice-webserver-3     Started           0.6s
+ ✔ Container docker-compose-practice-webserver-2     Started           1.0s
+ ✔ Container docker-compose-practice-loadbalancer-1  Running           0.0s
+```
+
+**What Docker Compose did:**
+- Kept existing containers running (database, webserver-1, loadbalancer)
+- Created two new webserver instances (webserver-2, webserver-3)
+- All three webservers are now behind the load balancer
+- Nginx automatically distributes traffic across all instances
+
+### Verify Scaled Services
+
+```bash title="List Running Services"
+docker compose -f docker-compose-scaleable.yml ps
+```
+
+**Expected Output:**
+```
+NAME                                     IMAGE          COMMAND                  SERVICE        CREATED              STATUS          PORTS
+compose-database                         mysql:8.0      "docker-entrypoint.s…"   database       About a minute ago   Up 59 seconds   3306/tcp, 33060/tcp
+docker-compose-practice-loadbalancer-1   nginx:alpine   "/docker-entrypoint.…"   loadbalancer   About a minute ago   Up 58 seconds   0.0.0.0:8080->80/tcp
+docker-compose-practice-webserver-1      nginx:alpine   "/docker-entrypoint.…"   webserver      About a minute ago   Up 58 seconds   80/tcp
+docker-compose-practice-webserver-2      nginx:alpine   "/docker-entrypoint.…"   webserver      22 seconds ago       Up 20 seconds   80/tcp
+docker-compose-practice-webserver-3      nginx:alpine   "/docker-entrypoint.…"   webserver      22 seconds ago       Up 21 seconds   80/tcp
+```
+
+You now have three webserver instances running behind a single load balancer!
+
+## 🛑 Step 5: Stop and Start Services
+
+### Stop All Services
+
+Stop all services without removing them:
+
+```bash title="Stop All Services"
+docker compose -f docker-compose-scaleable.yml stop
+```
+
+**Expected Output:**
+```
+[+] Stopping 5/5
+ ✔ Container docker-compose-practice-loadbalancer-1  Stopped           0.5s
+ ✔ Container docker-compose-practice-webserver-3     Stopped           0.4s
+ ✔ Container docker-compose-practice-webserver-1     Stopped           0.5s
+ ✔ Container docker-compose-practice-webserver-2     Stopped           0.5s
+ ✔ Container compose-database                        Stopped           1.4s
+```
+
+### Check Stopped Services
+
+```bash title="List All Services (Including Stopped)"
+docker compose -f docker-compose-scaleable.yml ps
+```
+
+**Expected Output:**
+```
+NAME      IMAGE     COMMAND   SERVICE   CREATED   STATUS    PORTS
+```
+
+All containers are stopped, so nothing appears. Use `docker compose ps -a` to see stopped containers.
+
+### Start Specific Service
+
+Start only the webserver service (and its dependencies):
+
+```bash title="Start Webserver Service"
+docker compose -f docker-compose-scaleable.yml start webserver
+```
+
+**Expected Output:**
+```
+[+] Running 4/4
+ ✔ Container compose-database                     Started                0.5s
+ ✔ Container docker-compose-practice-webserver-3  Started                0.5s
+ ✔ Container docker-compose-practice-webserver-2  Started                0.4s
+ ✔ Container docker-compose-practice-webserver-1  Started                0.7s
+```
+
+**What happened:**
+- Docker Compose started the database first (dependency)
+- Started all three webserver instances
+- Load balancer was NOT started (we didn't request it)
+
+### Verify Running Services
+
+```bash title="Check Running Services"
+docker compose -f docker-compose-scaleable.yml ps
+```
+
+**Output:**
+```
+NAME                                  IMAGE          COMMAND                  SERVICE     CREATED          STATUS          PORTS
+compose-database                      mysql:8.0      "docker-entrypoint.s…"   database    10 minutes ago   Up 11 seconds   3306/tcp, 33060/tcp
+docker-compose-practice-webserver-1   nginx:alpine   "/docker-entrypoint.…"   webserver   10 minutes ago   Up 10 seconds   80/tcp
+docker-compose-practice-webserver-2   nginx:alpine   "/docker-entrypoint.…"   webserver   9 minutes ago    Up 10 seconds   80/tcp
+docker-compose-practice-webserver-3   nginx:alpine   "/docker-entrypoint.…"   webserver   9 minutes ago    Up 11 seconds   80/tcp
+```
+
+Notice the load balancer is not running.
+
+## 🧹 Step 6: Complete Cleanup
+
+Docker Compose provides powerful cleanup commands to reclaim disk space.
+
+### Stop and Remove Everything
+
+```bash title="Tear Down Complete Application"
+docker compose -f docker-compose-scaleable.yml down
+```
+
+**Expected Output:**
+```
+[+] Running 6/6
+ ✔ Container docker-compose-practice-loadbalancer-1  Removed           0.0s
+ ✔ Container docker-compose-practice-webserver-1     Removed           0.5s
+ ✔ Container docker-compose-practice-webserver-3     Removed           0.6s
+ ✔ Container docker-compose-practice-webserver-2     Removed           0.5s
+ ✔ Container compose-database                        Removed           1.1s
+ ✔ Network docker-compose-practice_app-network       Removed           0.7s
+```
+
+This removes containers and networks but **preserves volumes** (database data is safe).
+
+### Remove Volumes
+
+To also remove volumes:
+
+```bash title="Remove Volumes"
+docker compose -f docker-compose-scaleable.yml down -v
+```
+
+**Expected Output:**
+```
+[+] Running 1/1
+ ✔ Volume docker-compose-practice_mysql-data  Removed                  0.0s
+```
+
+<Callout type="warning">
+⚠️ **Data Loss Warning**: The `-v` flag deletes all data in volumes. Your database data will be permanently lost. Only use this when you're sure you don't need the data.
+</Callout>
+
+### Remove Images Too
+
+For complete cleanup including images:
+
+```bash title="Remove Everything Including Images"
+docker compose -f docker-compose-scaleable.yml down -v --rmi all
+```
+
+**Expected Output:**
+```
+[+] Running 2/2
+ ✔ Image mysql:8.0     Removed                                        1.3s
+ ✔ Image nginx:alpine  Removed                                        0.1s
+```
+
+This removes containers, networks, volumes, AND all images used by the services.
+
+## 🔍 Step 7: Validate Configuration
+
+Before deploying, validate your docker-compose file:
+
+```bash title="Validate and View Resolved Configuration"
+docker compose -f docker-compose-scaleable.yml config
+```
+
+**Expected Output (abbreviated):**
+```yaml
+name: docker-compose-practice
+services:
+  database:
+    container_name: compose-database
+    environment:
+      MYSQL_DATABASE: sampleapp
+      MYSQL_PASSWORD: apppassword123
+      MYSQL_ROOT_PASSWORD: rootpassword123
+      MYSQL_USER: appuser
+    image: mysql:8.0
+    networks:
+      app-network: null
+    restart: unless-stopped
+    volumes:
+      - type: bind
+        source: /home/centos9/.../database/init
+        target: /docker-entrypoint-initdb.d
+        read_only: true
+      - type: volume
+        source: mysql-data
+        target: /var/lib/mysql
+  loadbalancer:
+    depends_on:
+      webserver:
+        condition: service_started
+        required: true
+    image: nginx:alpine
+    networks:
+      app-network: null
+    ports:
+      - mode: ingress
+        target: 80
+        published: "8080"
+        protocol: tcp
+    volumes:
+      - type: bind
+        source: /home/centos9/.../nginx.conf
+        target: /etc/nginx/nginx.conf
+        read_only: true
+  webserver:
+    depends_on:
+      database:
+        condition: service_started
+        required: true
+    image: nginx:alpine
+    networks:
+      app-network: null
+    restart: unless-stopped
+    volumes:
+      - type: bind
+        source: /home/centos9/.../web/html
+        target: /usr/share/nginx/html
+        read_only: true
+networks:
+  app-network:
+    name: docker-compose-practice_app-network
+    driver: bridge
+volumes:
+  mysql-data:
+    name: docker-compose-practice_mysql-data
+    driver: local
+```
+
+**What this shows:**
+- Fully resolved configuration with all defaults filled in
+- Absolute paths for bind mounts
+- Complete network and volume definitions
+- Dependency relationships
+- Validates YAML syntax and structure
+
+<Callout type="success">
+✅ **Configuration Valid**: If you see the output without errors, your docker-compose.yml is syntactically correct and ready to deploy.
+</Callout>
+
+## 📝 Step 8: Advanced Logging
+
+### View Logs with Timestamps
+
+```bash title="View Timestamped Logs"
+docker compose -f docker-compose-scaleable.yml up -d
+docker compose -f docker-compose-scaleable.yml logs -t
+```
+
+**Sample Output (with timestamps):**
+```
+webserver-1     | 2025-10-02T14:46:08.534111505Z /docker-entrypoint.sh: Configuration complete; ready for start up
+webserver-1     | 2025-10-02T14:46:08.681867757Z 2025/10/02 14:46:08 [notice] 1#1: using the "epoll" event method
+webserver-1     | 2025-10-02T14:46:08.681905976Z 2025/10/02 14:46:08 [notice] 1#1: nginx/1.29.1
+compose-database| 2025-10-02T14:46:30.811468Z 0 [System] [MY-010931] [Server] /usr/sbin/mysqld: ready for connections.
+```
+
+The `-t` flag prepends each log line with a timestamp, making it easier to debug timing issues.
+
+## 🖥️ Step 9: Interactive Container Access
+
+Execute an interactive shell inside a running container:
+
+```bash title="Access Webserver Shell"
+docker compose -f docker-compose-scaleable.yml exec webserver sh
+```
+
+**Once inside the container:**
+```bash title="Commands Inside Container"
+cat /etc/os-release
+```
+
+**Expected Output:**
+```
+NAME="Alpine Linux"
+ID=alpine
+VERSION_ID=3.22.1
+PRETTY_NAME="Alpine Linux v3.22"
+HOME_URL="https://alpinelinux.org/"
+BUG_REPORT_URL="https://gitlab.alpinelinux.org/alpine/aports/-/issues"
+```
+
+Type `exit` to leave the container shell.
+
+**What this does:**
+- `exec webserver`: Executes command in one of the webserver instances
+- `sh`: Runs the shell (Alpine uses `sh` instead of `bash`)
+- Useful for debugging, inspecting configurations, or running one-off commands
+
+## 🧼 Step 10: System-Wide Docker Cleanup
+
+After bringing down your application, clean up unused Docker resources:
+
+### Remove Stopped Containers and Dangling Images
+
+```bash title="Prune Docker System"
+docker system prune -f
+```
+
+**Expected Output:**
+```
+Deleted Containers:
+e88c65da895449fbaffb84dbe4588c13f5431ace5798d327c5e5cd85e4cfd8f4
+9623bd4f1fb4d9a128fd50ef2985e18442fa77667518c318eb7a67b4c4b6b09d
+...
+
+Deleted Images:
+deleted: sha256:9a1a399e0a391ea57b1af0096a40495827cf0db2c8326f2fca39fdaddc9fa783
+
+Deleted build cache objects:
+mtyftptwfuz6t3ws7rsp2q5pi
+grjq71e30f7rfacq5cf8lckzw
+...
+
+Total reclaimed space: 10.66MB
+```
+
+### Remove Unused Volumes
+
+```bash title="Prune Volumes"
+docker volume prune -f
+```
+
+### Check Disk Usage
+
+```bash title="Show Docker Disk Usage"
+docker system df
+```
+
+**Expected Output:**
+```
+TYPE            TOTAL     ACTIVE    SIZE      RECLAIMABLE
+Images          4         0         294.7MB   294.7MB (100%)
+Containers      0         0         0B        0B
+Local Volumes   1         0         6B        6B (100%)
+Build Cache     11        0         0B        0B
+```
+
+This helps you understand how much disk space Docker is using.
+
+## 🔧 Step 11: Using Override Files
+
+Override files allow you to customize configurations for different environments without modifying the base file.
+
+### Create Override File
+
+```bash title="Create Override File"
+touch docker-compose.override.yml
+```
+
+Add environment-specific settings:
+
+```yaml title="docker-compose.override.yml" showLineNumbers
+services:
+  webserver:
+    environment:
+      - ENV=development
+    ports:
+      - 8081:80
+
+  database:
+    environment:
+      - MYSQL_ROOT_PASSWORD=devpassword123
+```
+
+**What this does:**
+- Adds `ENV=development` to webserver environment
+- Exposes webserver directly on port 8081 (in addition to load balancer)
+- Changes database root password for development
+
+### How Override Files Work
+
+When you run `docker compose up` (without `-f`), Docker Compose automatically:
+1. Looks for `docker-compose.yml` (base configuration)
+2. Looks for `docker-compose.override.yml` (overrides)
+3. Merges them together, with override values taking precedence
+
+For multiple files:
+```bash
+docker compose -f docker-compose.yml -f docker-compose.override.yml up -d
+```
+
+## 📊 Docker Compose Advanced Commands Cheat Sheet
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Command</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Purpose</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Use Case</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker compose up -d --scale [service]=[n]</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Scale service to N instances</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">High availability</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker compose -f [file] up -d</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Use custom compose file</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Multiple environments</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker compose config</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Validate and view resolved config</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Pre-deployment checks</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker compose logs -t</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Show logs with timestamps</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Debugging timing issues</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker compose exec [service] [cmd]</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Run command in running container</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Interactive debugging</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker compose down -v</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Remove containers, networks, and volumes</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Complete cleanup</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker compose down --rmi all</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Also remove all images</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Full cleanup</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker compose start [service]</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Start specific stopped service</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Selective restart</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker compose stop</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Stop without removing containers</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Temporary pause</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker compose ps -a</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Show all containers (running + stopped)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Full status check</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker system prune -f</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Remove unused Docker resources</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Reclaim disk space</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker system df</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Show Docker disk usage</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Monitor storage</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+## 🚨 Troubleshooting Common Issues
+
+### Port Already in Use
+
+**Error:** `Bind for 0.0.0.0:8080 failed: port is already allocated`
+
+**Solution:** Check what's using the port:
+```bash
+sudo netstat -tulnp | grep :8080
+```
+
+Either stop the conflicting service or change the port in your docker-compose.yml.
+
+### Service Not Found
+
+**Error:** `no configuration file provided: not found`
+
+**Solution:** You're likely in the wrong directory or forgot the `-f` flag:
+```bash
+# Check you're in the right directory
+pwd
+
+# Or specify the full path
+docker compose -f /path/to/docker-compose.yml up -d
+```
+
+### Cannot Scale with Custom Container Names
+
+**Error:** `Remove the custom name to scale the service`
+
+**Solution:** Remove `container_name` from services you want to scale.
+
+### Permission Denied on Volumes
+
+**Error:** `Permission denied` when containers try to access volumes
+
+**Solution:** Check volume permissions:
+```bash
+ls -la ./web/html
+```
+
+Ensure Docker has read access to host directories.
+
+## 🎯 Production Best Practices
+
+<div className="bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900 dark:to-blue-900 p-6 rounded-lg my-8">
+
+### 1. **Use Named Volumes for Data**
+- Prefer named volumes over bind mounts for databases
+- Named volumes are managed by Docker and portable
+
+### 2. **Never Hardcode Secrets**
+- Use environment files (`.env`) for sensitive data
+- Add `.env` to `.gitignore`
+- Consider Docker secrets for production
+
+### 3. **Implement Health Checks**
+```yaml
+healthcheck:
+  test: ["CMD", "curl", "-f", "http://localhost"]
+  interval: 30s
+  timeout: 10s
+  retries: 3
+```
+
+### 4. **Set Resource Limits**
+```yaml
+deploy:
+  resources:
+    limits:
+      cpus: '0.50'
+      memory: 512M
+    reservations:
+      memory: 256M
+```
+
+### 5. **Use Restart Policies**
+- `no`: Don't restart (default)
+- `always`: Always restart
+- `on-failure`: Only on non-zero exit
+- `unless-stopped`: Always unless manually stopped
+
+### 6. **Separate Configurations**
+- `docker-compose.yml`: Base configuration
+- `docker-compose.override.yml`: Local development
+- `docker-compose.prod.yml`: Production settings
+
+### 7. **Validate Before Deploying**
+```bash
+docker compose config
+```
+
+### 8. **Use Specific Image Tags**
+```yaml
+# Bad (unpredictable)
+image: nginx:latest
+
+# Good (reproducible)
+image: nginx:1.25.3-alpine
+```
+
+</div>
+
+## 📊 Complete Command Reference
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Category</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Command</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2" rowspan="4"><strong>Lifecycle</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>up -d</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Create and start containers</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>down</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Stop and remove containers/networks</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>start</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Start stopped services</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>stop</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Stop running services</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2" rowspan="3"><strong>Monitoring</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>ps</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">List containers</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>logs -f</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Follow log output</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>top</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Display running processes</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2" rowspan="2"><strong>Scaling</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>up -d --scale service=N</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Scale service to N instances</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>scale service=N</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Alternative scaling syntax</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2" rowspan="3"><strong>Cleanup</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>down -v</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Remove with volumes</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>down --rmi all</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Remove with images</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>rm -f</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Force remove stopped containers</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2" rowspan="2"><strong>Validation</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>config</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Validate and view configuration</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>version</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Show version information</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+## 🎯 Key Takeaways
+
+<div className="bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-900 dark:to-blue-900 p-6 rounded-lg my-8">
+
+### ✅ Remember These Points
+
+1. **Scaling Requires Flexibility**: Remove `container_name` to allow multiple instances
+2. **Load Balancing**: Use Nginx or HAProxy to distribute traffic across scaled services
+3. **Custom Files**: Use `-f` flag for environment-specific configurations
+4. **Validation is Critical**: Always run `docker compose config` before deploying
+5. **Cleanup Strategies**: Use appropriate flags (-v, --rmi) based on what you want to remove
+6. **Override Files**: Leverage docker-compose.override.yml for local customizations
+7. **Timestamped Logs**: Use `-t` flag for debugging timing-related issues
+8. **Resource Management**: Monitor disk usage with `docker system df`
+
+</div>
+
+## 📖 Further Reading
+
+### Official Resources
+- [Docker Compose Specification](https://docs.docker.com/compose/compose-file/)
+- [Docker Compose CLI Reference](https://docs.docker.com/compose/reference/)
+- [Docker Compose Best Practices](https://docs.docker.com/compose/production/)
+
+### Advanced Topics
+- [Docker Swarm Mode](https://docs.docker.com/engine/swarm/) - Container orchestration
+- [Kubernetes](https://kubernetes.io/) - Production-grade orchestration
+- [Docker Secrets](https://docs.docker.com/engine/swarm/secrets/) - Managing sensitive data
+
+---
+
+<Callout type="success">
+🎉 **Mastery Achieved!** You've completed the advanced Docker Compose tutorial. You now know how to scale services, implement load balancing, manage configurations, and follow production best practices.
+
+**What's Next**: Apply these concepts to real-world projects, explore Docker Swarm or Kubernetes for production deployments, and continue refining your containerization skills!
+</Callout>
+
+## 💬 Discussion
+
+Share your advanced Docker Compose experiences:
+
+- What multi-container applications have you scaled?
+- How are you handling environment-specific configurations?
+- What load balancing strategies work best for your use case?
+- Have you implemented health checks and resource limits?
+
+**Connect with me**:
+- 🐙 [GitHub](https://github.com/owais-io) - Advanced Docker examples
+- 📧 [Contact](https://owais.io/contact) - Architecture discussions
