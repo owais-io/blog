@@ -1,0 +1,912 @@
+---
+title: "Bash Advanced Scripting: Output Logging, Error Handling, and String Manipulation - A Complete Beginner's Guide (Part 3)"
+description: "Master the tee command for output logging, understand exit codes for robust error handling, and learn powerful string manipulation techniques including length, substring extraction, and pattern replacement."
+date: "2025-10-04T12:00:00.000Z"
+tags: ["bash", "linux", "scripting", "tee", "error-handling", "string-manipulation"]
+published: true
+author: "Owais"
+categories: ["Linux", "Bash"]
+seo:
+  canonical: "https://owais.io/blog/bash-advanced-logging-error-handling-strings-part3"
+  keywords: ["bash tee command", "bash error handling", "exit codes", "string manipulation bash", "bash substring", "bash string replace", "linux logging"]
+toc: true
+---
+
+Professional scripts need proper logging, robust error handling, and the ability to manipulate text data. This comprehensive guide covers the `tee` command for simultaneous output logging, exit codes for error handling, and powerful string manipulation techniques that every Bash scripter should know.
+
+<Callout type="info">
+🎯 **What You'll Learn**: In this hands-on tutorial, you'll discover:
+- Using the `tee` command to display AND save output
+- Understanding exit codes and their meanings
+- Implementing proper error handling in scripts
+- Calculating string length with `${#variable}`
+- Extracting substrings with position and length
+- Replacing text patterns within strings
+- Building scripts with comprehensive error messages
+- Real-world examples with complete explanations
+</Callout>
+
+## 📝 Output Logging with `tee`: Display AND Save
+
+The `tee` command is like a T-junction in plumbing - it splits the output into two directions: to your screen AND to a file simultaneously.
+
+### Why Use `tee`?
+
+**Without `tee`**:
+```bash
+# Option 1: See output but don't save it
+echo "Important message"
+
+# Option 2: Save output but don't see it
+echo "Important message" > log.txt
+```
+
+You have to choose: see it OR save it.
+
+**With `tee`**:
+```bash
+# Do both: see it AND save it!
+echo "Important message" | tee log.txt
+```
+
+## 🚀 Your First `tee` Script
+
+Let's create a logging script that demonstrates `tee` in action.
+
+### Step 1: Create the Directory
+
+```bash
+mkdir logging_redirecting_output
+cd logging_redirecting_output
+```
+
+**What these commands do**:
+- `mkdir logging_redirecting_output` - Creates a new directory for our logging examples
+- `cd logging_redirecting_output` - Changes into that directory
+
+### Step 2: Create the Script
+
+```bash
+nano multiline_output.sh
+```
+
+### Step 3: Write the Logging Script
+
+```bash
+#!/bin/bash
+{
+  echo "Welcome to the Logging and Redirecting Output Lab!"
+  echo "This script demonstrates output management."
+  echo "Each message will be logged to a file and displayed on the console."
+} | tee output.log
+```
+
+### Understanding the Script
+
+#### Grouped Commands with Curly Braces
+
+```bash
+{
+  echo "Welcome to the Logging and Redirecting Output Lab!"
+  echo "This script demonstrates output management."
+  echo "Each message will be logged to a file and displayed on the console."
+}
+```
+
+**Purpose**: Groups multiple commands so their combined output can be piped together.
+
+**Why curly braces**:
+- `{ ... }` groups commands in the current shell
+- All three `echo` statements produce output
+- That combined output is treated as a single stream
+- The entire stream is then piped to `tee`
+
+<Callout type="info">
+💡 **Curly Brace Syntax**: Notice the space after `{` and before `}`. Also, the closing `}` must be on its own line or preceded by a semicolon. This is required Bash syntax.
+</Callout>
+
+#### The `tee` Command
+
+```bash
+| tee output.log
+```
+
+**Purpose**: Splits the output into two streams.
+
+**What happens**:
+1. The pipe `|` sends all echo output to `tee`
+2. `tee` writes the data to `output.log`
+3. `tee` also displays the data on your terminal
+4. You see the messages AND they're saved
+
+**The `tee` command**: Named after T-shaped pipe fittings in plumbing, it splits data flow in two directions.
+
+### Step 4: Make Executable and Run
+
+```bash
+chmod +x multiline_output.sh
+./multiline_output.sh
+```
+
+**Output on terminal:**
+```
+Welcome to the Logging and Redirecting Output Lab!
+This script demonstrates output management.
+Each message will be logged to a file and displayed on the console.
+```
+
+**Verify it was saved**:
+
+```bash
+ls
+```
+
+**Output:**
+```
+multiline_output.sh  output.log
+```
+
+**Check the log file contents**:
+
+```bash
+cat output.log
+```
+
+**Output:**
+```
+Welcome to the Logging and Redirecting Output Lab!
+This script demonstrates output management.
+Each message will be logged to a file and displayed on the console.
+```
+
+Perfect! The output appears both on screen and in the file.
+
+## 📂 Using `tee` with System Commands
+
+The `tee` command works with any command output:
+
+```bash
+ls -l | tee listing.txt
+```
+
+**Output:**
+```
+total 8
+-rw-r--r--. 1 centos9 centos9   0 Oct  4 00:15 listing.txt
+-rwxr-xr-x. 1 centos9 centos9 223 Oct  4 00:13 multiline_output.sh
+-rw-r--r--. 1 centos9 centos9 163 Oct  4 00:13 output.log
+```
+
+**What happened**:
+1. `ls -l` generated a detailed file listing
+2. Output was sent to `tee`
+3. `tee` displayed it on screen
+4. `tee` wrote it to `listing.txt`
+
+**Verify the file**:
+
+```bash
+cat listing.txt
+```
+
+**Output:**
+```
+total 8
+-rw-r--r--. 1 centos9 centos9   0 Oct  4 00:15 listing.txt
+-rwxr-xr-x. 1 centos9 centos9 223 Oct  4 00:13 multiline_output.sh
+-rw-r--r--. 1 centos9 centos9 163 Oct  4 00:13 output.log
+```
+
+<Callout type="success">
+✅ **Use Case**: The `tee` command is perfect for logging script output during automation. You can see what's happening in real-time while keeping a permanent record.
+</Callout>
+
+## 🔧 `tee` Command Options
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Command</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Purpose</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Behavior</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>command | tee file.txt</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Save and display</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Overwrites file</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>command | tee -a file.txt</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Append and display</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Appends to file</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>command | tee file1.txt file2.txt</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Multiple files</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Writes to both files</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>command | tee -i file.txt</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Ignore interrupts</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Continues on SIGINT</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+## ⚠️ Error Handling with Exit Codes
+
+Exit codes (also called return codes or exit status) are numeric values that programs return to indicate success or failure. Understanding them is crucial for robust scripting.
+
+### Understanding Exit Codes
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Exit Code</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Meaning</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Common Usage</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>0</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Success</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Command completed successfully</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>1</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">General error</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Catchall for general errors</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>2</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Misuse</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Incorrect usage of command</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>126</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Not executable</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Command found but not executable</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>127</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Not found</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Command not found</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>128+n</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Fatal signal</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Terminated by signal n</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>130</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Ctrl+C</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Script terminated by Ctrl+C</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>255</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Exit status out of range</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Exit code outside 0-255 range</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+## 🎯 Building an Error-Handling Script
+
+Let's create a script that demonstrates proper error handling.
+
+### Step 1: Create the Directory and Script
+
+```bash
+cd ..
+mkdir error_handling
+cd error_handling
+nano script.sh
+```
+
+### Step 2: Write the Error-Checking Script
+
+```bash
+#!/bin/bash
+
+# Check if the directory exists
+DIRECTORY="/path/to/directory"
+
+if [ -d "$DIRECTORY" ]; then
+    echo "Directory exists."
+else
+    echo "Directory does not exist."
+    exit 1
+fi
+```
+
+### Understanding the Error Handling
+
+#### Defining the Directory Path
+
+```bash
+DIRECTORY="/path/to/directory"
+```
+
+**Purpose**: Stores the directory path we want to check.
+
+**Why use a variable**: Makes the script maintainable - you can change the path in one place.
+
+#### Testing Directory Existence
+
+```bash
+if [ -d "$DIRECTORY" ]; then
+    echo "Directory exists."
+else
+    echo "Directory does not exist."
+    exit 1
+fi
+```
+
+**Purpose**: Checks if the directory exists and exits with error if it doesn't.
+
+**Breaking it down**:
+- `[ -d "$DIRECTORY" ]` - The `-d` test returns true if the path exists AND is a directory
+- `"$DIRECTORY"` - Quoted to handle paths with spaces
+- `echo "Directory exists."` - Success message (optional)
+- `exit 1` - **Crucial**: Terminates the script with error code 1
+
+<Callout type="warning">
+⚠️ **Why Exit Codes Matter**: Without `exit 1`, the script continues even after errors. Other scripts or automation tools checking your script's status will think it succeeded when it actually failed!
+</Callout>
+
+### Step 3: Test the Script
+
+```bash
+bash script.sh
+```
+
+**Output:**
+```
+Directory does not exist.
+```
+
+**Check the exit code:**
+
+```bash
+echo $?
+```
+
+**Output:**
+```
+1
+```
+
+**What `$?` does**: This special variable holds the exit code of the last command that ran. Here, it's `1`, indicating failure.
+
+### Step 4: Enhanced Error Messages
+
+Update the script with more helpful messages:
+
+```bash
+nano script.sh
+```
+
+```bash
+#!/bin/bash
+
+DIRECTORY="/path/to/directory"
+
+if [ -d "$DIRECTORY" ]; then
+    echo "Directory exists."
+else
+    echo "Error: Directory does not exist."
+    echo "Please create the directory before proceeding."
+    exit 1
+fi
+```
+
+**Run it:**
+
+```bash
+bash script.sh
+```
+
+**Output:**
+```
+Error: Directory does not exist.
+Please create the directory before proceeding.
+```
+
+**Why better error messages matter**:
+- Users understand what went wrong
+- Clear guidance on how to fix the problem
+- Professional appearance
+- Easier debugging
+
+## 📏 String Manipulation: Finding String Length
+
+Bash provides built-in operators for working with strings. Let's start with measuring string length.
+
+### Step 1: Create the String Manipulation Lab
+
+```bash
+cd ..
+mkdir string_manipulation
+cd string_manipulation
+nano script.sh
+```
+
+### Step 2: Calculate String Length
+
+```bash
+#!/bin/bash
+
+echo "Enter a string:"
+read user_input
+string_length=${#user_input}
+
+echo "The length of the string you entered: $string_length"
+```
+
+### Understanding String Length Syntax
+
+#### Reading User Input
+
+```bash
+echo "Enter a string:"
+read user_input
+```
+
+**Purpose**: Prompts the user and stores their input in `user_input`.
+
+**The `read` command**: Waits for user input and assigns it to the specified variable.
+
+#### Calculating Length
+
+```bash
+string_length=${#user_input}
+```
+
+**Purpose**: Counts the number of characters in the string.
+
+**Syntax breakdown**:
+- `${...}` - Parameter expansion (curly braces required)
+- `#` - Length operator
+- `user_input` - Variable name
+- Result: Number of characters including spaces
+
+<Callout type="info">
+💡 **String Length Operator**: The `#` inside `${#variable}` is a special operator that returns the length. Don't confuse it with `#` used for comments!
+</Callout>
+
+### Step 3: Test String Length
+
+```bash
+chmod +x script.sh
+./script.sh
+```
+
+**Test 1:**
+```
+Enter a string:
+matter
+The length of the string you entered: 6
+```
+
+**What happened**: "matter" has 6 characters.
+
+**Test 2:**
+```
+Enter a string:
+my name is Owais Abbasi
+The length of the string you entered: 23
+```
+
+**What happened**: Spaces are counted as characters! There are 23 total characters including 4 spaces.
+
+## ✂️ Extracting Substrings
+
+You can extract portions of a string using position and length parameters.
+
+### Substring Syntax
+
+```bash
+${variable:offset:length}
+```
+
+- `variable` - The string variable
+- `offset` - Starting position (0-based)
+- `length` - Number of characters to extract
+
+### Example: Extract Middle Characters
+
+Update `script.sh`:
+
+```bash
+#!/bin/bash
+
+echo "Enter a string:"
+read user_input
+substring=${user_input:2:4}
+
+echo "Substring from position 2 to 5 is: $substring"
+```
+
+### Understanding Substring Extraction
+
+```bash
+substring=${user_input:2:4}
+```
+
+**Purpose**: Extracts 4 characters starting at position 2 (zero-based).
+
+**Position explained**:
+- Position 0 = first character
+- Position 1 = second character
+- Position 2 = third character (where we start)
+- Extract 4 characters from position 2
+
+**Example breakdown** with "abcdefgh":
+- Position 0: `a`
+- Position 1: `b`
+- Position 2: `c` ← start here
+- Position 3: `d`
+- Position 4: `e`
+- Position 5: `f` ← end here (4 characters: c, d, e, f)
+
+### Test Substring Extraction
+
+```bash
+./script.sh
+```
+
+**Input:**
+```
+Enter a string:
+abcdefgh
+```
+
+**Output:**
+```
+Substring from position 2 to 5 is: cdef
+```
+
+**Perfect!** Characters at positions 2, 3, 4, and 5 are `c`, `d`, `e`, `f`.
+
+<Callout type="success">
+✅ **Real-World Use**: Substring extraction is perfect for parsing structured data like dates, extracting prefixes, or processing fixed-width fields.
+</Callout>
+
+## 🔄 String Pattern Replacement
+
+Bash can find and replace text within strings using parameter expansion.
+
+### Replacement Syntax
+
+```bash
+${variable//pattern/replacement}
+```
+
+- `variable` - The string to search in
+- `//` - Replace ALL occurrences (use `/` for first only)
+- `pattern` - Text to find
+- `replacement` - Text to replace with
+
+### Example: Replace Text Pattern
+
+Update `script.sh`:
+
+```bash
+#!/bin/bash
+
+echo "Enter a string:"
+read user_input
+modified_string=${user_input//abc/xyz}
+echo "Modified string: $modified_string"
+```
+
+### Understanding Pattern Replacement
+
+```bash
+modified_string=${user_input//abc/xyz}
+```
+
+**Purpose**: Replaces every occurrence of "abc" with "xyz".
+
+**Syntax breakdown**:
+- `${...}` - Parameter expansion
+- `user_input` - Source string
+- `//` - Replace ALL matches (not just the first)
+- `abc` - Pattern to find
+- `/xyz` - Replace with "xyz"
+
+### Test Pattern Replacement
+
+**Test 1: Exact match**
+```bash
+./script.sh
+```
+
+**Input:**
+```
+Enter a string:
+abc
+```
+
+**Output:**
+```
+Modified string: xyz
+```
+
+**What happened**: "abc" was replaced with "xyz".
+
+**Test 2: Pattern within string**
+```
+Enter a string:
+abcdef
+```
+
+**Output:**
+```
+Modified string: xyzdef
+```
+
+**What happened**: "abc" at the beginning was replaced, "def" remained.
+
+**Test 3: No match**
+```
+Enter a string:
+ldksn
+```
+
+**Output:**
+```
+Modified string: ldksn
+```
+
+**What happened**: No "abc" found, string unchanged.
+
+**Test 4: Multiple occurrences**
+```
+Enter a string:
+nkdabcdfksn
+```
+
+**Output:**
+```
+Modified string: nkdxyzdfksn
+```
+
+**What happened**: "abc" in the middle was replaced with "xyz".
+
+### Single vs. Double Slash
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Syntax</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Behavior</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Example</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`$\{var/abc/xyz\}`}</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Replace first match only</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>abcabc</code> → <code>xyzabc</code></td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`$\{var//abc/xyz\}`}</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Replace all matches</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>abcabc</code> → <code>xyzxyz</code></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+## 📊 String Manipulation Reference
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Operation</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Syntax</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Example</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">String length</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`$\{#var\}`}</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>str="hello"</code> → length is 5</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Substring</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`$\{var:pos:len\}`}</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`$\{str:0:3\}`}</code> → "hel"</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Replace first</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`$\{var/old/new\}`}</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`$\{str/l/L\}`}</code> → "heLlo"</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Replace all</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`$\{var//old/new\}`}</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`$\{str//l/L\}`}</code> → "heLLo"</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Remove from start</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`$\{var#pattern\}`}</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`$\{str#hel\}`}</code> → "lo"</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Remove from end</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`$\{var%pattern\}`}</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`$\{str%lo\}`}</code> → "hel"</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">To uppercase</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`$\{var^^}\`}</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`$\{str^^\}`}</code> → "HELLO"</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">To lowercase</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`$\{var,,\}`}</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>str="HELLO"</code> → "hello"</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+## 🎯 Best Practices
+
+<div className="bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-900 dark:to-blue-900 p-6 rounded-lg my-8">
+
+### ✅ Logging Best Practices
+
+1. **Use `tee` for important operations**: Keep records of critical script actions
+2. **Append with `-a`**: Use `tee -a` to maintain log history
+3. **Include timestamps**: Add date/time to log entries for tracking
+4. **Log to dedicated directory**: Keep logs organized in `/var/log` or similar
+5. **Rotate logs**: Implement log rotation to prevent disk space issues
+6. **Log both output and errors**: Capture stdout and stderr
+
+### ✅ Error Handling Best Practices
+
+1. **Always use exit codes**: Return 0 for success, non-zero for failure
+2. **Check critical operations**: Validate file existence, permissions, etc.
+3. **Provide helpful error messages**: Explain what went wrong and how to fix it
+4. **Use specific exit codes**: Different errors can have different codes
+5. **Clean up on error**: Remove temporary files before exiting
+6. **Document exit codes**: Comment what each code means in your script
+
+### ✅ String Manipulation Best Practices
+
+1. **Quote variables**: Always use `"${variable}"` to handle spaces
+2. **Validate input length**: Check string length before substring extraction
+3. **Test edge cases**: Empty strings, very long strings, special characters
+4. **Use descriptive variable names**: `user_input` is better than `str`
+5. **Consider regex for complex patterns**: Use `grep`, `sed`, or `awk` when needed
+6. **Document string formats**: Explain expected input format in comments
+
+</div>
+
+## 📝 Command Cheat Sheet
+
+### Logging with `tee`
+
+```bash
+# Display and save to file (overwrite)
+command | tee output.log
+
+# Display and append to file
+command | tee -a output.log
+
+# Save to multiple files
+command | tee file1.log file2.log
+
+# Group commands and log all output
+{
+    echo "Step 1"
+    echo "Step 2"
+    echo "Step 3"
+} | tee script.log
+
+# Suppress terminal output (only save)
+command | tee output.log > /dev/null
+```
+
+### Error Handling
+
+```bash
+# Basic exit with error
+if [ condition ]; then
+    echo "Error message"
+    exit 1
+fi
+
+# Check command success
+command
+if [ $? -ne 0 ]; then
+    echo "Command failed"
+    exit 1
+fi
+
+# Short circuit operators
+command || { echo "Failed"; exit 1; }
+command && echo "Success"
+
+# Check file/directory existence
+[ -f "file.txt" ] || { echo "File not found"; exit 1; }
+[ -d "directory" ] || { echo "Directory not found"; exit 1; }
+```
+
+### String Manipulation
+
+```bash
+# Length
+string="hello world"
+length=${#string}              # 11
+
+# Substring extraction
+sub=${string:0:5}              # "hello"
+sub=${string:6}                # "world" (from position 6 to end)
+
+# Pattern replacement
+modified=${string/world/earth} # "hello earth" (first occurrence)
+modified=${string//l/L}        # "heLLo worLd" (all occurrences)
+
+# Remove prefix/suffix
+filename="document.txt"
+name=${filename%.txt}          # "document" (remove .txt)
+extension=${filename##*.}      # "txt" (get extension)
+
+# Case conversion
+upper=${string^^}              # "HELLO WORLD"
+lower=${string,,}              # "hello world"
+```
+
+## 🚀 What's Next?
+
+<div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-lg my-6">
+
+### 📚 Continue Learning
+
+In **Part 4**, we'll cover:
+- Understanding cron scheduling syntax
+- Creating and editing cron jobs with `crontab`
+- Writing scripts for automated execution
+- Testing cron jobs effectively
+- Debugging cron job issues
+- Best practices for scheduled automation
+- Real-world automation examples
+
+Stay tuned for the final guide in this series!
+
+</div>
+
+---
+
+<Callout type="success">
+🎉 **Congratulations!** You've mastered output logging with `tee`, error handling with exit codes, and powerful string manipulation techniques. Your scripts can now handle errors gracefully and process text data efficiently.
+
+**What did you think of this guide?** Share your logging strategies and string manipulation use cases in the comments below!
+</Callout>
+
+## 💬 Discussion
+
+I'd love to hear about your experience:
+
+- How are you using `tee` in your scripts?
+- What error handling patterns do you find most useful?
+- What string manipulation challenges have you encountered?
+- What automation tasks would you like to learn about?
+
+**Connect with me**:
+- 🐙 [GitHub](https://github.com/owais-io) - Example scripts and more
+- 📧 [Contact](https://owais.io/contact) - Bash scripting questions and discussions

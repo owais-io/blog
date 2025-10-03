@@ -1,0 +1,743 @@
+---
+title: "Bash Advanced Scripting: Arrays and Command Substitution - A Complete Beginner's Guide (Part 2)"
+description: "Master Bash arrays with detailed explanations of the @ symbol, array operations, and command substitution. Learn to capture command output and build dynamic scripts."
+date: "2025-10-04T11:00:00.000Z"
+tags: ["bash", "linux", "scripting", "arrays", "command-substitution"]
+published: true
+author: "Owais"
+categories: ["Linux", "Bash"]
+seo:
+  canonical: "https://owais.io/blog/bash-advanced-arrays-command-substitution-part2"
+  keywords: ["bash arrays", "bash @ symbol", "command substitution", "bash scripting", "shell arrays", "linux automation", "bash array operations"]
+toc: true
+---
+
+Arrays and command substitution are two powerful features that will take your Bash scripting to the next level. Arrays let you store multiple values in a single variable, while command substitution allows you to capture and use command output dynamically. This guide explains everything in detail for absolute beginners.
+
+<Callout type="info">
+🎯 **What You'll Learn**: In this hands-on tutorial, you'll discover:
+- Creating and working with Bash arrays
+- Understanding the mysterious `@` symbol and array expansion
+- The difference between `"${array[@]}"` and `"$array"`
+- Adding elements to arrays dynamically
+- Command substitution with `$()`
+- Capturing output from system commands
+- Building dynamic scripts with real-time data
+- Common pitfalls and how to avoid them
+</Callout>
+
+## 📦 Bash Arrays: Storing Multiple Values
+
+Arrays are like containers that can hold multiple values under a single variable name. Instead of creating separate variables for each item, you can group related data together.
+
+### Why Use Arrays?
+
+**Without arrays** (tedious):
+```bash
+fruit1="apple"
+fruit2="banana"
+fruit3="cherry"
+```
+
+**With arrays** (elegant):
+```bash
+fruits=("apple" "banana" "cherry")
+```
+
+Much cleaner and scalable!
+
+## 🚀 Creating Your First Array
+
+Let's create a script to explore arrays:
+
+### Step 1: Create the Script
+
+```bash
+nano array.sh
+```
+
+### Step 2: Define a Simple Array
+
+```bash
+#!/bin/bash
+
+fruits=("apple" "banana" "cherry")
+
+echo "Fruits array: ${fruits[@]}"
+```
+
+### Understanding the Array Syntax
+
+#### Array Declaration
+
+```bash
+fruits=("apple" "banana" "cherry")
+```
+
+**Purpose**: Creates an array named `fruits` with three elements.
+
+**Syntax breakdown**:
+- `fruits=` - Array variable name
+- `()` - Parentheses indicate an array
+- `"apple" "banana" "cherry"` - Array elements separated by spaces
+- Each element is quoted to handle spaces within values
+
+<Callout type="info">
+💡 **Array Indexing**: Bash arrays are **zero-indexed**, meaning the first element is at position 0:
+- `apple` is at index 0
+- `banana` is at index 1
+- `cherry` is at index 2
+</Callout>
+
+#### Displaying the Entire Array
+
+```bash
+echo "Fruits array: ${fruits[@]}"
+```
+
+**Purpose**: Prints all elements of the array.
+
+**The `@` symbol explained**:
+- `${fruits[@]}` - Expands to **all elements** in the array
+- Each element is treated as a separate word
+- The `@` means "give me every item individually"
+
+### Step 3: Run the Script
+
+```bash
+bash array.sh
+```
+
+**Output:**
+```
+Fruits array: apple banana cherry
+```
+
+**What happened**:
+1. The array was created with three elements
+2. `${fruits[@]}` expanded to all three values
+3. `echo` printed them space-separated
+
+## 🔍 Understanding Array Expansion: The `@` Symbol Mystery
+
+The `@` symbol is crucial for array operations. Let's explore the differences between array access methods.
+
+### Experiment 1: The Wrong Way (Without `@`)
+
+Update `array.sh`:
+
+```bash
+#!/bin/bash
+
+fruits=("apple" "banana" "cherry")
+
+for fruit in "$fruits"; do
+	echo "Fruit: $fruit"
+done
+```
+
+**Run it:**
+
+```bash
+bash array.sh
+```
+
+**Output:**
+```
+Fruit: apple
+```
+
+**What happened**:
+- `"$fruits"` (without `@`) only accesses the **first element** (index 0)
+- The loop runs only once with "apple"
+- The other elements are completely ignored!
+
+<Callout type="warning">
+⚠️ **Common Mistake**: Using `$fruits` or `"$fruits"` without `[@]` only gives you the first array element. Always use `[@]` to access all elements!
+</Callout>
+
+### Experiment 2: The Right Way (With `@`)
+
+Now update it correctly:
+
+```bash
+#!/bin/bash
+
+fruits=("apple" "banana" "cherry")
+
+for fruit in "${fruits[@]}"; do
+	echo "Fruit: $fruit"
+done
+```
+
+**Run it:**
+
+```bash
+bash array.sh
+```
+
+**Output:**
+```
+Fruit: apple
+Fruit: banana
+Fruit: cherry
+```
+
+**What happened**:
+- `"${fruits[@]}"` expands to all elements individually
+- The loop iterates three times (once per element)
+- Each fruit is processed separately
+
+### Understanding the Syntax Details
+
+Let's break down `"${fruits[@]}"` piece by piece:
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Component</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Purpose</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Why Important</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>"..."</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Double quotes</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Preserves spaces within elements</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`$\{...\}`}</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Curly braces</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Required for array syntax</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>fruits</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Array name</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">The variable holding your array</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>[@]</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Array subscript</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Expands to all elements</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### Experiment 3: What Happens Without Quotes?
+
+Try this version:
+
+```bash
+#!/bin/bash
+
+fruits=("apple" "banana" "cherry")
+
+for fruit in ${fruits[@]}; do
+	echo "Fruit: $fruit"
+done
+```
+
+**This works for simple values**, but watch what happens with spaces:
+
+```bash
+fruits=("apple pie" "banana" "cherry tart")
+
+for fruit in ${fruits[@]}; do
+	echo "Fruit: $fruit"
+done
+```
+
+**Output:**
+```
+Fruit: apple
+Fruit: pie
+Fruit: banana
+Fruit: cherry
+Fruit: tart
+```
+
+**Problem**: Without quotes, "apple pie" is split into two separate words!
+
+**With quotes** `"${fruits[@]}"`:
+```
+Fruit: apple pie
+Fruit: banana
+Fruit: cherry tart
+```
+
+Much better! Each element remains intact.
+
+<Callout type="success">
+✅ **Best Practice**: Always use `"${array[@]}"` with quotes to properly handle array elements that contain spaces.
+</Callout>
+
+## ➕ Adding Elements to Arrays
+
+Arrays are dynamic - you can add elements after creation.
+
+### The `+=` Operator
+
+Update your script:
+
+```bash
+#!/bin/bash
+
+fruits=("apple" "banana" "cherry")
+
+for fruit in "${fruits[@]}"; do
+	echo "Fruit: $fruit"
+done
+
+fruits+=("mango")
+
+echo "Updated fruits array: ${fruits[@]}"
+```
+
+**Run it:**
+
+```bash
+bash array.sh
+```
+
+**Output:**
+```
+Fruit: apple
+Fruit: banana
+Fruit: cherry
+Updated fruits array: apple banana cherry mango
+```
+
+### Understanding the Addition
+
+```bash
+fruits+=("mango")
+```
+
+**Purpose**: Appends "mango" to the end of the array.
+
+**Syntax breakdown**:
+- `fruits+=` - Append operator
+- `("mango")` - Value(s) to add (in parentheses because it's an array operation)
+- The array now has 4 elements instead of 3
+
+**You can add multiple elements at once**:
+
+```bash
+fruits+=("orange" "grape" "kiwi")
+```
+
+This adds three new elements in one operation.
+
+## 📊 Array Operations Reference
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Operation</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Syntax</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Result</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Create array</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>arr=("a" "b" "c")</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">New array with 3 elements</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Access all elements</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`$\{arr[@]\}`}</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">All elements: a b c</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Access one element</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`$\{arr[0]\}`}</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">First element: a</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Array length</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`$\{#arr[@]\}`}</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Number of elements: 3</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Append element</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>arr+=("d")</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Array becomes: a b c d</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Set element</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>arr[1]="z"</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Array becomes: a z c</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Get indices</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`$\{!arr[@]\}`}</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">All indices: 0 1 2</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+## 🔄 Command Substitution: Capturing Command Output
+
+Command substitution lets you capture the output of a command and use it as a variable value. This is incredibly powerful for creating dynamic scripts.
+
+### The `$()` Syntax
+
+The modern syntax for command substitution is `$(command)`. Whatever the command prints becomes the variable's value.
+
+### Step 1: Create a Command Substitution Script
+
+```bash
+nano command_substitution.sh
+```
+
+### Step 2: Capture System Information
+
+```bash
+CURRENT_DATE=$(date)
+
+echo "Today is $CURRENT_DATE"
+
+USER_NAME=$(whoami)
+echo "Current user: $USER_NAME"
+
+CURRENT_DIR=$(pwd)
+echo "Current directory: $CURRENT_DIR"
+```
+
+### Step 3: Run the Script
+
+```bash
+bash command_substitution.sh
+```
+
+**Output:**
+```
+Today is Fri Oct  3 11:57:43 PM PKT 2025
+Current user: centos9
+Current directory: /home/centos9/Razzaq-Labs-II/random/random
+```
+
+### Understanding Each Command Substitution
+
+#### Capturing the Date
+
+```bash
+CURRENT_DATE=$(date)
+```
+
+**Purpose**: Runs the `date` command and stores its output in `CURRENT_DATE`.
+
+**What happens**:
+1. Bash sees `$(date)`
+2. Executes the `date` command
+3. Captures the output: "Fri Oct 3 11:57:43 PM PKT 2025"
+4. Assigns that string to `CURRENT_DATE`
+
+**The `date` command**: Displays the current system date and time.
+
+#### Capturing the Username
+
+```bash
+USER_NAME=$(whoami)
+```
+
+**Purpose**: Captures the current user's username.
+
+**What happens**:
+1. `whoami` command runs
+2. Outputs the username: "centos9"
+3. That value is stored in `USER_NAME`
+
+**The `whoami` command**: Prints the username of the current user.
+
+#### Capturing the Current Directory
+
+```bash
+CURRENT_DIR=$(pwd)
+```
+
+**Purpose**: Stores the current working directory path.
+
+**What happens**:
+1. `pwd` (Print Working Directory) executes
+2. Outputs the full path: "/home/centos9/Razzaq-Labs-II/random/random"
+3. Path is stored in `CURRENT_DIR`
+
+**The `pwd` command**: Shows the absolute path of your current location in the filesystem.
+
+### Displaying the Captured Values
+
+```bash
+echo "Today is $CURRENT_DATE"
+echo "Current user: $USER_NAME"
+echo "Current directory: $CURRENT_DIR"
+```
+
+**Purpose**: Displays the values we captured.
+
+**Key insight**: These are now regular variables - the command only ran once during assignment. The variables hold the output as strings.
+
+## 🎯 Practical Command Substitution Examples
+
+### Example 1: Counting Files
+
+```bash
+FILE_COUNT=$(ls -1 | wc -l)
+echo "There are $FILE_COUNT files in this directory"
+```
+
+**Breaking it down**:
+- `ls -1` - Lists files, one per line
+- `|` - Pipes the output to the next command
+- `wc -l` - Counts the lines
+- The final count is stored in `FILE_COUNT`
+
+### Example 2: System Uptime
+
+```bash
+UPTIME=$(uptime -p)
+echo "System has been running: $UPTIME"
+```
+
+**The `uptime -p` command**: Shows how long the system has been running in a human-readable format (e.g., "up 2 days, 5 hours").
+
+### Example 3: Disk Usage
+
+```bash
+DISK_USAGE=$(df -h / | tail -1 | awk '{print $5}')
+echo "Root partition is $DISK_USAGE full"
+```
+
+**Breaking it down**:
+- `df -h /` - Shows disk usage for root partition in human-readable format
+- `tail -1` - Gets the last line (the data line, not headers)
+- `awk '{print $5}'` - Extracts the 5th column (percentage used)
+- Result might be: "17%"
+
+### Example 4: Building Dynamic Filenames
+
+```bash
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+BACKUP_FILE="backup_${TIMESTAMP}.tar.gz"
+echo "Creating backup: $BACKUP_FILE"
+```
+
+**Output example:**
+```
+Creating backup: backup_20251003_235743.tar.gz
+```
+
+**Why this is useful**: Each backup gets a unique, sortable filename with the exact timestamp.
+
+## 🔗 Combining Arrays and Command Substitution
+
+You can use command substitution to populate arrays dynamically!
+
+### Example: Array of Running Processes
+
+```bash
+#!/bin/bash
+
+# Capture all running bash processes into an array
+PROCESSES=($(ps aux | grep bash | grep -v grep | awk '{print $2}'))
+
+echo "Found ${#PROCESSES[@]} bash processes"
+echo "Process IDs:"
+
+for pid in "${PROCESSES[@]}"; do
+    echo "  - PID: $pid"
+done
+```
+
+**What this does**:
+1. `ps aux` - Lists all processes
+2. `grep bash` - Filters for bash processes
+3. `grep -v grep` - Excludes the grep command itself
+4. `awk '{print $2}'` - Extracts the process ID column
+5. `PROCESSES=(...)` - Stores each PID as an array element
+6. `${#PROCESSES[@]}` - Counts how many PIDs found
+7. Loop prints each PID
+
+## 📊 Command Substitution Reference
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Command</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Purpose</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Example</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>date</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Current date and time</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>NOW=$(date)</code></td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>whoami</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Current username</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>USER=$(whoami)</code></td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>pwd</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Current directory</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>DIR=$(pwd)</code></td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>hostname</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">System hostname</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>HOST=$(hostname)</code></td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>uname -r</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Kernel version</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>KERNEL=$(uname -r)</code></td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>wc -l</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Count lines</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>LINES=$(wc -l &lt; file.txt)</code></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+## 🎯 Best Practices
+
+<div className="bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-900 dark:to-blue-900 p-6 rounded-lg my-8">
+
+### ✅ Array Best Practices
+
+1. **Always quote array expansions**: Use `"${array[@]}"` to preserve elements with spaces
+2. **Use meaningful names**: `user_list` is better than `arr` or `list`
+3. **Initialize before use**: Declare arrays before adding elements
+4. **Check array length**: Use `${#array[@]}` before accessing elements
+5. **Use loops for processing**: Iterate with `for item in "${array[@]}"`
+6. **Document expected content**: Comment what type of data the array holds
+
+### ✅ Command Substitution Best Practices
+
+1. **Use `$()` not backticks**: Modern syntax is clearer and nestable
+2. **Quote the results**: Use `"$(command)"` to preserve whitespace
+3. **Check command success**: Verify the command worked before using output
+4. **Capture stderr when needed**: Use `$(command 2>&1)` to include errors
+5. **Be aware of performance**: Command substitution creates subshells
+6. **Use in assignments**: Always assign to variables for reusability
+
+</div>
+
+## 📝 Command Cheat Sheet
+
+### Array Operations
+
+```bash
+# Create array
+my_array=("item1" "item2" "item3")
+
+# Access all elements (correct way)
+echo "${my_array[@]}"
+
+# Access specific element (zero-indexed)
+echo "${my_array[0]}"    # First element
+echo "${my_array[1]}"    # Second element
+
+# Get array length
+echo "${#my_array[@]}"
+
+# Add elements
+my_array+=("item4")
+my_array+=("item5" "item6")
+
+# Loop through array
+for item in "${my_array[@]}"; do
+    echo "$item"
+done
+
+# Get array indices
+echo "${!my_array[@]}"
+
+# Modify element
+my_array[1]="new_value"
+
+# Remove element (leaves gap)
+unset my_array[1]
+
+# Create array from command output
+files=($(ls))
+```
+
+### Command Substitution
+
+```bash
+# Basic syntax
+result=$(command)
+
+# With options
+date_str=$(date +%Y-%m-%d)
+
+# With pipes
+line_count=$(cat file.txt | wc -l)
+
+# Nested substitution
+outer=$(echo "Inner: $(whoami)")
+
+# Multiple commands
+info=$(date; whoami; pwd)
+
+# Assign to array
+array=($(command))
+
+# Use in string
+message="User $(whoami) logged in at $(date)"
+
+# Capture with error output
+output=$(command 2>&1)
+```
+
+## 🚀 What's Next?
+
+<div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-lg my-6">
+
+### 📚 Continue Learning
+
+In **Part 3**, we'll cover:
+- Output logging with `tee` command
+- Error handling and exit codes
+- String manipulation techniques
+- Finding string length
+- Extracting substrings
+- Replacing patterns in strings
+- Practical file manipulation examples
+
+Stay tuned for the next guide!
+
+</div>
+
+---
+
+<Callout type="success">
+🎉 **Congratulations!** You've mastered Bash arrays and command substitution. You can now store multiple values efficiently and build dynamic scripts that capture real-time system information.
+
+**What did you think of this guide?** Share your array and command substitution use cases in the comments below!
+</Callout>
+
+## 💬 Discussion
+
+I'd love to hear about your experience:
+
+- What types of data are you storing in arrays?
+- Have you built any scripts using command substitution?
+- Did you encounter the `@` symbol confusion before?
+- What scripting challenges can I help with?
+
+**Connect with me**:
+- 🐙 [GitHub](https://github.com/owais-io) - Example scripts and more
+- 📧 [Contact](https://owais.io/contact) - Bash scripting questions and discussions
