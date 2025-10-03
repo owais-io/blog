@@ -694,12 +694,12 @@ Modified string: nkdxyzdfksn
     </thead>
     <tbody>
       <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
-        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`$\{var/abc/xyz\}`}</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`\${var/abc/xyz}`}</code></td>
         <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Replace first match only</td>
         <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>abcabc</code> → <code>xyzabc</code></td>
       </tr>
       <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
-        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`$\{var//abc/xyz\}`}</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`\${var//abc/xyz}`}</code></td>
         <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Replace all matches</td>
         <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>abcabc</code> → <code>xyzxyz</code></td>
       </tr>
@@ -721,42 +721,42 @@ Modified string: nkdxyzdfksn
     <tbody>
       <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
         <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">String length</td>
-        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`$\{#var\}`}</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`\${#var}`}</code></td>
         <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>str="hello"</code> → length is 5</td>
       </tr>
       <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
         <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Substring</td>
-        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`$\{var:pos:len\}`}</code></td>
-        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`$\{str:0:3\}`}</code> → "hel"</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`\${var:pos:len}`}</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`\${str:0:3}`}</code> → "hel"</td>
       </tr>
       <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
         <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Replace first</td>
-        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`$\{var/old/new\}`}</code></td>
-        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`$\{str/l/L\}`}</code> → "heLlo"</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`\${var/old/new}`}</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`\${str/l/L}`}</code> → "heLlo"</td>
       </tr>
       <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
         <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Replace all</td>
-        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`$\{var//old/new\}`}</code></td>
-        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`$\{str//l/L\}`}</code> → "heLLo"</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`\${var//old/new}`}</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`\${str//l/L}`}</code> → "heLLo"</td>
       </tr>
       <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
         <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Remove from start</td>
-        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`$\{var#pattern\}`}</code></td>
-        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`$\{str#hel\}`}</code> → "lo"</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`\${var#pattern}`}</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`\${str#hel}`}</code> → "lo"</td>
       </tr>
       <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
         <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Remove from end</td>
-        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`$\{var%pattern\}`}</code></td>
-        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`$\{str%lo\}`}</code> → "hel"</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`\${var%pattern}`}</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`\${str%lo}`}</code> → "hel"</td>
       </tr>
       <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
         <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">To uppercase</td>
-        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`$\{var^^}\`}</code></td>
-        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`$\{str^^\}`}</code> → "HELLO"</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`\${var^^}`}</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`\${str^^}`}</code> → "HELLO"</td>
       </tr>
       <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
         <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">To lowercase</td>
-        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`$\{var,,\}`}</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`\${var,,}`}</code></td>
         <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>str="HELLO"</code> → "hello"</td>
       </tr>
     </tbody>

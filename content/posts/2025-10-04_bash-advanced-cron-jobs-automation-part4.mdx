@@ -124,7 +124,7 @@ Every cron job follows a specific time format. Let's break it down completely.
       <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
         <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>*</code></td>
         <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Any value (wildcard)</td>
-        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>* * * * *</code> = every minute</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{"* * * * *"}</code> = every minute</td>
       </tr>
       <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
         <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>,</code></td>
@@ -139,7 +139,7 @@ Every cron job follows a specific time format. Let's break it down completely.
       <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
         <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>/</code></td>
         <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Step values</td>
-        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>*/5</code> = every 5 units</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{"*/5"}</code> = every 5 units</td>
       </tr>
     </tbody>
   </table>
