@@ -1,0 +1,1577 @@
+---
+title: "Dockerfile Best Practices Part 2: Advanced Security and Production-Ready Multi-Stage Builds"
+description: "Master advanced Dockerfile techniques: multi-stage builds for 30% smaller images, comprehensive security hardening with non-root users, vulnerability scanning with Trivy, and production-ready configurations with health checks and signal handling."
+date: "2025-10-03T19:19:00.000Z"
+tags: ["docker", "dockerfile", "security", "multi-stage-builds", "production", "devops"]
+published: true
+author: "Owais"
+category: "Docker"
+seo:
+  canonical: "https://owais.io/blog/dockerfile-best-practices-security-production"
+  keywords: ["dockerfile security", "multi-stage docker builds", "docker security best practices", "non-root docker container", "docker health check", "trivy security scan", "production docker image"]
+toc: true
+---
+
+In [Part 1](/blog/2025-10-03_dockerfile-best-practices-optimization-fundamentals), you learned fundamental optimization techniques that reduced image sizes by 55% and accelerated builds by 84%. Now it's time to master advanced techniques that separate amateur Dockerfiles from production-grade containers: multi-stage builds, security hardening, and comprehensive production readiness.
+
+<Callout type="info">
+🎯 **What You'll Learn**: In this advanced guide covering security and production practices, you'll master:
+- Multi-stage builds that reduce final image size by 30%
+- Security hardening with non-root users and specific version tags
+- Vulnerability scanning with Trivy for dependency analysis
+- Health checks for container orchestration and monitoring
+- Signal handling with dumb-init and tini for graceful shutdowns
+- Production-ready Dockerfiles combining all best practices
+- Real security scan results and remediation strategies
+</Callout>
+
+<Callout type="warning">
+📖 **Prerequisites**: This is Part 2 of our Dockerfile best practices series. If you haven't read [Part 1](/blog/2025-10-03_dockerfile-best-practices-optimization-fundamentals), start there to learn fundamental optimization techniques.
+</Callout>
+
+## 🏗️ Task 4: Multi-Stage Builds for Smaller Production Images
+
+Multi-stage builds allow you to separate build dependencies from runtime dependencies, dramatically reducing final image size while maintaining development flexibility.
+
+### Why Multi-Stage Builds Matter
+
+Traditional single-stage builds include everything: build tools, dev dependencies, source files, and compiled output. Multi-stage builds copy only what's needed for production to the final image.
+
+Navigate to the multi-stage task directory:
+
+```bash
+cd ../task4-multistage
+```
+
+### Creating an Application Requiring Build Step
+
+Create a `package.json` with both production and development dependencies:
+
+```bash
+cat > package.json << 'EOF'
+{
+  "name": "multistage-demo",
+  "version": "1.0.0",
+  "description": "Multi-stage build demo",
+  "main": "dist/app.js",
+  "scripts": {
+    "build": "babel src --out-dir dist",
+    "start": "node dist/app.js",
+    "dev": "nodemon src/app.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "compression": "^1.7.4"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.22.0",
+    "@babel/core": "^7.22.0",
+    "@babel/preset-env": "^7.22.0",
+    "nodemon": "^3.0.0"
+  }
+}
+EOF
+```
+
+**What this creates**: A Node.js application that requires Babel transpilation. The `devDependencies` are only needed during build, not at runtime.
+
+Create source directory and application:
+
+```bash
+mkdir -p src
+```
+
+```bash
+cat > src/app.js << 'EOF'
+const express = require('express');
+const compression = require('compression');
+
+const app = express();
+const port = process.env.PORT || 3000;
+
+// Use compression middleware
+app.use(compression());
+
+// Modern JavaScript features that need transpilation
+const getServerInfo = () => ({
+  message: 'Multi-stage build demo',
+  timestamp: new Date().toISOString(),
+  environment: process.env.NODE_ENV || 'development',
+  features: ['compression', 'transpilation', 'optimization']
+});
+
+app.get('/', (req, res) => {
+  res.json(getServerInfo());
+});
+
+app.get('/health', (req, res) => {
+  res.json({ status: 'healthy', uptime: process.uptime() });
+});
+
+app.listen(port, '0.0.0.0', () => {
+  console.log(`Multi-stage demo app listening at http://0.0.0.0:${port}`);
+});
+EOF
+```
+
+**What this application does**: Creates an Express server using modern ES6+ features and compression middleware. The code will be transpiled by Babel for broader compatibility.
+
+Create Babel configuration:
+
+```bash
+cat > .babelrc << 'EOF'
+{
+  "presets": ["@babel/preset-env"]
+}
+EOF
+```
+
+Verify structure:
+
+```bash
+ls -al
+```
+
+**Expected output**:
+```
+drwxr-xr-x. 3 centos9 centos9  53 Oct  3 17:09 .
+-rw-r--r--. 1 centos9 centos9  39 Oct  3 17:09 .babelrc
+-rw-r--r--. 1 centos9 centos9 474 Oct  3 17:08 package.json
+drwxr-xr-x. 2 centos9 centos9  20 Oct  3 17:09 src
+```
+
+### Single-Stage Dockerfile (The Problem)
+
+Create a traditional single-stage Dockerfile:
+
+```bash
+touch Dockerfile.single-stage
+```
+
+Add this content:
+
+```dockerfile
+FROM node:18-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm install
+
+COPY . .
+
+RUN npm run build
+
+EXPOSE 3000
+
+CMD [ "npm", "start" ]
+```
+
+**Dockerfile line-by-line explanation**:
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead className="bg-gray-50 dark:bg-gray-800">
+    <tr>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Line</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Instruction</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Problem</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">7</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>RUN npm install</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Installs ALL dependencies including dev dependencies (~40MB)</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">9-11</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>COPY . . + npm run build</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Babel packages remain in final image even though only needed for build</td>
+    </tr>
+  </tbody>
+</table>
+
+### Multi-Stage Dockerfile (The Solution)
+
+Create an optimized multi-stage Dockerfile:
+
+```bash
+touch Dockerfile.multi-stage
+```
+
+Add this content:
+
+```dockerfile
+FROM node:18-alpine AS builder
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm install
+
+COPY . .
+
+RUN npm run build
+
+FROM node:18-alpine AS production
+
+RUN addgroup -g 1001 -S nodejs && adduser -S nextjs -u 1001
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm install --only=production && npm cache clean --force
+
+COPY --from=builder /app/dist ./dist
+
+RUN chown -R nextjs:nodejs /app
+
+USER nextjs
+
+EXPOSE 3000
+
+CMD [ "npm", "start" ]
+```
+
+**Dockerfile line-by-line explanation**:
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead className="bg-gray-50 dark:bg-gray-800">
+    <tr>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Section</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Lines</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Stage 1: Builder</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">1-9</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Named stage "builder" - installs ALL dependencies and builds application</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Stage 2: Production</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">11</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Fresh image - previous stage discarded</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Non-root User</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">13</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Creates nodejs group (GID 1001) and nextjs user (UID 1001)</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Production Deps</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">19</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Only installs runtime dependencies, excludes Babel and nodemon</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Copy from Builder</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">21</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Copies only transpiled dist/ directory from builder stage</td>
+    </tr>
+  </tbody>
+</table>
+
+### Building and Comparing
+
+Build the single-stage version:
+
+```bash
+docker build -f Dockerfile.single-stage -t demo-app:single-stage .
+```
+
+**Expected output** (partial):
+```
+[+] Building 31.8s (12/12) FINISHED                                          docker:default
+ => [4/6] RUN npm install                                                               25.8s
+ => [6/6] RUN npm run build                                                              1.9s
+ => => writing image sha256:cad8776769bf8bea63703ffe3f42af68070eb593                    0.0s
+ => => naming to docker.io/library/demo-app:single-stage                                 0.0s
+```
+
+**What happened**: Build took 31.8 seconds, with 25.8 seconds installing all dependencies (including unused dev dependencies).
+
+Build the multi-stage version:
+
+```bash
+docker build -f Dockerfile.multi-stage -t demo-app:multi-stage .
+```
+
+**Expected output** (partial):
+```
+[+] Building 20.0s (17/17) FINISHED                                          docker:default
+ => [builder 4/6] RUN npm install                                                        0.0s
+ => [builder 6/6] RUN npm run build                                                      0.0s
+ => [production 5/7] RUN npm install --only=production && npm cache clean --force       16.0s
+ => [production 6/7] COPY --from=builder /app/dist ./dist                                0.1s
+ => => writing image sha256:d27e5efcd45b6e5b63b31b56e41dbd240146886b                    0.0s
+ => => naming to docker.io/library/demo-app:multi-stage                                  0.0s
+```
+
+**What happened**: Notice `CACHED` markers for builder stage (reused from single-stage build). Only production dependencies installed in final stage (16 seconds). The COPY --from=builder line copies only the built artifacts.
+
+### The Dramatic Size Difference
+
+Compare the images:
+
+```bash
+docker images | grep demo-app
+```
+
+**Expected output**:
+```
+demo-app     multi-stage    d27e5efcd45b   18 seconds ago   133MB
+demo-app     single-stage   cad8776769bf   51 seconds ago   190MB
+```
+
+<Callout type="success">
+🎉 **Multi-Stage Build Results**:
+- **Size reduction: 57MB (30% smaller)**
+- **190MB → 133MB** final image size
+- **Build artifacts excluded**: No Babel packages in final image
+- **Security improved**: Smaller surface area, fewer dependencies
+- **Non-root user**: Production stage runs as nextjs user, not root
+</Callout>
+
+### Testing Both Images
+
+Test single-stage:
+
+```bash
+docker run -d --name single-stage-test -p 3001:3000 demo-app:single-stage
+sleep 3
+curl http://localhost:3001/health
+```
+
+**Expected output**:
+```json
+{"status":"healthy","uptime":19.730656371}
+```
+
+```bash
+docker stop single-stage-test && docker rm single-stage-test
+```
+
+Test multi-stage:
+
+```bash
+docker run -d --name multi-stage-test -p 3002:3000 demo-app:multi-stage
+sleep 3
+curl http://localhost:3002/health
+```
+
+**Expected output**:
+```json
+{"status":"healthy","uptime":8.783724725}
+```
+
+```bash
+docker stop multi-stage-test && docker rm multi-stage-test
+```
+
+Both work identically, but multi-stage is 30% smaller and more secure!
+
+## 🔒 Task 5: Security Hardening - From Insecure to Production-Grade
+
+Security isn't optional in production containers. Let's examine the differences between insecure and secure Dockerfiles through three progressively hardened examples.
+
+### Setting Up Security Task
+
+Navigate to security directory:
+
+```bash
+cd ../task5-security
+```
+
+Copy application files:
+
+```bash
+cp ../task1-official-images/package.json .
+cp ../task1-official-images/app.js .
+```
+
+### Insecure Dockerfile (Anti-Pattern - DO NOT USE)
+
+```bash
+touch Dockerfile.insecure
+```
+
+Add this content:
+
+```dockerfile
+# Using latest tag (NOT RECOMMENDED)
+FROM node:latest
+
+# Running as root user (SECURITY RISK)
+WORKDIR /app
+
+# Copying everything without ownership consideration
+COPY . .
+
+# Installing with elevated privileges
+RUN npm install
+
+# Exposing privileged port (NOT RECOMMENDED)
+EXPOSE 80
+
+# Running as root
+CMD [ "node", "app.js" ]
+```
+
+**Why this is dangerously insecure**:
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead className="bg-gray-50 dark:bg-gray-800">
+    <tr>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Issue</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Risk</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Exploitation Scenario</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>node:latest tag</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Unpredictable updates</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Tomorrow's build could use different Node version, breaking compatibility</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Running as root</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Complete system access</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Application exploit grants attacker root privileges inside container</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>No security updates</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Known vulnerabilities</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Base image CVEs remain unpatched</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Full Ubuntu base</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Huge attack surface</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">1.15GB image with unnecessary tools and packages</td>
+    </tr>
+  </tbody>
+</table>
+
+### Secure Dockerfile (Production-Ready)
+
+```bash
+touch Dockerfile.secure
+```
+
+Add this content:
+
+```dockerfile
+# Use specific version tag instead of 'latest'
+FROM node:18.17.0-alpine3.18
+
+# Install security updates
+RUN apk update && apk upgrade && apk add --no-cache dumb-init && rm -rf /var/cache/apk/*
+
+# Create non-root user
+RUN addgroup -g 1001 -S appgroup && adduser -S appuser -u 1001 -G appgroup
+
+WORKDIR /app
+
+# Copy package files with proper ownership
+COPY --chown=appuser:appgroup package*.json ./
+
+# Install dependencies
+RUN npm install --only=production && npm cache clean --force && rm -rf /tmp/*
+
+# Copy application code with proper ownership
+COPY --chown=appuser:appgroup . .
+
+# Remove unnecessary files and set permissions
+RUN rm -rf .git .gitignore README.md && chmod -R 755 /app && chmod 644 /app/package.json /app/app.js || true
+
+# Switch to non-root user
+USER appuser
+
+# Use non-root port
+EXPOSE 3000
+
+# Use dumb-init to handle signals properly
+ENTRYPOINT [ "dumb-init", "--" ]
+
+CMD [ "node", "app.js" ]
+```
+
+**Dockerfile line-by-line explanation**:
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead className="bg-gray-50 dark:bg-gray-800">
+    <tr>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Line</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Security Enhancement</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Why It Matters</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">2</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Specific version: <code>node:18.17.0-alpine3.18</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Reproducible builds, predictable behavior, explicit Alpine 3.18</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">5</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>apk update && apk upgrade</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Applies security patches to base image packages</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">5</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Install dumb-init for signal handling</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Proper process reaping and signal forwarding to application</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">8</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Create appuser with UID/GID 1001</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Consistent, non-root user across environments</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">13, 17</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>--chown=appuser:appgroup</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Files owned by application user, not root</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">23</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>USER appuser</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">All subsequent commands and runtime run as non-root</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">29</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>ENTRYPOINT [ "dumb-init", "--" ]</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Graceful shutdown handling and zombie process reaping</td>
+    </tr>
+  </tbody>
+</table>
+
+### Advanced Secure Dockerfile (With Health Checks)
+
+```bash
+touch Dockerfile.advanced-secure
+```
+
+Add this content:
+
+```dockerfile
+# Use specific, minimal base image
+FROM node:18.17.0-alpine3.18
+
+# Add metadata
+LABEL maintainer="owais.abbasi9@gmail.com" version="1.0.0" description="Secure Node.js application"
+
+# Install security updates and required packages
+RUN apk update && apk upgrade && apk add --no-cache dumb-init curl && rm -rf /var/cache/apk/* /tmp/*
+
+# Create non-root user with specific UID/GID
+RUN addgroup -g 1001 -S appgroup && \
+    adduser -S appuser -u 1001 -G appgroup
+
+WORKDIR /app
+
+# Copy package files first for better caching
+COPY --chown=appuser:appgroup package*.json ./
+
+# Install dependencies as root, then clean up
+RUN npm install --only=production && \
+    npm cache clean --force && \
+    rm -rf /tmp/* /root/.npm
+
+# Copy application code
+COPY --chown=appuser:appgroup app.js ./
+
+# Set proper permissions
+RUN chmod 755 /app && \
+    chmod 644 /app/package.json /app/app.js
+
+# Switch to non-root user
+USER appuser
+
+# Expose non-privileged port
+EXPOSE 3000
+
+# Add health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:3000/health || exit 1
+
+# Use dumb-init for proper signal handling
+ENTRYPOINT ["dumb-init", "--"]
+
+CMD [ "node", "app.js" ]
+```
+
+**Additional features explained**:
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead className="bg-gray-50 dark:bg-gray-800">
+    <tr>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Feature</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Purpose</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Configuration</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>LABEL metadata</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Image documentation and tracking</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">maintainer, version, description fields</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>curl package</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Required for health checks</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Added alongside dumb-init</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>HEALTHCHECK</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Container orchestration monitoring</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">30s interval, 3s timeout, 5s start period, 3 retries</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>File permissions</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Least privilege principle</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">755 directories, 644 files (read-only for non-owner)</td>
+    </tr>
+  </tbody>
+</table>
+
+### Building and Comparing Security Levels
+
+Build secure image:
+
+```bash
+docker build -f Dockerfile.secure -t demo-app:secure .
+```
+
+**Expected output** (partial):
+```
+[+] Building 35.2s (13/13) FINISHED
+ => [2/8] RUN apk update && apk upgrade && apk add --no-cache dumb-init...            6.6s
+ => [3/8] RUN addgroup -g 1001 -S appgroup && adduser -S appuser -u 1001...           0.5s
+ => [6/8] RUN npm install --only=production && npm cache clean --force...             7.4s
+ => => writing image sha256:44690e9af0c1eb8ed8272f43f2fd6599371052d5                 0.0s
+```
+
+Build advanced secure image:
+
+```bash
+docker build -f Dockerfile.advanced-secure -t demo-app:advanced-secure .
+```
+
+Build insecure image for comparison:
+
+```bash
+docker build -f Dockerfile.insecure -t demo-app:insecure .
+```
+
+**Expected output** (partial):
+```
+[+] Building 104.6s (9/9) FINISHED
+ => [1/4] FROM docker.io/library/node:latest@sha256:4e87fa2c1aa4a31e...               95.6s
+ => => sha256:d6ecbfb3e7f8ccd5b04dc161a13218fd7aade8b0 211.45MB / 211.45MB          47.6s
+ => [4/4] RUN npm install                                                              6.0s
+ => => writing image sha256:552e0f2fbc4c7a9bb510bf6384110e202ac4aa87                 0.0s
+```
+
+**What happened**: Insecure build took 104.6 seconds (mostly downloading 211MB Debian base) versus 35.2 seconds for secure Alpine build.
+
+### Security Verification
+
+Test secure container and verify non-root user:
+
+```bash
+docker run -d --name secure-test -p 3003:3000 demo-app:secure
+```
+
+Verify user:
+
+```bash
+docker exec secure-test whoami
+```
+
+**Expected output**:
+```
+appuser
+```
+
+Check full user details:
+
+```bash
+docker exec secure-test id
+```
+
+**Expected output**:
+```
+uid=1001(appuser) gid=1001(appgroup) groups=1001(appgroup)
+```
+
+Test application endpoints:
+
+```bash
+curl http://localhost:3003/
+```
+
+**Expected output**:
+```json
+{"message":"Hello from Dockerfile Best Practices Lab!","timestamp":"2025-10-03T13:01:26.698Z","version":"1.0.0"}
+```
+
+```bash
+curl http://localhost:3003/health
+```
+
+**Expected output**:
+```json
+{"status":"healthy"}
+```
+
+Clean up:
+
+```bash
+docker stop secure-test && docker rm secure-test
+```
+
+### Testing Health Check
+
+Run advanced secure image with health check:
+
+```bash
+docker run -d --name advanced-secure-test -p 3004:3000 demo-app:advanced-secure
+sleep 10
+```
+
+Check health status:
+
+```bash
+docker ps --format "table {{.Names}}\t{{.Status}}"
+```
+
+**Expected output**:
+```
+NAMES                  STATUS
+advanced-secure-test   Up 26 seconds (healthy)
+```
+
+<Callout type="success">
+✅ **Health Check Working**: Docker automatically monitors the /health endpoint every 30 seconds. The "(healthy)" status indicates the application is responding correctly.
+</Callout>
+
+Clean up:
+
+```bash
+docker stop advanced-secure-test && docker rm advanced-secure-test
+```
+
+### Size Comparison: Security vs Bloat
+
+```bash
+docker images | grep demo-app
+```
+
+**Expected output**:
+```
+demo-app     insecure          552e0f2fbc4c   2 minutes ago    1.15GB
+demo-app     advanced-secure   da22cb3f67d0   4 minutes ago    190MB
+demo-app     secure            44690e9af0c1   5 minutes ago    188MB
+demo-app     multi-stage       d27e5efcd45b   37 minutes ago   133MB
+demo-app     single-stage      cad8776769bf   38 minutes ago   190MB
+```
+
+<Callout type="warning">
+⚠️ **Insecure Image Disaster**: The insecure image is **1.15GB** - over 6x larger than secure versions! It includes:
+- Full Debian base OS (~211MB)
+- All development tools
+- npm cache and temporary files
+- Unnecessary system packages
+- **AND** it runs as root with no security hardening
+</Callout>
+
+### Vulnerability Scanning with Trivy
+
+Docker scan is deprecated. Trivy is the recommended tool for container security scanning.
+
+Install Trivy (if not already installed):
+
+```bash
+# On RHEL/CentOS/Fedora
+sudo dnf install trivy
+
+# On Ubuntu/Debian
+sudo apt-get install trivy
+
+# On macOS
+brew install trivy
+```
+
+Scan the secure image:
+
+```bash
+trivy image demo-app:secure
+```
+
+**Expected output** (partial):
+```
+2025-10-03T18:08:10.419+0500	INFO	Detected OS: alpine
+2025-10-03T18:08:10.430+0500	INFO	Detecting Alpine vulnerabilities...
+2025-10-03T18:08:10.433+0500	INFO	Number of language-specific files: 1
+2025-10-03T18:08:10.433+0500	INFO	Detecting node-pkg vulnerabilities...
+2025-10-03T18:08:10.456+0500	WARN	This OS version is no longer supported: alpine 3.18.3
+2025-10-03T18:08:10.456+0500	WARN	The vulnerability detection may be insufficient
+
+demo-app:secure (alpine 3.18.3)
+
+Total: 0 (UNKNOWN: 0, LOW: 0, MEDIUM: 0, HIGH: 0, CRITICAL: 0)
+
+Node.js (node-pkg)
+
+Total: 9 (UNKNOWN: 0, LOW: 5, MEDIUM: 1, HIGH: 3, CRITICAL: 0)
+
+┌────────────────────────────────┬────────────────┬──────────┬──────────┬───────────────────┬─────────────────────────────┬─────────────────────────────────────────────┐
+│            Library             │ Vulnerability  │ Severity │  Status  │ Installed Version │        Fixed Version        │                    Title                    │
+├────────────────────────────────┼────────────────┼──────────┼──────────┼───────────────────┼─────────────────────────────┼─────────────────────────────────────────────┤
+│ brace-expansion (package.json) │ CVE-2025-5889  │ LOW      │ fixed    │ 1.1.11, 2.0.1     │ 2.0.2, 1.1.12, 3.0.1, 4.0.1 │ brace-expansion: redos                      │
+├────────────────────────────────┼────────────────┼──────────┼──────────┼───────────────────┼─────────────────────────────┼─────────────────────────────────────────────┤
+│ cross-spawn (package.json)     │ CVE-2024-21538 │ HIGH     │ fixed    │ 7.0.3             │ 7.0.5, 6.0.6                │ cross-spawn: regular expression DoS         │
+├────────────────────────────────┼────────────────┼──────────┼──────────┼───────────────────┼─────────────────────────────┼─────────────────────────────────────────────┤
+│ ip (package.json)              │ CVE-2024-29415 │ HIGH     │ affected │ 2.0.0             │                             │ node-ip: Incomplete fix for CVE-2023-42282  │
+│                                ├────────────────┼──────────┼──────────┤                   ├─────────────────────────────┼─────────────────────────────────────────────┤
+│                                │ CVE-2023-42282 │ LOW      │ fixed    │                   │ 2.0.1, 1.1.9                │ nodejs-ip: arbitrary code execution         │
+├────────────────────────────────┼────────────────┼──────────┼──────────┼───────────────────┼─────────────────────────────┼─────────────────────────────────────────────┤
+│ semver (package.json)          │ CVE-2022-25883 │ HIGH     │ fixed    │ 7.5.1             │ 7.5.2, 6.3.1, 5.7.2         │ nodejs-semver: Regular expression DoS       │
+├────────────────────────────────┼────────────────┼──────────┼──────────┼───────────────────┼─────────────────────────────┼─────────────────────────────────────────────┤
+│ tar (package.json)             │ CVE-2024-28863 │ MEDIUM   │ fixed    │ 6.1.14            │ 6.2.1                       │ node-tar: denial of service                 │
+└────────────────────────────────┴────────────────┴──────────┴──────────┴───────────────────┴─────────────────────────────┴─────────────────────────────────────────────┘
+```
+
+**Vulnerability Analysis**:
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead className="bg-gray-50 dark:bg-gray-800">
+    <tr>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Category</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Count</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Explanation</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Alpine OS</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">0 vulnerabilities</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Base OS is clean (Alpine 3.18.3 is outdated but has no active CVEs)</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>HIGH severity</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">3 (cross-spawn, ip, semver)</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">RegEx DoS vulnerabilities in npm dependencies - update packages</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>MEDIUM severity</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">1 (tar)</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">DoS vulnerability in tar package - update to 6.2.1+</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>LOW severity</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">5</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Minor issues, low risk but should be addressed</td>
+    </tr>
+  </tbody>
+</table>
+
+<Callout type="info">
+📝 **Important Notes**:
+- **Docker scan is deprecated**: Use Trivy, Snyk, or Clair instead
+- **0 OS vulnerabilities**: Alpine base image security is excellent
+- **9 Node.js package vulnerabilities**: These come from npm dependencies (Express.js dependencies)
+- **Remediation**: Run `npm audit fix` and update dependencies to latest versions
+- **No CRITICAL vulnerabilities**: This image is production-ready with dependency updates
+</Callout>
+
+## 🚀 Task 6: Production-Ready Dockerfile - Combining All Best Practices
+
+Now let's create the ultimate production Dockerfile combining everything we've learned: multi-stage builds, security hardening, health checks, and proper signal handling.
+
+### Navigate to Parent Directory
+
+```bash
+cd ..
+```
+
+Verify structure:
+
+```bash
+ls
+```
+
+**Expected output**:
+```
+task1-official-images  task2-layer-optimization  task3-caching  task4-multistage  task5-security
+```
+
+### Create .dockerignore File
+
+```bash
+cat > .dockerignore << 'EOF'
+node_modules
+npm-debug.log
+.git
+.gitignore
+README.md
+.env
+.nyc_output
+coverage
+.coverage
+.cache
+.DS_Store
+*.log
+.vscode
+.idea
+EOF
+```
+
+**What .dockerignore excludes**: Development files, build artifacts, IDE configurations, logs, and secrets - keeping the build context minimal and secure.
+
+### The Ultimate Production Dockerfile
+
+Copy application files:
+
+```bash
+cp task1-official-images/package.json .
+cp task1-official-images/app.js .
+```
+
+Generate package-lock.json:
+
+```bash
+npm install
+```
+
+Create the production Dockerfile:
+
+```bash
+touch Dockerfile.production
+```
+
+Add this comprehensive content:
+
+```dockerfile
+# Multi-stage build for production-ready image
+# Stage 1: Build stage
+FROM node:18.17.0-alpine3.18 AS builder
+
+# Install build dependencies
+RUN apk update && \
+    apk add --no-cache \
+        python3 \
+        make \
+        g++ && \
+    rm -rf /var/cache/apk/*
+
+WORKDIR /app
+
+# Copy package files for dependency installation
+COPY package*.json ./
+
+# Install all dependencies (including dev dependencies for building)
+RUN npm ci --only=production && \
+    npm cache clean --force
+
+# Copy source code
+COPY . .
+
+# Stage 2: Production stage
+FROM node:18.17.0-alpine3.18 AS production
+
+# Add metadata
+LABEL maintainer="devops@company.com" \
+      version="1.0.0" \
+      description="Production-ready Node.js application" \
+      org.opencontainers.image.source="https://github.com/company/app"
+
+# Install runtime dependencies and security updates
+RUN apk update && \
+    apk upgrade && \
+    apk add --no-cache \
+        dumb-init \
+        curl \
+        tini && \
+    rm -rf /var/cache/apk/* /tmp/*
+
+# Create non-root user
+RUN addgroup -g 1001 -S appgroup && \
+    adduser -S appuser -u 1001 -G appgroup
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY --chown=appuser:appgroup package*.json ./
+
+# Install only production dependencies
+RUN npm ci --only=production && \
+    npm cache clean --force && \
+    rm -rf /tmp/* /root/.npm
+
+# Copy application from builder stage
+COPY --from=builder --chown=appuser:appgroup /app/app.js ./
+
+# Set proper permissions
+RUN chmod 755 /app && \
+    find /app -type f -exec chmod 644 {} \;
+
+# Switch to non-root user
+USER appuser
+
+# Expose port
+EXPOSE 3000
+
+# Add health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:3000/health || exit 1
+
+# Use tini for proper signal handling
+ENTRYPOINT ["tini", "--"]
+
+# Run application
+CMD ["node", "app.js"]
+```
+
+**Dockerfile comprehensive explanation**:
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead className="bg-gray-50 dark:bg-gray-800">
+    <tr>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Stage/Section</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Lines</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Production Best Practice</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Builder Stage</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">3-21</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Installs build tools (python3, make, g++) for native modules - discarded in final image</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Metadata Labels</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">26-29</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Tracks maintainer, version, description, source - essential for image management</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Security Updates</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">32-38</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">apk update && apk upgrade applies latest patches before installing packages</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Signal Handling</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">34-36</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Both dumb-init and tini available - tini used for PID 1 and proper SIGTERM handling</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>npm ci</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">50-52</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Clean install from lock file - reproducible builds, faster than npm install</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>File Permissions</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">58-59</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">755 directories (rwxr-xr-x), 644 files (rw-r--r--) - least privilege</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Health Check</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">68-69</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Kubernetes/Docker Swarm ready - automatic monitoring and restart</td>
+    </tr>
+  </tbody>
+</table>
+
+### Building the Production Image
+
+```bash
+docker build -f Dockerfile.production -t demo-app:production .
+```
+
+**Expected output** (partial):
+```
+[+] Building 22.3s (19/19) FINISHED                                          docker:default
+ => [builder 2/6] RUN apk update && apk add --no-cache python3 make g++...           15.1s
+ => [production 2/8] RUN apk update && apk upgrade && apk add --no-cache...           0.0s
+ => [production 6/8] RUN npm ci --only=production && npm cache clean...               3.7s
+ => [production 7/8] COPY --from=builder --chown=appuser:appgroup /app/app.js ./      0.1s
+ => [production 8/8] RUN chmod 755 /app && find /app -type f -exec chmod 644 {} ;     1.6s
+ => => writing image sha256:47dcd7814c19ea0af71da6d0f8071a203bc92663                 0.0s
+ => => naming to docker.io/library/demo-app:production                                 0.0s
+```
+
+**Build analysis**: Multi-stage build with builder stage cached, production stage runs security updates, installs production dependencies, copies only app.js (not unnecessary files), and sets proper permissions.
+
+### Testing the Production Image
+
+Start the container:
+
+```bash
+docker run -d --name production-test -p 3005:3000 demo-app:production
+sleep 15
+```
+
+**Why wait 15 seconds**: Health check has `--start-period=5s` (grace period) plus `--interval=30s`. We wait to see the first health check result.
+
+Check health status:
+
+```bash
+docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+```
+
+**Expected output**:
+```
+NAMES             STATUS                    PORTS
+production-test   Up 34 seconds (healthy)   0.0.0.0:3005->3000/tcp, [::]:3005->3000/tcp
+```
+
+<Callout type="success">
+🎉 **Production-Ready Status**: The "(healthy)" indicator confirms:
+- Application started successfully
+- Health endpoint responding
+- Container ready for traffic in orchestration systems
+</Callout>
+
+Test application endpoints:
+
+```bash
+curl -s http://localhost:3005/ | jq '.'
+```
+
+**Expected output**:
+```json
+{
+  "message": "Hello from Dockerfile Best Practices Lab!",
+  "timestamp": "2025-10-03T13:50:35.726Z",
+  "version": "1.0.0"
+}
+```
+
+```bash
+curl -s http://localhost:3005/health | jq '.'
+```
+
+**Expected output**:
+```json
+{
+  "status": "healthy"
+}
+```
+
+### Security Verification
+
+Verify non-root user:
+
+```bash
+docker exec production-test whoami
+```
+
+**Expected output**:
+```
+appuser
+```
+
+Check full security context:
+
+```bash
+docker exec production-test id
+```
+
+**Expected output**:
+```
+uid=1001(appuser) gid=1001(appgroup) groups=1001(appgroup)
+```
+
+Verify file permissions:
+
+```bash
+docker exec production-test ls -la /app
+```
+
+**Expected output**:
+```
+total 72
+drwxr-xr-x    1 root     root            85 Oct  3 13:49 .
+drwxr-xr-x    1 root     root             6 Oct  3 13:49 ..
+-rw-r--r--    1 appuser  appgroup       425 Oct  3 13:24 app.js
+drwxr-xr-x    1 root     root          4096 Oct  3 13:48 node_modules
+-rw-r--r--    1 appuser  appgroup     29532 Oct  3 13:41 package-lock.json
+-rw-r--r--    1 appuser  appgroup       230 Oct  3 13:24 package.json
+```
+
+**Security analysis**:
+- Application files owned by appuser:appgroup
+- Files have 644 permissions (read-only for everyone except owner)
+- node_modules owned by root (installed during build)
+- Container runs as appuser (UID 1001), not root
+
+Clean up:
+
+```bash
+docker stop production-test && docker rm production-test
+```
+
+### Complete Image Size Comparison
+
+```bash
+docker images --format "table {{.Repository}}:{{.Tag}}\t{{.Size}}\t{{.CreatedAt}}" | grep demo-app | sort
+```
+
+**Expected output**:
+```
+demo-app:advanced-secure   190MB     2025-10-03 17:58:41 +0500 PKT
+demo-app:cache-poor        134MB     2025-10-03 12:59:45 +0500 PKT
+demo-app:cache-test        129MB     2025-10-03 12:54:58 +0500 PKT
+demo-app:generic           296MB     2025-10-03 12:15:28 +0500 PKT
+demo-app:insecure          1.15GB    2025-10-03 18:00:40 +0500 PKT
+demo-app:many-layers       149MB     2025-10-03 12:28:23 +0500 PKT
+demo-app:multi-stage       133MB     2025-10-03 17:25:33 +0500 PKT
+demo-app:official          134MB     2025-10-03 12:13:57 +0500 PKT
+demo-app:optimized         142MB     2025-10-03 12:29:11 +0500 PKT
+demo-app:production        192MB     2025-10-03 18:49:05 +0500 PKT
+demo-app:secure            188MB     2025-10-03 17:57:46 +0500 PKT
+demo-app:single-stage      190MB     2025-10-03 17:25:00 +0500 PKT
+```
+
+### Layer Count Comparison
+
+```bash
+for image in demo-app:official demo-app:optimized demo-app:multi-stage demo-app:secure demo-app:production; do
+    layers=$(docker history $image --quiet | wc -l)
+    echo "$image: $layers layers"
+done
+```
+
+**Expected output**:
+```
+demo-app:official: 15 layers
+demo-app:optimized: 16 layers
+demo-app:multi-stage: 18 layers
+demo-app:secure: 20 layers
+demo-app:production: 22 layers
+```
+
+**Layer analysis**: More layers doesn't mean worse - production image includes security hardening, health checks, metadata labels, and proper permissions, making the additional layers worthwhile for production readiness.
+
+### Security Verification Across Images
+
+```bash
+for image in demo-app:secure demo-app:production; do
+    echo "Image: $image"
+    docker run --rm $image whoami
+    echo "---"
+done
+```
+
+**Expected output**:
+```
+Image: demo-app:secure
+appuser
+---
+Image: demo-app:production
+appuser
+---
+```
+
+## 🎯 Best Practices Summary
+
+### Multi-Stage Builds
+
+**✅ DO:**
+- Use named stages (`AS builder`, `AS production`)
+- Copy only necessary artifacts from builder stage
+- Install build dependencies in builder, only runtime deps in production
+- Leverage caching by ordering stages properly
+
+**❌ DON'T:**
+- Include dev dependencies in final image
+- Copy entire application directory without filtering
+- Use single-stage for applications requiring compilation
+- Forget to use `--from=builder` when copying artifacts
+
+### Security Hardening
+
+**✅ DO:**
+- Use specific version tags (`node:18.17.0-alpine3.18`)
+- Run `apk update && apk upgrade` for security patches
+- Create non-root users with specific UID/GID (1001:1001)
+- Use `--chown` flag when copying files
+- Switch to non-root user with `USER` directive
+- Use non-privileged ports (greater than 1024)
+- Install signal handlers (dumb-init or tini)
+
+**❌ DON'T:**
+- Use `latest` or unpinned tags
+- Run containers as root
+- Skip security updates
+- Expose privileged ports (less than 1024)
+- Ignore signal handling (leads to zombie processes)
+
+### Production Readiness
+
+**✅ DO:**
+- Add LABEL metadata for tracking
+- Include HEALTHCHECK for orchestration
+- Use `npm ci` instead of `npm install` (faster, reproducible)
+- Clean up caches and temp files in same layer
+- Set proper file permissions (755 dirs, 644 files)
+- Create comprehensive `.dockerignore`
+- Test health checks before deploying
+
+**❌ DON'T:**
+- Skip health checks in orchestrated environments
+- Use `npm install` in production (slower, unpredictable)
+- Leave package manager caches
+- Ignore `.dockerignore` (bloats build context)
+- Deploy without testing health endpoints
+
+## 🛠️ Troubleshooting Common Issues
+
+### Issue 1: npm ci Requires package-lock.json
+
+**Symptoms**: Error "The `npm ci` command can only install with an existing package-lock.json"
+
+**Solution**: Generate lock file locally before building:
+```bash
+npm install  # Generates package-lock.json
+```
+
+### Issue 2: Health Check Failing
+
+**Symptoms**: Container status shows "unhealthy"
+
+**Solution**: Test health endpoint manually:
+```bash
+docker exec container-name curl -f http://localhost:3000/health
+```
+
+Adjust health check parameters if application needs longer startup:
+```dockerfile
+HEALTHCHECK --interval=60s --timeout=10s --start-period=30s --retries=3
+```
+
+### Issue 3: Permission Denied Errors
+
+**Symptoms**: Application crashes with EACCES errors
+
+**Solution**: Verify file ownership and permissions:
+```bash
+docker run --rm -it demo-app:production ls -la /app
+```
+
+Fix in Dockerfile:
+```dockerfile
+RUN chown -R appuser:appgroup /app && \
+    chmod -R 755 /app
+```
+
+### Docker System Cleanup
+
+Check disk usage:
+
+```bash
+docker system df
+```
+
+**Expected output**:
+```
+TYPE            TOTAL     ACTIVE    SIZE      RECLAIMABLE
+Images          14        0         1.919GB   1.919GB (100%)
+Containers      0         0         0B        0B
+Local Volumes   2         0         197MB     197MB (100%)
+Build Cache     110       0         273.1MB   273.1MB
+```
+
+Clean up unused resources:
+
+```bash
+docker system prune -f
+```
+
+**Expected output**:
+```
+Deleted Images:
+deleted: sha256:4524b55b19e4083afd738328e2742baa0fc284d7ac4e2de4108c3dc0e23afd61
+deleted: sha256:4cbef048174045dbff1ce4d1a3b7162050e25d2ae3c0f1773883ff7bbbd6bd98
+
+Total reclaimed space: 280.5MB
+```
+
+## 📊 Complete Best Practices Comparison
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead className="bg-gray-50 dark:bg-gray-800">
+    <tr>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Image Type</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Size</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Security</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Production Ready</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Use Case</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>insecure</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">1.15GB</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">❌ Root, latest tag</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">❌ No</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">NEVER use</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>generic</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">296MB</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">⚠️ Manual Node install</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">❌ No</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Learning only</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>official</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">134MB</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">⚠️ Runs as root</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">⚠️ Basic only</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Development</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>multi-stage</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">133MB</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">✅ Non-root user</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">✅ Yes</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Compiled apps</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>secure</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">188MB</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">✅ Full hardening</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">✅ Yes</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Production</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>production</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">192MB</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">✅ Complete security</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">✅ Enterprise</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Best practice</td>
+    </tr>
+  </tbody>
+</table>
+
+## 🎯 Complete Command Cheat Sheet
+
+### Multi-Stage Builds
+```bash
+# Build with specific stage
+docker build --target builder -t myapp:builder .
+
+# Copy from named stage
+COPY --from=builder /app/dist ./dist
+
+# Use external image as stage
+COPY --from=nginx:alpine /etc/nginx/nginx.conf ./nginx.conf
+```
+
+### Security Commands
+```bash
+# Create non-root user (Alpine)
+RUN addgroup -g 1001 -S appgroup && adduser -S appuser -u 1001 -G appgroup
+
+# Create non-root user (Debian)
+RUN groupadd -g 1001 appgroup && useradd -r -u 1001 -g appgroup appuser
+
+# Copy with ownership
+COPY --chown=appuser:appgroup app.js ./
+
+# Scan with Trivy
+trivy image myapp:latest
+
+# Check running user
+docker exec container-name whoami
+docker exec container-name id
+```
+
+### Health Checks
+```bash
+# Define health check in Dockerfile
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:3000/health || exit 1
+
+# Check health status
+docker ps --format "table {{.Names}}\t{{.Status}}"
+
+# Inspect health check logs
+docker inspect --format='{{json .State.Health}}' container-name | jq
+```
+
+### Signal Handling
+```bash
+# Using tini
+ENTRYPOINT ["tini", "--"]
+CMD ["node", "app.js"]
+
+# Using dumb-init
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["node", "app.js"]
+```
+
+### Production Deployment
+```bash
+# Build production image
+docker build -f Dockerfile.production -t myapp:1.0.0 .
+
+# Tag for registry
+docker tag myapp:1.0.0 registry.company.com/myapp:1.0.0
+
+# Push to registry
+docker push registry.company.com/myapp:1.0.0
+
+# Run with resource limits
+docker run -d \
+  --name myapp \
+  --memory="512m" \
+  --cpus="1.0" \
+  --restart=unless-stopped \
+  -p 3000:3000 \
+  myapp:1.0.0
+```
+
+## 🎯 Key Takeaways
+
+<div className="bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-900 dark:to-blue-900 p-6 rounded-lg my-8">
+
+### ✅ Remember These Advanced Concepts
+
+1. **Multi-Stage Builds**: Separate build and runtime - 30% smaller images, no dev dependencies in production
+2. **Security First**: Non-root users, specific versions, security updates, and vulnerability scanning are non-negotiable
+3. **Health Checks**: Enable orchestration systems to automatically monitor and restart containers
+4. **Signal Handling**: Use tini or dumb-init for proper PID 1 and graceful shutdowns
+5. **Production Balance**: 192MB production image with all features beats 134MB basic image without security
+
+</div>
+
+## 🚀 What You've Mastered
+
+Throughout this two-part series, you've learned:
+
+**Part 1 Fundamentals:**
+- Official images (55% size reduction)
+- Layer optimization (50% fewer layers)
+- Build cache strategies (84% faster rebuilds)
+
+**Part 2 Advanced:**
+- Multi-stage builds (30% size reduction)
+- Security hardening (non-root, specific versions, vulnerability scanning)
+- Production configurations (health checks, metadata, signal handling)
+- Complete production-ready Dockerfile
+
+<Callout type="success">
+🎉 **Congratulations!** You've transformed from creating 1.15GB insecure images to crafting 192MB production-ready containers with enterprise-grade security, monitoring, and deployment practices. These techniques are used by top engineering teams worldwide.
+</Callout>
+
+---
+
+*Have questions about Dockerfile optimization or security? Found this guide helpful? Share your production Dockerfile challenges and success stories in the comments below!*
+
+*Missed Part 1? Read [Dockerfile Best Practices Part 1: Optimization Fundamentals](/blog/2025-10-03_dockerfile-best-practices-optimization-fundamentals) to master the foundations.*

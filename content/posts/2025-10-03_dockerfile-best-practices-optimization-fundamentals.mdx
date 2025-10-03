@@ -1,0 +1,1140 @@
+---
+title: "Dockerfile Best Practices Part 1: Optimization Fundamentals for Smaller, Faster Docker Images"
+description: "Master essential Dockerfile optimization techniques: choosing official base images, layer optimization strategies, and build cache efficiency. Learn hands-on with real examples showing size reductions up to 55% and build time improvements up to 84%."
+date: "2025-10-03T19:17:00.000Z"
+tags: ["docker", "dockerfile", "optimization", "devops", "containers", "docker-images"]
+published: true
+author: "Owais"
+category: "Docker"
+seo:
+  canonical: "https://owais.io/blog/dockerfile-best-practices-optimization-fundamentals"
+  keywords: ["dockerfile best practices", "docker optimization", "reduce docker image size", "docker build cache", "docker layer optimization", "official docker images"]
+toc: true
+---
+
+Are you building Docker images that are unnecessarily large, slow to build, and inefficient? Many developers create Dockerfiles without understanding how their choices impact image size, build speed, and cache efficiency. In this comprehensive two-part series, you'll learn professional Dockerfile optimization techniques that lead to production-ready containers.
+
+<Callout type="info">
+🎯 **What You'll Learn**: In this first part covering optimization fundamentals, you'll master:
+- Why official Docker images are superior to generic base images
+- How to reduce image size by 55% through smart base image selection
+- Layer optimization techniques that reduce Docker layers by 50%
+- Build cache strategies that accelerate rebuilds by 84%
+- Practical examples with real command outputs and measurements
+- Strategic ordering of Dockerfile instructions for maximum efficiency
+</Callout>
+
+## 🚀 Setting Up Our Lab Environment
+
+Before diving into optimizations, let's create a structured workspace for our hands-on exercises. We'll build a simple Node.js Express application and optimize it progressively.
+
+```bash
+mkdir dockerfile-best-practices
+cd dockerfile-best-practices/
+```
+
+Let's create directories for each optimization task:
+
+```bash
+mkdir task1-official-images
+mkdir task2-layer-optimization
+mkdir task3-caching
+```
+
+**What these commands do**: We're creating a parent directory for all our Dockerfile experiments, then organizing our work into task-specific subdirectories. This structure helps us compare different optimization approaches side-by-side.
+
+**Expected output**:
+```bash
+ls
+```
+```
+task1-official-images  task2-layer-optimization  task3-caching
+```
+
+## 📦 Task 1: Official Images vs Generic Base Images
+
+One of the most impactful decisions you'll make is choosing your base image. Let's compare using an official Node.js image versus manually installing Node.js on a generic Ubuntu image.
+
+### Creating Our Demo Application
+
+Navigate to the first task directory:
+
+```bash
+cd task1-official-images/
+```
+
+Create a `package.json` file for our Node.js application:
+
+```bash
+cat > package.json << 'EOF'
+{
+  "name": "dockerfile-demo",
+  "version": "1.0.0",
+  "description": "Demo app for Dockerfile best practices",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
+EOF
+```
+
+**What this creates**: A minimal `package.json` defining our application's metadata and single dependency on Express.js framework.
+
+Now create our simple Express application:
+
+```bash
+cat > app.js << 'EOF'
+const express = require('express');
+const app = express();
+const port = 3000;
+
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Hello from Dockerfile Best Practices Lab!',
+    timestamp: new Date().toISOString(),
+    version: '1.0.0'
+  });
+});
+
+app.get('/health', (req, res) => {
+  res.json({ status: 'healthy' });
+});
+
+app.listen(port, '0.0.0.0', () => {
+  console.log(`App listening at http://0.0.0.0:${port}`);
+});
+EOF
+```
+
+**What this application does**: Creates a minimal Express web server with two endpoints - a root endpoint returning JSON with a welcome message and timestamp, and a health check endpoint. The server listens on port 3000 on all network interfaces.
+
+Verify our files:
+
+```bash
+ls
+```
+
+**Expected output**:
+```
+app.js  package.json
+```
+
+### Dockerfile Using Official Node.js Image
+
+Create our first Dockerfile using the official Node.js Alpine image:
+
+```bash
+touch Dockerfile.official
+```
+
+Edit the file with the following content:
+
+```dockerfile
+FROM node:18-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm install --only=production
+
+COPY . .
+
+EXPOSE 3000
+
+CMD [ "npm", "start" ]
+```
+
+**Dockerfile line-by-line explanation**:
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead className="bg-gray-50 dark:bg-gray-800">
+    <tr>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Line</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Instruction</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">1</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`FROM node:18-alpine`}</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Uses official Node.js 18 image based on Alpine Linux (minimal base layer ~5MB)</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">3</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>WORKDIR /app</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Sets working directory to /app, creates it if doesn't exist</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">5</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`COPY package*.json ./`}</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Copies package.json and package-lock.json (if exists) to /app</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">7</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>RUN npm install --only=production</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Installs only production dependencies, excluding devDependencies</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">9</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>COPY . .</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Copies all remaining application files to /app</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">11</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>EXPOSE 3000</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Documents that container listens on port 3000 (metadata only)</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">13</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`CMD [ "npm", "start" ]`}</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Default command to run when container starts (exec form)</td>
+    </tr>
+  </tbody>
+</table>
+
+View the file to confirm:
+
+```bash
+cat Dockerfile.official
+```
+
+### Dockerfile Using Generic Ubuntu Base
+
+Now create a Dockerfile that manually installs Node.js on Ubuntu:
+
+```bash
+touch Dockerfile.generic
+```
+
+Edit with this content:
+
+```dockerfile
+FROM ubuntu:latest
+
+RUN apt-get update && apt-get install -y curl && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && apt-get install -y nodejs && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm install --only=production
+
+COPY . .
+
+EXPOSE 3000
+
+CMD [ "npm", "start" ]
+```
+
+**Dockerfile line-by-line explanation**:
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead className="bg-gray-50 dark:bg-gray-800">
+    <tr>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Line</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Instruction</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">1</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>FROM ubuntu:latest</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Uses Ubuntu base image (~30MB base, but "latest" tag is unpredictable)</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">3</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>RUN apt-get update && ...</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Updates package lists, installs curl, downloads NodeSource setup script, installs Node.js, cleans apt cache</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">5-13</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Same as official image</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Identical application setup after Node.js is installed</td>
+    </tr>
+  </tbody>
+</table>
+
+### Building and Comparing Both Images
+
+Build the image using the official Node.js base:
+
+```bash
+docker build -f Dockerfile.official -t demo-app:official .
+```
+
+**What this command does**:
+- `docker build` - Initiates Docker image build process
+- `-f Dockerfile.official` - Specifies which Dockerfile to use (file flag)
+- `-t demo-app:official` - Tags the resulting image as "demo-app" with tag "official"
+- `.` - Build context (current directory)
+
+**Expected output** (partial, showing key stages):
+```
+[+] Building 23.0s (11/11) FINISHED                                          docker:default
+ => [internal] load build definition from Dockerfile.official                            0.1s
+ => => transferring dockerfile: 247B                                                     0.0s
+ => [internal] load metadata for docker.io/library/node:18-alpine                        3.1s
+ => [1/5] FROM docker.io/library/node:18-alpine@sha256:8d6421d663b4c2...                12.0s
+ => => resolve docker.io/library/node:18-alpine@sha256:8d6421d663b4c2...                 0.1s
+ => => sha256:f18232174bc91741fdf3da96d85011092101a032 3.64MB / 3.64MB                   2.0s
+ => => sha256:dd71dde834b5c203d162902e6b8994cb2309ae04 40.01MB / 40.01MB                 7.7s
+ => [2/5] WORKDIR /app                                                                   0.4s
+ => [3/5] COPY package*.json ./                                                          0.1s
+ => [4/5] RUN npm install --only=production                                              6.5s
+ => [5/5] COPY . .                                                                       0.1s
+ => exporting to image                                                                   0.4s
+ => => writing image sha256:4e7d702eccb63d11a0742e2c4054bb3ac66af20b                    0.0s
+ => => naming to docker.io/library/demo-app:official                                     0.0s
+```
+
+**Output breakdown**:
+- **Build time: 23.0 seconds** total
+- **[1/5] FROM ...**: Downloads and extracts 3 base image layers (~45MB total)
+- **[4/5] RUN npm install**: Takes 6.5s to install Express.js dependency
+- Build completes successfully with image ID starting with `4e7d702e`
+
+Now build with the generic Ubuntu base:
+
+```bash
+docker build -f Dockerfile.generic -t demo-app:generic .
+```
+
+**Expected output** (partial):
+```
+[+] Building 74.5s (12/12) FINISHED                                          docker:default
+ => [internal] load build definition from Dockerfile.generic                             0.1s
+ => [internal] load metadata for docker.io/library/ubuntu:latest                         2.9s
+ => [1/6] FROM docker.io/library/ubuntu:latest@sha256:728785b59223d75...                 7.8s
+ => => sha256:a1a21c96bc16121569dd937bcd1c745a5081629b 29.72MB / 29.72MB                 3.7s
+ => [2/6] RUN apt-get update && apt-get install -y curl && curl -fsSL...                54.5s
+ => [3/6] WORKDIR /app                                                                   0.1s
+ => [4/6] COPY package*.json ./                                                          0.1s
+ => [5/6] RUN npm install --only=production                                              6.1s
+ => [6/6] COPY . .                                                                       0.1s
+ => exporting to image                                                                   2.7s
+ => => writing image sha256:084bc098c3841f939956eba2b6fe3f56625fcf98                    0.0s
+ => => naming to docker.io/library/demo-app:generic                                      0.0s
+```
+
+**Output breakdown**:
+- **Build time: 74.5 seconds** total (3.2x slower than official!)
+- **[2/6] RUN apt-get...**: Takes 54.5 seconds to update apt, install curl, download Node setup script, and install Node.js
+- Same npm install step takes similar time (6.1s)
+- Export takes 2.7s vs 0.4s (larger layers to write)
+
+### The Dramatic Size Difference
+
+Compare the resulting image sizes:
+
+```bash
+docker images | grep demo
+```
+
+**Expected output**:
+```
+demo-app     generic    084bc098c384   20 seconds ago       296MB
+demo-app     official   4e7d702eccb6   About a minute ago   134MB
+```
+
+<Callout type="success">
+🎉 **Incredible Results**: By using the official Node.js Alpine image instead of manually installing Node on Ubuntu:
+- **Size reduction: 162MB (55% smaller)**
+- **Build time: 3.2x faster** (23s vs 74.5s)
+- **Fewer layers**: Official image already contains optimized Node.js installation
+- **Better security**: Official images are maintained and receive security updates
+</Callout>
+
+### Why Official Images Win
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead className="bg-gray-50 dark:bg-gray-800">
+    <tr>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Aspect</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Official Image (node:18-alpine)</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Generic (ubuntu:latest)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Final Size</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">134MB</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">296MB</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Build Time</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">23 seconds</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">74.5 seconds</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Maintenance</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Maintained by Node.js team</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">You maintain Node.js installation</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Security Updates</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Regular automated updates</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Manual management required</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Optimization</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Pre-optimized for Node.js</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Contains unnecessary packages</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Consistency</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Versioned, predictable</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">"latest" tag changes unpredictably</td>
+    </tr>
+  </tbody>
+</table>
+
+## 🔧 Task 2: Layer Optimization Through RUN Command Consolidation
+
+Every instruction in a Dockerfile that modifies the filesystem creates a new layer. Multiple layers increase image size and complexity. Let's see the dramatic difference between many small RUN commands versus consolidated ones.
+
+### Setting Up the Layer Optimization Task
+
+Navigate to the layer optimization directory:
+
+```bash
+cd ../task2-layer-optimization/
+```
+
+Copy our application files from Task 1:
+
+```bash
+cp ../task1-official-images/package.json .
+cp ../task1-official-images/app.js .
+```
+
+Verify the files:
+
+```bash
+ls
+```
+
+**Expected output**:
+```
+app.js  package.json
+```
+
+### Dockerfile With Many Layers (Anti-Pattern)
+
+Create a Dockerfile with many separate RUN commands:
+
+```bash
+touch Dockerfile.many-layers
+```
+
+Add this content:
+
+```dockerfile
+FROM node:18-alpine
+
+RUN apk update
+RUN apk add --no-cache curl
+RUN apk add --no-cache git
+RUN mkdir -p /app
+RUN mkdir -p /app/logs
+RUN mkdir -p /app/temp
+
+WORKDIR /app
+
+COPY package.json .
+COPY app.js .
+
+RUN npm install --only=production
+RUN npm cache clean --force
+RUN rm -rf /tmp/*
+
+EXPOSE 3000
+
+CMD [ "npm", "start" ]
+```
+
+**What's wrong with this approach**:
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead className="bg-gray-50 dark:bg-gray-800">
+    <tr>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Lines</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Problem</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Impact</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">3-5</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Separate RUN for each package</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Creates 3 layers, each storing Alpine package cache</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">6-8</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Separate RUN for each mkdir</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">3 additional layers for simple directory creation</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">14-16</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Cleanup in separate layer</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Cache/temp files already saved in previous layers</td>
+    </tr>
+  </tbody>
+</table>
+
+### Optimized Dockerfile With Consolidated Layers
+
+Create an optimized version:
+
+```bash
+cat > Dockerfile.optimized << 'EOF'
+FROM node:18-alpine
+
+# Combine multiple RUN instructions into one
+RUN apk update && \
+    apk add --no-cache curl git && \
+    mkdir -p /app/logs /app/temp && \
+    rm -rf /var/cache/apk/*
+
+WORKDIR /app
+
+# Copy package files first for better caching
+COPY package.json ./
+
+# Install dependencies and clean up in single layer
+RUN npm install --only=production && \
+    npm cache clean --force && \
+    rm -rf /tmp/*
+
+# Copy application code
+COPY app.js ./
+
+EXPOSE 3000
+
+CMD ["npm", "start"]
+EOF
+```
+
+**Optimizations explained**:
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead className="bg-gray-50 dark:bg-gray-800">
+    <tr>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Line</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Optimization</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Benefit</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">4-7</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Single RUN with chained commands using <code>&&</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">One layer instead of 6, cleans cache in same layer</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">5</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Multiple packages in single apk add</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Single package transaction, less metadata overhead</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">6</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Multiple directories in single mkdir -p</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">One layer instead of three for directory creation</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">7</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Cleanup in same RUN as installation</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Cache files never saved to layer, reducing size</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">13-16</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">npm install and cleanup combined</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">npm cache removed before layer is committed</td>
+    </tr>
+  </tbody>
+</table>
+
+### Building and Comparing Layer Counts
+
+Build the many-layers version:
+
+```bash
+docker build -f Dockerfile.many-layers -t demo-app:many-layers .
+```
+
+**Expected output** (partial):
+```
+[+] Building 21.5s (19/19) FINISHED                                          docker:default
+ => [internal] load build definition from Dockerfile.many-layers                         0.1s
+ => [ 2/13] RUN apk update                                                               2.4s
+ => [ 3/13] RUN apk add --no-cache curl                                                  2.5s
+ => [ 4/13] RUN apk add --no-cache git                                                   2.5s
+ => [ 5/13] RUN mkdir -p /app                                                            0.5s
+ => [ 6/13] RUN mkdir -p /app/logs                                                       0.6s
+ => [ 7/13] RUN mkdir -p /app/temp                                                       0.5s
+ => [11/13] RUN npm install --only=production                                            7.4s
+ => [12/13] RUN npm cache clean --force                                                  1.6s
+ => [13/13] RUN rm -rf /tmp/*                                                            0.6s
+ => => writing image sha256:f1019735717aeae0d514a97ebfd0d23ff50793bd                    0.0s
+```
+
+**What happened**: Docker created 13 custom instruction layers (19 total including base image layers), each RUN command created a separate layer.
+
+Build the optimized version:
+
+```bash
+docker build -f Dockerfile.optimized -t demo-app:optimized .
+```
+
+**Expected output** (partial):
+```
+[+] Building 15.3s (11/11) FINISHED                                          docker:default
+ => [internal] load build definition from Dockerfile.optimized                           0.0s
+ => [2/6] RUN apk update &&     apk add --no-cache curl git && ...                      4.6s
+ => [4/6] COPY package.json ./                                                           0.1s
+ => [5/6] RUN npm install --only=production &&     npm cache clean...                    9.1s
+ => [6/6] COPY app.js ./                                                                 0.1s
+ => => writing image sha256:367aebc9c52a3df29770591e5b4f9fb87019a5aa                    0.0s
+```
+
+**What happened**: Only 6 custom instruction layers created, significantly fewer than the many-layers version.
+
+### Examining Layer History
+
+Inspect the many-layers image:
+
+```bash
+docker history demo-app:many-layers
+```
+
+**Expected output** (showing custom layers):
+```
+IMAGE          CREATED              CREATED BY                                      SIZE      COMMENT
+f1019735717a   About a minute ago   CMD ["npm" "start"]                             0B
+<missing>      About a minute ago   EXPOSE &{[{{19 0} {19 0}}] ...}                 0B
+<missing>      About a minute ago   RUN /bin/sh -c rm -rf /tmp/* # buildkit         0B
+<missing>      About a minute ago   RUN /bin/sh -c npm cache clean --force # bui…   748B
+<missing>      About a minute ago   RUN /bin/sh -c npm install --only=production…   7.34MB
+<missing>      About a minute ago   COPY app.js . # buildkit                        425B
+<missing>      About a minute ago   COPY package.json . # buildkit                  230B
+<missing>      About a minute ago   WORKDIR /app                                    0B
+<missing>      About a minute ago   RUN /bin/sh -c mkdir -p /app/temp # buildkit    0B
+<missing>      About a minute ago   RUN /bin/sh -c mkdir -p /app/logs # buildkit    0B
+<missing>      About a minute ago   RUN /bin/sh -c mkdir -p /app # buildkit         0B
+<missing>      About a minute ago   RUN /bin/sh -c apk add --no-cache git # buil…   7.57MB
+<missing>      About a minute ago   RUN /bin/sh -c apk add --no-cache curl # bui…   5MB
+<missing>      About a minute ago   RUN /bin/sh -c apk update # buildkit            2.48MB
+```
+
+**Analysis**: Notice separate layers for apk update (2.48MB), curl (5MB), git (7.57MB), three mkdir commands (0B each but still separate layers), npm cache (748B persisted despite cleanup).
+
+Inspect the optimized image:
+
+```bash
+docker history demo-app:optimized
+```
+
+**Expected output**:
+```
+IMAGE          CREATED          CREATED BY                                      SIZE      COMMENT
+367aebc9c52a   36 seconds ago   CMD ["npm" "start"]                             0B
+<missing>      36 seconds ago   EXPOSE &{[{{22 0} {22 0}}] ...}                 0B
+<missing>      36 seconds ago   COPY app.js ./ # buildkit                       425B
+<missing>      36 seconds ago   RUN /bin/sh -c npm install --only=production…   2.32MB
+<missing>      45 seconds ago   COPY package.json ./ # buildkit                 230B
+<missing>      45 seconds ago   WORKDIR /app                                    0B
+<missing>      46 seconds ago   RUN /bin/sh -c apk update &&     apk add --n…   12.5MB
+```
+
+**Analysis**: Single 12.5MB layer contains all package installations and cleanup. npm install layer is only 2.32MB (versus 7.34MB + 748B in many-layers version) because cache was cleaned in the same layer.
+
+### Size Comparison
+
+```bash
+docker images | grep demo-app
+```
+
+**Expected output**:
+```
+demo-app     optimized     367aebc9c52a   59 seconds ago       142MB
+demo-app     many-layers   f1019735717a   About a minute ago   149MB
+demo-app     generic       084bc098c384   14 minutes ago       296MB
+demo-app     official      4e7d702eccb6   16 minutes ago       134MB
+```
+
+<Callout type="success">
+✅ **Layer Optimization Results**:
+- **Size reduction: 7MB smaller** (142MB vs 149MB)
+- **Layer count: 50% fewer layers** (6 custom vs 13 custom)
+- **Build time: 28% faster** (15.3s vs 21.5s)
+- **Cache efficiency: Better** (fewer layers = faster cache lookups)
+</Callout>
+
+## ⚡ Task 3: Build Cache Optimization Through Strategic Instruction Ordering
+
+Docker caches each layer during builds. When a file changes, Docker rebuilds that layer and all subsequent layers. Strategic ordering of COPY and RUN instructions can dramatically reduce rebuild times.
+
+### Setting Up the Caching Task
+
+Navigate to the caching directory:
+
+```bash
+cd ../task3-caching
+```
+
+Copy application files:
+
+```bash
+cp ../task1-official-images/package.json .
+cp ../task1-official-images/app.js .
+```
+
+Create additional project files:
+
+```bash
+echo "# Project Documentation" > README.md
+```
+
+**What this creates**: A README file that represents documentation or other files that might change frequently.
+
+Create a `.dockerignore` file:
+
+```bash
+echo "node_modules/" > .dockerignore
+echo "*.log" >> .dockerignore
+```
+
+**What .dockerignore does**: Excludes `node_modules/` directory and all `.log` files from the build context, preventing them from being copied into the image and speeding up builds.
+
+Verify our files:
+
+```bash
+ls
+```
+
+**Expected output**:
+```
+app.js  package.json  README.md
+```
+
+View the `.dockerignore`:
+
+```bash
+cat .dockerignore
+```
+
+**Expected output**:
+```
+node_modules/
+*.log
+```
+
+### Cache-Poor Dockerfile (Anti-Pattern)
+
+Create a Dockerfile with poor cache utilization:
+
+```bash
+touch Dockerfile.cache-poor
+```
+
+Add this content:
+
+```dockerfile
+FROM node:18-alpine
+
+WORKDIR /app
+
+COPY . .
+
+RUN npm install --only=production
+
+EXPOSE 3000
+
+CMD [ "npm", "start" ]
+```
+
+**Why this is cache-poor**:
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead className="bg-gray-50 dark:bg-gray-800">
+    <tr>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Line</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Problem</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Impact</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">5</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>COPY . .</code> before npm install</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">ANY file change (even README.md) invalidates npm install cache</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">7</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">npm install always runs after COPY</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Dependencies reinstalled even when package.json unchanged</td>
+    </tr>
+  </tbody>
+</table>
+
+### Cache-Optimized Dockerfile
+
+Create an optimized version:
+
+```bash
+touch Dockerfile.cache-optimised
+```
+
+Add this content:
+
+```dockerfile
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy package files first (these change less frequently)
+COPY package*.json ./
+
+# Install dependencies (this layer will be cached if package.json doesn't change)
+RUN npm install --only=production && npm cache clean --force
+
+COPY . .
+
+EXPOSE 3000
+
+CMD [ "npm", "start" ]
+```
+
+**Why this is cache-optimized**:
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead className="bg-gray-50 dark:bg-gray-800">
+    <tr>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Lines</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Optimization</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Benefit</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">5-6</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Copy only package files first</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">COPY layer only invalidated when dependencies change</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">8-9</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Run npm install before copying code</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Dependencies cached independently of code changes</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">11</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Copy application code last</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Code changes don't trigger dependency reinstallation</td>
+    </tr>
+  </tbody>
+</table>
+
+### Testing Cache Efficiency
+
+First build with no cache available:
+
+```bash
+echo "=== First build (no cache) ==="
+time docker build -f Dockerfile.cache-optimised -t demo-app:cache-test .
+```
+
+**Expected output**:
+```
+=== First build (no cache) ===
+[+] Building 10.8s (11/11) FINISHED                                          docker:default
+ => [internal] load build definition from Dockerfile.cache-optimised                     0.0s
+ => [internal] load metadata for docker.io/library/node:18-alpine                        1.9s
+ => [1/5] FROM docker.io/library/node:18-alpine@sha256:8d6421d663b4c2...                 0.0s
+ => [internal] load build context                                                        0.1s
+ => CACHED [2/5] WORKDIR /app                                                            0.0s
+ => CACHED [3/5] COPY package*.json ./                                                   0.0s
+ => [4/5] RUN npm install --only=production && npm cache clean --force                   8.1s
+ => [5/5] COPY . .                                                                       0.2s
+ => exporting to image                                                                   0.3s
+ => => writing image sha256:4cbef048174045dbff1ce4d1a3b7162050e25d2a                    0.0s
+
+real	0m11.276s
+user	0m0.213s
+sys	0m0.557s
+```
+
+**Analysis**: First build takes 11.3 seconds total, with 8.1 seconds spent on npm install.
+
+Now make a change to application code (simulating development workflow):
+
+```bash
+echo "console.log('Cache test modification');" >> app.js
+```
+
+View the modified file:
+
+```bash
+cat app.js
+```
+
+**Expected output**:
+```javascript
+const express = require('express');
+const app = express();
+const port = 3000;
+
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Hello from Dockerfile Best Practices Lab!',
+    timestamp: new Date().toISOString(),
+    version: '1.0.0'
+  });
+});
+
+app.get('/health', (req, res) => {
+  res.json({ status: 'healthy' });
+});
+
+app.listen(port, '0.0.0.0', () => {
+  console.log(`App listening at http://0.0.0.0:${port}`);
+});
+console.log('Cache test modification');
+```
+
+Rebuild with cache-optimized Dockerfile:
+
+```bash
+time docker build -f Dockerfile.cache-optimised -t demo-app:cache-test .
+```
+
+**Expected output**:
+```
+[+] Building 1.3s (10/10) FINISHED                                           docker:default
+ => [internal] load build definition from Dockerfile.cache-optimised                     0.0s
+ => [internal] load metadata for docker.io/library/node:18-alpine                        0.9s
+ => [1/5] FROM docker.io/library/node:18-alpine@sha256:8d6421d663b4c2...                 0.0s
+ => [internal] load build context                                                        0.0s
+ => CACHED [2/5] WORKDIR /app                                                            0.0s
+ => CACHED [3/5] COPY package*.json ./                                                   0.0s
+ => CACHED [4/5] RUN npm install --only=production && npm cache clean --force            0.0s
+ => [5/5] COPY . .                                                                       0.1s
+ => exporting to image                                                                   0.1s
+ => => writing image sha256:203e829d3d7e3c1167d49070ed062fd351fa1fcf                    0.0s
+
+real	0m1.828s
+user	0m0.148s
+sys	0m0.280s
+```
+
+<Callout type="success">
+🚀 **Incredible Cache Performance**: Notice all the "CACHED" markers! The npm install layer was reused from cache:
+- **First build: 11.3 seconds**
+- **Rebuild after code change: 1.8 seconds**
+- **84% faster rebuild** (6.2x speedup)
+- Dependencies not reinstalled despite application code change
+</Callout>
+
+### Testing Cache-Poor Performance
+
+Reset the application file:
+
+```bash
+cp ../task1-official-images/app.js .
+```
+
+Build with cache-poor Dockerfile:
+
+```bash
+time docker build -f Dockerfile.cache-poor -t demo-app:cache-poor .
+```
+
+**Expected output**:
+```
+[+] Building 8.7s (10/10) FINISHED                                           docker:default
+ => [internal] load build definition from Dockerfile.cache-poor                          0.0s
+ => [1/4] FROM docker.io/library/node:18-alpine@sha256:8d6421d663b4c2...                 0.0s
+ => CACHED [2/4] WORKDIR /app                                                            0.0s
+ => [3/4] COPY . .                                                                       0.1s
+ => [4/4] RUN npm install --only=production                                              6.3s
+ => exporting to image                                                                   0.4s
+
+real    0m9.213s
+user	0m0.172s
+sys	0m0.407s
+```
+
+Make the same code modification:
+
+```bash
+echo "console.log('Cache test modification');" >> app.js
+```
+
+Rebuild:
+
+```bash
+time docker build -f Dockerfile.cache-poor -t demo-app:cache-poor .
+```
+
+**Expected output**:
+```
+[+] Building 7.5s (9/9) FINISHED                                             docker:default
+ => [internal] load build definition from Dockerfile.cache-poor                          0.0s
+ => [1/4] FROM docker.io/library/node:18-alpine@sha256:8d6421d663b4c2...                 0.0s
+ => CACHED [2/4] WORKDIR /app                                                            0.0s
+ => [3/4] COPY . .                                                                       0.1s
+ => [4/4] RUN npm install --only=production                                              6.0s
+ => exporting to image                                                                   0.4s
+
+real    0m7.965s
+user	0m0.120s
+sys	0m0.278s
+```
+
+**Analysis**: Even though only app.js changed, npm install ran again (6 seconds) because the COPY instruction invalidated the cache for all subsequent layers.
+
+### Cache Performance Comparison
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead className="bg-gray-50 dark:bg-gray-800">
+    <tr>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Scenario</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Cache-Optimized</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Cache-Poor</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Difference</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>First Build</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">11.3s</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">9.2s</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Similar (no cache)</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Rebuild After Code Change</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">1.8s</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">8.0s</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">4.4x faster</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>npm install Cached?</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Yes ✅</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">No ❌</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Saves 6+ seconds</td>
+    </tr>
+  </tbody>
+</table>
+
+<Callout type="warning">
+⚠️ **Important**: In a typical development workflow with dozens of code changes per day, poor cache strategy costs 6+ seconds per build. Over 100 builds, that's 10+ minutes wasted waiting for unnecessary dependency reinstallation!
+</Callout>
+
+## 🎯 Best Practices Summary
+
+### Official vs Generic Images
+
+**✅ DO:**
+- Use official images from Docker Hub (e.g., `node:18-alpine`, `python:3.11-slim`)
+- Specify exact version tags (avoid `latest`)
+- Prefer Alpine variants for minimal size
+- Check image documentation for security updates
+
+**❌ DON'T:**
+- Install runtime manually on generic OS images
+- Use `ubuntu:latest` or `debian:latest` for application bases
+- Skip version tags (leads to unpredictable builds)
+- Ignore image size without good reason
+
+### Layer Optimization
+
+**✅ DO:**
+- Chain related commands with `&&` in single RUN
+- Clean up caches/temp files in same layer as creation
+- Combine package installations into single command
+- Use multi-line formatting with `\` for readability
+
+**❌ DON'T:**
+- Create separate RUN for each command
+- Run cleanup in separate layer (files already committed)
+- Leave package manager caches in layers
+- Sacrifice readability for extreme consolidation
+
+### Build Cache Optimization
+
+**✅ DO:**
+- Copy dependency manifests (package.json, requirements.txt) before code
+- Install dependencies in separate layer before copying code
+- Order instructions from least to most frequently changing
+- Use `.dockerignore` to exclude unnecessary files
+
+**❌ DON'T:**
+- Copy entire application before installing dependencies
+- Ignore cache invalidation patterns
+- Include build artifacts or node_modules in context
+- Forget to create `.dockerignore` file
+
+## 📊 Optimization Results Cheat Sheet
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead className="bg-gray-50 dark:bg-gray-800">
+    <tr>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Optimization</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Technique</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Size Impact</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Speed Impact</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Official Images</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Use node:18-alpine vs ubuntu:latest</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">-162MB (55%)</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">3.2x faster build</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Layer Reduction</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Combine RUN commands with &&</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">-7MB (5%)</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">1.4x faster build</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Cache Optimization</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Copy package.json before code</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">No change</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">6.2x faster rebuilds</td>
+    </tr>
+  </tbody>
+</table>
+
+## 🚀 What's Next: Part 2 Coming Soon
+
+You've mastered the fundamental optimization techniques! In Part 2, we'll dive into advanced topics:
+
+- **Multi-stage Builds**: Separate build and runtime environments (30% smaller images)
+- **Security Hardening**: Non-root users, specific versions, vulnerability scanning
+- **Production-Ready Dockerfiles**: Health checks, signal handling, comprehensive best practices
+- **Complete Example**: Combining all techniques for production deployment
+
+## 🎯 Key Takeaways
+
+<div className="bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-900 dark:to-blue-900 p-6 rounded-lg my-8">
+
+### ✅ Remember These Fundamentals
+
+1. **Official Images First**: Always start with official, version-tagged images for 50%+ size reduction
+2. **Consolidate Layers**: Chain related commands with `&&` and clean up in the same layer
+3. **Cache Strategy**: Copy dependency files before code for 5-6x faster rebuilds
+4. **Order Matters**: Arrange instructions from least to most frequently changing
+5. **Measure Everything**: Use `docker images` and `docker history` to verify optimizations
+
+</div>
+
+---
+
+*Ready to become a Docker optimization expert? Continue with [Part 2: Advanced Security & Production Practices](/blog/2025-10-03_dockerfile-best-practices-security-production) to master multi-stage builds, security hardening, and production-ready configurations.*
