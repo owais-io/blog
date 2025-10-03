@@ -18,12 +18,14 @@ interface TagFilterCollapsibleProps {
   tags: string[]
   selectedTags: string[]
   onTagToggle: (tag: string) => void
+  tagCounts?: Record<string, number>
 }
 
-export default function TagFilterCollapsible({ 
-  tags, 
-  selectedTags, 
-  onTagToggle 
+export default function TagFilterCollapsible({
+  tags,
+  selectedTags,
+  onTagToggle,
+  tagCounts = {}
 }: TagFilterCollapsibleProps) {
   const [isExpanded, setIsExpanded] = useState(false)
 
@@ -79,17 +81,23 @@ export default function TagFilterCollapsible({
             
             {tags.map((tag) => {
               const isSelected = selectedTags.includes(tag)
+              const count = tagCounts[tag] || 0
               return (
                 <button
                   key={tag}
                   onClick={() => handleTagClick(tag)}
-                  className={`block w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  className={`block w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center justify-between ${
                     isSelected
                       ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'
                       : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700'
                   }`}
                 >
-                  {tag}
+                  <span>{tag}</span>
+                  {count > 0 && (
+                    <span className="ml-2 text-xs bg-gray-200 dark:bg-gray-700 px-2 py-0.5 rounded-full">
+                      {count}
+                    </span>
+                  )}
                 </button>
               )
             })}
@@ -110,17 +118,27 @@ export default function TagFilterCollapsible({
             ) : (
               tags.map((tag) => {
                 const isSelected = selectedTags.includes(tag)
+                const count = tagCounts[tag] || 0
                 return (
                   <button
                     key={tag}
                     onClick={() => handleTagClick(tag)}
-                    className={`px-3 py-2 rounded-full text-sm font-medium transition-colors ${
+                    className={`px-3 py-2 rounded-full text-sm font-medium transition-colors flex items-center gap-1 ${
                       isSelected
                         ? 'bg-blue-600 text-white hover:bg-blue-700'
                         : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                     }`}
                   >
-                    {tag}
+                    <span>{tag}</span>
+                    {count > 0 && (
+                      <span className={`text-xs px-1.5 py-0.5 rounded-full ${
+                        isSelected
+                          ? 'bg-blue-500 text-white'
+                          : 'bg-gray-200 dark:bg-gray-600'
+                      }`}>
+                        {count}
+                      </span>
+                    )}
                   </button>
                 )
               })

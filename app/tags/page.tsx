@@ -1,10 +1,12 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
 import { format } from 'date-fns'
-import { 
-  getPostsMetaAdvanced, 
-  getCategoriesByTags, 
-  getTagsByCategories 
+import {
+  getPostsMetaAdvanced,
+  getCategoriesByTags,
+  getTagsByCategories,
+  getTagCounts,
+  getCategoryCounts
 } from '../lib/blog'
 import TagsPageClient from '../components/TagsPageClient'
 
@@ -31,7 +33,11 @@ export default function TagsPage({ searchParams }: TagsPageProps) {
   // Get filtered data based on bidirectional filtering
   const availableCategories = getCategoriesByTags(selectedTags)
   const availableTags = getTagsByCategories(selectedCategories)
-  
+
+  // Get tag and category counts
+  const tagCounts = getTagCounts()
+  const categoryCounts = getCategoryCounts()
+
   // Get posts with advanced filtering
   const { posts, totalPages, totalPosts } = getPostsMetaAdvanced(
     currentPage,
@@ -48,6 +54,8 @@ export default function TagsPage({ searchParams }: TagsPageProps) {
       currentPage={currentPage}
       availableCategories={availableCategories}
       availableTags={availableTags}
+      tagCounts={tagCounts}
+      categoryCounts={categoryCounts}
     />
   )
 }

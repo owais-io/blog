@@ -149,12 +149,28 @@ export function getPostBySlug(slug: string): BlogPost | null {
 export function getAllTags(): string[] {
   const posts = getAllPosts()
   const tags = new Set<string>()
-  
+
   posts.forEach(post => {
     post.tags.forEach(tag => tags.add(tag))
   })
-  
+
   return Array.from(tags).sort()
+}
+
+// Get tag counts for display
+export function getTagCounts(): Record<string, number> {
+  const posts = getAllPosts()
+  const counts: Record<string, number> = {}
+
+  posts.forEach(post => {
+    post.tags.forEach(tag => {
+      if (tag && tag.trim()) {
+        counts[tag] = (counts[tag] || 0) + 1
+      }
+    })
+  })
+
+  return counts
 }
 
 // Category sorting options
