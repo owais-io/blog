@@ -1,0 +1,931 @@
+---
+title: "Python Requests Library: Making HTTP API Calls for Absolute Beginners"
+description: "Learn how to make HTTP requests in Python using the requests library. Understand HTTP status codes, parse JSON responses, and work with REST APIs like GitHub's API."
+date: "2025-10-05T12:00:00.000Z"
+tags: ["python", "requests", "http", "api", "rest-api", "json"]
+published: true
+author: "Owais"
+categories: ["Python"]
+seo:
+  canonical: "https://owais.io/blog/python-requests-library-http-apis-beginners"
+  keywords: ["python requests", "http requests python", "rest api python", "python api calls", "requests library tutorial", "http status codes", "json parsing python"]
+toc: true
+---
+
+Making HTTP requests is one of the most common tasks in modern programming. Whether you're fetching data from an API, submitting forms, or downloading files, Python's `requests` library makes it incredibly simple and intuitive.
+
+<Callout type="info">
+🎯 **What You'll Learn**: In this comprehensive guide, you'll discover:
+- How to run Python scripts correctly (shebang vs python command)
+- Installing Python packages with pip
+- Making HTTP GET requests with the requests library
+- Understanding HTTP status codes and what they mean
+- Working with JSON responses from APIs
+- Parsing and accessing data from API responses
+- Common mistakes and how to avoid them
+- Best practices for working with HTTP requests
+</Callout>
+
+## 🚀 Understanding Python Script Execution
+
+Before we dive into making HTTP requests, let's understand the difference between running Python scripts with `./script.py` versus `python script.py`.
+
+### Creating Your First Python Script
+
+Let's create a simple Python script that will make an HTTP request:
+
+```python title="req.py" showLineNumbers
+import requests
+
+response = requests.get("https://api.github.com")
+
+print(response.status_code)
+```
+
+**What this script does**:
+1. `import requests` - Imports the requests library
+2. `requests.get("https://api.github.com")` - Makes an HTTP GET request to GitHub's API
+3. `print(response.status_code)` - Prints the HTTP status code of the response
+
+<div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900 dark:to-indigo-900 p-6 rounded-lg my-6">
+
+### Prerequisites
+
+Before we dive in, make sure you have:
+- Python 3.x installed on your system
+- Basic understanding of Python syntax
+- Terminal/command line access
+- Internet connection (to make API calls)
+
+</div>
+
+## ⚠️ Common Mistake: Using ./script.py
+
+After creating the script, you might try to run it like a shell script:
+
+```bash
+chmod +x req.py
+./req.py
+```
+
+**Result:**
+```
+./req.py: line 1: import: command not found
+./req.py: line 3: syntax error near unexpected token `('
+./req.py: line 3: `response = requests.get("https://api.github.com")'
+```
+
+### Why This Fails
+
+**What happened**:
+1. `chmod +x req.py` - Made the file executable
+2. `./req.py` - Attempted to run it directly
+3. **Error**: Bash tried to execute it as a shell script, not a Python script
+
+**Why it failed**:
+- When you run `./req.py`, your shell (bash) looks for a **shebang line** at the top of the file
+- A shebang line looks like `#!/usr/bin/python3` or `#!/usr/bin/env python3`
+- Without a shebang, bash tries to interpret the Python code as shell commands
+- The word `import` is not a bash command, hence the error
+
+<Callout type="warning">
+⚠️ **Important**: Python code uses syntax that bash doesn't understand. The `(` parentheses, `=` assignments, and `import` statement are all Python-specific syntax that causes bash to throw errors.
+</Callout>
+
+### The Correct Way to Run Python Scripts
+
+There are two proper ways to run Python scripts:
+
+**Method 1: Using the python command (Recommended for beginners)**
+```bash
+python req.py
+```
+
+or
+
+```bash
+python3 req.py
+```
+
+**Method 2: Adding a shebang line**
+
+Add this as the **first line** of your script:
+```python
+#!/usr/bin/env python3
+```
+
+Then you can run:
+```bash
+chmod +x req.py
+./req.py
+```
+
+**For this tutorial, we'll use `python req.py` as it's more explicit and beginner-friendly.**
+
+## 📦 Installing the Requests Library
+
+Before making HTTP requests, we need to install the `requests` library. Python doesn't include it by default.
+
+### Using pip to Install Packages
+
+```bash
+pip install requests
+```
+
+**Output:**
+```
+Defaulting to user installation because normal site-packages is not writeable
+Requirement already satisfied: requests in /usr/lib/python3.9/site-packages (2.25.1)
+Requirement already satisfied: chardet<5,>=3.0.2 in /usr/lib/python3.9/site-packages (from requests) (4.0.0)
+Requirement already satisfied: urllib3<1.27,>=1.21.1 in /usr/lib/python3.9/site-packages (from requests) (1.26.5)
+Requirement already satisfied: idna<3,>=2.5 in /usr/lib/python3.9/site-packages (from requests) (2.10)
+```
+
+### Understanding pip install Output
+
+Let's break down what this output means:
+
+**Line 1**: `Defaulting to user installation because normal site-packages is not writeable`
+- **What it means**: pip is installing the package in your user directory instead of system-wide
+- **Why**: You don't have administrator/root permissions to write to system directories
+- **Impact**: The package is available only for your user account
+- **Is this a problem?**: No, this is perfectly normal and safe
+
+**Line 2**: `Requirement already satisfied: requests in /usr/lib/python3.9/site-packages (2.25.1)`
+- **What it means**: The `requests` library (version 2.25.1) is already installed
+- **Location**: `/usr/lib/python3.9/site-packages`
+- **Action taken**: pip skipped installation since it's already present
+
+**Lines 3-5**: Dependencies already satisfied
+- `chardet` - Character encoding detection library
+- `urllib3` - HTTP library (requests uses this internally)
+- `idna` - Internationalized Domain Names support
+
+**These are dependencies**: Libraries that `requests` needs to function properly. pip automatically checks and installs these when you install `requests`.
+
+<Callout type="success">
+✅ **Package Management**: pip automatically handles dependencies for you. When you install a package, pip installs all the libraries it needs to work correctly.
+</Callout>
+
+## 🌐 Making Your First HTTP Request
+
+Now that we have the requests library installed, let's run our script:
+
+```bash
+python req.py
+```
+
+**Output:**
+```
+200
+```
+
+**What this means**:
+- The script successfully connected to `https://api.github.com`
+- GitHub's API server responded with status code `200`
+- Status code `200` means "OK" - the request was successful
+
+### Understanding the Code
+
+Let's examine each line of our script:
+
+```python
+import requests
+```
+
+**Purpose**: Imports the requests library into your script
+
+**What it does**: Makes all the functions and classes from the requests library available for use in your code
+
+**Why we need it**: Python only loads basic functionality by default. To use external libraries, we must import them first.
+
+```python
+response = requests.get("https://api.github.com")
+```
+
+**Purpose**: Makes an HTTP GET request to the specified URL
+
+**Breaking it down**:
+- `requests.get()` - Function that sends an HTTP GET request
+- `"https://api.github.com"` - The URL we're requesting
+- `response` - Variable that stores the response object returned by the API
+
+**What happens behind the scenes**:
+1. Your script sends a GET request to GitHub's server
+2. GitHub's server processes the request
+3. GitHub sends back a response with data
+4. The response is stored in the `response` variable
+
+```python
+print(response.status_code)
+```
+
+**Purpose**: Prints the HTTP status code from the response
+
+**What it does**:
+- Accesses the `status_code` attribute of the response object
+- Displays it on the screen
+
+## 📊 HTTP Status Codes Explained
+
+HTTP status codes are three-digit numbers that indicate the result of an HTTP request. They're grouped into five categories:
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Category</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Range</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Meaning</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Example</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Informational</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">100-199</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Request received, continuing process</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">100 Continue</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Success</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">200-299</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Request successfully received and accepted</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">200 OK, 201 Created</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Redirection</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">300-399</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Further action needed to complete request</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">301 Moved Permanently</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Client Error</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">400-499</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Request contains errors or cannot be fulfilled</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">404 Not Found, 403 Forbidden</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Server Error</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">500-599</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Server failed to fulfill valid request</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">500 Internal Server Error</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### Common HTTP Status Codes
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Code</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Name</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">What It Means</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>200</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">OK</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Request succeeded, data returned successfully</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>201</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Created</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Request succeeded, new resource created</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>204</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">No Content</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Request succeeded but no data to return</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>301</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Moved Permanently</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Resource permanently moved to new URL</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>400</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Bad Request</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Server cannot understand the request</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>401</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Unauthorized</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Authentication required and failed or not provided</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>403</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Forbidden</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Server understood but refuses to authorize</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>404</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Not Found</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Requested resource doesn't exist on server</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>429</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Too Many Requests</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">User sent too many requests in given time (rate limiting)</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>500</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Internal Server Error</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Server encountered unexpected condition</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>502</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Bad Gateway</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Server got invalid response from upstream server</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>503</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Service Unavailable</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Server temporarily unable to handle request</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+## 📝 Working with JSON Responses
+
+APIs typically return data in JSON (JavaScript Object Notation) format. Let's explore how to work with JSON responses.
+
+### Mistake: Forgetting Parentheses
+
+Let's modify our script to print the JSON data. First, let's see a common mistake:
+
+```python title="req.py" showLineNumbers
+import requests
+
+response = requests.get("https://api.github.com")
+
+print(response.json)
+```
+
+**Running this:**
+```bash
+python req.py
+```
+
+**Output:**
+```
+<bound method Response.json of <Response [200]>>
+```
+
+### What Went Wrong?
+
+**Why this output**:
+- `response.json` - References the method object itself (without calling it)
+- In Python, methods are objects too
+- Without `()`, you're printing the method reference, not calling it
+- `<bound method ...>` indicates it's a method waiting to be called
+
+**Think of it like this**:
+- `response.json` - "Show me the function"
+- `response.json()` - "Run the function and give me the result"
+
+<Callout type="warning">
+⚠️ **Common Python Mistake**: Forgetting parentheses when calling methods is a very common error. Always use `()` to actually execute a function or method.
+</Callout>
+
+### The Correct Way: Using Parentheses
+
+Update the script:
+
+```python title="req.py" showLineNumbers
+import requests
+
+response = requests.get("https://api.github.com")
+
+print(response.json())
+```
+
+**Running this:**
+```bash
+python req.py
+```
+
+**Output (formatted for readability):**
+```python
+{
+  'current_user_url': 'https://api.github.com/user',
+  'current_user_authorizations_html_url': 'https://github.com/settings/connections/applications{/client_id}',
+  'authorizations_url': 'https://api.github.com/authorizations',
+  'code_search_url': 'https://api.github.com/search/code?q={query}{&page,per_page,sort,order}',
+  'commit_search_url': 'https://api.github.com/search/commits?q={query}{&page,per_page,sort,order}',
+  'emails_url': 'https://api.github.com/user/emails',
+  'emojis_url': 'https://api.github.com/emojis',
+  'events_url': 'https://api.github.com/events',
+  'feeds_url': 'https://api.github.com/feeds',
+  'followers_url': 'https://api.github.com/user/followers',
+  'following_url': 'https://api.github.com/user/following{/target}',
+  'gists_url': 'https://api.github.com/gists{/gist_id}',
+  # ... and many more API endpoints
+}
+```
+
+### Understanding the JSON Response
+
+**What is `response.json()`**:
+- **Method call**: `json()` is a method of the response object
+- **Purpose**: Parses the JSON string returned by the API into a Python dictionary
+- **Return value**: A Python dictionary containing the API data
+
+**What the output shows**:
+- This is a Python dictionary (notice the single quotes around keys)
+- Each key-value pair represents an available API endpoint
+- GitHub's root API provides a directory of all available endpoints
+- The URLs contain placeholders like `{query}` that you'd replace with actual values
+
+**Example endpoint breakdown**:
+```python
+'user_url': 'https://api.github.com/users/{user}'
+```
+- **Key**: `'user_url'` - Name of the endpoint
+- **Value**: `'https://api.github.com/users/{user}'` - URL template
+- **Usage**: Replace `{user}` with an actual username to get user information
+
+## 🔍 Parsing and Accessing JSON Data
+
+Now that we have a Python dictionary, let's learn how to access specific data from it.
+
+### Accessing Dictionary Values
+
+```python title="req.py" showLineNumbers
+import requests
+
+response = requests.get("https://api.github.com")
+data = response.json()
+
+# Access specific endpoints
+print("User URL template:", data['user_url'])
+print("Repository search URL:", data['repository_search_url'])
+print("Emojis URL:", data['emojis_url'])
+```
+
+**Output:**
+```
+User URL template: https://api.github.com/users/{user}
+Repository search URL: https://api.github.com/search/repositories?q={query}{&page,per_page,sort,order}
+Emojis URL: https://api.github.com/emojis
+```
+
+**What's happening**:
+1. `data = response.json()` - Stores the dictionary in a variable
+2. `data['user_url']` - Accesses the value associated with the 'user_url' key
+3. Dictionary access uses square brackets `[]` with the key name in quotes
+
+### Pretty Printing JSON
+
+For better readability, use Python's `json` module:
+
+```python title="req.py" showLineNumbers
+import requests
+import json
+
+response = requests.get("https://api.github.com")
+data = response.json()
+
+# Pretty print with indentation
+print(json.dumps(data, indent=2))
+```
+
+**What this does**:
+- `json.dumps()` - Converts Python dictionary back to JSON string
+- `indent=2` - Adds 2-space indentation for readability
+- Output is formatted with proper line breaks and indentation
+
+**Sample formatted output:**
+```json
+{
+  "current_user_url": "https://api.github.com/user",
+  "authorizations_url": "https://api.github.com/authorizations",
+  "emails_url": "https://api.github.com/user/emails",
+  "emojis_url": "https://api.github.com/emojis"
+}
+```
+
+## 🔧 Response Object Attributes and Methods
+
+The response object contains much more than just the data. Let's explore its useful attributes and methods:
+
+### Essential Response Attributes
+
+```python title="explore_response.py" showLineNumbers
+import requests
+
+response = requests.get("https://api.github.com")
+
+# Status information
+print("Status Code:", response.status_code)
+print("OK?:", response.ok)  # True if status code is less than 400
+
+# Headers
+print("\nContent Type:", response.headers['Content-Type'])
+print("Server:", response.headers.get('Server'))
+
+# Response content
+print("\nResponse text length:", len(response.text))
+print("Response encoding:", response.encoding)
+
+# URL information
+print("\nRequested URL:", response.url)
+
+# Timing
+print("Response time:", response.elapsed.total_seconds(), "seconds")
+```
+
+**Sample output:**
+```
+Status Code: 200
+OK?: True
+
+Content Type: application/json; charset=utf-8
+Server: GitHub.com
+
+Response text length: 2234
+Response encoding: utf-8
+
+Requested URL: https://api.github.com
+
+Response time: 0.156789 seconds
+```
+
+### Understanding Response Attributes
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Attribute/Method</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Type</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>status_code</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">int</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">HTTP status code (200, 404, etc.)</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>ok</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">bool</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">True if status code is less than 400</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>text</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">str</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Response content as text/string</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>content</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">bytes</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Response content as bytes (for binary data)</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>json()</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">dict/list</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Parse JSON response into Python object</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>headers</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">dict</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Response headers (metadata)</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>url</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">str</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Final URL of the response</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>encoding</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">str</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Character encoding (utf-8, etc.)</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>elapsed</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">timedelta</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Time taken for the request</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>raise_for_status()</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">None</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Raises exception if status code indicates error</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+## 🚨 Error Handling
+
+Always handle potential errors when making HTTP requests:
+
+```python title="safe_request.py" showLineNumbers
+import requests
+
+try:
+    response = requests.get("https://api.github.com", timeout=5)
+    response.raise_for_status()  # Raise exception for 4xx/5xx status codes
+
+    data = response.json()
+    print("Success! Received", len(data), "API endpoints")
+
+except requests.exceptions.Timeout:
+    print("Error: Request timed out")
+
+except requests.exceptions.ConnectionError:
+    print("Error: Failed to connect to the server")
+
+except requests.exceptions.HTTPError as e:
+    print(f"HTTP Error: {e}")
+
+except requests.exceptions.JSONDecodeError:
+    print("Error: Response is not valid JSON")
+
+except Exception as e:
+    print(f"Unexpected error: {e}")
+```
+
+**Why error handling matters**:
+- Network requests can fail for many reasons
+- Servers can be down or unreachable
+- API responses might not be in expected format
+- Timeouts can occur with slow connections
+- Proper error handling prevents your program from crashing
+
+## 🎯 Practical Example: Fetching User Data
+
+Let's create a practical script that fetches GitHub user information:
+
+```python title="github_user.py" showLineNumbers
+import requests
+import json
+
+def get_github_user(username):
+    """Fetch GitHub user information"""
+    url = f"https://api.github.com/users/{username}"
+
+    try:
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+
+        user_data = response.json()
+
+        # Display user information
+        print(f"\n{'='*50}")
+        print(f"GitHub User: {user_data['login']}")
+        print(f"{'='*50}")
+        print(f"Name: {user_data.get('name', 'N/A')}")
+        print(f"Bio: {user_data.get('bio', 'N/A')}")
+        print(f"Public Repos: {user_data['public_repos']}")
+        print(f"Followers: {user_data['followers']}")
+        print(f"Following: {user_data['following']}")
+        print(f"Location: {user_data.get('location', 'N/A')}")
+        print(f"Profile: {user_data['html_url']}")
+        print(f"{'='*50}\n")
+
+    except requests.exceptions.HTTPError:
+        if response.status_code == 404:
+            print(f"Error: User '{username}' not found")
+        else:
+            print(f"HTTP Error: {response.status_code}")
+    except Exception as e:
+        print(f"Error: {e}")
+
+# Test with a username
+get_github_user("torvalds")  # Linus Torvalds
+```
+
+**Sample output:**
+```
+==================================================
+GitHub User: torvalds
+==================================================
+Name: Linus Torvalds
+Bio: N/A
+Public Repos: 6
+Followers: 180543
+Following: 0
+Location: Portland, OR
+Profile: https://github.com/torvalds
+==================================================
+```
+
+## 🎯 Best Practices
+
+<div className="bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-900 dark:to-blue-900 p-6 rounded-lg my-8">
+
+### ✅ Making HTTP Requests
+
+1. **Always use timeouts**: Prevent indefinite hanging with `timeout` parameter
+2. **Handle errors gracefully**: Use try-except blocks for network errors
+3. **Check status codes**: Verify the request succeeded before processing data
+4. **Use `response.raise_for_status()`**: Automatically raise exceptions for error codes
+5. **Close connections**: Requests library handles this automatically, but be aware for long-running scripts
+6. **Respect rate limits**: Many APIs limit how many requests you can make per hour
+
+### ✅ Working with JSON
+
+1. **Use `response.json()`**: Easier than manually parsing with `json.loads()`
+2. **Check Content-Type**: Ensure the response is actually JSON before calling `.json()`
+3. **Use `.get()` for optional keys**: Prevents KeyError if key doesn't exist
+4. **Pretty print during development**: Use `json.dumps(data, indent=2)` for readability
+5. **Validate data structure**: Check that expected keys exist before accessing them
+
+### ✅ Security and Privacy
+
+1. **Never hardcode credentials**: Use environment variables for API keys
+2. **Use HTTPS**: Always use secure connections for sensitive data
+3. **Validate input**: Sanitize user input before using in URLs
+4. **Be careful with sensitive data**: Don't log or print API keys or passwords
+5. **Check SSL certificates**: Requests verifies by default, don't disable without good reason
+
+### ✅ Performance
+
+1. **Reuse sessions**: Use `requests.Session()` for multiple requests to same host
+2. **Enable connection pooling**: Session objects do this automatically
+3. **Use streaming for large files**: `stream=True` parameter for downloads
+4. **Set appropriate timeouts**: Balance between reliability and speed
+5. **Consider async for many requests**: Use `aiohttp` for concurrent requests
+
+</div>
+
+## 📝 Command and Concept Cheat Sheet
+
+### Installing Packages
+
+```bash
+# Install a package
+pip install requests
+
+# Install specific version
+pip install requests==2.28.0
+
+# Upgrade a package
+pip install --upgrade requests
+
+# Uninstall a package
+pip uninstall requests
+
+# List installed packages
+pip list
+
+# Show package information
+pip show requests
+```
+
+### Running Python Scripts
+
+```bash
+# Using python command
+python script.py
+python3 script.py
+
+# Using shebang (add #!/usr/bin/env python3 to top of file)
+chmod +x script.py
+./script.py
+```
+
+### Basic HTTP Requests
+
+```python
+import requests
+
+# GET request
+response = requests.get("https://api.example.com/data")
+
+# GET with parameters
+params = {"q": "search term", "page": 1}
+response = requests.get("https://api.example.com/search", params=params)
+
+# GET with timeout
+response = requests.get("https://api.example.com", timeout=5)
+
+# POST request
+data = {"username": "john", "email": "john@example.com"}
+response = requests.post("https://api.example.com/users", json=data)
+
+# Custom headers
+headers = {"Authorization": "Bearer YOUR_TOKEN"}
+response = requests.get("https://api.example.com/private", headers=headers)
+```
+
+### Working with Responses
+
+```python
+# Status code
+print(response.status_code)
+
+# Check if request was successful
+if response.ok:
+    print("Success!")
+
+# Response text
+print(response.text)
+
+# Parse JSON
+data = response.json()
+
+# Response headers
+print(response.headers)
+print(response.headers['Content-Type'])
+
+# Response time
+print(response.elapsed.total_seconds())
+
+# Raise exception for error status codes
+response.raise_for_status()
+```
+
+### Error Handling Template
+
+```python
+import requests
+
+try:
+    response = requests.get(url, timeout=10)
+    response.raise_for_status()
+    data = response.json()
+    # Process data
+
+except requests.exceptions.Timeout:
+    print("Request timed out")
+except requests.exceptions.ConnectionError:
+    print("Connection failed")
+except requests.exceptions.HTTPError as e:
+    print(f"HTTP error: {e}")
+except requests.exceptions.JSONDecodeError:
+    print("Invalid JSON response")
+except Exception as e:
+    print(f"Error: {e}")
+```
+
+### HTTP Status Code Quick Reference
+
+```python
+# Success codes
+200  # OK - Request succeeded
+201  # Created - Resource created successfully
+204  # No Content - Success but no data to return
+
+# Redirection codes
+301  # Moved Permanently
+302  # Found (temporary redirect)
+304  # Not Modified (cached version is valid)
+
+# Client error codes
+400  # Bad Request - Invalid syntax
+401  # Unauthorized - Authentication required
+403  # Forbidden - No permission
+404  # Not Found - Resource doesn't exist
+429  # Too Many Requests - Rate limited
+
+# Server error codes
+500  # Internal Server Error
+502  # Bad Gateway
+503  # Service Unavailable
+```
+
+## 🚀 What's Next?
+
+<div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-lg my-6">
+
+### 📚 Continue Learning
+
+Now that you understand HTTP requests with Python, explore:
+- **POST, PUT, DELETE requests**: Modify data on servers
+- **Authentication**: Working with API keys, OAuth, and tokens
+- **Request sessions**: Reusing connections for better performance
+- **Async requests**: Making concurrent requests with `aiohttp`
+- **Web scraping**: Extracting data from HTML pages with BeautifulSoup
+- **API pagination**: Handling large datasets split across multiple pages
+- **File uploads**: Sending files through HTTP requests
+
+</div>
+
+---
+
+<Callout type="success">
+🎉 **Congratulations!** You've learned how to make HTTP requests in Python using the requests library. You now understand status codes, JSON parsing, and best practices for working with APIs!
+
+**What did you think of this guide?** Share your questions or your own API projects in the comments below!
+</Callout>
+
+## 💬 Discussion
+
+I'd love to hear about your experience:
+
+- What APIs are you planning to work with?
+- Have you encountered any interesting API challenges?
+- What other HTTP/API topics would you like to learn about?
+- Share any cool projects you're building with the requests library!
+
+**Connect with me**:
+- 🐙 [GitHub](https://github.com/owais-io) - API examples and more
+- 📧 [Contact](https://owais.io/contact) - Python and API discussions

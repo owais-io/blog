@@ -1,0 +1,776 @@
+---
+title: "Bash Process Monitoring: Mastering ps aux and AWK - A Complete Beginner's Guide (Part 1)"
+description: "Learn how to monitor system processes with ps aux, understand process attributes like PID, CPU, and memory usage, and master AWK for text processing and data extraction from command output."
+date: "2025-10-05T10:00:00.000Z"
+tags: ["bash", "linux", "ps-command", "awk", "process-monitoring", "system-administration"]
+published: true
+author: "Owais"
+categories: ["Linux", "Bash"]
+seo:
+  canonical: "https://owais.io/blog/bash-process-monitoring-ps-awk-fundamentals-part1"
+  keywords: ["ps aux command", "linux process monitoring", "awk command tutorial", "bash text processing", "system processes", "linux administration", "ps command explained"]
+toc: true
+---
+
+Understanding what's running on your Linux system is fundamental to system administration and troubleshooting. The `ps` command combined with powerful text processors like AWK gives you complete visibility into your system's processes.
+
+<Callout type="info">
+🎯 **What You'll Learn**: In this hands-on tutorial, you'll discover:
+- How to use `ps aux` to view all running processes
+- Understanding process attributes (PID, CPU, memory, etc.)
+- Using `grep` to filter specific processes
+- Mastering AWK for extracting and formatting data
+- Piping commands together for powerful data processing
+- Real-world examples for system monitoring
+- Best practices for process analysis
+</Callout>
+
+## 🚀 Understanding System Processes
+
+Every program running on your Linux system is a **process**. Whether it's your web server, database, terminal, or even the command you just typed - they all run as processes with unique identifiers and attributes.
+
+<div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900 dark:to-indigo-900 p-6 rounded-lg my-6">
+
+### Prerequisites
+
+Before we dive in, you should have:
+- Basic understanding of the Linux command line
+- Familiarity with bash terminal operations
+- Understanding of pipes and command chaining (covered in previous tutorials)
+
+</div>
+
+## 📊 The ps aux Command
+
+The `ps` command displays information about currently running processes. The `aux` options provide a comprehensive view of all processes on the system.
+
+### Running Your First ps aux Command
+
+```bash
+ps aux | head
+```
+
+**What this command does**:
+- `ps aux` - Lists all processes with detailed information
+- `| head` - Shows only the first 10 lines of output
+
+**Sample Output:**
+```
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root           1  0.1  0.2 174668 17308 ?        Ss   13:03   0:02 /usr/lib/systemd/systemd rhgb --switched-root --system --deserialize 31
+root           2  0.0  0.0      0     0 ?        S    13:03   0:00 [kthreadd]
+root           3  0.0  0.0      0     0 ?        S    13:03   0:00 [pool_workqueue_]
+root           4  0.0  0.0      0     0 ?        I<   13:03   0:00 [kworker/R-rcu_g]
+root           5  0.0  0.0      0     0 ?        I<   13:03   0:00 [kworker/R-sync_]
+root           6  0.0  0.0      0     0 ?        I<   13:03   0:00 [kworker/R-slub_]
+root           7  0.0  0.0      0     0 ?        I<   13:03   0:00 [kworker/R-netns]
+root           9  0.0  0.0      0     0 ?        I<   13:03   0:00 [kworker/0:0H-events_highpri]
+root          10  0.0  0.0      0     0 ?        I    13:03   0:00 [kworker/u16:0-events_unbound]
+```
+
+## 🔍 Understanding ps aux Output Columns
+
+Let's break down each column in the output:
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Column</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Meaning</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Example</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>USER</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">The user who owns the process</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">root, centos9, apache</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>PID</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Process ID - unique identifier for each process</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">1, 2, 4196</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>%CPU</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Percentage of CPU time used by the process</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">0.1, 5.2, 25.0</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>%MEM</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Percentage of physical memory used</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">0.2, 1.5, 10.3</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>VSZ</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Virtual memory size in kilobytes</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">174668, 227952</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>RSS</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Resident Set Size - physical memory used (in KB)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">17308, 9628</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>TTY</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Terminal associated with process (? means no terminal)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">pts/0, pts/1, ?</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>STAT</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Process state (S=sleeping, R=running, Z=zombie, etc.)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Ss, R+, I&lt;</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>START</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Time when the process started</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">13:03, 13:28</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>TIME</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Cumulative CPU time used</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">0:00, 0:02, 1:25</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>COMMAND</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">The command that started the process</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">/usr/lib/systemd/systemd, bash</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### Understanding Process States (STAT Column)
+
+The STAT column shows the current state of a process. Here are the most common state codes:
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">State</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Meaning</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>R</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Running</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Process is actively executing or ready to run</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>S</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Sleeping</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Waiting for an event to complete (interruptible)</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>I</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Idle</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Kernel thread in idle state</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>Z</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Zombie</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Process finished but parent hasn't read exit status</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>T</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Stopped</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Process stopped by job control signal</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>s</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Session leader</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Process is a session leader</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>+</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Foreground</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Process is in foreground process group</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>&lt;</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">High priority</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Process has high priority (not nice)</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<Callout type="info">
+💡 **Understanding Combined States**: You'll often see combinations like `Ss` (sleeping session leader) or `R+` (running in foreground). These combinations give you a complete picture of the process state.
+</Callout>
+
+## 🔎 Filtering Processes with grep
+
+When you want to find specific processes, `grep` is your best friend. It filters the output to show only lines matching your search pattern.
+
+### Finding Bash Processes
+
+```bash
+ps aux | grep bash
+```
+
+**What this command does**:
+- `ps aux` - Lists all processes
+- `|` - Pipes the output to the next command
+- `grep bash` - Filters lines containing the word "bash"
+
+**Sample Output:**
+```
+centos9     4196  0.0  0.1 227952  9628 pts/0    Ss+  13:06   0:00 bash
+centos9     4898  0.0  0.1 227952  9628 pts/1    Ss   13:28   0:00 bash
+centos9     5110  0.0  0.0 221672  2548 pts/1    R+   13:30   0:00 grep --color=auto bash
+```
+
+**Understanding the output**:
+
+Line 1: `centos9     4196  0.0  0.1 227952  9628 pts/0    Ss+  13:06   0:00 bash`
+- **User**: centos9 (the process owner)
+- **PID**: 4196 (unique process identifier)
+- **%CPU**: 0.0 (currently using 0% CPU)
+- **%MEM**: 0.1 (using 0.1% of system memory)
+- **VSZ**: 227952 KB (virtual memory size)
+- **RSS**: 9628 KB (actual physical memory used - about 9.4 MB)
+- **TTY**: pts/0 (pseudo-terminal 0 - this is a terminal session)
+- **STAT**: Ss+ (Sleeping, session leader, in foreground)
+- **START**: 13:06 (started at 1:06 PM)
+- **TIME**: 0:00 (used almost no CPU time)
+- **COMMAND**: bash (the bash shell process)
+
+Line 3: `centos9     5110  0.0  0.0 221672  2548 pts/1    R+   13:30   0:00 grep --color=auto bash`
+- This is the `grep` command itself!
+- **STAT**: R+ (Running in foreground)
+- It shows up in the output because it's also a running process at that moment
+
+<Callout type="warning">
+⚠️ **Why grep Shows in Results**: When you run `ps aux | grep bash`, the grep command is also running, so it appears in the process list. To exclude grep from results, use: `ps aux | grep bash | grep -v grep` (the `-v` inverts the match, excluding lines with "grep").
+</Callout>
+
+## 🛠️ Introduction to AWK: The Text Processing Powerhouse
+
+AWK is a powerful programming language designed for text processing and data extraction. It excels at working with column-based data like the output from `ps aux`.
+
+### How AWK Works
+
+AWK processes text line by line and treats each line as a collection of fields (columns) separated by whitespace.
+
+**Basic AWK syntax:**
+```bash
+awk '{action}' filename
+```
+
+Or when used with pipes:
+```bash
+command | awk '{action}'
+```
+
+### Understanding AWK Fields
+
+In AWK:
+- `$1` = first column
+- `$2` = second column
+- `$3` = third column
+- ... and so on
+- `$0` = entire line
+- `$NF` = last field (NF = Number of Fields)
+
+## 📝 Extracting Specific Columns with AWK
+
+Let's use AWK to extract just the PID and COMMAND columns from `ps aux` output.
+
+### Extracting PID and COMMAND
+
+```bash
+ps aux | awk '{print $2, $11}' | head
+```
+
+**Breaking down this command**:
+
+1. `ps aux` - Generate the process list
+2. `|` - Pipe the output to AWK
+3. `awk '{print $2, $11}'` - Print column 2 (PID) and column 11 (COMMAND)
+   - `$2` = PID column
+   - `$11` = COMMAND column (the 11th field)
+   - `print` = AWK's output command
+   - The comma creates a space between the two fields
+4. `| head` - Show only first 10 lines
+
+**Sample Output:**
+```
+PID COMMAND
+1 /usr/lib/systemd/systemd
+2 [kthreadd]
+3 [pool_workqueue_]
+4 [kworker/R-rcu_g]
+5 [kworker/R-sync_]
+6 [kworker/R-slub_]
+7 [kworker/R-netns]
+9 [kworker/0:0H-events_highpri]
+10 [kworker/u16:0-events_unbound]
+```
+
+**What happened here**:
+- The header row shows "PID" and "COMMAND" because those are the values in columns 2 and 11 of the header line
+- Each subsequent row shows just the process ID and the command name
+- All other columns (USER, %CPU, %MEM, etc.) are filtered out
+
+### Why Column 11 for COMMAND?
+
+Let's count the columns in a `ps aux` header:
+
+```
+1=USER  2=PID  3=%CPU  4=%MEM  5=VSZ  6=RSS  7=TTY  8=STAT  9=START  10=TIME  11=COMMAND
+```
+
+The COMMAND column is the 11th field, which is why we use `$11`.
+
+<Callout type="info">
+💡 **AWK Field Counting**: AWK automatically splits each line into fields based on whitespace. Even if there are multiple spaces between columns, AWK treats them as a single separator.
+</Callout>
+
+## 🎨 Formatting AWK Output
+
+You can customize how AWK displays the output using different separators and formats.
+
+### Custom Field Separators
+
+```bash
+# Using tab separator
+ps aux | awk '{print $2 "\t" $11}' | head
+
+# Using custom separator
+ps aux | awk '{print $2 " --> " $11}' | head
+```
+
+**Sample Output (with custom separator):**
+```
+PID --> COMMAND
+1 --> /usr/lib/systemd/systemd
+2 --> [kthreadd]
+4196 --> bash
+```
+
+**What's happening**:
+- `"\t"` - Inserts a tab character between fields
+- `" --> "` - Inserts a literal string " --> " between fields
+- AWK concatenates strings that are placed next to each other
+
+### Adding Headers and Formatting
+
+```bash
+ps aux | awk 'BEGIN {print "Process ID | Command Name"; print "-----------|-------------"} {print $2 " | " $11}' | head -15
+```
+
+**Breaking down this command**:
+
+1. `BEGIN {print "..."}` - Executes before processing any lines
+   - Prints custom header row
+   - Prints separator line for readability
+2. `{print $2 " | " $11}` - Executes for each data line
+   - Prints PID and COMMAND with pipe separator
+
+**Sample Output:**
+```
+Process ID | Command Name
+-----------|-------------
+PID | COMMAND
+1 | /usr/lib/systemd/systemd
+2 | [kthreadd]
+3 | [pool_workqueue_]
+4196 | bash
+4898 | bash
+```
+
+## 🔢 Advanced AWK: Filtering and Calculations
+
+AWK can also filter data and perform calculations, making it extremely powerful for process analysis.
+
+### Filtering Processes by CPU Usage
+
+```bash
+# Show only processes using more than 1% CPU
+ps aux | awk '$3 > 1.0 {print $2, $3, $11}'
+```
+
+**What this does**:
+- `$3 > 1.0` - Condition: only process lines where column 3 (%CPU) is greater than 1.0
+- `{print $2, $3, $11}` - Action: print PID, %CPU, and COMMAND for matching processes
+
+**Sample Output:**
+```
+4523 2.5 firefox
+5821 5.2 chrome
+6142 1.8 node
+```
+
+### Filtering Processes by Memory Usage
+
+```bash
+# Show processes using more than 2% memory
+ps aux | awk '$4 > 2.0 {print $2, $4, $11}' | head
+```
+
+**What this does**:
+- `$4 > 2.0` - Filters processes where %MEM (column 4) exceeds 2%
+- Displays PID, memory percentage, and command
+
+### Filtering Processes by User
+
+```bash
+# Show only processes owned by a specific user
+ps aux | awk '$1 == "centos9" {print $2, $11}'
+```
+
+**What this does**:
+- `$1 == "centos9"` - Matches processes where USER (column 1) equals "centos9"
+- `==` - Equality comparison in AWK (for strings, use quotes)
+
+### Counting Processes
+
+```bash
+# Count total number of processes for a user
+ps aux | awk '$1 == "centos9"' | wc -l
+```
+
+**Breaking it down**:
+1. `ps aux` - List all processes
+2. `awk '$1 == "centos9"'` - Filter to show only centos9's processes
+3. `wc -l` - Count the number of lines (processes)
+
+### Calculating Total Memory Usage
+
+```bash
+# Calculate total memory usage for all bash processes
+ps aux | awk '/bash/ {sum += $4} END {print "Total memory used by bash: " sum "%"}'
+```
+
+**What this does**:
+1. `/bash/` - Pattern matching: processes lines containing "bash"
+2. `{sum += $4}` - Adds the %MEM value (column 4) to variable `sum`
+3. `END {print ...}` - After all lines are processed, print the total
+4. `sum "%"` - Concatenates the sum value with the % symbol
+
+## 📊 Practical Process Monitoring Examples
+
+### Example 1: Top Memory Consumers
+
+```bash
+# Show top 10 memory-consuming processes
+ps aux | awk 'NR>1 {print $4, $11}' | sort -rn | head -10
+```
+
+**Command breakdown**:
+1. `ps aux` - Get all processes
+2. `awk 'NR>1 {print $4, $11}'` - Skip header (NR>1), print %MEM and COMMAND
+3. `sort -rn` - Sort numerically in reverse (highest first)
+   - `-r` = reverse order
+   - `-n` = numeric sort
+4. `head -10` - Show top 10
+
+**Sample Output:**
+```
+10.5 /usr/bin/gnome-shell
+8.2 /usr/lib64/firefox/firefox
+5.3 /opt/google/chrome/chrome
+3.1 /usr/bin/dockerd
+2.8 /usr/libexec/gnome-terminal-server
+```
+
+<Callout type="info">
+💡 **NR Variable**: `NR` is AWK's built-in variable for "Number of Records" (current line number). `NR>1` means "process all lines except the first one" (which is the header).
+</Callout>
+
+### Example 2: Process Summary by User
+
+```bash
+# Count processes per user and sort
+ps aux | awk 'NR>1 {users[$1]++} END {for (user in users) print user, users[user]}' | sort -k2 -rn
+```
+
+**What this complex command does**:
+1. `NR>1` - Skip the header line
+2. `{users[$1]++}` - Create an array where:
+   - Key = username (column 1)
+   - Value = count of processes for that user
+3. `END {for (user in users) print user, users[user]}` - After all lines:
+   - Loop through the array
+   - Print each username and its process count
+4. `sort -k2 -rn` - Sort by column 2 (count) numerically in reverse
+
+**Sample Output:**
+```
+root 245
+centos9 89
+polkitd 1
+colord 1
+```
+
+### Example 3: Finding Zombie Processes
+
+```bash
+# Find zombie processes (state Z)
+ps aux | awk '$8 ~ /Z/ {print $2, $8, $11}'
+```
+
+**What this does**:
+- `$8 ~ /Z/` - Pattern match: column 8 (STAT) contains "Z"
+- `~` - AWK's pattern matching operator
+- `/Z/` - Regular expression matching the letter Z
+
+**If zombies exist, output might look like:**
+```
+5432 Z <defunct>
+5890 Z <defunct>
+```
+
+## 🎯 Combining Everything: Building a Process Monitor Script
+
+Let's create a script that combines everything we've learned to create a comprehensive process monitoring report.
+
+### Create the Monitoring Script
+
+```bash
+#!/bin/bash
+
+echo "======================================"
+echo "     SYSTEM PROCESS MONITOR"
+echo "======================================"
+echo "Generated: $(date)"
+echo ""
+
+echo "--- TOP 5 CPU CONSUMERS ---"
+ps aux | awk 'NR>1 {print $3 "% - " $11}' | sort -rn | head -5
+echo ""
+
+echo "--- TOP 5 MEMORY CONSUMERS ---"
+ps aux | awk 'NR>1 {print $4 "% - " $11}' | sort -rn | head -5
+echo ""
+
+echo "--- PROCESS COUNT BY USER ---"
+ps aux | awk 'NR>1 {users[$1]++} END {for (u in users) printf "%-15s: %d processes\n", u, users[u]}' | sort -k3 -rn
+echo ""
+
+echo "--- BASH SESSIONS ---"
+ps aux | grep bash | grep -v grep | awk '{print "PID: " $2 " | User: " $1 " | Terminal: " $7 " | Started: " $9}'
+echo ""
+
+echo "--- SYSTEM SUMMARY ---"
+total_processes=$(ps aux | wc -l)
+running_processes=$(ps aux | awk '$8 ~ /R/' | wc -l)
+sleeping_processes=$(ps aux | awk '$8 ~ /S/' | wc -l)
+
+echo "Total Processes: $total_processes"
+echo "Running: $running_processes"
+echo "Sleeping: $sleeping_processes"
+echo ""
+
+echo "======================================"
+```
+
+**Save this as** `process_monitor.sh` and make it executable:
+
+```bash
+chmod +x process_monitor.sh
+./process_monitor.sh
+```
+
+**Understanding key parts of this script**:
+
+1. **Date header**: `$(date)` - Command substitution to show current date/time
+
+2. **Formatted output**: `printf "%-15s: %d processes\n"`
+   - `%-15s` - Left-aligned string, 15 characters wide
+   - `%d` - Decimal integer
+   - Creates nicely aligned columns
+
+3. **Multiple pipes**: `grep bash | grep -v grep | awk`
+   - Chains multiple filters together
+   - Each command processes the output of the previous one
+
+4. **Variable assignment from commands**:
+   - `total_processes=$(ps aux | wc -l)`
+   - Captures command output into a variable
+
+## 🎯 Best Practices
+
+<div className="bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-900 dark:to-blue-900 p-6 rounded-lg my-8">
+
+### ✅ Using ps aux
+
+1. **Always use head for initial exploration**: `ps aux | head` prevents overwhelming output
+2. **Combine with grep wisely**: Remember that grep itself appears in results
+3. **Use specific column numbers**: Column positions in ps aux are consistent
+4. **Check process states**: Use STAT column to identify stuck or zombie processes
+5. **Monitor resource usage**: Regularly check %CPU and %MEM to identify resource hogs
+6. **Save snapshots**: Redirect output to files for historical comparison
+
+### ✅ Using AWK
+
+1. **Quote AWK programs**: Always use single quotes around AWK code: `awk '{print $1}'`
+2. **Use meaningful variable names**: `{users[$1]++}` is clearer than `{a[$1]++}`
+3. **Test incrementally**: Build complex AWK programs step by step
+4. **Remember NR for line numbers**: Skip headers with `NR>1`
+5. **Use printf for formatting**: Better control than print for aligned output
+6. **Store intermediate results**: Use AWK arrays to aggregate data before output
+
+### ✅ Combining Commands
+
+1. **Build pipelines gradually**: Test each command before adding the next
+2. **Use head/tail for testing**: Limit output while developing complex pipelines
+3. **Comment your scripts**: Explain what each pipeline does
+4. **Handle errors**: Add checks for empty results or missing data
+5. **Consider performance**: Too many pipes can slow down processing
+
+</div>
+
+## 📝 Command Cheat Sheet
+
+### ps Command Options
+
+```bash
+# Show all processes with full details
+ps aux
+
+# Show processes in tree format (parent-child relationships)
+ps auxf
+
+# Show only your processes
+ps ux
+
+# Show all processes with custom columns
+ps -eo pid,user,cpu,mem,command
+
+# Watch processes in real-time (updates every 2 seconds)
+watch -n 2 'ps aux | head -20'
+```
+
+### grep with ps
+
+```bash
+# Find specific process
+ps aux | grep process_name
+
+# Find process and exclude grep itself
+ps aux | grep process_name | grep -v grep
+
+# Case-insensitive search
+ps aux | grep -i PROCESS_NAME
+
+# Show multiple processes (OR logic)
+ps aux | grep -E 'bash|firefox|chrome'
+```
+
+### AWK Fundamentals
+
+```bash
+# Print specific columns
+awk '{print $1, $3, $5}'
+
+# Print with custom separator
+awk '{print $1 ":" $2}'
+
+# Filter by column value
+awk '$3 > 5 {print $0}'
+
+# Count matching lines
+awk '/pattern/ {count++} END {print count}'
+
+# Sum a column
+awk '{sum += $3} END {print sum}'
+
+# Calculate average
+awk '{sum += $3; count++} END {print sum/count}'
+
+# Print lines matching pattern
+awk '/pattern/ {print $1, $2}'
+
+# Skip header row
+awk 'NR>1 {print $0}'
+
+# Print with line numbers
+awk '{print NR, $0}'
+
+# Print last column
+awk '{print $NF}'
+```
+
+### AWK with ps aux
+
+```bash
+# Extract PID and command
+ps aux | awk '{print $2, $11}'
+
+# Find high CPU processes
+ps aux | awk '$3 > 10 {print $2, $3, $11}'
+
+# Find high memory processes
+ps aux | awk '$4 > 5 {print $2, $4, $11}'
+
+# Count processes by user
+ps aux | awk '{users[$1]++} END {for (u in users) print u, users[u]}'
+
+# Sum memory usage by command
+ps aux | awk '{mem[$11] += $4} END {for (cmd in mem) print cmd, mem[cmd]}'
+
+# Show running processes only
+ps aux | awk '$8 ~ /R/ {print $2, $11}'
+```
+
+### Combining ps, grep, and AWK
+
+```bash
+# Find PID of specific process
+ps aux | grep nginx | grep -v grep | awk '{print $2}'
+
+# Monitor specific user's memory usage
+ps aux | awk '$1 == "username" {sum += $4} END {print sum "%"}'
+
+# Create formatted process report
+ps aux | awk 'BEGIN {printf "%-10s %-8s %-8s %s\n", "USER", "PID", "%MEM", "COMMAND"}
+              NR>1 {printf "%-10s %-8s %-8s %s\n", $1, $2, $4, $11}' | head -20
+
+# Find and sort by memory
+ps aux | awk 'NR>1 {print $4, $2, $11}' | sort -rn | head -10
+```
+
+## 🚀 What's Next?
+
+<div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-lg my-6">
+
+### 📚 Continue Learning
+
+In **Part 2** of this series, we'll cover:
+- Building interactive menu systems with while loops
+- Creating user-friendly terminal interfaces
+- Implementing case statements for menu choices
+- Combining functions with menus for modular design
+- Error handling and input validation
+- Creating professional CLI tools
+
+Stay tuned for the next guide!
+
+</div>
+
+---
+
+<Callout type="success">
+🎉 **Congratulations!** You've mastered process monitoring with `ps aux`, process filtering with `grep`, and powerful text processing with AWK. You now have the skills to monitor, analyze, and troubleshoot system processes like a professional system administrator!
+
+**What did you think of this guide?** Share your questions or your own process monitoring scripts in the comments below!
+</Callout>
+
+## 💬 Discussion
+
+I'd love to hear about your experience:
+
+- What processes are you monitoring on your systems?
+- Have you discovered any interesting patterns in your process data?
+- What AWK scripts have you created for system administration?
+- What other process monitoring topics would you like to learn about?
+
+**Connect with me**:
+- 🐙 [GitHub](https://github.com/owais-io) - Process monitoring scripts and more
+- 📧 [Contact](https://owais.io/contact) - System administration discussions

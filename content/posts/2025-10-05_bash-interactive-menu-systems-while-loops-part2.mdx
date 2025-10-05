@@ -1,0 +1,1380 @@
+---
+title: "Bash Interactive Menu Systems: Building Professional CLI Interfaces with While Loops (Part 2)"
+description: "Master while loops and create interactive menu-driven bash scripts. Learn to build professional command-line interfaces with functions, case statements, and user input validation for automation tools."
+date: "2025-10-05T11:00:00.000Z"
+tags: ["bash", "linux", "while-loops", "menu-system", "cli", "automation"]
+published: true
+author: "Owais"
+categories: ["Linux", "Bash"]
+seo:
+  canonical: "https://owais.io/blog/bash-interactive-menu-systems-while-loops-part2"
+  keywords: ["bash while loop", "bash menu system", "interactive bash script", "cli interface bash", "bash automation", "user input validation", "bash infinite loop"]
+toc: true
+---
+
+Creating interactive menu systems transforms your bash scripts from one-off commands into professional, user-friendly tools. With while loops, case statements, and functions, you can build powerful CLI applications that anyone can use.
+
+<Callout type="info">
+🎯 **What You'll Learn**: In this hands-on tutorial, you'll discover:
+- How while loops work for continuous program execution
+- Creating infinite loops for persistent menus
+- Building interactive menu interfaces with case statements
+- Combining functions with menus for modular design
+- Implementing clean exit strategies
+- Input validation and error handling
+- Best practices for professional CLI tools
+</Callout>
+
+## 🔄 Understanding While Loops
+
+A **while loop** repeatedly executes a block of code as long as a condition remains true. This makes them perfect for creating menus that keep running until the user chooses to exit.
+
+### Basic While Loop Syntax
+
+```bash
+while [ condition ]; do
+    # Commands to execute
+    # As long as condition is true
+done
+```
+
+<div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900 dark:to-indigo-900 p-6 rounded-lg my-6">
+
+### Prerequisites
+
+Before we dive in, you should have:
+- Completed [Part 1: Process Monitoring with ps and AWK](/blog/2025-10-05_bash-process-monitoring-ps-awk-fundamentals-part1)
+- Understanding of bash functions and case statements
+- Basic knowledge of user input with `read` command
+- Familiarity with conditional statements
+
+</div>
+
+## 🚀 Your First While Loop
+
+Let's start with a simple counting example to understand how while loops work.
+
+### Simple Counter Script
+
+```bash
+#!/bin/bash
+
+count=1
+
+while [ $count -le 5 ]; do
+    echo "Count: $count"
+    count=$((count + 1))
+done
+
+echo "Loop finished!"
+```
+
+**Breaking down this script**:
+
+1. `count=1` - Initialize counter variable to 1
+
+2. `while [ $count -le 5 ]` - Loop condition
+   - `$count` - Current value of count variable
+   - `-le` - "Less than or Equal to" operator
+   - `5` - The limit
+   - Meaning: "While count is less than or equal to 5"
+
+3. `do` - Marks the beginning of loop body
+
+4. `echo "Count: $count"` - Display current count value
+
+5. `count=$((count + 1))` - Increment counter
+   - `$((...))` - Arithmetic expansion in bash
+   - Adds 1 to current count value
+   - Without this, the loop would run forever!
+
+6. `done` - Marks the end of loop body
+
+7. `echo "Loop finished!"` - Executes after loop exits
+
+**Run this script:**
+
+```bash
+chmod +x counter.sh
+./counter.sh
+```
+
+**Output:**
+```
+Count: 1
+Count: 2
+Count: 3
+Count: 4
+Count: 5
+Loop finished!
+```
+
+**What happened**:
+1. Loop starts with count=1 (1 ≤ 5 is true)
+2. Prints "Count: 1", increments to 2
+3. Loop continues (2 ≤ 5 is true)
+4. Prints "Count: 2", increments to 3
+5. Process continues until count=5
+6. After printing "Count: 5" and incrementing to 6
+7. Condition (6 ≤ 5) is false, loop exits
+8. Final message prints
+
+<Callout type="warning">
+⚠️ **Infinite Loop Warning**: Always ensure your while loop has a way to exit! Forgetting to increment the counter or update the condition variable will create an infinite loop that never stops.
+</Callout>
+
+## ♾️ Creating Infinite Loops
+
+For menu systems, we need loops that run indefinitely until the user explicitly chooses to exit. We accomplish this with an always-true condition.
+
+### The Infinite Loop Pattern
+
+```bash
+while true; do
+    # Menu code here
+    # Loop runs forever unless we use 'break' or 'exit'
+done
+```
+
+**Why `while true`**:
+- `true` is a command that always returns success (exit code 0)
+- This creates a condition that is always true
+- The loop continues indefinitely
+- Only breaks with explicit `break`, `exit`, or when script is killed
+
+**Alternative syntax (equivalent)**:
+```bash
+while :; do
+    # The ':' is a built-in command that does nothing and returns true
+done
+```
+
+## 🎨 Building Your First Menu System
+
+Let's create a simple interactive menu that displays options and responds to user choices.
+
+### Basic Menu Script
+
+Create a file called `simple_menu.sh`:
+
+```bash
+#!/bin/bash
+
+while true; do
+    echo "===================="
+    echo " Simple Menu"
+    echo "===================="
+    echo "1. Show date"
+    echo "2. Show current directory"
+    echo "3. Exit"
+    echo -n "Enter your choice: "
+
+    read choice
+
+    case $choice in
+        1)
+            echo "Current date and time: $(date)"
+            ;;
+        2)
+            echo "Current directory: $(pwd)"
+            ;;
+        3)
+            echo "Goodbye!"
+            exit 0
+            ;;
+        *)
+            echo "Invalid option! Please choose 1, 2, or 3."
+            ;;
+    esac
+
+    echo ""
+    echo "Press Enter to continue..."
+    read
+done
+```
+
+**Make it executable and run:**
+
+```bash
+chmod +x simple_menu.sh
+./simple_menu.sh
+```
+
+**Sample interaction:**
+```
+====================
+ Simple Menu
+====================
+1. Show date
+2. Show current directory
+3. Exit
+Enter your choice: 1
+Current date and time: Sun Oct  5 01:43:16 PM PKT 2025
+
+Press Enter to continue...
+
+====================
+ Simple Menu
+====================
+1. Show date
+2. Show current directory
+3. Exit
+Enter your choice: 3
+Goodbye!
+```
+
+### Understanding the Menu Components
+
+Let's break down each part of this menu system:
+
+#### The Menu Display
+
+```bash
+echo "===================="
+echo " Simple Menu"
+echo "===================="
+echo "1. Show date"
+echo "2. Show current directory"
+echo "3. Exit"
+echo -n "Enter your choice: "
+```
+
+**Purpose**: Creates the visual menu interface
+
+**Key points**:
+- Multiple `echo` statements build the menu display
+- The `echo -n` command uses the `-n` flag to prevent a newline after printing
+  - This keeps the cursor on the same line as "Enter your choice: "
+  - Makes the interface more polished and user-friendly
+
+#### Reading User Input
+
+```bash
+read choice
+```
+
+**Purpose**: Captures user input and stores it in the `choice` variable
+
+**How it works**:
+- `read` command pauses script execution
+- Waits for user to type something
+- User presses Enter
+- Input is stored in the `choice` variable
+- Script continues execution
+
+#### The Case Statement
+
+```bash
+case $choice in
+    1)
+        echo "Current date and time: $(date)"
+        ;;
+    2)
+        echo "Current directory: $(pwd)"
+        ;;
+    3)
+        echo "Goodbye!"
+        exit 0
+        ;;
+    *)
+        echo "Invalid option! Please choose 1, 2, or 3."
+        ;;
+esac
+```
+
+**Purpose**: Executes different code based on user's choice
+
+**Breaking it down**:
+
+1. **Option 1**: `$(date)` - Command substitution
+   - Executes the `date` command
+   - Captures its output
+   - Displays current date and time
+
+2. **Option 2**: `$(pwd)` - Command substitution
+   - Executes the `pwd` (print working directory) command
+   - Shows the current directory path
+
+3. **Option 3**: Exit option
+   - `echo "Goodbye!"` - Polite exit message
+   - `exit 0` - Terminates the script
+     - `0` indicates successful exit
+     - This breaks out of the infinite loop and ends the program
+
+4. **Default case** (`*`):
+   - Matches any input not matching 1, 2, or 3
+   - Provides feedback for invalid input
+   - Loop continues, showing menu again
+
+#### The Pause Mechanism
+
+```bash
+echo ""
+echo "Press Enter to continue..."
+read
+```
+
+**Purpose**: Pauses execution so user can read output
+
+**What happens**:
+- `echo ""` - Prints blank line for spacing
+- "Press Enter to continue..." - Prompts user
+- `read` - Waits for Enter key (input is discarded)
+- After Enter, loop returns to top and shows menu again
+
+<Callout type="success">
+✅ **User Experience Tip**: The pause mechanism prevents the menu from immediately redrawing over the command output, giving users time to read the results before continuing.
+</Callout>
+
+## 🏗️ Building a Professional Menu with Functions
+
+Functions make your menu code cleaner, more maintainable, and easier to extend. Let's refactor our menu to use functions.
+
+### Enhanced Menu with Functions
+
+Create `bash_menu.sh`:
+
+```bash
+#!/bin/bash
+
+show_date() {
+    echo "Current date and time: $(date)"
+}
+
+list_files() {
+    echo "Files in the current directory:"
+    ls -lh
+}
+
+exit_script() {
+    echo "Exiting..."
+    exit 0
+}
+
+while true; do
+    echo "===================="
+    echo " Bash Menu Interface"
+    echo "===================="
+    echo "1. Show date"
+    echo "2. List files"
+    echo "3. Exit"
+    echo "Enter your choice: "
+
+    read choice
+
+    case $choice in
+        1) show_date ;;
+        2) list_files ;;
+        3) exit_script ;;
+        *) echo "Invalid option!" ;;
+    esac
+done
+```
+
+**Make it executable and test:**
+
+```bash
+chmod +x bash_menu.sh
+./bash_menu.sh
+```
+
+**Sample interaction:**
+```
+====================
+ Bash Menu Interface
+====================
+1. Show date
+2. List files
+3. Exit
+Enter your choice:
+1
+Current date and time: Sun Oct  5 01:43:16 PM PKT 2025
+====================
+ Bash Menu Interface
+====================
+1. Show date
+2. List files
+3. Exit
+Enter your choice:
+2
+Files in the current directory:
+bash_menu.sh  num_operations.sh  ps_aux.txt
+====================
+ Bash Menu Interface
+====================
+1. Show date
+2. List files
+3. Exit
+Enter your choice:
+3
+Exiting...
+```
+
+### Understanding the Function-Based Approach
+
+#### Function Definitions
+
+```bash
+show_date() {
+    echo "Current date and time: $(date)"
+}
+
+list_files() {
+    echo "Files in the current directory:"
+    ls -lh
+}
+
+exit_script() {
+    echo "Exiting..."
+    exit 0
+}
+```
+
+**Benefits of using functions**:
+
+1. **Modularity**: Each function has one specific purpose
+   - `show_date()` - Handles date display
+   - `list_files()` - Handles file listing
+   - `exit_script()` - Handles clean exit
+
+2. **Readability**: Function names describe what they do
+   - Code becomes self-documenting
+   - Easier to understand at a glance
+
+3. **Reusability**: Functions can be called multiple times
+   - If you need to show date elsewhere, just call `show_date`
+   - No code duplication
+
+4. **Maintainability**: Changes are isolated
+   - To change how date is displayed, modify only `show_date()`
+   - Don't need to search through entire script
+
+5. **Testing**: Each function can be tested independently
+   - Call functions individually to verify they work
+   - Easier to debug issues
+
+#### Simplified Case Statement
+
+```bash
+case $choice in
+    1) show_date ;;
+    2) list_files ;;
+    3) exit_script ;;
+    *) echo "Invalid option!" ;;
+esac
+```
+
+**Why this is cleaner**:
+- Each case is now a single function call
+- All the complex logic is in functions
+- Case statement becomes a simple dispatcher
+- Much easier to read and understand flow
+
+### Testing Invalid Input
+
+Let's test how the menu handles errors:
+
+```bash
+./bash_menu.sh
+```
+
+**Enter invalid option:**
+```
+====================
+ Bash Menu Interface
+====================
+1. Show date
+2. List files
+3. Exit
+Enter your choice:
+4
+Invalid option!
+====================
+ Bash Menu Interface
+====================
+```
+
+**What happened**:
+1. User entered "4" which doesn't match cases 1, 2, or 3
+2. The wildcard pattern `*` caught this input
+3. "Invalid option!" message displayed
+4. Loop continues, menu redisplays
+5. User gets another chance to enter valid input
+
+## 🎯 Advanced Menu Features
+
+Let's enhance our menu with more professional features like better formatting, input validation, and system information display.
+
+### Professional Menu System
+
+Create `advanced_menu.sh`:
+
+```bash
+#!/bin/bash
+
+# Color codes for better visual appeal
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Function to display a colored header
+show_header() {
+    clear
+    echo -e "${BLUE}========================================${NC}"
+    echo -e "${BLUE}    SYSTEM MANAGEMENT MENU${NC}"
+    echo -e "${BLUE}========================================${NC}"
+    echo ""
+}
+
+# Function to display menu options
+show_menu() {
+    echo -e "${GREEN}1.${NC} Display Date and Time"
+    echo -e "${GREEN}2.${NC} Display Current Directory"
+    echo -e "${GREEN}3.${NC} List Files (detailed)"
+    echo -e "${GREEN}4.${NC} Show Disk Usage"
+    echo -e "${GREEN}5.${NC} Show System Uptime"
+    echo -e "${GREEN}6.${NC} Display Memory Usage"
+    echo -e "${YELLOW}7.${NC} Exit"
+    echo ""
+    echo -n "Enter your choice [1-7]: "
+}
+
+# Individual option functions
+option_date() {
+    echo -e "\n${BLUE}Current Date and Time:${NC}"
+    date "+%A, %B %d, %Y at %I:%M:%S %p"
+    echo ""
+}
+
+option_directory() {
+    echo -e "\n${BLUE}Current Working Directory:${NC}"
+    pwd
+    echo ""
+}
+
+option_list_files() {
+    echo -e "\n${BLUE}Files in Current Directory:${NC}"
+    ls -lh --color=auto
+    echo ""
+}
+
+option_disk_usage() {
+    echo -e "\n${BLUE}Disk Usage Summary:${NC}"
+    df -h | head -5
+    echo ""
+}
+
+option_uptime() {
+    echo -e "\n${BLUE}System Uptime:${NC}"
+    uptime -p
+    echo ""
+}
+
+option_memory() {
+    echo -e "\n${BLUE}Memory Usage:${NC}"
+    free -h
+    echo ""
+}
+
+option_exit() {
+    echo -e "\n${GREEN}Thank you for using System Management Menu!${NC}"
+    echo -e "${GREEN}Goodbye!${NC}\n"
+    exit 0
+}
+
+invalid_option() {
+    echo -e "\n${RED}Error: Invalid option!${NC}"
+    echo -e "${YELLOW}Please choose a number between 1 and 7.${NC}\n"
+}
+
+pause() {
+    echo -n "Press Enter to continue..."
+    read
+}
+
+# Main program loop
+while true; do
+    show_header
+    show_menu
+    read choice
+
+    case $choice in
+        1)
+            option_date
+            pause
+            ;;
+        2)
+            option_directory
+            pause
+            ;;
+        3)
+            option_list_files
+            pause
+            ;;
+        4)
+            option_disk_usage
+            pause
+            ;;
+        5)
+            option_uptime
+            pause
+            ;;
+        6)
+            option_memory
+            pause
+            ;;
+        7)
+            option_exit
+            ;;
+        *)
+            invalid_option
+            pause
+            ;;
+    esac
+done
+```
+
+**Make it executable and run:**
+
+```bash
+chmod +x advanced_menu.sh
+./advanced_menu.sh
+```
+
+### Understanding Advanced Features
+
+#### Color Codes
+
+```bash
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+```
+
+**Purpose**: Add color to terminal output for better visual hierarchy
+
+**How ANSI color codes work**:
+- `\033[` - Escape sequence that starts color formatting
+- `0;31m` - Color specification (0=normal, 31=red)
+- `NC='\033[0m'` - Reset to default color (No Color)
+
+**Using colors**:
+```bash
+echo -e "${GREEN}This text is green${NC}"
+```
+
+- `-e` flag enables interpretation of escape sequences
+- `${GREEN}` - Starts green color
+- `${NC}` - Resets to normal color after text
+
+<Callout type="info">
+💡 **Why Reset Color**: Always use `${NC}` after colored text to prevent color "bleeding" into subsequent output. Without it, all following text would remain colored.
+</Callout>
+
+#### Clear Screen Function
+
+```bash
+show_header() {
+    clear
+    echo -e "${BLUE}========================================${NC}"
+    echo -e "${BLUE}    SYSTEM MANAGEMENT MENU${NC}"
+    echo -e "${BLUE}========================================${NC}"
+    echo ""
+}
+```
+
+**Purpose**: Clears terminal and displays fresh header
+
+**What `clear` does**:
+- Clears the terminal screen
+- Moves cursor to top-left corner
+- Creates clean slate for menu display
+- Provides professional, polished interface
+
+#### Formatted Date Output
+
+```bash
+date "+%A, %B %d, %Y at %I:%M:%S %p"
+```
+
+**Purpose**: Display date in human-friendly format
+
+**Format breakdown**:
+- `%A` - Full weekday name (Sunday, Monday, etc.)
+- `%B` - Full month name (January, February, etc.)
+- `%d` - Day of month (01-31)
+- `%Y` - Four-digit year (2025)
+- `%I` - Hour in 12-hour format (01-12)
+- `%M` - Minutes (00-59)
+- `%S` - Seconds (00-59)
+- `%p` - AM or PM
+
+**Example output**:
+```
+Sunday, October 05, 2025 at 01:43:16 PM
+```
+
+#### System Information Commands
+
+**Uptime with pretty format**:
+```bash
+uptime -p
+```
+- `-p` flag shows uptime in pretty format
+- Output: "up 2 hours, 15 minutes"
+
+**Memory usage in human-readable format**:
+```bash
+free -h
+```
+- `-h` flag shows sizes in GB/MB instead of bytes
+- Easier to read and understand
+
+**Disk usage summary**:
+```bash
+df -h | head -5
+```
+- `df -h` - Shows disk space in human-readable format
+- `| head -5` - Shows only first 5 lines (most important filesystems)
+
+## 🛡️ Input Validation and Error Handling
+
+Professional scripts validate user input to prevent errors and provide helpful feedback.
+
+### Enhanced Input Validation
+
+Create `validated_menu.sh`:
+
+```bash
+#!/bin/bash
+
+# Function to validate if input is a number
+is_number() {
+    # Use regex to check if input is a number
+    [[ $1 =~ ^[0-9]+$ ]]
+}
+
+# Function to validate choice is within range
+is_valid_choice() {
+    local choice=$1
+    local min=1
+    local max=4
+
+    # Check if it's a number first
+    if ! is_number "$choice"; then
+        return 1
+    fi
+
+    # Check if within range
+    if [ "$choice" -ge "$min" ] && [ "$choice" -le "$max" ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+# Menu functions
+show_message() {
+    echo "You selected: Show message"
+    echo "Hello from the menu system!"
+}
+
+show_info() {
+    echo "You selected: Show information"
+    echo "Script: $0"
+    echo "User: $USER"
+    echo "Home: $HOME"
+}
+
+show_processes() {
+    echo "You selected: Show processes"
+    echo "Top 5 processes by memory usage:"
+    ps aux | sort -k4 -rn | head -6 | awk 'NR==1 || NR>1 {printf "%-10s %-8s %-6s %s\n", $1, $2, $4"%", $11}'
+}
+
+exit_menu() {
+    echo "Exiting menu. Goodbye!"
+    exit 0
+}
+
+# Main loop
+while true; do
+    echo ""
+    echo "================================"
+    echo "  Validated Menu System"
+    echo "================================"
+    echo "1. Show message"
+    echo "2. Show information"
+    echo "3. Show top processes"
+    echo "4. Exit"
+    echo ""
+    echo -n "Enter your choice (1-4): "
+
+    read choice
+
+    # Validate input
+    if is_valid_choice "$choice"; then
+        echo ""
+        case $choice in
+            1) show_message ;;
+            2) show_info ;;
+            3) show_processes ;;
+            4) exit_menu ;;
+        esac
+    else
+        echo ""
+        echo "❌ Error: Invalid input!"
+
+        if is_number "$choice"; then
+            echo "   Number must be between 1 and 4."
+        else
+            echo "   Please enter a number (1-4)."
+        fi
+    fi
+
+    echo ""
+    echo -n "Press Enter to continue..."
+    read
+done
+```
+
+### Understanding Input Validation
+
+#### Regex Number Validation
+
+```bash
+is_number() {
+    [[ $1 =~ ^[0-9]+$ ]]
+}
+```
+
+**Purpose**: Check if input contains only digits
+
+**Breaking down the regex**:
+- `[[ ... ]]` - Extended test command (supports regex)
+- `$1` - First parameter to function (the input)
+- `=~` - Regex matching operator
+- `^` - Start of string
+- `[0-9]+` - One or more digits (0-9)
+- `$` - End of string
+
+**What it matches**:
+- ✅ "1", "2", "42", "123" - Valid numbers
+- ❌ "abc", "1a", "a1", "" - Invalid (contains non-digits)
+
+**Return value**:
+- Returns 0 (success) if input matches pattern
+- Returns 1 (failure) if input doesn't match
+
+#### Range Validation
+
+```bash
+is_valid_choice() {
+    local choice=$1
+    local min=1
+    local max=4
+
+    if ! is_number "$choice"; then
+        return 1
+    fi
+
+    if [ "$choice" -ge "$min" ] && [ "$choice" -le "$max" ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+```
+
+**Purpose**: Validate input is a number within allowed range
+
+**Step-by-step validation**:
+
+1. `local choice=$1` - Store first parameter in local variable
+   - `local` makes variable exist only within this function
+
+2. `if ! is_number "$choice"` - Check if input is numeric
+   - `!` negates the result
+   - If NOT a number, return 1 (failure)
+
+3. `[ "$choice" -ge "$min" ]` - Check if greater than or equal to minimum
+   - `-ge` means "greater than or equal"
+
+4. `&& [ "$choice" -le "$max" ]` - AND check if less than or equal to maximum
+   - `-le` means "less than or equal"
+   - Both conditions must be true
+
+5. Return appropriate value:
+   - `return 0` - Valid (success)
+   - `return 1` - Invalid (failure)
+
+#### Using Validation in Menu
+
+```bash
+if is_valid_choice "$choice"; then
+    # Valid input - execute corresponding function
+    case $choice in
+        1) show_message ;;
+        2) show_info ;;
+        3) show_processes ;;
+        4) exit_menu ;;
+    esac
+else
+    # Invalid input - show error with helpful message
+    echo "❌ Error: Invalid input!"
+
+    if is_number "$choice"; then
+        echo "   Number must be between 1 and 4."
+    else
+        echo "   Please enter a number (1-4)."
+    fi
+fi
+```
+
+**Why this is good UX**:
+1. Validates before executing any option
+2. Provides specific error messages:
+   - If input is number but out of range: "Number must be between 1 and 4"
+   - If input is not a number: "Please enter a number (1-4)"
+3. User understands exactly what went wrong
+4. Menu continues, giving another chance
+
+## 🎯 Real-World Example: System Administration Menu
+
+Let's combine everything we've learned into a practical system administration tool.
+
+### Complete System Admin Menu
+
+Create `sysadmin_menu.sh`:
+
+```bash
+#!/bin/bash
+
+# Color definitions
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+RED='\033[0;31m'
+NC='\033[0m'
+
+# Clear screen and show header
+show_header() {
+    clear
+    echo -e "${BLUE}======================================${NC}"
+    echo -e "${BLUE}   System Administration Menu${NC}"
+    echo -e "${BLUE}   $(date '+%Y-%m-%d %H:%M:%S')${NC}"
+    echo -e "${BLUE}======================================${NC}"
+    echo ""
+}
+
+# Display menu options
+show_menu() {
+    echo -e "${GREEN}System Information:${NC}"
+    echo "  1. Display system uptime"
+    echo "  2. Display memory usage"
+    echo "  3. Display disk usage"
+    echo "  4. Display CPU information"
+    echo ""
+    echo -e "${GREEN}Process Management:${NC}"
+    echo "  5. Show top 10 CPU processes"
+    echo "  6. Show top 10 memory processes"
+    echo "  7. Count processes by user"
+    echo ""
+    echo -e "${GREEN}Network:${NC}"
+    echo "  8. Display network interfaces"
+    echo "  9. Show active connections"
+    echo ""
+    echo -e "${YELLOW}10. Exit${NC}"
+    echo ""
+    echo -n "Enter your choice [1-10]: "
+}
+
+# System information functions
+show_uptime() {
+    echo -e "\n${BLUE}System Uptime:${NC}"
+    uptime -p
+    echo ""
+    echo "Load average: $(uptime | awk -F'load average:' '{print $2}')"
+}
+
+show_memory() {
+    echo -e "\n${BLUE}Memory Usage:${NC}"
+    free -h
+    echo ""
+    total_mem=$(free -h | awk 'NR==2 {print $2}')
+    used_mem=$(free -h | awk 'NR==2 {print $3}')
+    echo "Summary: Using $used_mem of $total_mem total memory"
+}
+
+show_disk() {
+    echo -e "\n${BLUE}Disk Usage:${NC}"
+    df -h | grep -E '^/dev|Filesystem'
+    echo ""
+    echo "Warning: Check filesystems above 80% usage"
+}
+
+show_cpu() {
+    echo -e "\n${BLUE}CPU Information:${NC}"
+    lscpu | grep -E 'Model name|CPU\(s\)|Thread|Core|Socket|MHz'
+}
+
+# Process management functions
+show_top_cpu() {
+    echo -e "\n${BLUE}Top 10 CPU Consuming Processes:${NC}"
+    ps aux | awk 'NR==1; NR>1 {print $0 | "sort -k3 -rn"}' | head -11 | \
+        awk '{printf "%-10s %8s %6s%% %6s%% %s\n", $1, $2, $3, $4, $11}'
+}
+
+show_top_memory() {
+    echo -e "\n${BLUE}Top 10 Memory Consuming Processes:${NC}"
+    ps aux | awk 'NR==1; NR>1 {print $0 | "sort -k4 -rn"}' | head -11 | \
+        awk '{printf "%-10s %8s %6s%% %6s%% %s\n", $1, $2, $3, $4, $11}'
+}
+
+count_processes_by_user() {
+    echo -e "\n${BLUE}Process Count by User:${NC}"
+    ps aux | awk 'NR>1 {users[$1]++} END {for (u in users) printf "%-15s: %d processes\n", u, users[u]}' | sort -k3 -rn
+}
+
+# Network functions
+show_network_interfaces() {
+    echo -e "\n${BLUE}Network Interfaces:${NC}"
+    ip -br addr show
+}
+
+show_connections() {
+    echo -e "\n${BLUE}Active Network Connections:${NC}"
+    echo "Established connections:"
+    ss -tun | grep ESTAB | wc -l
+    echo ""
+    echo "Listening ports:"
+    ss -tuln | grep LISTEN | awk '{print $1, $5}' | head -10
+}
+
+# Exit function
+exit_menu() {
+    echo -e "\n${GREEN}Thank you for using System Administration Menu!${NC}"
+    echo "Goodbye!"
+    echo ""
+    exit 0
+}
+
+# Input validation
+is_valid_choice() {
+    if [[ $1 =~ ^[0-9]+$ ]] && [ "$1" -ge 1 ] && [ "$1" -le 10 ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+# Main program loop
+while true; do
+    show_header
+    show_menu
+    read choice
+
+    if is_valid_choice "$choice"; then
+        case $choice in
+            1) show_uptime ;;
+            2) show_memory ;;
+            3) show_disk ;;
+            4) show_cpu ;;
+            5) show_top_cpu ;;
+            6) show_top_memory ;;
+            7) count_processes_by_user ;;
+            8) show_network_interfaces ;;
+            9) show_connections ;;
+            10) exit_menu ;;
+        esac
+    else
+        echo -e "\n${RED}Error: Invalid choice!${NC}"
+        echo "Please enter a number between 1 and 10."
+    fi
+
+    echo ""
+    echo -n "Press Enter to continue..."
+    read
+done
+```
+
+**Make it executable and test:**
+
+```bash
+chmod +x sysadmin_menu.sh
+./sysadmin_menu.sh
+```
+
+This creates a fully functional system administration tool with:
+- ✅ Professional interface with colors
+- ✅ Comprehensive system information
+- ✅ Process monitoring capabilities
+- ✅ Network status checking
+- ✅ Input validation
+- ✅ Error handling
+- ✅ Organized menu categories
+
+## 🎯 Best Practices
+
+<div className="bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-900 dark:to-blue-900 p-6 rounded-lg my-8">
+
+### ✅ While Loops
+
+1. **Always have an exit condition**: Use `exit` or `break` to prevent truly infinite loops
+2. **Use `while true` for menus**: Clearest way to express intent for continuous menus
+3. **Clear the screen**: Use `clear` for better user experience
+4. **Provide exit option**: Always give users a way out (usually last menu option)
+5. **Test loop termination**: Ensure exit mechanisms work correctly
+
+### ✅ Menu Design
+
+1. **Keep menus organized**: Group related options together
+2. **Use consistent numbering**: Start from 1, not 0 (more intuitive for users)
+3. **Make exit obvious**: Put exit option last and highlight it differently
+4. **Show current context**: Display date, user, or system info in header
+5. **Use visual separators**: Lines, colors, and spacing improve readability
+6. **Provide feedback**: Always acknowledge user actions with messages
+
+### ✅ Functions in Menus
+
+1. **One function per menu option**: Keeps code organized and maintainable
+2. **Use descriptive names**: `show_disk_usage` better than `option3`
+3. **Keep functions focused**: Each function does one thing well
+4. **Define functions before use**: All functions must be defined before the main loop
+5. **Return to menu**: Ensure functions complete and return control to menu
+
+### ✅ Input Validation
+
+1. **Validate everything**: Never trust user input
+2. **Provide helpful errors**: Tell users exactly what's wrong and how to fix it
+3. **Use regex for complex validation**: Pattern matching catches many issues
+4. **Test boundary conditions**: Check min/max values, empty input, special characters
+5. **Give multiple chances**: Don't exit on first error - loop back to menu
+
+### ✅ User Experience
+
+1. **Use colors sparingly**: Too many colors are overwhelming
+2. **Pause after output**: Let users read results before clearing screen
+3. **Show progress**: For long operations, provide feedback
+4. **Handle errors gracefully**: Don't crash - show error and continue
+5. **Make it intuitive**: Menu should be self-explanatory
+
+</div>
+
+## 📝 Command Cheat Sheet
+
+### While Loop Syntax
+
+```bash
+# Basic while loop
+while [ condition ]; do
+    commands
+done
+
+# Infinite loop (for menus)
+while true; do
+    commands
+done
+
+# Alternative infinite loop
+while :; do
+    commands
+done
+
+# While loop with counter
+count=1
+while [ $count -le 10 ]; do
+    echo "Count: $count"
+    count=$((count + 1))
+done
+
+# Reading lines from file
+while IFS= read -r line; do
+    echo "Line: $line"
+done < file.txt
+
+# While loop with break
+while true; do
+    read input
+    if [ "$input" = "quit" ]; then
+        break
+    fi
+    echo "You entered: $input"
+done
+```
+
+### Menu Patterns
+
+```bash
+# Basic menu structure
+while true; do
+    echo "Menu"
+    echo "1. Option 1"
+    echo "2. Option 2"
+    echo "3. Exit"
+    read choice
+
+    case $choice in
+        1) action1 ;;
+        2) action2 ;;
+        3) exit 0 ;;
+        *) echo "Invalid" ;;
+    esac
+done
+
+# Menu with header function
+show_header() {
+    clear
+    echo "=========="
+    echo " My Menu"
+    echo "=========="
+}
+
+while true; do
+    show_header
+    # rest of menu
+done
+
+# Menu with pause
+pause() {
+    echo -n "Press Enter..."
+    read
+}
+
+# Use after each option
+option1() {
+    echo "Executing option 1"
+    pause
+}
+```
+
+### Input Validation
+
+```bash
+# Validate number
+is_number() {
+    [[ $1 =~ ^[0-9]+$ ]]
+}
+
+# Validate number in range
+is_valid_range() {
+    local num=$1
+    local min=$2
+    local max=$3
+
+    if is_number "$num" && [ "$num" -ge "$min" ] && [ "$num" -le "$max" ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+# Validate yes/no
+is_yes_no() {
+    [[ $1 =~ ^[YyNn]$ ]]
+}
+
+# Validate email format (basic)
+is_email() {
+    [[ $1 =~ ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$ ]]
+}
+
+# Validate not empty
+is_not_empty() {
+    [ -n "$1" ]
+}
+```
+
+### Colors in Menus
+
+```bash
+# Define colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+MAGENTA='\033[0;35m'
+CYAN='\033[0;36m'
+WHITE='\033[1;37m'
+NC='\033[0m' # No Color
+
+# Use colors
+echo -e "${GREEN}Success message${NC}"
+echo -e "${RED}Error message${NC}"
+echo -e "${YELLOW}Warning message${NC}"
+echo -e "${BLUE}Information${NC}"
+
+# Colored menu
+echo -e "${CYAN}========== MENU ==========${NC}"
+echo -e "${GREEN}1.${NC} First option"
+echo -e "${GREEN}2.${NC} Second option"
+echo -e "${RED}3.${NC} Exit"
+```
+
+### Read Command Variations
+
+```bash
+# Basic read
+read variable
+
+# Read with prompt
+read -p "Enter name: " name
+
+# Read without echoing (for passwords)
+read -s -p "Enter password: " password
+echo  # New line after hidden input
+
+# Read with timeout (5 seconds)
+read -t 5 -p "Enter choice (5 sec timeout): " choice
+
+# Read single character
+read -n 1 -p "Press any key to continue..."
+
+# Read multiple variables
+read -p "Enter first and last name: " first last
+
+# Read with default value
+read -p "Enter name [default: user]: " name
+name=${name:-user}
+```
+
+## 🚀 What's Next?
+
+<div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-lg my-6">
+
+### 📚 Continue Learning
+
+Now that you've mastered interactive menus, explore:
+- **Advanced bash scripting**: Signals, traps, and background processes
+- **Configuration files**: Reading and parsing config files for your menus
+- **Logging**: Adding logging capabilities to track menu usage
+- **Submenus**: Creating hierarchical menu systems
+- **Database integration**: Connecting bash menus to databases
+- **Error handling**: Comprehensive error management strategies
+
+</div>
+
+---
+
+<Callout type="success">
+🎉 **Congratulations!** You've mastered while loops and interactive menu systems in bash! You can now create professional, user-friendly command-line tools that anyone can use. These skills are fundamental to system administration and automation.
+
+**What did you think of this guide?** Share your menu creations or questions in the comments below!
+</Callout>
+
+## 💬 Discussion
+
+I'd love to hear about your experience:
+
+- What kind of menu systems are you building?
+- What features would you add to these examples?
+- Have you encountered any challenges with input validation?
+- What real-world automation tasks will you solve with menu systems?
+
+**Connect with me**:
+- 🐙 [GitHub](https://github.com/owais-io) - Menu system examples and more
+- 📧 [Contact](https://owais.io/contact) - Bash scripting discussions
