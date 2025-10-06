@@ -1,0 +1,1277 @@
+---
+title: "Complete Guide to SSH: Fundamentals, Setup, and Configuration Between VirtualBox and WSL - Part 1"
+description: "Learn SSH from scratch: understand what SSH is, how it works, install and configure OpenSSH server on CentOS/RedHat and Ubuntu WSL, configure VirtualBox networking, and establish secure remote connections step by step."
+date: "2025-10-07T01:59:00.000Z"
+tags: ["ssh", "linux", "virtualbox", "wsl", "centos", "ubuntu", "networking", "security"]
+published: true
+categories: ["Linux", "System Administration", "Networking", "Security"]
+author: "Owais"
+seo:
+  canonical: "https://owais.io/blog/2025-10-07_ssh-fundamentals-setup-virtualbox-wsl-part1"
+  keywords: ["ssh tutorial", "openssh server", "virtualbox networking", "wsl ssh", "centos ssh", "bridged adapter", "ssh configuration", "remote access", "linux networking"]
+toc: true
+---
+
+## Introduction
+
+SSH (Secure Shell) is one of the most fundamental tools in modern system administration and software development. Whether you're managing remote servers, deploying applications, or collaborating on projects, SSH provides secure, encrypted access to remote systems over networks.
+
+In this comprehensive two-part series, you'll learn everything you need to know about SSH - starting from absolute basics and progressing to advanced configurations. This first part covers fundamentals, installation, and basic setup.
+
+<Callout type="info">
+🎯 **What You'll Learn in Part 1**:
+- What SSH is and how it works at a fundamental level
+- Understanding SSH architecture: client, server, and authentication
+- Installing OpenSSH on CentOS/RedHat and Ubuntu WSL
+- Configuring VirtualBox network settings for SSH connectivity
+- Establishing SSH connections between VirtualBox VM and WSL
+- Testing bidirectional SSH access (VM ↔ WSL)
+- Troubleshooting common SSH connection issues
+
+**Prerequisites**: Basic familiarity with command line. No prior SSH knowledge required.
+
+**Lab Environment**:
+- VirtualBox VM running CentOS 9/RedHat
+- WSL2 running Ubuntu
+- Systems connected via WiFi network
+</Callout>
+
+## What is SSH?
+
+SSH (Secure Shell) is a cryptographic network protocol that allows you to securely access and manage remote computers over an unsecured network. It was designed to replace insecure protocols like Telnet and rlogin.
+
+### Why SSH Matters
+
+**Before SSH (Telnet era):**
+```
+Your Computer → [username: admin] → Network (READABLE!) → Remote Server
+                [password: secret123]
+                ↑ Anyone on network can see this!
+```
+
+**With SSH:**
+```
+Your Computer → [ENCRYPTED TUNNEL] → Remote Server
+                ↑ All data encrypted, unreadable to attackers
+```
+
+### Key Features of SSH
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Feature</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Description</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Benefit</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Encryption</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">All communication is encrypted end-to-end</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Prevents eavesdropping and data theft</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Authentication</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Verifies identity using passwords or keys</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Ensures only authorized users connect</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Port Forwarding</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Tunnel other protocols through SSH</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Secure access to services behind firewalls</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>File Transfer</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">SCP and SFTP for secure file operations</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Replace insecure FTP</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>X11 Forwarding</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Run graphical applications remotely</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Access GUI apps over network</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### How SSH Works: The Big Picture
+
+SSH operates on a **client-server architecture**:
+
+```
+┌─────────────────┐                               ┌─────────────────┐
+│   SSH Client    │                               │   SSH Server    │
+│  (Your Computer)│                               │ (Remote Machine)│
+├─────────────────┤                               ├─────────────────┤
+│ • ssh command   │─────── Encrypted Tunnel ─────▶│ • sshd daemon   │
+│ • Private key   │◀────── Port 22 (default) ─────│ • Public key    │
+│ • Known hosts   │                               │ • Config files  │
+└─────────────────┘                               └─────────────────┘
+```
+
+**Connection Flow:**
+
+1. **Client initiates**: You run `ssh user@remote_host`
+2. **Server responds**: Sends its public key (host key)
+3. **Client verifies**: Checks if host key is known/trusted
+4. **Authentication**: User proves identity (password or key)
+5. **Session established**: Encrypted shell session created
+6. **Commands execute**: Your commands run on remote server
+7. **Disconnect**: Session closes, connection terminated
+
+## SSH Components and Architecture
+
+### The SSH Client
+
+The **SSH client** is the tool you use to connect to remote servers. Common implementations:
+
+- **OpenSSH client**: Most popular, pre-installed on Linux/macOS
+- **PuTTY**: Popular Windows SSH client
+- **MobaXterm**: Advanced SSH client for Windows
+- **Built-in clients**: Windows 10+ includes OpenSSH
+
+**Client Tools:**
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Command</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Purpose</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Example</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>ssh</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Connect to remote host</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>ssh user@192.168.1.100</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>scp</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Secure copy files</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>scp file.txt user@host:/path/</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>sftp</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Secure FTP (interactive)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>sftp user@host</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>ssh-keygen</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Generate SSH key pairs</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>ssh-keygen -t rsa -b 4096</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>ssh-copy-id</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Copy public key to server</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>ssh-copy-id user@host</code></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### The SSH Server (sshd)
+
+The **SSH server** (daemon) listens for incoming SSH connections and authenticates clients.
+
+**Key Server Components:**
+
+- **sshd daemon**: Background service listening on port 22
+- **Configuration file**: `/etc/ssh/sshd_config` - server behavior
+- **Host keys**: Server's identity keys in `/etc/ssh/`
+- **Authorized keys**: User's public keys in `~/.ssh/authorized_keys`
+
+### Authentication Methods
+
+SSH supports multiple authentication methods:
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Method</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">How It Works</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Security Level</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Use Case</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Password</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">User enters account password</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">⭐⭐ (Moderate)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Quick setup, testing</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Public Key</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Cryptographic key pair verification</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">⭐⭐⭐⭐⭐ (Excellent)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Production, automation</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Host-based</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Trust entire machines</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">⭐⭐⭐ (Good)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Cluster environments</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Kerberos/GSSAPI</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Enterprise authentication</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">⭐⭐⭐⭐ (Very Good)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Enterprise domains</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<Callout type="success">
+**Best Practice**: Use **public key authentication** for production systems. It's more secure than passwords and enables passwordless automation.
+</Callout>
+
+## Lab Environment Setup
+
+Before we begin SSH configuration, let's understand our lab environment:
+
+### Our Lab Topology
+
+```
+┌──────────────────────────────────────────────────┐
+│         Physical Computer (Windows/Mac)          │
+│                                                  │
+│  ┌────────────────┐        ┌────────────────┐  │
+│  │  VirtualBox VM │        │      WSL2      │  │
+│  │  CentOS 9 /    │        │  Ubuntu Linux  │  │
+│  │  RedHat        │        │                │  │
+│  │                │        │                │  │
+│  │  IP: 192.168.  │        │  IP: 192.168.  │  │
+│  │      1.XXX     │        │      1.YYY     │  │
+│  └────────────────┘        └────────────────┘  │
+│         │                          │            │
+└─────────┼──────────────────────────┼────────────┘
+          │                          │
+          └─────────┬────────────────┘
+                    │
+          ┌─────────▼─────────┐
+          │   WiFi Router     │
+          │  192.168.1.1      │
+          └───────────────────┘
+```
+
+**Key Points:**
+- Both VM and WSL are on the **same WiFi network**
+- They can communicate with each other via IP addresses
+- We'll configure **bidirectional SSH**: VM ↔ WSL
+
+### VirtualBox Network Configuration
+
+To enable SSH between your VirtualBox VM and WSL, you need to configure VirtualBox networking properly. There are several network modes available; we'll use **Bridged Adapter** for direct network access.
+
+#### Understanding VirtualBox Network Modes
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Network Mode</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">VM Gets IP From</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Can Access Internet?</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Host Can Access VM?</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Other Devices Can Access?</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>NAT</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">VirtualBox (10.0.2.x)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">✅ Yes</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">❌ No (port forwarding needed)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">❌ No</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Bridged Adapter</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Your router (192.168.x.x)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">✅ Yes</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">✅ Yes</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">✅ Yes (on same network)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Host-only</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">VirtualBox (192.168.56.x)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">❌ No</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">✅ Yes</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">❌ No</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Internal Network</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Manual configuration</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">❌ No</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">❌ No</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Only other VMs</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+**For our SSH lab, we'll use Bridged Adapter** because:
+- VM gets a real IP on your network (like 192.168.1.50)
+- WSL can directly SSH to the VM's IP
+- VM can directly SSH to WSL's IP
+- Simple configuration, no port forwarding needed
+
+#### Configuring Bridged Adapter in VirtualBox
+
+**Step 1: Open VirtualBox Settings**
+
+1. Right-click your VM (CentOS/RedHat) in VirtualBox Manager
+2. Select **Settings**
+3. Go to **Network** section
+
+**Step 2: Configure Adapter 1**
+
+1. Ensure **Enable Network Adapter** is checked
+2. **Attached to**: Select **Bridged Adapter** from dropdown
+3. **Name**: Select your active network interface
+   - If on WiFi: Select your WiFi adapter (e.g., "Intel WiFi", "Realtek WiFi")
+   - If on Ethernet: Select Ethernet adapter
+4. **Advanced** → **Adapter Type**: Leave as default (usually "Intel PRO/1000 MT Desktop")
+5. **Advanced** → **Promiscuous Mode**: "Allow All" or "Deny" (Allow All for learning)
+6. **Advanced** → **Cable Connected**: Must be checked ✅
+
+**Step 3: Apply and Start VM**
+
+Click **OK** to save settings, then start your VM.
+
+<Callout type="warning">
+**Important**: If you change network adapter while VM is running, you may need to:
+1. Restart the VM, OR
+2. Restart networking service: `sudo systemctl restart NetworkManager`
+</Callout>
+
+## Installing OpenSSH Server
+
+Now let's install the SSH server on both systems so they can accept incoming SSH connections.
+
+### Installing SSH Server on CentOS 9 / RedHat
+
+**Step 1: Check if OpenSSH server is installed**
+
+```bash
+rpm -qa | grep openssh-server
+```
+
+**Purpose**: This command queries the RPM package database to see if `openssh-server` is already installed.
+
+**Command Breakdown**:
+- `rpm`: RPM Package Manager
+- `-qa`: Query all installed packages
+- `| grep openssh-server`: Filter output to show only openssh-server package
+
+**Possible Outputs:**
+
+**If installed:**
+```
+openssh-server-8.7p1-34.el9.x86_64
+```
+
+This shows the package name and version. SSH server is already installed - skip to Step 3.
+
+**If NOT installed:**
+```
+(no output - blank line)
+```
+
+No output means the package is not installed - proceed to Step 2.
+
+**Step 2: Install OpenSSH Server**
+
+```bash
+sudo dnf install openssh-server -y
+```
+
+**Purpose**: Installs the OpenSSH server package using DNF package manager.
+
+**Command Breakdown**:
+- `sudo`: Execute with superuser privileges
+- `dnf`: Dandified YUM package manager (used in RedHat/CentOS/Fedora)
+- `install openssh-server`: Install the openssh-server package
+- `-y`: Automatically answer "yes" to prompts
+
+**Output (partial):**
+
+```
+Last metadata expiration check: 2:15:30 ago on Mon 07 Oct 2024 12:00:00 AM UTC.
+Dependencies resolved.
+================================================================================
+ Package                Architecture    Version              Repository    Size
+================================================================================
+Installing:
+ openssh-server         x86_64          8.7p1-34.el9         baseos       462 k
+Installing dependencies:
+ fipscheck              x86_64          1.5.0-9.el9          baseos        21 k
+
+Transaction Summary
+================================================================================
+Install  2 Packages
+
+Total download size: 483 k
+Installed size: 1.8 M
+Downloading Packages:
+(1/2): fipscheck-1.5.0-9.el9.x86_64.rpm          107 kB/s |  21 kB     00:00
+(2/2): openssh-server-8.7p1-34.el9.x86_64.rpm    1.8 MB/s | 462 kB     00:00
+--------------------------------------------------------------------------------
+Total                                            1.2 MB/s | 483 kB     00:00
+Running transaction check
+Transaction check succeeded.
+Running transaction test
+Transaction test succeeded.
+Running transaction
+  Preparing        :                                                        1/1
+  Installing       : fipscheck-1.5.0-9.el9.x86_64                          1/2
+  Installing       : openssh-server-8.7p1-34.el9.x86_64                    2/2
+  Running scriptlet: openssh-server-8.7p1-34.el9.x86_64                    2/2
+  Verifying        : fipscheck-1.5.0-9.el9.x86_64                          1/2
+  Verifying        : openssh-server-8.7p1-34.el9.x86_64                    2/2
+
+Installed:
+  fipscheck-1.5.0-9.el9.x86_64       openssh-server-8.7p1-34.el9.x86_64
+
+Complete!
+```
+
+**Output Breakdown**:
+- **Dependencies resolved**: DNF calculated what packages are needed
+- **Installing**: Lists main package (openssh-server) and dependencies (fipscheck)
+- **Total download size: 483 k**: Amount of data to download
+- **Installed size: 1.8 M**: Space used after installation
+- **Downloading Packages**: Shows download progress
+- **Running transaction**: Actually installs the packages
+- **Installed**: Confirms successful installation
+- **Complete!**: Installation finished successfully
+
+**Step 3: Start and Enable SSH Service**
+
+```bash
+sudo systemctl start sshd
+```
+
+**Purpose**: Starts the SSH daemon immediately.
+
+**Command Breakdown**:
+- `sudo systemctl`: System control utility to manage services
+- `start sshd`: Start the SSH daemon service
+
+**No output means success**. The service started without errors.
+
+**Enable SSH to Start at Boot:**
+
+```bash
+sudo systemctl enable sshd
+```
+
+**Purpose**: Configures SSH to automatically start when system boots.
+
+**Output:**
+
+```
+Created symlink /etc/systemd/system/multi-user.target.wants/sshd.service → /usr/lib/systemd/system/sshd.service.
+```
+
+**What this means**: systemd created a symbolic link that tells the system to start sshd during the multi-user boot phase (normal boot).
+
+**Step 4: Verify SSH Service Status**
+
+```bash
+sudo systemctl status sshd
+```
+
+**Purpose**: Check if SSH service is running properly.
+
+**Output:**
+
+```
+● sshd.service - OpenSSH server daemon
+     Loaded: loaded (/usr/lib/systemd/system/sshd.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2024-10-07 16:30:45 UTC; 2min 15s ago
+       Docs: man:sshd(8)
+             man:sshd_config(5)
+   Main PID: 12345 (sshd)
+      Tasks: 1 (limit: 11145)
+     Memory: 2.1M
+        CPU: 45ms
+     CGroup: /system.slice/sshd.service
+             └─12345 "sshd: /usr/sbin/sshd -D [listener] 0 of 10-100 startups"
+
+Oct 07 16:30:45 localhost.localdomain systemd[1]: Starting OpenSSH server daemon...
+Oct 07 16:30:45 localhost.localdomain sshd[12345]: Server listening on 0.0.0.0 port 22.
+Oct 07 16:30:45 localhost.localdomain sshd[12345]: Server listening on :: port 22.
+Oct 07 16:30:45 localhost.localdomain systemd[1]: Started OpenSSH server daemon.
+```
+
+**Output Breakdown**:
+- **Loaded**: Service definition found, enabled at boot
+- **Active: active (running)**: ✅ Service is currently running
+- **Main PID**: Process ID of the SSH daemon (12345)
+- **Tasks**: Number of processes/threads (1 is normal for sshd)
+- **Memory/CPU**: Resource usage (very light)
+- **Server listening on 0.0.0.0 port 22**: SSH is accepting connections on all network interfaces, port 22
+- **Server listening on :: port 22**: Also listening on IPv6
+
+**Key Indicators of Success**:
+- Green dot ● next to service name
+- "active (running)" status
+- "Server listening on" messages indicate it's ready for connections
+
+### Installing SSH Server on Ubuntu (WSL)
+
+**Step 1: Update Package Lists**
+
+```bash
+sudo apt update
+```
+
+**Purpose**: Updates the local package index with latest versions from repositories.
+
+**Output (partial):**
+
+```
+Hit:1 http://archive.ubuntu.com/ubuntu jammy InRelease
+Get:2 http://archive.ubuntu.com/ubuntu jammy-updates InRelease [119 kB]
+Get:3 http://archive.ubuntu.com/ubuntu jammy-backports InRelease [109 kB]
+Get:4 http://archive.ubuntu.com/ubuntu jammy-security InRelease [110 kB]
+Fetched 338 kB in 2s (169 kB/s)
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+All packages are up to date.
+```
+
+**Step 2: Install OpenSSH Server**
+
+```bash
+sudo apt install openssh-server -y
+```
+
+**Purpose**: Installs the OpenSSH server package on Ubuntu.
+
+**Output (partial):**
+
+```
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+The following additional packages will be installed:
+  ncurses-term openssh-sftp-server ssh-import-id
+Suggested packages:
+  molly-guard monkeysphere ssh-askpass
+The following NEW packages will be installed:
+  ncurses-term openssh-server openssh-sftp-server ssh-import-id
+0 upgraded, 4 newly installed, 0 to remove and 0 not upgraded.
+Need to get 452 kB of archives.
+After this operation, 5,883 kB of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 openssh-sftp-server amd64 1:8.9p1-3ubuntu0.6 [38.9 kB]
+Get:2 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 openssh-server amd64 1:8.9p1-3ubuntu0.6 [376 kB]
+Get:3 http://archive.ubuntu.com/ubuntu jammy/main amd64 ncurses-term all 6.3-2ubuntu0.1 [256 kB]
+Get:4 http://archive.ubuntu.com/ubuntu jammy/main amd64 ssh-import-id all 5.11-0ubuntu1 [10.1 kB]
+Fetched 452 kB in 1s (452 kB/s)
+Preconfiguring packages ...
+Selecting previously unselected package openssh-sftp-server.
+(Reading database ... 24125 files and directories currently installed.)
+Preparing to unpack .../openssh-sftp-server_1%3a8.9p1-3ubuntu0.6_amd64.deb ...
+Unpacking openssh-sftp-server (1:8.9p1-3ubuntu0.6) ...
+Selecting previously unselected package openssh-server.
+Preparing to unpack .../openssh-server_1%3a8.9p1-3ubuntu0.6_amd64.deb ...
+Unpacking openssh-server (1:8.9p1-3ubuntu0.6) ...
+Setting up ncurses-term (6.3-2ubuntu0.1) ...
+Setting up openssh-sftp-server (1:8.9p1-3ubuntu0.6) ...
+Setting up ssh-import-id (5.11-0ubuntu1) ...
+Setting up openssh-server (1:8.9p1-3ubuntu0.6) ...
+Creating SSH2 RSA key; this may take some time ...
+3072 SHA256:abc123xyz... root@hostname (RSA)
+Creating SSH2 ECDSA key; this may take some time ...
+256 SHA256:def456uvw... root@hostname (ECDSA)
+Creating SSH2 ED25519 key; this may take some time ...
+256 SHA256:ghi789rst... root@hostname (ED25519)
+Created symlink /etc/systemd/system/sshd.service → /lib/systemd/system/ssh.service.
+Created symlink /etc/systemd/system/multi-user.target.wants/ssh.service → /lib/systemd/system/ssh.service.
+```
+
+**Output Breakdown**:
+- **Additional packages installed**: SSH also needs SFTP server and other utilities
+- **Creating SSH2 ... key**: Server automatically generates host keys (RSA, ECDSA, ED25519)
+- **Created symlink**: Service enabled to start at boot
+
+<Callout type="info">
+**WSL Note**: On WSL2, systemd may not be enabled by default on older Ubuntu versions. If `systemctl` doesn't work, you can start SSH manually with: `sudo service ssh start`
+</Callout>
+
+**Step 3: Start SSH Service**
+
+```bash
+sudo systemctl start ssh
+```
+
+**Note**: On Ubuntu, the service is called `ssh` (not `sshd` like on RedHat/CentOS).
+
+**Step 4: Enable SSH at Boot**
+
+```bash
+sudo systemctl enable ssh
+```
+
+**Output:**
+
+```
+Synchronizing state of ssh.service with SysV service script with /lib/systemd/systemd-sysv-install.
+Executing: /lib/systemd/systemd-sysv-install enable ssh
+```
+
+**Step 5: Verify SSH Service**
+
+```bash
+sudo systemctl status ssh
+```
+
+**Output:**
+
+```
+● ssh.service - OpenBSD Secure Shell server
+     Loaded: loaded (/lib/systemd/system/ssh.service; enabled; vendor preset: enabled)
+     Active: active (running) since Mon 2024-10-07 16:45:12 UTC; 1min 30s ago
+       Docs: man:sshd(8)
+             man:sshd_config(5)
+    Process: 1234 ExecStartPre=/usr/sbin/sshd -t (code=exited, status=0/SUCCESS)
+   Main PID: 1235 (sshd)
+      Tasks: 1 (limit: 9830)
+     Memory: 1.8M
+     CGroup: /system.slice/ssh.service
+             └─1235 "sshd: /usr/sbin/sshd -D [listener] 0 of 10-100 startups"
+
+Oct 07 16:45:12 hostname systemd[1]: Starting OpenBSD Secure Shell server...
+Oct 07 16:45:12 hostname sshd[1235]: Server listening on 0.0.0.0 port 22.
+Oct 07 16:45:12 hostname sshd[1235]: Server listening on :: port 22.
+Oct 07 16:45:12 hostname systemd[1]: Started OpenBSD Secure Shell server.
+```
+
+SSH server is now running and ready to accept connections! ✅
+
+## Finding IP Addresses
+
+To establish SSH connections, you need to know the IP addresses of both systems.
+
+### Finding IP Address on CentOS/RedHat VM
+
+```bash
+ip addr show
+```
+
+**Purpose**: Displays all network interfaces and their IP addresses.
+
+**Output (partial):**
+
+```
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host
+       valid_lft forever preferred_lft forever
+2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 08:00:27:a4:b5:c6 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.1.150/24 brd 192.168.1.255 scope global dynamic noprefixroute enp0s3
+       valid_lft 86394sec preferred_lft 86394sec
+    inet6 fe80::a00:27ff:fea4:b5c6/64 scope link noprefixroute
+       valid_lft forever preferred_lft forever
+```
+
+**Output Breakdown**:
+
+**Interface 1: `lo` (Loopback)**
+- `127.0.0.1`: Localhost, used for local communication
+- Not accessible from network
+- Always present on every system
+
+**Interface 2: `enp0s3` (Ethernet/Network)**
+- `enp0s3`: Interface name (varies: eth0, ens33, enp0s3, etc.)
+- `<BROADCAST,MULTICAST,UP,LOWER_UP>`: Interface is active
+- `inet 192.168.1.150/24`: **This is your VM's IP address** ✅
+- `/24`: Subnet mask (255.255.255.0)
+- `scope global`: Accessible from network
+- `dynamic`: IP assigned by DHCP (router)
+
+**Your VM's IP: 192.168.1.150** (yours will be different)
+
+**Shorter Command (show only IPv4):**
+
+```bash
+ip -4 addr show enp0s3
+```
+
+**Output:**
+
+```
+2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    inet 192.168.1.150/24 brd 192.168.1.255 scope global dynamic noprefixroute enp0s3
+       valid_lft 86394sec preferred_lft 86394sec
+```
+
+**Alternative: Using hostname command**
+
+```bash
+hostname -I
+```
+
+**Output:**
+
+```
+192.168.1.150
+```
+
+Shows only IP addresses (space-separated if multiple).
+
+### Finding IP Address on WSL Ubuntu
+
+```bash
+ip addr show eth0
+```
+
+**Purpose**: Show IP configuration for eth0 interface (WSL's primary network interface).
+
+**Output:**
+
+```
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP group default qlen 1000
+    link/ether 00:15:5d:xx:xx:xx brd ff:ff:ff:ff:ff:ff
+    inet 192.168.1.200/24 brd 192.168.1.255 scope global eth0
+       valid_lft forever preferred_lft forever
+    inet6 fe80::215:5dff:xxxx:xxxx/64 scope link
+       valid_lft forever preferred_lft forever
+```
+
+**WSL IP: 192.168.1.200** (yours will be different)
+
+**Alternative:**
+
+```bash
+hostname -I
+```
+
+**Output:**
+
+```
+192.168.1.200
+```
+
+<Callout type="info">
+**Important**: Note both IP addresses:
+- **CentOS VM**: 192.168.1.150 (example)
+- **WSL Ubuntu**: 192.168.1.200 (example)
+
+You'll use these to establish SSH connections. Replace these examples with your actual IPs!
+</Callout>
+
+## Establishing SSH Connections
+
+Now that both systems have SSH servers running and we know their IP addresses, let's establish connections!
+
+### SSH from WSL (Ubuntu) to VirtualBox (CentOS)
+
+**On WSL Ubuntu terminal, run:**
+
+```bash
+ssh centos9@192.168.1.150
+```
+
+**Command Breakdown**:
+- `ssh`: SSH client command
+- `centos9`: Username on the CentOS VM
+- `@192.168.1.150`: IP address of the CentOS VM
+
+**First-Time Connection Output:**
+
+```
+The authenticity of host '192.168.1.150 (192.168.1.150)' can't be established.
+ED25519 key fingerprint is SHA256:abc123def456ghi789jkl012mno345pqr678stu901vwx234yz.
+This key fingerprint will be added to the list of known hosts.
+Are you sure you want to continue connecting (yes/no/[fingerprint])?
+```
+
+**What's Happening?**
+
+This is SSH's **host key verification** - a critical security feature:
+
+1. **First Connection**: Your client has never seen this server before
+2. **Server Identity**: Server sends its host key (cryptographic fingerprint)
+3. **Trust Decision**: You must verify this is the legitimate server
+4. **Security**: Protects against man-in-the-middle attacks
+
+**Type `yes` and press Enter:**
+
+```
+yes
+```
+
+**Output continues:**
+
+```
+Warning: Permanently added '192.168.1.150' (ED25519) to the list of known hosts.
+centos9@192.168.1.150's password:
+```
+
+**What changed?**
+- Server's fingerprint saved to `~/.ssh/known_hosts`
+- Future connections won't ask again (unless fingerprint changes)
+- Now prompting for password
+
+**Enter the password for user `centos9` on the CentOS VM.**
+
+**(Password won't be visible as you type - this is normal)**
+
+**Successful Login Output:**
+
+```
+Last login: Mon Oct  7 16:50:30 2024 from 192.168.1.200
+[centos9@localhost ~]$
+```
+
+**Success!** ✅ You're now logged into the CentOS VM from WSL.
+
+**Confirmation - Check hostname:**
+
+```bash
+hostname
+```
+
+**Output:**
+
+```
+localhost.localdomain
+```
+
+Or whatever hostname your CentOS VM has. You're definitely on the VM now!
+
+**Check current user:**
+
+```bash
+whoami
+```
+
+**Output:**
+
+```
+centos9
+```
+
+**To Exit SSH Session:**
+
+```bash
+exit
+```
+
+**Output:**
+
+```
+logout
+Connection to 192.168.1.150 closed.
+```
+
+You're back on your WSL Ubuntu system.
+
+### SSH from VirtualBox (CentOS) to WSL (Ubuntu)
+
+Now let's try the reverse connection: from CentOS VM to WSL Ubuntu.
+
+**On CentOS VM terminal, run:**
+
+```bash
+ssh username@192.168.1.200
+```
+
+**Replace `username` with your actual Ubuntu/WSL username.**
+
+<Callout type="info">
+**Finding Your WSL Username**: If unsure, run `whoami` on WSL to see your username.
+</Callout>
+
+**First-Time Connection:**
+
+```
+The authenticity of host '192.168.1.200 (192.168.1.200)' can't be established.
+ED25519 key fingerprint is SHA256:xyz789abc123def456ghi789jkl012mno345pqr678stu901vwx.
+This key fingerprint will be added to the list of known hosts.
+Are you sure you want to continue connecting (yes/no/[fingerprint])?
+```
+
+**Type `yes`:**
+
+```
+yes
+```
+
+**Output:**
+
+```
+Warning: Permanently added '192.168.1.200' (ED25519) to the list of known hosts.
+username@192.168.1.200's password:
+```
+
+**Enter your WSL/Ubuntu user password.**
+
+**Successful Login:**
+
+```
+Welcome to Ubuntu 22.04.3 LTS (GNU/Linux 5.15.133.1-microsoft-standard-WSL2 x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+Last login: Mon Oct  7 17:00:15 2024 from 192.168.1.150
+username@hostname:~$
+```
+
+**Success!** ✅ You're now on WSL Ubuntu from the CentOS VM.
+
+**Verify:**
+
+```bash
+hostname
+```
+
+Shows your WSL hostname.
+
+```bash
+uname -a
+```
+
+**Output:**
+
+```
+Linux hostname 5.15.133.1-microsoft-standard-WSL2 #1 SMP Thu Oct 5 21:02:42 UTC 2023 x86_64 x86_64 x86_64 GNU/Linux
+```
+
+The `microsoft-standard-WSL2` confirms you're on WSL.
+
+**Exit back to CentOS:**
+
+```bash
+exit
+```
+
+## Testing Connectivity and Verification
+
+Let's verify our SSH setup is working correctly.
+
+### Ping Test (Verify Network Connectivity)
+
+**From WSL, ping CentOS VM:**
+
+```bash
+ping -c 4 192.168.1.150
+```
+
+**Purpose**: Test network connectivity before trying SSH.
+
+**Command Breakdown**:
+- `ping`: Send ICMP echo requests
+- `-c 4`: Send 4 packets then stop
+- `192.168.1.150`: Target IP (CentOS VM)
+
+**Output:**
+
+```
+PING 192.168.1.150 (192.168.1.150) 56(84) bytes of data.
+64 bytes from 192.168.1.150: icmp_seq=1 ttl=64 time=0.521 ms
+64 bytes from 192.168.1.150: icmp_seq=2 ttl=64 time=0.445 ms
+64 bytes from 192.168.1.150: icmp_seq=3 ttl=64 time=0.398 ms
+64 bytes from 192.168.1.150: icmp_seq=4 ttl=64 time=0.412 ms
+
+--- 192.168.1.150 ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 3054ms
+rtt min/avg/max/mdev = 0.398/0.444/0.521/0.046 ms
+```
+
+**Interpretation**:
+- **64 bytes from...**: Successful responses ✅
+- **time=0.5 ms**: Very fast (sub-millisecond) - local network
+- **0% packet loss**: Perfect connectivity
+- **4 packets transmitted, 4 received**: All packets successful
+
+**From CentOS VM, ping WSL:**
+
+```bash
+ping -c 4 192.168.1.200
+```
+
+Should show similar successful output.
+
+### SSH Verbose Mode (Debugging Connections)
+
+To see detailed information about SSH connection process:
+
+```bash
+ssh -v username@192.168.1.200
+```
+
+**Purpose**: Verbose mode shows detailed debugging information.
+
+**Command Breakdown**:
+- `-v`: Verbose mode (use `-vv` or `-vvv` for more detail)
+
+**Output (partial):**
+
+```
+OpenSSH_8.7p1, OpenSSL 3.0.7 1 Nov 2022
+debug1: Reading configuration data /etc/ssh/ssh_config
+debug1: /etc/ssh/ssh_config line 52: Applying options for *
+debug1: Connecting to 192.168.1.200 [192.168.1.200] port 22.
+debug1: Connection established.
+debug1: identity file /home/centos9/.ssh/id_rsa type -1
+debug1: identity file /home/centos9/.ssh/id_ed25519 type -1
+debug1: Local version string SSH-2.0-OpenSSH_8.7
+debug1: Remote protocol version 2.0, remote software version OpenSSH_8.9p1 Ubuntu-3ubuntu0.6
+debug1: compat_banner: match: OpenSSH_8.9p1 Ubuntu-3ubuntu0.6 pat OpenSSH* compat 0x04000000
+debug1: Authenticating to 192.168.1.200:22 as 'username'
+debug1: SSH2_MSG_KEXINIT sent
+debug1: SSH2_MSG_KEXINIT received
+debug1: kex: algorithm: curve25519-sha256
+debug1: kex: host key algorithm: ssh-ed25519
+debug1: kex: server->client cipher: chacha20-poly1305@openssh.com MAC: <implicit> compression: none
+debug1: kex: client->server cipher: chacha20-poly1305@openssh.com MAC: <implicit> compression: none
+debug1: expecting SSH2_MSG_KEX_ECDH_REPLY
+debug1: SSH2_MSG_KEX_ECDH_REPLY received
+debug1: Server host key: ssh-ed25519 SHA256:xyz789abc...
+debug1: Host '192.168.1.200' is known and matches the ED25519 host key.
+debug1: Found key in /home/centos9/.ssh/known_hosts:1
+debug1: Authentications that can continue: publickey,password
+debug1: Next authentication method: publickey
+debug1: Trying private key: /home/centos9/.ssh/id_rsa
+debug1: Trying private key: /home/centos9/.ssh/id_ed25519
+debug1: Next authentication method: password
+username@192.168.1.200's password:
+```
+
+**Key Information from Verbose Output**:
+- **Connection established**: Network connectivity works
+- **Remote software version**: Server is running OpenSSH 8.9p1
+- **kex algorithm**: Encryption negotiation details
+- **Host key verification**: Server identity confirmed
+- **Authentication methods**: publickey and password available
+- **Trying private keys**: Looked for SSH keys (none found, falling back to password)
+
+This is extremely useful for troubleshooting connection issues!
+
+### Verifying SSH Service is Listening
+
+**Check if SSH is listening on port 22:**
+
+```bash
+sudo ss -tlnp | grep ssh
+```
+
+**Purpose**: Show SSH daemon listening on network ports.
+
+**Command Breakdown**:
+- `ss`: Socket statistics (modern replacement for netstat)
+- `-t`: TCP sockets
+- `-l`: Listening sockets only
+- `-n`: Show numeric addresses (don't resolve names)
+- `-p`: Show process using the socket
+- `| grep ssh`: Filter for SSH-related entries
+
+**Output (on CentOS VM):**
+
+```
+LISTEN 0      128          0.0.0.0:22         0.0.0.0:*    users:(("sshd",pid=1234,fd=3))
+LISTEN 0      128             [::]:22            [::]:*    users:(("sshd",pid=1234,fd=4))
+```
+
+**Output Breakdown**:
+- **LISTEN**: Socket is in listening state (accepting connections)
+- **0.0.0.0:22**: Listening on all IPv4 interfaces, port 22
+- **[::]:22**: Listening on all IPv6 interfaces, port 22
+- **users:(("sshd",pid=1234,fd=3))**: Process sshd (PID 1234) owns this socket
+
+**Alternative (using netstat):**
+
+```bash
+sudo netstat -tlnp | grep :22
+```
+
+Both commands confirm SSH is listening and ready to accept connections.
+
+## Best Practices for SSH Setup
+
+### Security Best Practices
+
+1. **Change Default SSH Port (Optional but Recommended)**
+   - Edit `/etc/ssh/sshd_config`
+   - Change `Port 22` to custom port (e.g., 2222)
+   - Restart sshd: `sudo systemctl restart sshd`
+   - Reduces automated attack attempts
+
+2. **Disable Root Login**
+   - Edit `/etc/ssh/sshd_config`
+   - Set `PermitRootLogin no`
+   - Prevents direct root access
+   - Use sudo for administrative tasks
+
+3. **Use Strong Passwords**
+   - Minimum 12 characters
+   - Mix uppercase, lowercase, numbers, symbols
+   - Avoid dictionary words
+   - Consider using passphrase: "Correct-Horse-Battery-Staple-42!"
+
+4. **Keep SSH Updated**
+   ```bash
+   # CentOS/RedHat
+   sudo dnf update openssh-server
+
+   # Ubuntu
+   sudo apt update && sudo apt upgrade openssh-server
+   ```
+
+### Connection Best Practices
+
+1. **Always Verify Host Keys on First Connection**
+   - Compare fingerprint with known value
+   - Contact server admin if uncertain
+   - Don't blindly type "yes"
+
+2. **Use Descriptive Usernames**
+   - Avoid generic names like "admin", "user"
+   - Use personal or role-based names
+
+3. **Document Your IP Addresses**
+   - Keep a list of server IPs and hostnames
+   - Update when IPs change (DHCP)
+   - Consider using static IPs for servers
+
+4. **Test Connectivity Before Troubleshooting SSH**
+   - Always `ping` first
+   - Check firewall rules
+   - Verify service is running
+
+## Troubleshooting Common Issues
+
+### Issue 1: Connection Refused
+
+**Error:**
+```
+ssh: connect to host 192.168.1.150 port 22: Connection refused
+```
+
+**Causes and Solutions:**
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Cause</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Solution</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">SSH service not running</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>sudo systemctl start sshd</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Firewall blocking port 22</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>sudo firewall-cmd --add-service=ssh --permanent && sudo firewall-cmd --reload</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Wrong IP address</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Verify with <code>ip addr show</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">SSH listening on different port</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Check <code>/etc/ssh/sshd_config</code> for Port directive</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### Issue 2: Connection Timeout
+
+**Error:**
+```
+ssh: connect to host 192.168.1.150 port 22: Connection timed out
+```
+
+**Solutions:**
+1. **Check network connectivity**: `ping 192.168.1.150`
+2. **Verify VirtualBox network adapter**: Should be Bridged, Cable Connected
+3. **Check if IP changed**: Run `ip addr show` on VM
+4. **Firewall rules**: `sudo firewall-cmd --list-all`
+
+### Issue 3: Permission Denied (Password)
+
+**Error:**
+```
+username@192.168.1.150: Permission denied, please try again.
+```
+
+**Solutions:**
+1. **Verify username exists**: `id username` on server
+2. **Check password**: Ensure correct password
+3. **Password authentication enabled**: In `/etc/ssh/sshd_config`, check `PasswordAuthentication yes`
+4. **Account not locked**: `sudo passwd -S username` should show "PS" (password set)
+
+### Issue 4: WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED
+
+**Error:**
+```
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@    WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!     @
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+IT IS POSSIBLE THAT SOMEONE IS DOING SOMETHING NASTY!
+```
+
+**Cause**: Server's host key changed (OS reinstall, IP reassigned, etc.)
+
+**Solution (if you trust the server):**
+```bash
+ssh-keygen -R 192.168.1.150
+```
+
+This removes the old fingerprint from `~/.ssh/known_hosts`. Next connection will ask to verify new key.
+
+<Callout type="warning">
+**Security Warning**: Only remove host keys if you know why they changed. This error could indicate a man-in-the-middle attack!
+</Callout>
+
+## Summary
+
+In Part 1, you've built a solid foundation in SSH:
+
+✅ **Understanding**: What SSH is, why it's important, and how it works
+✅ **Architecture**: Client-server model, authentication methods, components
+✅ **VirtualBox Networking**: Configured Bridged Adapter for network connectivity
+✅ **Installation**: Installed OpenSSH server on CentOS/RedHat and Ubuntu WSL
+✅ **Service Management**: Started, enabled, and verified SSH services
+✅ **IP Configuration**: Found IP addresses on both systems
+✅ **Connections**: Established bidirectional SSH (WSL ↔ VM)
+✅ **Verification**: Tested connectivity with ping and verbose SSH
+✅ **Troubleshooting**: Common issues and solutions
+
+You can now securely connect between systems using password authentication!
+
+## What's Next in Part 2?
+
+In Part 2, we'll dive into advanced SSH configurations and best practices:
+
+- **SSH Key-Based Authentication**: Generate keys, deploy public keys, passwordless login
+- **SSH Configuration Files**: Client config (`~/.ssh/config`), host aliases, connection shortcuts
+- **Advanced SSH Features**: Port forwarding, tunneling, X11 forwarding, multiplexing
+- **Security Hardening**: Disable password auth, configure allowed users, rate limiting
+- **Firewall Configuration**: firewalld rules, SELinux contexts
+- **SSH Agent**: Key management, agent forwarding
+- **SCP and SFTP**: Secure file transfer methods
+- **Automation**: Using SSH in scripts, non-interactive authentication
+
+---
+
+*Continue to Part 2 to master advanced SSH techniques and security hardening!*
