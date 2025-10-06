@@ -1,0 +1,1315 @@
+---
+title: "Complete Guide to Linux systemd Service Management for Absolute Beginners"
+description: "Master systemd service management with systemctl commands. Learn how to start, stop, restart, enable, disable services, view service status, analyze unit files, check dependencies, and monitor logs with journalctl on RHEL/CentOS/Fedora systems."
+date: "2025-10-06T15:00:00.000Z"
+tags: ["linux", "systemd", "systemctl", "service-management", "journalctl", "system-administration"]
+published: true
+categories: ["Linux", "System Administration"]
+author: "TechBlog"
+image: "/images/blog/linux-systemd.jpg"
+keywords: "systemd, systemctl, service management, journalctl, linux services, systemd units, enable disable services, service logs, systemd tutorial"
+---
+
+## Introduction
+
+systemd is the modern init system and service manager for Linux, replacing older SysV init and Upstart systems. It's responsible for starting services during boot, managing running services, and handling system state transitions. Understanding systemd is essential for managing Linux servers and workstations.
+
+In this comprehensive guide, you'll learn:
+
+- Listing and filtering systemd services
+- Checking service status with detailed output interpretation
+- Starting, stopping, and restarting services
+- Enabling and disabling services for automatic startup
+- Viewing and understanding systemd unit files
+- Analyzing service dependencies
+- Monitoring service logs with journalctl
+
+<Callout type="info">
+**What is systemd?** systemd is a system and service manager that initializes and manages all processes on a Linux system. It uses "units" (service files) to define how services should be started, stopped, and managed.
+</Callout>
+
+## Understanding systemd Units
+
+systemd manages different types of units:
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Unit Type</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Extension</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Purpose</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Example</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Service</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>.service</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">System services and daemons</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">sshd.service, nginx.service</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Socket</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>.socket</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">IPC or network socket</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">docker.socket</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Target</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>.target</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Group of units (like runlevels)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">multi-user.target</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Mount</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>.mount</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Filesystem mount point</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">home.mount</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Timer</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>.timer</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Scheduled tasks (like cron)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">backup.timer</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+## Listing Running Services
+
+To view all currently running services:
+
+```bash
+systemctl list-units --type=service --state=running
+```
+
+**Command Breakdown:**
+- `systemctl`: Main command for controlling systemd
+- `list-units`: List all loaded units
+- `--type=service`: Filter to show only service units
+- `--state=running`: Show only running services
+
+**Partial Output:**
+
+```
+  UNIT                          LOAD   ACTIVE SUB     DESCRIPTION
+  accounts-daemon.service       loaded active running Accounts Service
+  alsa-state.service            loaded active running Manage Sound Card State (restore and store)
+  atd.service                   loaded active running Deferred execution scheduler
+  auditd.service                loaded active running Security Auditing Service
+  avahi-daemon.service          loaded active running Avahi mDNS/DNS-SD Stack
+  chronyd.service               loaded active running NTP client/server
+  colord.service                loaded active running Manage, Install and Generate Color Profiles
+  containerd.service            loaded active running containerd container runtime
+  crond.service                 loaded active running Command Scheduler
+  cups.service                  loaded active running CUPS Scheduler
+  dbus-broker.service           loaded active running D-Bus System Message Bus
+  docker.service                loaded active running Docker Application Container Engine
+  firewalld.service             loaded active running firewalld - dynamic firewall daemon
+  gdm.service                   loaded active running GNOME Display Manager
+  NetworkManager.service        loaded active running Network Manager
+  sshd.service                  loaded active running OpenSSH server daemon
+  systemd-journald.service      loaded active running Journal Service
+  systemd-logind.service        loaded active running User Login Management
+  systemd-udevd.service         loaded active running Rule-based Manager for Device Events and Files
+```
+
+### Understanding Column Headers
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Column</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Meaning</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Possible Values</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>UNIT</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Service unit name</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">servicename.service</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>LOAD</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Unit definition loaded status</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">loaded, not-found, masked</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>ACTIVE</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">High-level activation state</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">active, inactive, failed, activating</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>SUB</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Low-level unit state</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">running, exited, failed, dead</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>DESCRIPTION</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Human-readable service description</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Text description</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+**Footer Summary:**
+
+```
+LOAD   = Reflects whether the unit definition was properly loaded.
+ACTIVE = The high-level unit activation state, i.e. generalization of SUB.
+SUB    = The low-level unit activation state, values depend on unit type.
+36 loaded units listed.
+```
+
+This shows 36 service units are currently running on the system.
+
+**Common Service Types:**
+- **System Services**: auditd (security), chronyd (time sync), crond (scheduling)
+- **Network Services**: sshd (SSH server), NetworkManager (networking)
+- **Desktop Services**: gdm (display manager), accounts-daemon (user accounts)
+- **Container Services**: docker, containerd
+- **Core systemd Services**: systemd-journald (logging), systemd-logind (login)
+
+## Checking Service Status
+
+The `systemctl status` command provides detailed information about a service:
+
+```bash
+systemctl status sshd
+```
+
+**Output:**
+
+```
+● sshd.service - OpenSSH server daemon
+     Loaded: loaded (/usr/lib/systemd/system/sshd.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2025-10-06 15:43:12 PKT; 3h 18min ago
+       Docs: man:sshd(8)
+             man:sshd_config(5)
+   Main PID: 1861 (sshd)
+      Tasks: 1 (limit: 48732)
+     Memory: 2.0M (peak: 2.3M)
+        CPU: 31ms
+     CGroup: /system.slice/sshd.service
+             └─1861 "sshd: /usr/sbin/sshd -D [listener] 0 of 10-100 startups"
+
+Oct 06 15:43:12 localhost.localdomain systemd[1]: Starting OpenSSH server daemon...
+Oct 06 15:43:12 localhost.localdomain sshd[1861]: Server listening on 0.0.0.0 port 22.
+Oct 06 15:43:12 localhost.localdomain sshd[1861]: Server listening on :: port 22.
+Oct 06 15:43:12 localhost.localdomain systemd[1]: Started OpenSSH server daemon.
+```
+
+### Detailed Status Output Explanation
+
+**Line 1: Service Header**
+```
+● sshd.service - OpenSSH server daemon
+```
+- `●`: Green dot indicates active/running (○ would mean inactive)
+- `sshd.service`: Full service unit name
+- `OpenSSH server daemon`: Service description
+
+**Line 2: Load Status**
+```
+Loaded: loaded (/usr/lib/systemd/system/sshd.service; enabled; preset: enabled)
+```
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Field</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Value</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Meaning</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Loaded</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">loaded</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Unit file successfully loaded</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Unit file path</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">/usr/lib/systemd/system/sshd.service</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Location of service definition file</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">enabled</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">enabled</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Will start automatically at boot</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">preset</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">enabled</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">System default is to enable this service</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+**Line 3: Active Status**
+```
+Active: active (running) since Mon 2025-10-06 15:43:12 PKT; 3h 18min ago
+```
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Component</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Value</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Meaning</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Active state</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">active (running)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Service is currently running</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Start time</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Mon 2025-10-06 15:43:12 PKT</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">When service was started</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Uptime</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">3h 18min ago</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">How long service has been running</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+**Documentation Links:**
+```
+Docs: man:sshd(8)
+      man:sshd_config(5)
+```
+- Provides manual page references for the service
+- `man sshd` for daemon documentation
+- `man sshd_config` for configuration file documentation
+
+**Process Information:**
+```
+Main PID: 1861 (sshd)
+Tasks: 1 (limit: 48732)
+Memory: 2.0M (peak: 2.3M)
+CPU: 31ms
+```
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Metric</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Value</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Explanation</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Main PID</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">1861 (sshd)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Primary process ID and name</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Tasks</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">1 (limit: 48732)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">1 task/thread running, system limit 48,732</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Memory</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">2.0M (peak: 2.3M)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Current 2MB, peak was 2.3MB</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">CPU</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">31ms</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Total CPU time consumed (31 milliseconds)</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+**CGroup (Control Group):**
+```
+CGroup: /system.slice/sshd.service
+        └─1861 "sshd: /usr/sbin/sshd -D [listener] 0 of 10-100 startups"
+```
+
+- **CGroup path**: `/system.slice/sshd.service` - hierarchical resource control
+- **Process tree**: Shows PID 1861 with full command line
+- `-D`: Run in foreground (don't daemonize)
+- `[listener]`: Current state (listening for connections)
+
+**Recent Logs (Last Few Lines):**
+```
+Oct 06 15:43:12 localhost.localdomain systemd[1]: Starting OpenSSH server daemon...
+Oct 06 15:43:12 localhost.localdomain sshd[1861]: Server listening on 0.0.0.0 port 22.
+Oct 06 15:43:12 localhost.localdomain sshd[1861]: Server listening on :: port 22.
+Oct 06 15:43:12 localhost.localdomain systemd[1]: Started OpenSSH server daemon.
+```
+
+**Log Interpretation:**
+1. systemd initiating service start
+2. sshd binding to IPv4 (0.0.0.0) port 22
+3. sshd binding to IPv6 (::) port 22
+4. systemd confirming successful start
+
+<Callout type="info">
+**Installation Note**: If sshd is not installed:
+- RHEL/Fedora/CentOS: `sudo dnf install openssh-server`
+- Ubuntu/Debian: `sudo apt install openssh-server`
+</Callout>
+
+## Stopping Services
+
+The `systemctl stop` command stops a running service:
+
+```bash
+sudo systemctl stop sshd
+```
+
+**Why sudo is Required:**
+- Stopping system services requires root privileges
+- Regular users cannot control system-wide services
+- Protects critical services from accidental termination
+
+**Verifying the Stop:**
+
+```bash
+systemctl status sshd
+```
+
+**Output:**
+
+```
+○ sshd.service - OpenSSH server daemon
+     Loaded: loaded (/usr/lib/systemd/system/sshd.service; enabled; preset: enabled)
+     Active: inactive (dead) since Mon 2025-10-06 19:03:51 PKT; 5s ago
+   Duration: 3h 20min 39.015s
+       Docs: man:sshd(8)
+             man:sshd_config(5)
+    Process: 1861 ExecStart=/usr/sbin/sshd -D $OPTIONS (code=exited, status=0/SUCCESS)
+   Main PID: 1861 (code=exited, status=0/SUCCESS)
+        CPU: 35ms
+
+Oct 06 15:43:12 localhost.localdomain systemd[1]: Starting OpenSSH server daemon...
+Oct 06 15:43:12 localhost.localdomain sshd[1861]: Server listening on 0.0.0.0 port 22.
+Oct 06 15:43:12 localhost.localdomain sshd[1861]: Server listening on :: port 22.
+Oct 06 15:43:12 localhost.localdomain systemd[1]: Started OpenSSH server daemon.
+Oct 06 19:03:51 vbox systemd[1]: Stopping OpenSSH server daemon...
+Oct 06 19:03:51 vbox sshd[1861]: Received signal 15; terminating.
+Oct 06 19:03:51 vbox systemd[1]: sshd.service: Deactivated successfully.
+Oct 06 19:03:51 vbox systemd[1]: Stopped OpenSSH server daemon.
+```
+
+### Understanding Stopped Service Status
+
+**Key Changes from Running State:**
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Field</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Value</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Meaning</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Indicator</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">○ (white circle)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Service is inactive (vs ● green for active)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Active</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">inactive (dead)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Service stopped, process terminated</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Duration</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">3h 20min 39.015s</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">How long service was running before stop</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Process</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">code=exited, status=0/SUCCESS</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Clean exit with success status</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Main PID</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">1861 (code=exited, status=0/SUCCESS)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Process 1861 exited cleanly</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+**Stop Sequence in Logs:**
+1. `Stopping OpenSSH server daemon...` - systemd initiates stop
+2. `Received signal 15; terminating.` - sshd receives SIGTERM (graceful shutdown)
+3. `Deactivated successfully.` - Service cleanly deactivated
+4. `Stopped OpenSSH server daemon.` - Stop complete
+
+<Callout type="info">
+Signal 15 (SIGTERM) allows the service to shut down gracefully - close connections, save state, clean up resources. systemd waits for this to complete before forcefully killing if needed.
+</Callout>
+
+## Starting Services
+
+The `systemctl start` command starts a stopped service:
+
+```bash
+sudo systemctl start sshd
+```
+
+**Checking After Start:**
+
+```bash
+systemctl status sshd
+```
+
+**Output:**
+
+```
+● sshd.service - OpenSSH server daemon
+     Loaded: loaded (/usr/lib/systemd/system/sshd.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2025-10-06 19:04:06 PKT; 5s ago
+       Docs: man:sshd(8)
+             man:sshd_config(5)
+   Main PID: 31364 (sshd)
+      Tasks: 1 (limit: 48732)
+     Memory: 1.5M (peak: 1.8M)
+        CPU: 21ms
+     CGroup: /system.slice/sshd.service
+             └─31364 "sshd: /usr/sbin/sshd -D [listener] 0 of 10-100 startups"
+
+Oct 06 19:04:05 vbox systemd[1]: Starting OpenSSH server daemon...
+Oct 06 19:04:06 vbox sshd[31364]: Server listening on 0.0.0.0 port 22.
+Oct 06 19:04:06 vbox sshd[31364]: Server listening on :: port 22.
+Oct 06 19:04:06 vbox systemd[1]: Started OpenSSH server daemon.
+```
+
+**What Changed:**
+- **New PID**: 31364 (was 1861) - fresh process created
+- **Active**: Now `active (running)` with green ●
+- **Fresh logs**: Shows recent start sequence
+- **Memory reset**: 1.5M current (new process baseline)
+
+## Restarting Services
+
+The `systemctl restart` command stops and then starts a service:
+
+```bash
+sudo systemctl restart sshd
+```
+
+**When to Use Restart:**
+- After modifying configuration files
+- To clear service state/memory
+- To apply updates without full reload
+- To resolve stuck processes
+
+**Restart vs Stop/Start:**
+- **Restart**: Atomic operation, minimal downtime
+- **Stop then Start**: Separate operations, can verify stop before starting
+
+<Callout type="warning">
+**Caution**: Restarting services like sshd will disconnect active SSH sessions. Use with care on remote servers, or use `systemctl reload sshd` instead if supported.
+</Callout>
+
+## Enabling Services for Auto-Start
+
+The `systemctl enable` command configures a service to start automatically at boot:
+
+```bash
+sudo systemctl enable sshd
+```
+
+**What This Does:**
+- Creates symbolic links in systemd directories
+- Registers service to start during boot sequence
+- Does NOT start the service immediately (use `systemctl enable --now` for both)
+
+**Verification:**
+
+```bash
+systemctl status sshd
+```
+
+**Relevant Line:**
+
+```
+Loaded: loaded (/usr/lib/systemd/system/sshd.service; enabled; preset: enabled)
+```
+
+The `enabled` status confirms the service will start at boot.
+
+**How Enable Works:**
+When you enable a service, systemd creates a symbolic link:
+```
+/etc/systemd/system/multi-user.target.wants/sshd.service → /usr/lib/systemd/system/sshd.service
+```
+
+This links the service to the `multi-user.target` (like runlevel 3 in SysV), ensuring it starts when the system reaches multi-user mode.
+
+## Disabling Services
+
+The `systemctl disable` command prevents a service from starting automatically at boot:
+
+```bash
+sudo systemctl disable sshd
+```
+
+**Output:**
+
+```
+Removed "/etc/systemd/system/multi-user.target.wants/sshd.service".
+```
+
+**What Happened:**
+- Removed symbolic link from target directory
+- Service will NOT start automatically at boot
+- Service remains running if currently active (disable ≠ stop)
+
+**Verification:**
+
+```bash
+systemctl status sshd
+```
+
+**Output:**
+
+```
+● sshd.service - OpenSSH server daemon
+     Loaded: loaded (/usr/lib/systemd/system/sshd.service; disabled; preset: enabled)
+     Active: active (running) since Mon 2025-10-06 19:04:18 PKT; 34s ago
+```
+
+**Key Observations:**
+- **Loaded status**: Now shows `disabled` (was `enabled`)
+- **Active status**: Still `active (running)` - disable doesn't stop service
+- **Preset**: `enabled` means system default wants it enabled (but manually disabled)
+
+<Callout type="info">
+**Enable vs Start:**
+- `enable`: Auto-start at boot (persistent)
+- `start`: Start immediately (temporary until reboot)
+- `enable --now`: Both enable and start
+- `disable`: Prevent auto-start (doesn't stop running service)
+</Callout>
+
+## Viewing Service Unit Files
+
+The `systemctl cat` command displays the service unit file:
+
+```bash
+systemctl cat sshd
+```
+
+**Output:**
+
+```
+# /usr/lib/systemd/system/sshd.service
+[Unit]
+Description=OpenSSH server daemon
+Documentation=man:sshd(8) man:sshd_config(5)
+After=network.target sshd-keygen.target
+Wants=sshd-keygen.target
+
+[Service]
+Type=notify
+EnvironmentFile=-/etc/sysconfig/sshd
+ExecStart=/usr/sbin/sshd -D $OPTIONS
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=process
+Restart=on-failure
+RestartSec=42s
+
+[Install]
+WantedBy=multi-user.target
+```
+
+### Understanding Unit File Sections
+
+**[Unit] Section - General Information**
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Directive</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Value</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Meaning</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>Description</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">OpenSSH server daemon</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Human-readable description</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>Documentation</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">man:sshd(8) man:sshd_config(5)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Links to documentation</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>After</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">network.target sshd-keygen.target</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Start AFTER these units (ordering)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>Wants</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">sshd-keygen.target</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Weak dependency (start it if available)</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+**[Service] Section - Service Behavior**
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Directive</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Value</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Meaning</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>Type</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">notify</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Service notifies systemd when ready</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>EnvironmentFile</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">-/etc/sysconfig/sshd</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Load env variables (- means optional)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>ExecStart</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">/usr/sbin/sshd -D $OPTIONS</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Command to start service</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>ExecReload</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">/bin/kill -HUP $MAINPID</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Command to reload config (SIGHUP)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>KillMode</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">process</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Only kill main process (not children)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>Restart</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">on-failure</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Auto-restart if it fails</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>RestartSec</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">42s</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Wait 42 seconds before restart</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+**[Install] Section - Enable/Disable Behavior**
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Directive</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Value</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Meaning</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>WantedBy</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">multi-user.target</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Enable creates symlink in this target's wants directory</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+**Service Type Values:**
+- `simple`: Exec command is main process (default)
+- `forking`: Service spawns child process (traditional daemons)
+- `oneshot`: Process exits after start (initialization tasks)
+- `notify`: Service sends ready notification to systemd (like sshd)
+
+## Analyzing Service Dependencies
+
+The `systemctl list-dependencies` command shows what a service depends on:
+
+```bash
+systemctl list-dependencies sshd
+```
+
+**Output (Partial):**
+
+```
+sshd.service
+● ├─system.slice
+● ├─sshd-keygen.target
+○ │ ├─sshd-keygen@ecdsa.service
+○ │ ├─sshd-keygen@ed25519.service
+○ │ └─sshd-keygen@rsa.service
+● └─sysinit.target
+●   ├─dev-hugepages.mount
+●   ├─dev-mqueue.mount
+●   ├─dracut-shutdown.service
+...
+●   ├─systemd-journald.service
+●   ├─systemd-modules-load.service
+●   ├─systemd-udevd.service
+●   ├─cryptsetup.target
+●   ├─local-fs.target
+```
+
+### Understanding Dependencies
+
+**Dependency Tree Structure:**
+- `●` = Active/loaded dependency
+- `○` = Inactive dependency
+- Tree shows hierarchical relationships
+
+**Key Dependencies for sshd:**
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Dependency</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Type</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Purpose</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>system.slice</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Resource control</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">CGroup for resource management</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>sshd-keygen.target</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">SSH keys</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Generate SSH host keys if missing</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>sshd-keygen@*.service</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Key generation</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Generate ECDSA, ED25519, RSA keys</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>sysinit.target</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">System initialization</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Basic system setup must complete first</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>systemd-journald.service</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Logging</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Journal logging service</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>local-fs.target</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Filesystem</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Local filesystems mounted</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+**Dependency Types in systemd:**
+- **Requires**: Strong dependency - failure stops this unit
+- **Wants**: Weak dependency - failure doesn't affect this unit
+- **After**: Ordering - start after these units
+- **Before**: Ordering - start before these units
+
+## Viewing Service Logs with journalctl
+
+systemd uses `journald` for centralized logging. The `journalctl` command queries these logs.
+
+### Viewing All Logs for a Service
+
+```bash
+sudo journalctl -u sshd
+```
+
+**Command Breakdown:**
+- `journalctl`: Query systemd journal
+- `-u sshd`: Filter for unit sshd (service)
+
+**Output:**
+
+```
+Oct 06 15:43:12 localhost.localdomain systemd[1]: Starting OpenSSH server daemon...
+Oct 06 15:43:12 localhost.localdomain sshd[1861]: Server listening on 0.0.0.0 port 22.
+Oct 06 15:43:12 localhost.localdomain sshd[1861]: Server listening on :: port 22.
+Oct 06 15:43:12 localhost.localdomain systemd[1]: Started OpenSSH server daemon.
+Oct 06 19:03:51 vbox systemd[1]: Stopping OpenSSH server daemon...
+Oct 06 19:03:51 vbox sshd[1861]: Received signal 15; terminating.
+Oct 06 19:03:51 vbox systemd[1]: sshd.service: Deactivated successfully.
+Oct 06 19:03:51 vbox systemd[1]: Stopped OpenSSH server daemon.
+Oct 06 19:04:05 vbox systemd[1]: Starting OpenSSH server daemon...
+Oct 06 19:04:06 vbox sshd[31364]: Server listening on 0.0.0.0 port 22.
+Oct 06 19:04:06 vbox sshd[31364]: Server listening on :: port 22.
+Oct 06 19:04:06 vbox systemd[1]: Started OpenSSH server daemon.
+Oct 06 19:04:18 vbox systemd[1]: Stopping OpenSSH server daemon...
+Oct 06 19:04:18 vbox sshd[31364]: Received signal 15; terminating.
+Oct 06 19:04:18 vbox systemd[1]: sshd.service: Deactivated successfully.
+Oct 06 19:04:18 vbox systemd[1]: Stopped OpenSSH server daemon.
+Oct 06 19:04:18 vbox systemd[1]: Starting OpenSSH server daemon...
+Oct 06 19:04:18 vbox sshd[31380]: Server listening on 0.0.0.0 port 22.
+Oct 06 19:04:18 vbox sshd[31380]: Server listening on :: port 22.
+Oct 06 19:04:18 vbox systemd[1]: Started OpenSSH server daemon.
+```
+
+**Log Format:**
+- **Timestamp**: `Oct 06 19:04:18`
+- **Hostname**: `vbox`
+- **Process**: `systemd[1]` or `sshd[31380]`
+- **Message**: Actual log entry
+
+### Time-Based Filtering
+
+```bash
+sudo journalctl -u sshd --since "1 hour ago"
+```
+
+**Output (Last Hour Only):**
+
+```
+Oct 06 19:03:51 vbox systemd[1]: Stopping OpenSSH server daemon...
+Oct 06 19:03:51 vbox sshd[1861]: Received signal 15; terminating.
+Oct 06 19:03:51 vbox systemd[1]: sshd.service: Deactivated successfully.
+Oct 06 19:03:51 vbox systemd[1]: Stopped OpenSSH server daemon.
+Oct 06 19:04:05 vbox systemd[1]: Starting OpenSSH server daemon...
+Oct 06 19:04:06 vbox sshd[31364]: Server listening on 0.0.0.0 port 22.
+Oct 06 19:04:06 vbox sshd[31364]: Server listening on :: port 22.
+Oct 06 19:04:06 vbox systemd[1]: Started OpenSSH server daemon.
+Oct 06 19:04:18 vbox systemd[1]: Stopping OpenSSH server daemon...
+Oct 06 19:04:18 vbox sshd[31364]: Received signal 15; terminating.
+Oct 06 19:04:18 vbox systemd[1]: sshd.service: Deactivated successfully.
+Oct 06 19:04:18 vbox systemd[1]: Stopped OpenSSH server daemon.
+Oct 06 19:04:18 vbox systemd[1]: Starting OpenSSH server daemon...
+Oct 06 19:04:18 vbox sshd[31380]: Server listening on 0.0.0.0 port 22.
+Oct 06 19:04:18 vbox sshd[31380]: Server listening on :: port 22.
+Oct 06 19:04:18 vbox systemd[1]: Started OpenSSH server daemon.
+```
+
+**Time Filter Options:**
+- `--since "2024-10-06 18:00:00"`: Specific datetime
+- `--since "1 hour ago"`: Relative time
+- `--since "today"`: Today's logs
+- `--since "yesterday"`: Yesterday's logs
+- `--until "10 minutes ago"`: Up to a time
+- `--since "30 min ago" --until "10 min ago"`: Time range
+
+### Following Logs in Real-Time
+
+```bash
+sudo journalctl -u sshd -f
+```
+
+**Command Options:**
+- `-f`: Follow mode (like `tail -f`)
+- Shows existing logs, then streams new entries
+
+**Output:**
+
+```
+Oct 06 19:04:06 vbox sshd[31364]: Server listening on :: port 22.
+Oct 06 19:04:06 vbox systemd[1]: Started OpenSSH server daemon.
+Oct 06 19:04:18 vbox systemd[1]: Stopping OpenSSH server daemon...
+Oct 06 19:04:18 vbox sshd[31364]: Received signal 15; terminating.
+Oct 06 19:04:18 vbox systemd[1]: sshd.service: Deactivated successfully.
+Oct 06 19:04:18 vbox systemd[1]: Stopped OpenSSH server daemon.
+Oct 06 19:04:18 vbox systemd[1]: Starting OpenSSH server daemon...
+Oct 06 19:04:18 vbox sshd[31380]: Server listening on 0.0.0.0 port 22.
+Oct 06 19:04:18 vbox sshd[31380]: Server listening on :: port 22.
+Oct 06 19:04:18 vbox systemd[1]: Started OpenSSH server daemon.
+^C
+```
+
+**Press `Ctrl+C` to stop following.**
+
+**Use Cases for -f:**
+- Real-time monitoring during troubleshooting
+- Watching service behavior during testing
+- Observing connection attempts to SSH
+- Monitoring service starts/stops
+
+## Best Practices for systemd Service Management
+
+### Service Control Best Practices
+
+1. **Always Check Status Before Actions**
+   ```bash
+   systemctl status service_name  # Before start/stop/restart
+   ```
+   - Verify current state
+   - Check for errors
+   - Note the PID for troubleshooting
+
+2. **Use Reload Instead of Restart When Possible**
+   ```bash
+   systemctl reload nginx  # Reload config without dropping connections
+   ```
+   - Some services support reload (SIGHUP)
+   - Less disruptive than restart
+   - Check if service supports reload first
+
+3. **Combine Enable and Start**
+   ```bash
+   sudo systemctl enable --now service_name  # Enable AND start
+   ```
+   - Saves a command
+   - Ensures immediate operation and persistence
+
+4. **Verify After Making Changes**
+   ```bash
+   systemctl status service_name  # After any change
+   journalctl -u service_name -n 20  # Check recent logs
+   ```
+
+### Security and Stability Practices
+
+1. **Don't Disable Critical Services**
+   - Never disable: systemd-journald, systemd-logind, dbus
+   - Understand dependencies before disabling
+   - Check with `systemctl list-dependencies`
+
+2. **Test Configuration Changes**
+   ```bash
+   sudo systemctl daemon-reload  # After editing unit files
+   sudo systemctl restart service_name  # Apply changes
+   systemctl status service_name  # Verify success
+   ```
+
+3. **Monitor Failed Services**
+   ```bash
+   systemctl --failed  # List all failed units
+   systemctl reset-failed  # Clear failed state after fixing
+   ```
+
+4. **Use Masking for Permanent Disable**
+   ```bash
+   sudo systemctl mask service_name  # Prevent all starts
+   sudo systemctl unmask service_name  # Remove mask
+   ```
+   - Masked services cannot be started (even manually)
+   - Use for services that conflict with alternatives
+
+### Logging and Troubleshooting Practices
+
+1. **Check Logs When Services Fail**
+   ```bash
+   journalctl -u service_name -n 50  # Last 50 lines
+   journalctl -u service_name --since "5 min ago"  # Recent
+   journalctl -xe  # System-wide errors with explanation
+   ```
+
+2. **Set Log Retention**
+   ```bash
+   # Edit /etc/systemd/journald.conf
+   SystemMaxUse=500M  # Max disk space for logs
+   MaxRetentionSec=1month  # Keep logs for 1 month
+   ```
+
+3. **Filter by Priority**
+   ```bash
+   journalctl -p err  # Only errors
+   journalctl -p warning -u service_name  # Warnings for specific service
+   ```
+   - Priorities: emerg, alert, crit, err, warning, notice, info, debug
+
+4. **Export Logs for Analysis**
+   ```bash
+   journalctl -u service_name --since today --no-pager > service.log
+   ```
+
+### Operational Best Practices
+
+1. **Document Custom Services**
+   - Maintain README for custom unit files
+   - Document dependencies and configuration
+   - Note restart/reload behavior
+
+2. **Use Targets for Group Management**
+   ```bash
+   systemctl isolate multi-user.target  # Text mode
+   systemctl isolate graphical.target  # GUI mode
+   ```
+
+3. **Schedule Maintenance Windows**
+   - Restart services during low-traffic periods
+   - Use timers for periodic tasks instead of cron
+   - Test in staging before production
+
+4. **Backup Configuration**
+   ```bash
+   cp /etc/systemd/system/service_name.service /root/backup/
+   ```
+   - Backup before modifying unit files
+   - Version control custom units
+
+## Command Cheat Sheet
+
+### Basic Service Control
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Command</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Purpose</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>systemctl start service</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Start a service immediately</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>systemctl stop service</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Stop a running service</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>systemctl restart service</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Stop and start service</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>systemctl reload service</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Reload configuration (if supported)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>systemctl status service</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Show service status and recent logs</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### Enable/Disable Services
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Command</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Purpose</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>systemctl enable service</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Auto-start at boot</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>systemctl disable service</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Prevent auto-start at boot</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>systemctl enable --now service</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Enable and start immediately</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>systemctl mask service</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Completely disable (prevent all starts)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>systemctl unmask service</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Remove mask</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>systemctl is-enabled service</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Check if enabled</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### Listing and Querying
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Command</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Purpose</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>systemctl list-units --type=service</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">List all loaded services</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>systemctl list-units --type=service --state=running</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">List running services</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>systemctl list-units --type=service --state=failed</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">List failed services</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>systemctl list-unit-files</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">List all unit files (installed services)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>systemctl --failed</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Show failed units</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>systemctl cat service</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Show unit file content</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>systemctl list-dependencies service</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Show service dependencies</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### journalctl Log Commands
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Command</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Purpose</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>journalctl -u service</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Show all logs for service</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>journalctl -u service -f</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Follow logs in real-time</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>journalctl -u service -n 50</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Show last 50 log lines</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>journalctl -u service --since "1 hour ago"</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Logs from last hour</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>journalctl -u service --since today</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Today's logs</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>journalctl -xe</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Recent errors with explanation</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>journalctl -p err</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Only error level logs</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>journalctl --disk-usage</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Show journal disk usage</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>journalctl --vacuum-time=2weeks</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Delete logs older than 2 weeks</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### System State Commands
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Command</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Purpose</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>systemctl daemon-reload</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Reload systemd configuration (after editing unit files)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>systemctl reboot</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Reboot system</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>systemctl poweroff</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Shutdown system</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>systemctl suspend</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Suspend system (sleep)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>systemctl get-default</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Show default target (runlevel)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>systemctl set-default multi-user.target</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Set default to text mode</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>systemctl set-default graphical.target</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Set default to GUI mode</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+## Summary
+
+In this comprehensive guide, you've mastered systemd service management:
+
+✅ Understanding systemd units and service types
+✅ Listing services with filters for state and type
+✅ Checking detailed service status with full interpretation
+✅ Starting, stopping, and restarting services effectively
+✅ Enabling and disabling services for boot persistence
+✅ Viewing and understanding unit file structure
+✅ Analyzing service dependencies and relationships
+✅ Monitoring service logs with journalctl and time filters
+✅ Following best practices for service management and troubleshooting
+
+systemd is the foundation of modern Linux service management. Mastering systemctl and journalctl commands gives you complete control over system services, enabling efficient administration, troubleshooting, and optimization.
+
+## What's Next?
+
+Expand your systemd knowledge with these advanced topics:
+
+- **Creating Custom Services**: Write your own systemd unit files
+- **Timers**: Replace cron with systemd timers for scheduled tasks
+- **Targets and Runlevels**: Understanding system boot states
+- **Resource Control**: Using cgroups for CPU, memory limits
+- **Socket Activation**: On-demand service activation
+
+---
+
+*Master systemd to manage services like a professional Linux administrator!*

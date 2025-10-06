@@ -1,0 +1,1244 @@
+---
+title: "Complete Guide to Linux File Permissions and Ownership for Absolute Beginners"
+description: "Master Linux file permissions with chmod, chown, and chgrp commands. Learn symbolic and numeric notation, special permissions (SUID, SGID, sticky bit), SELinux contexts, and security best practices with practical examples."
+date: "2025-10-06T13:00:00.000Z"
+tags: ["linux", "file-permissions", "chmod", "chown", "security", "selinux", "bash"]
+published: true
+categories: ["Linux", "Security"]
+author: "TechBlog"
+image: "/images/blog/linux-permissions.jpg"
+keywords: "linux file permissions, chmod command, chown command, chgrp command, SUID SGID sticky bit, octal permissions, symbolic permissions, SELinux context, linux security"
+---
+
+## Introduction
+
+File permissions are the cornerstone of Linux security. Every file and directory has permissions that control who can read, write, or execute them. Understanding and properly configuring these permissions is essential for system security and proper access control.
+
+In this comprehensive guide, you'll learn:
+
+- How to read and understand Linux permission notation (rwx)
+- Changing permissions with `chmod` using both symbolic and numeric modes
+- Managing file ownership with `chown` and `chgrp`
+- Understanding special permissions: SUID, SGID, and sticky bit
+- Working with SELinux security contexts
+- Security best practices and troubleshooting tips
+
+<Callout type="info">
+**Prerequisites**: Basic familiarity with the Linux command line. You'll need sudo privileges for ownership changes and some permission modifications.
+</Callout>
+
+## Understanding File Permissions Basics
+
+Every file and directory in Linux has three types of permissions for three categories of users:
+
+### Permission Types (rwx)
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Symbol</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Permission</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">For Files</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">For Directories</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>r</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Read</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">View file contents</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">List directory contents</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>w</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Write</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Modify file contents</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Create/delete files in directory</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>x</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Execute</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Run file as program/script</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Enter directory (cd into it)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>-</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">No permission</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Cannot perform action</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Cannot perform action</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### User Categories
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Symbol</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Category</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>u</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">User (Owner)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">The file owner</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>g</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Group</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Users in the file's group</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>o</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Others</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Everyone else</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>a</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">All</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">User + Group + Others (u+g+o)</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+## Reading Permission Strings
+
+Let's create some test files and examine their permissions:
+
+```bash
+touch file1.txt
+mkdir dir1
+ls -l
+```
+
+**Output:**
+
+```
+total 0
+drwxr-xr-x. 2 centos9 centos9 6 Oct  6 18:35 dir1
+-rw-r--r--. 1 centos9 centos9 0 Oct  6 18:35 file1.txt
+```
+
+### Decoding the Permission String
+
+Let's analyze the permission string for `file1.txt`: `-rw-r--r--`
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Position</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Characters</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Meaning</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">1</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>-</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">File type (- = regular file, d = directory, l = symlink)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">2-4</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>rw-</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Owner permissions: read + write (no execute)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">5-7</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>r--</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Group permissions: read only</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">8-10</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>r--</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Others permissions: read only</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+**Complete Line Breakdown:**
+
+- `-rw-r--r--`: Permission string
+- `1`: Number of hard links
+- `centos9`: Owner username
+- `centos9`: Group name
+- `0`: File size in bytes
+- `Oct 6 18:35`: Last modification time
+- `file1.txt`: Filename
+
+For the directory `dir1`: `drwxr-xr-x`
+
+- `d`: It's a directory
+- `rwx`: Owner can read, write (add/delete files), and execute (enter directory)
+- `r-x`: Group can read and execute (list and enter), but not write
+- `r-x`: Others can read and execute, but not write
+
+<Callout type="info">
+The dot (`.`) at the end of permissions indicates SELinux security context is applied to the file.
+</Callout>
+
+## Changing Permissions with chmod (Symbolic Mode)
+
+The `chmod` command changes file permissions. Symbolic mode uses letters to represent permissions.
+
+### Adding Execute Permission to Owner
+
+```bash
+chmod u+x file1.txt
+ls -l
+```
+
+**Output:**
+
+```
+-rwxr--r--. 1 centos9 centos9 0 Oct  6 18:35 file1.txt
+```
+
+**Command Breakdown:**
+- `chmod`: Change mode (permissions) command
+- `u+x`: Add (+) execute (x) permission to user/owner (u)
+- `file1.txt`: Target file
+
+**What Changed:**
+- Owner permissions changed from `rw-` to `rwx`
+- The file can now be executed as a program/script by the owner
+
+### Removing Group Read Permission
+
+```bash
+chmod g-r file1.txt
+ls -l
+```
+
+**Output:**
+
+```
+-rwx---r--. 1 centos9 centos9 0 Oct  6 18:35 file1.txt
+```
+
+**Command Breakdown:**
+- `g-r`: Remove (-) read (r) permission from group (g)
+
+**Result:**
+- Group permissions changed from `r--` to `---`
+- Group members can no longer read the file
+
+### Setting Exact Permissions with =
+
+```bash
+chmod u=rwx,g=rx,o= file1.txt
+ls -l
+```
+
+**Output:**
+
+```
+-rwxr-x---. 1 centos9 centos9 0 Oct  6 18:35 file1.txt
+```
+
+**Command Breakdown:**
+- `u=rwx`: Set owner to read, write, execute (exact, replaces existing)
+- `g=rx`: Set group to read and execute (no write)
+- `o=`: Set others to nothing (no permissions)
+- Comma-separated for multiple changes in one command
+
+**Result:**
+- Owner: `rwx` (full access)
+- Group: `r-x` (read and execute)
+- Others: `---` (no access)
+
+<Callout type="info">
+**Symbolic Operators:**
+- `+` : Add permission
+- `-` : Remove permission
+- `=` : Set exact permission (replaces all existing)
+</Callout>
+
+## Changing Permissions with chmod (Numeric Mode)
+
+Numeric (octal) mode uses numbers to represent permissions. Each permission type has a value:
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Permission</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Value</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Binary</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Read (r)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">4</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">100</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Write (w)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">2</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">010</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Execute (x)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">1</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">001</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">No permission (-)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">0</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">000</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+**How to Calculate:**
+- Add values for desired permissions
+- `rwx` = 4 + 2 + 1 = **7**
+- `rw-` = 4 + 2 + 0 = **6**
+- `r-x` = 4 + 0 + 1 = **5**
+- `r--` = 4 + 0 + 0 = **4**
+
+### Setting Permissions to 755
+
+```bash
+chmod 755 file1.txt
+ls -l
+```
+
+**Output:**
+
+```
+-rwxr-xr-x. 1 centos9 centos9 0 Oct  6 18:35 file1.txt
+```
+
+**Permission Breakdown:**
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Position</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Number</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Calculation</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Result</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Category</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">1st digit</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">7</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">4 + 2 + 1</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">rwx</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Owner</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">2nd digit</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">5</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">4 + 0 + 1</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">r-x</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Group</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">3rd digit</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">5</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">4 + 0 + 1</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">r-x</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Others</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+**Use Case:** `755` is common for executables and directories - owner has full control, others can read and execute.
+
+### Setting Permissions to 600
+
+```bash
+chmod 600 file1.txt
+ls -l
+```
+
+**Output:**
+
+```
+-rw-------. 1 centos9 centos9 0 Oct  6 18:35 file1.txt
+```
+
+**Permission Breakdown:**
+- `6` (owner): 4 + 2 = `rw-` (read + write)
+- `0` (group): `---` (no permissions)
+- `0` (others): `---` (no permissions)
+
+**Use Case:** `600` is ideal for private files like SSH keys, config files with passwords - only owner can access.
+
+### Common Numeric Permission Values
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Value</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Symbolic</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Meaning</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Common Use</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>755</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">rwxr-xr-x</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Owner: RWX, Group/Others: RX</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Executables, directories</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>644</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">rw-r--r--</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Owner: RW, Group/Others: R</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Regular files, documents</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>700</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">rwx------</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Owner: RWX, Group/Others: nothing</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Private executables</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>600</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">rw-------</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Owner: RW, Group/Others: nothing</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">SSH keys, sensitive config</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>777</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">rwxrwxrwx</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Everyone: RWX</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">⚠️ Insecure! Avoid in production</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>666</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">rw-rw-rw-</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Everyone: RW</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">⚠️ Insecure! Avoid in production</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+## Changing File Ownership with chown
+
+The `chown` command changes file ownership. Only root or users with sudo can change ownership.
+
+### Changing File Owner
+
+```bash
+sudo chown root file1.txt
+ls -l file1.txt
+```
+
+**Output:**
+
+```
+-rw-------. 1 root centos9 0 Oct  6 18:35 file1.txt
+```
+
+**Command Breakdown:**
+- `sudo`: Execute with superuser privileges (required for ownership changes)
+- `chown`: Change owner command
+- `root`: New owner username
+- `file1.txt`: Target file
+
+**What Changed:**
+- Owner changed from `centos9` to `root`
+- Group remains `centos9`
+- Now only root can read/write this file (permissions are 600)
+
+### Changing Owner and Group Simultaneously
+
+You can change both owner and group in one command:
+
+```bash
+sudo chown user:users file1.txt
+```
+
+**Syntax:** `chown owner:group filename`
+- `user`: New owner
+- `users`: New group (separated by colon)
+
+<Callout type="info">
+**Recursive Changes**: Use `chown -R` to change ownership of directories and all their contents recursively. Example: `sudo chown -R user:group /path/to/directory`
+</Callout>
+
+## Changing Group Ownership with chgrp
+
+The `chgrp` command changes only the group ownership:
+
+```bash
+sudo chgrp wheel file1.txt
+ls -l
+```
+
+**Output:**
+
+```
+-rw-------. 1 root wheel 0 Oct  6 18:35 file1.txt
+```
+
+**Command Breakdown:**
+- `chgrp`: Change group command
+- `wheel`: New group name (common admin group on RHEL/CentOS)
+- `file1.txt`: Target file
+
+**Result:**
+- Group changed from `centos9` to `wheel`
+- Owner remains `root`
+- Members of the `wheel` group now have group-level access (currently none due to 600 permissions)
+
+## Special Permissions: SUID, SGID, and Sticky Bit
+
+Beyond standard rwx permissions, Linux has three special permission bits with powerful security implications.
+
+### SUID (Set User ID) - Executes as Owner
+
+SUID allows a user to execute a file with the permissions of the file's owner.
+
+**Real-World Example: passwd Command**
+
+```bash
+which passwd
+ls -l /usr/bin/passwd
+```
+
+**Output:**
+
+```
+/usr/bin/passwd
+-rwsr-xr-x. 1 root root 32648 Aug 10  2021 /usr/bin/passwd
+```
+
+**Notice the 's' in owner execute position:** `-rwsr-xr-x`
+
+**Why This Matters:**
+- The `passwd` command must modify `/etc/shadow` (owned by root, 000 permissions)
+- Regular users can't normally write to `/etc/shadow`
+- The SUID bit (`s`) allows `passwd` to run with root privileges
+- When user runs `passwd`, it temporarily executes as root to modify the password file
+
+**Setting SUID:**
+
+```bash
+chmod u+s filename    # Symbolic
+chmod 4755 filename   # Numeric (4 prefix enables SUID)
+```
+
+<Callout type="warning">
+**Security Warning**: SUID files running as root are potential security risks. An exploited SUID root binary can grant attackers root access. Only use SUID when absolutely necessary and audit regularly.
+</Callout>
+
+### SGID (Set Group ID) - For Group Collaboration
+
+SGID has different behaviors for files vs. directories:
+
+**For Directories (Most Common Use):**
+
+```bash
+mkdir shared_dir
+sudo chmod g+s shared_dir
+ls -l
+```
+
+**Output:**
+
+```
+drwxr-sr-x. 2 centos9 centos9 6 Oct  6 18:40 shared_dir
+```
+
+**Notice the 's' in group execute position:** `drwxr-sr-x`
+
+**What SGID Does for Directories:**
+- Any file created inside `shared_dir` inherits the directory's group
+- Without SGID: files get the creator's primary group
+- With SGID: files get `centos9` group (the directory's group)
+- Perfect for team collaboration directories
+
+**Setting SGID:**
+
+```bash
+chmod g+s directory   # Symbolic
+chmod 2755 directory  # Numeric (2 prefix enables SGID)
+```
+
+**For Files:**
+- File executes with the group permissions of the file's group
+- Less common than directory SGID
+- Used for specific multi-user application scenarios
+
+### Sticky Bit - Prevent Deletion by Others
+
+The sticky bit is primarily used on directories to restrict deletion.
+
+**Common Example: /tmp Directory**
+
+```bash
+sudo chmod +t /tmp
+ls -ld /tmp
+```
+
+**Output:**
+
+```
+drwxrwxrwt. 44 root root 8192 Oct  6 18:40 /tmp
+```
+
+**Notice the 't' in others execute position:** `drwxrwxrwt`
+
+**What Sticky Bit Does:**
+- On `/tmp`: Everyone can create files (world-writable)
+- BUT: Users can only delete their own files
+- Without sticky bit: Any user could delete anyone's files in a world-writable directory
+- With sticky bit: Only file owner, directory owner, or root can delete files
+
+**Setting Sticky Bit:**
+
+```bash
+chmod +t directory    # Symbolic
+chmod 1777 directory  # Numeric (1 prefix enables sticky bit)
+```
+
+**Use Case:** Shared directories where multiple users create files but shouldn't be able to delete each other's files.
+
+### Special Permissions Numeric Reference
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Special Bit</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Numeric Value</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Symbol</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Position</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Example</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">SUID</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">4</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">s</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Owner execute</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>4755</code> = rwsr-xr-x</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">SGID</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">2</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">s</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Group execute</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>2755</code> = rwxr-sr-x</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Sticky Bit</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">1</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">t</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Others execute</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>1777</code> = rwxrwxrwt</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<Callout type="info">
+**Capital Letter Meaning**: If you see capital `S` or `T`, it means the special bit is set but execute permission is not. Example: `rwSr--r--` means SUID is set but owner can't execute (usually a mistake).
+</Callout>
+
+## Understanding SELinux Security Contexts
+
+SELinux (Security-Enhanced Linux) provides Mandatory Access Control (MAC), adding another layer beyond traditional permissions.
+
+### Viewing SELinux Context
+
+```bash
+ls -Z file1.txt
+```
+
+**Output:**
+
+```
+unconfined_u:object_r:user_home_t:s0 file1.txt
+```
+
+**SELinux Context Fields:**
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Field</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Value</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">User</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>unconfined_u</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">SELinux user (unconfined = less restricted)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Role</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>object_r</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">SELinux role (object_r for files)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Type</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>user_home_t</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Most important: file type context (user home file)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Level</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>s0</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">MLS/MCS level (sensitivity level)</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### Installing SELinux Management Tools
+
+```bash
+sudo dnf install policycoreutils-python-utils
+```
+
+**Output:**
+
+```
+Last metadata expiration check: 2:12:11 ago on Mon 06 Oct 2025 04:31:31 PM PKT.
+Package policycoreutils-python-utils-3.6-3.el9.noarch is already installed.
+Dependencies resolved.
+Nothing to do.
+Complete!
+```
+
+This package provides `semanage`, `restorecon`, and other SELinux management utilities.
+
+### Changing SELinux Context
+
+```bash
+sudo chcon -t httpd_sys_content_t file1.txt
+```
+
+**Command Breakdown:**
+- `chcon`: Change context command
+- `-t`: Specify type field
+- `httpd_sys_content_t`: Apache web server content type
+- This would allow Apache to serve this file (if permissions also allow)
+
+### Restoring Default SELinux Context
+
+```bash
+sudo restorecon -v file1.txt
+```
+
+**Output:**
+
+```
+Relabeled /home/centos9/Razzaq-Labs-II/random/random/permissions/file1.txt from unconfined_u:object_r:httpd_sys_content_t:s0 to unconfined_u:object_r:user_home_t:s0
+```
+
+**Command Breakdown:**
+- `restorecon`: Restore context to default policy
+- `-v`: Verbose (show what changed)
+
+**What Happened:**
+- Context type changed from `httpd_sys_content_t` back to `user_home_t`
+- Based on file location (`/home/centos9`), SELinux knows it should be `user_home_t`
+- This fixes incorrect contexts that might prevent access
+
+<Callout type="info">
+**When SELinux Blocks Access**: If permissions look correct but access is denied, check SELinux. Use `restorecon -Rv /path` to fix contexts or `ausearch -m avc -ts recent` to view denial logs.
+</Callout>
+
+## Troubleshooting Permission Issues
+
+### Permission Denied Errors
+
+**When you see "Permission denied":**
+
+1. **Check current permissions:**
+   ```bash
+   ls -l filename
+   ```
+   - Verify you have required permission (r for read, w for write, x for execute)
+   - Check if you're owner, in group, or other
+
+2. **Verify your user identity:**
+   ```bash
+   whoami
+   id
+   ```
+   - Confirm your username and group memberships
+
+3. **Check SELinux context if permissions seem correct:**
+   ```bash
+   ls -Z filename
+   getenforce  # Check if SELinux is enforcing
+   ```
+   - Even with correct permissions, wrong SELinux context blocks access
+   - Check `/var/log/audit/audit.log` for SELinux denials
+
+### Ownership Changes Not Working
+
+**If `chown` or `chgrp` fails:**
+
+1. **Ensure you have root/sudo:**
+   - Only root can change file ownership
+   - Use `sudo chown` or `sudo chgrp`
+
+2. **Verify user/group exists:**
+   ```bash
+   getent passwd username
+   getent group groupname
+   ```
+   - User/group must exist in the system
+   - Check `/etc/passwd` and `/etc/group`
+
+### Special Bits Not Showing
+
+**Understanding special bit display:**
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Permission</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">With Execute</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Without Execute</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">SUID (owner)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>s</code> (lowercase)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>S</code> (uppercase)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">SGID (group)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>s</code> (lowercase)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>S</code> (uppercase)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Sticky (others)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>t</code> (lowercase)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>T</code> (uppercase)</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+**Example:**
+- `rwsr-xr-x`: SUID set, owner has execute (correct)
+- `rwSr-xr-x`: SUID set, owner has no execute (usually a mistake)
+
+## Best Practices for File Permissions
+
+### Security Best Practices
+
+1. **Follow Principle of Least Privilege**
+   - Grant minimum permissions necessary
+   - Avoid `777` (world-writable) and `666` permissions
+   - Use `750` or `640` instead of `755`/`644` for sensitive files
+
+2. **Protect Sensitive Files**
+   - SSH keys: `600` (`~/.ssh/id_rsa`)
+   - SSH config: `644` (`~/.ssh/config`)
+   - Password files: `600` (configuration files with credentials)
+   - Home directories: `700` or `750`
+
+3. **Audit SUID/SGID Files Regularly**
+   ```bash
+   find / -perm -4000 -type f 2>/dev/null  # Find SUID files
+   find / -perm -2000 -type f 2>/dev/null  # Find SGID files
+   ```
+   - Review list for unauthorized SUID/SGID binaries
+   - Potential security risk if exploited
+
+4. **Use Groups for Shared Access**
+   - Create dedicated groups for projects/teams
+   - Use SGID on shared directories
+   - Avoid making files world-readable/writable
+
+5. **Set Proper Umask**
+   - Default umask `022`: files created as `644`, directories as `755`
+   - Restrictive umask `027`: files as `640`, directories as `750`
+   - Set in `~/.bashrc` or system-wide `/etc/profile`
+
+### Operational Best Practices
+
+1. **Document Permission Decisions**
+   - Record why specific permissions were set
+   - Document SUID/SGID requirements
+   - Maintain permission standards for your organization
+
+2. **Use Symbolic Mode for Clarity**
+   - `chmod u+x script.sh` is clearer than `chmod 755`
+   - Easier to understand intent
+   - Less prone to typos
+
+3. **Recursive Changes with Caution**
+   - `chmod -R 755 /path` affects everything underneath
+   - Can break things if applied incorrectly
+   - Use `find` for selective changes:
+     ```bash
+     find /path -type f -exec chmod 644 {} \;  # Files only
+     find /path -type d -exec chmod 755 {} \;  # Directories only
+     ```
+
+4. **Test Permission Changes**
+   - Test on non-production first
+   - Verify application still works after changes
+   - Have rollback plan ready
+
+5. **Regular Permission Audits**
+   - Review file permissions periodically
+   - Check for world-writable files: `find / -perm -002 -type f`
+   - Monitor changes to critical system files
+
+### Common Permission Patterns
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Use Case</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Permission</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Symbolic</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Example</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Public web content</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">644</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">rw-r--r--</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">HTML, images</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Executable scripts</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">755</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">rwxr-xr-x</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Shell scripts, binaries</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Private config files</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">600</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">rw-------</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">SSH keys, passwords</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Private directories</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">700</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">rwx------</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">~/.ssh directory</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Shared project dir</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">2775</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">rwxrwsr-x</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Team collaboration</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Temporary shared</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">1777</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">rwxrwxrwt</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">/tmp, /var/tmp</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+## Command Cheat Sheet
+
+### Permission Commands
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Command</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Purpose</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Example</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>chmod</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Change file permissions</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>chmod 755 file.sh</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>chown</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Change file owner</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>sudo chown user:group file</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>chgrp</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Change file group</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>sudo chgrp developers file</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>ls -l</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">List files with permissions</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>ls -l /path</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>ls -ld</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Show directory permissions (not contents)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>ls -ld /tmp</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>umask</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">View/set default permission mask</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>umask 022</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>getfacl</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Get ACL (extended permissions)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>getfacl file</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>setfacl</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Set ACL (extended permissions)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>setfacl -m u:user:rwx file</code></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### chmod Symbolic Mode
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Command</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Meaning</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Result</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>chmod u+x file</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Add execute for owner</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Owner can execute</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>chmod g-w file</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Remove write from group</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Group can't modify</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>chmod o=r file</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Set others to read only</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Others: read only</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>chmod a+x file</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Add execute for all</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Everyone can execute</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>chmod u=rwx,go=rx file</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Owner rwx, group/others rx</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Same as 755</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### chmod Numeric Values Quick Reference
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Octal</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Binary</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Symbolic</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Meaning</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">0</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">000</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">---</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">No permissions</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">1</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">001</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">--x</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Execute only</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">2</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">010</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">-w-</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Write only</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">3</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">011</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">-wx</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Write + Execute</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">4</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">100</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">r--</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Read only</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">5</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">101</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">r-x</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Read + Execute</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">6</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">110</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">rw-</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Read + Write</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">7</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">111</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">rwx</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Read + Write + Execute</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### SELinux Commands
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Command</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Purpose</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Example</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>ls -Z</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">View SELinux context</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>ls -Z file</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>chcon</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Change SELinux context</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>sudo chcon -t httpd_sys_content_t file</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>restorecon</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Restore default context</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>sudo restorecon -Rv /path</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>getenforce</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Check SELinux mode</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>getenforce</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>setenforce</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Set SELinux mode</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>sudo setenforce 0</code> (permissive)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>ausearch</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Search SELinux audit logs</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>ausearch -m avc -ts recent</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>semanage</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Manage SELinux policy</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>sudo semanage fcontext -a -t httpd_sys_content_t "/web(/.*)?"</code></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### Finding Files by Permission
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Command</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Purpose</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>find / -perm -4000 -type f</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Find all SUID files</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>find / -perm -2000 -type f</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Find all SGID files</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>find / -perm -002 -type f</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Find world-writable files</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>find / -perm -002 -type d</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Find world-writable directories</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>find /home -perm 777</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Find files with exactly 777 permissions</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+## Summary
+
+In this comprehensive guide, you've mastered Linux file permissions and ownership:
+
+✅ Understanding permission notation (rwx) for users, groups, and others
+✅ Reading and interpreting `ls -l` output with file types and permissions
+✅ Changing permissions with `chmod` using both symbolic and numeric modes
+✅ Managing ownership with `chown` for users and `chgrp` for groups
+✅ Understanding special permissions: SUID, SGID, and sticky bit
+✅ Working with SELinux security contexts and troubleshooting access issues
+✅ Implementing security best practices for file protection
+✅ Troubleshooting common permission-related problems
+
+File permissions are fundamental to Linux security. Proper configuration protects sensitive data, prevents unauthorized access, and ensures system integrity. Always follow the principle of least privilege and regularly audit your permissions.
+
+## What's Next?
+
+Expand your Linux security knowledge with these related topics:
+
+- **Access Control Lists (ACLs)**: Fine-grained permissions beyond owner/group/other
+- **File Attributes**: Immutable and append-only files with `chattr` and `lsattr`
+- **Audit System**: Track file access and modifications with `auditd`
+- **Mandatory Access Control**: Deep dive into SELinux policies and contexts
+- **Filesystem Security**: Encrypted filesystems, secure mounting options
+
+---
+
+*Master file permissions to build secure and well-managed Linux systems!*
