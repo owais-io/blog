@@ -1,13 +1,5 @@
 import { Metadata } from 'next'
-import Link from 'next/link'
-import { format } from 'date-fns'
-import {
-  getPostsMetaAdvanced,
-  getCategoriesByTags,
-  getTagsByCategories,
-  getTagCounts,
-  getCategoryCounts
-} from '../lib/blog'
+import { getAllPosts, getTagCounts, getCategoryCounts } from '../lib/blog'
 import TagsPageClient from '../components/TagsPageClient'
 
 interface TagsPageProps {
@@ -24,38 +16,29 @@ export const metadata: Metadata = {
 }
 
 export default function TagsPage({ searchParams }: TagsPageProps) {
-  const currentPage = parseInt(searchParams.page || '1', 10)
-  
-  // Parse URL parameters for multiple tags and categories
-  const selectedTags = searchParams.tags ? searchParams.tags.split(',').filter(Boolean) : []
-  const selectedCategories = searchParams.categories ? searchParams.categories.split(',').filter(Boolean) : []
-  
-  // Get filtered data based on bidirectional filtering
-  const availableCategories = getCategoriesByTags(selectedTags)
-  const availableTags = getTagsByCategories(selectedCategories)
+  // Fetch all posts once - let client handle filtering
+  const allPosts = getAllPosts().map(post => ({
+    slug: post.slug,
+    title: post.title,
+    description: post.description,
+    date: post.date,
+    tags: post.tags,
+    categories: post.categories,
+    readingTime: post.readingTime,
+    published: post.published,
+    tocEnabled: post.tocEnabled,
+  }))
 
-  // Get tag and category counts
+  // Get tag and category counts (static data)
   const tagCounts = getTagCounts()
   const categoryCounts = getCategoryCounts()
 
-  // Get posts with advanced filtering
-  const { posts, totalPages, totalPosts } = getPostsMetaAdvanced(
-    currentPage,
-    10,
-    selectedTags.length > 0 ? selectedTags : undefined,
-    selectedCategories.length > 0 ? selectedCategories : undefined
-  )
-
   return (
     <TagsPageClient
-      posts={posts}
-      totalPages={totalPages}
-      totalPosts={totalPosts}
-      currentPage={currentPage}
-      availableCategories={availableCategories}
-      availableTags={availableTags}
+      allPosts={allPosts}
       tagCounts={tagCounts}
       categoryCounts={categoryCounts}
+      searchParams={searchParams}
     />
   )
 }

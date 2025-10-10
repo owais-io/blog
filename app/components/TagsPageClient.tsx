@@ -1,6 +1,6 @@
 'use client'
 
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { useCallback, useMemo } from 'react'
 import Link from 'next/link'
 import { format } from 'date-fns'
@@ -10,38 +10,99 @@ import Pagination from './Pagination'
 import { BlogPostMeta } from '../lib/blog'
 
 interface TagsPageClientProps {
-  posts: BlogPostMeta[]
-  totalPages: number
-  totalPosts: number
-  currentPage: number
-  availableCategories: string[]
-  availableTags: string[]
+  allPosts: BlogPostMeta[]
   tagCounts: Record<string, number>
   categoryCounts: Record<string, number>
+  searchParams: {
+    page?: string
+    tags?: string
+    categories?: string
+  }
 }
 
 export default function TagsPageClient({
-  posts,
-  totalPages,
-  totalPosts,
-  currentPage,
-  availableCategories,
-  availableTags,
+  allPosts,
   tagCounts,
-  categoryCounts
+  categoryCounts,
+  searchParams
 }: TagsPageClientProps) {
   const router = useRouter()
-  const searchParams = useSearchParams()
-  
-  const selectedTags = useMemo(() => {
-    const tagsParam = searchParams.get('tags')
-    return tagsParam ? tagsParam.split(',').filter(Boolean) : []
-  }, [searchParams])
-  
-  const selectedCategories = useMemo(() => {
-    const categoriesParam = searchParams.get('categories')
-    return categoriesParam ? categoriesParam.split(',').filter(Boolean) : []
-  }, [searchParams])
+
+  const currentPage = parseInt(searchParams.page || '1', 10)
+  const selectedTags = searchParams.tags ? searchParams.tags.split(',').filter(Boolean) : []
+  const selectedCategories = searchParams.categories ? searchParams.categories.split(',').filter(Boolean) : []
+
+  // Client-side filtering
+  const filteredPosts = useMemo(() => {
+    let filtered = allPosts
+
+    // Filter by tags
+    if (selectedTags.length > 0) {
+      filtered = filtered.filter(post =>
+        selectedTags.some(tag =>
+          post.tags.map(t => t.toLowerCase()).includes(tag.toLowerCase())
+        )
+      )
+    }
+
+    // Filter by categories
+    if (selectedCategories.length > 0) {
+      filtered = filtered.filter(post =>
+        selectedCategories.some(category =>
+          post.categories.some(postCategory =>
+            postCategory.toLowerCase() === category.toLowerCase()
+          )
+        )
+      )
+    }
+
+    return filtered
+  }, [allPosts, selectedTags, selectedCategories])
+
+  // Get available categories based on selected tags
+  const availableCategories = useMemo(() => {
+    if (selectedTags.length === 0) {
+      return Array.from(new Set(allPosts.flatMap(post => post.categories))).sort()
+    }
+
+    const categories = new Set<string>()
+    allPosts.forEach(post => {
+      const hasSelectedTag = selectedTags.some(tag =>
+        post.tags.map(t => t.toLowerCase()).includes(tag.toLowerCase())
+      )
+      if (hasSelectedTag) {
+        post.categories.forEach(cat => categories.add(cat))
+      }
+    })
+    return Array.from(categories).sort()
+  }, [allPosts, selectedTags])
+
+  // Get available tags based on selected categories
+  const availableTags = useMemo(() => {
+    if (selectedCategories.length === 0) {
+      return Array.from(new Set(allPosts.flatMap(post => post.tags))).sort()
+    }
+
+    const tags = new Set<string>()
+    allPosts.forEach(post => {
+      const hasSelectedCategory = selectedCategories.some(category =>
+        post.categories.some(postCategory =>
+          postCategory.toLowerCase() === category.toLowerCase()
+        )
+      )
+      if (hasSelectedCategory) {
+        post.tags.forEach(tag => tags.add(tag))
+      }
+    })
+    return Array.from(tags).sort()
+  }, [allPosts, selectedCategories])
+
+  // Client-side pagination
+  const POSTS_PER_PAGE = 10
+  const totalPosts = filteredPosts.length
+  const totalPages = Math.ceil(totalPosts / POSTS_PER_PAGE)
+  const startIndex = (currentPage - 1) * POSTS_PER_PAGE
+  const paginatedPosts = filteredPosts.slice(startIndex, startIndex + POSTS_PER_PAGE)
 
   const updateURL = useCallback((newTags: string[], newCategories: string[], page = 1) => {
     const params = new URLSearchParams()
@@ -263,7 +324,7 @@ export default function TagsPageClient({
           </div>
 
           {/* Blog Posts */}
-          {posts.length === 0 ? (
+          {paginatedPosts.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-gray-500 dark:text-gray-400 text-lg">
                 No posts found with the selected filters.
@@ -277,7 +338,7 @@ export default function TagsPageClient({
             </div>
           ) : (
             <div className="space-y-8">
-              {posts.map((post) => (
+              {paginatedPosts.map((post) => (
                 <article key={post.slug} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow">
                   <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mb-3">
                     {/* <time dateTime={post.date}>
@@ -286,7 +347,7 @@ export default function TagsPageClient({
                     <span>•</span>
                     <span>{post.readingTime}</span>
                   </div>
-                  
+
                   <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
                     <Link
                       href={`/blog/${post.slug}`}
@@ -295,13 +356,13 @@ export default function TagsPageClient({
                       {post.title}
                     </Link>
                   </h2>
-                  
+
                   {post.description && (
                     <p className="text-gray-600 dark:text-gray-300 mb-4 leading-relaxed">
                       {post.description}
                     </p>
                   )}
-                  
+
                   <div className="flex items-center justify-between">
                     <div className="flex flex-wrap gap-2">
                       {post.categories && post.categories.length > 0 && (
@@ -319,7 +380,7 @@ export default function TagsPageClient({
                         </button>
                       ))}
                     </div>
-                    
+
                     <Link
                       href={`/blog/${post.slug}`}
                       className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium text-sm"
