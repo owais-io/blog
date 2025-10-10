@@ -1,17 +1,9 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
-import dynamic from 'next/dynamic'
 import './globals.css'
 import Header from './components/Header'
 import { ThemeProvider } from './components/ThemeProvider'
-
-// Defer analytics to improve initial page load
-const Analytics = dynamic(() => import('@vercel/analytics/next').then(m => m.Analytics), {
-  ssr: false
-})
-const SpeedInsights = dynamic(() => import('@vercel/speed-insights/next').then(m => m.SpeedInsights), {
-  ssr: false
-})
+import { GoogleAnalytics } from '@next/third-parties/google'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -86,8 +78,7 @@ export default function RootLayout({
             </div>
           </footer>
         </ThemeProvider>
-        <Analytics />
-        <SpeedInsights />
+        <GoogleAnalytics gaId="G-GTL0QED6PK" />
       </body>
     </html>
   )
