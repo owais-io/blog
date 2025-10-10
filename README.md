@@ -246,11 +246,104 @@ Updated EC2 security group to allow SSH access from GitHub Actions runners:
 - **Security** - SSL/TLS, SSH key management, firewall configuration
 - **DNS Management** - Domain configuration, A records, propagation
 
-### Challenges Overcome
-- **Memory constraints** on t2.micro - Implemented swap space and optimized build process
-- **SSH authentication** for GitHub Actions - Created dedicated key pairs and secured them
-- **DNS propagation** - Properly configured A records and understood caching implications
-- **Zero-downtime deployments** - Leveraged PM2's graceful restart capabilities
+### Challenges Overcome & Debugging Journey
+
+#### 1. **Memory Constraints on t2.micro**
+**Problem**: t2.micro instance has only 1GB RAM, which is insufficient for Next.js builds.
+
+**Error Encountered**:
+```
+FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory
+```
+
+**Solution**:
+- Created 2GB swap space to supplement physical RAM
+- Set `NODE_OPTIONS="--max-old-space-size=1536"` in deployment script
+- Optimized build process to use available memory efficiently
+
+```bash
+sudo fallocate -l 2G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+```
+
+#### 2. **GitHub Actions SSH Authentication Failure**
+**Problem**: First deployment attempt failed with SSH key parsing error.
+
+**Error Encountered**:
+```
+2025/10/10 17:48:37 ssh.ParsePrivateKey: ssh: no key found
+```
+
+**Root Cause**: The private SSH key wasn't copied correctly to GitHub Secrets - missing characters or extra whitespace.
+
+**Solution**:
+- Regenerated the private key display: `cat ~/.ssh/github_actions_key`
+- Carefully copied the **entire** key including `-----BEGIN OPENSSH PRIVATE KEY-----` and `-----END OPENSSH PRIVATE KEY-----`
+- Updated the `EC2_SSH_KEY` secret in GitHub with the complete, unmodified key
+- Ensured no extra spaces or line breaks were added during copy-paste
+
+**Lesson Learned**: Always verify secret values are copied exactly as displayed in terminal.
+
+#### 3. **GitHub Actions Network Timeout**
+**Problem**: After fixing the SSH key, deployment failed with connection timeout.
+
+**Error Encountered**:
+```
+2025/10/10 17:54:49 dial tcp ***:22: i/o timeout
+Error: Process completed with exit code 1.
+```
+
+**Root Cause**: EC2 security group was configured to allow SSH only from "My IP", blocking GitHub Actions runners.
+
+**Solution**:
+- Updated EC2 security group inbound rules
+- Added SSH (port 22) access from `0.0.0.0/0` to allow GitHub's dynamic runner IPs
+- Maintained the rule allowing my personal IP for manual SSH access
+- Configured proper descriptions for each rule to track their purpose
+
+**Security Note**: While opening port 22 to all IPs is less restrictive, I mitigated risk by:
+- Using SSH key authentication (no password authentication)
+- Keeping the SSH key secure in GitHub Secrets
+- Monitoring access logs regularly with `sudo tail -f /var/log/auth.log`
+
+#### 4. **DNS Propagation Delay**
+**Problem**: Domain didn't immediately point to EC2 instance after updating DNS records.
+
+**Root Cause**: DNS caching at multiple levels (local machine, ISP, global DNS servers).
+
+**Solution**:
+- Verified DNS records were correctly set in GoDaddy (A record: `owais.io` → `98.90.226.233`)
+- Tested DNS propagation using: `nslookup owais.io 8.8.8.8` (Google DNS)
+- Cleared local DNS cache on development machine
+- Waited 10-15 minutes for global DNS propagation
+- Verified EC2 was responding correctly to IP address before troubleshooting DNS
+
+**Diagnostic Commands Used**:
+```bash
+# Test DNS resolution
+nslookup owais.io
+dig owais.io
+
+# Test direct IP access
+curl -I http://98.90.226.233
+
+# Check global DNS propagation
+# Used: https://dnschecker.org
+```
+
+#### 5. **Zero-Downtime Deployments**
+**Challenge**: Ensuring the site remains available during automated deployments.
+
+**Solution**: Leveraged PM2's graceful restart capability
+- PM2 automatically spawns new process before killing old one
+- Configured `pm2 restart blog` instead of `pm2 stop` then `pm2 start`
+- Used `pm2 save` to persist process list
+- Set up `pm2 startup` to auto-restart on system reboot
+
+**Result**: Achieved seamless deployments with no user-facing downtime.
 
 ## 🚀 Running Locally
 
