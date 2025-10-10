@@ -1,9 +1,9 @@
 # My Personal Blog & Portfolio
 
-[![Deploy Status](https://github.com/YOUR_USERNAME/blog/workflows/Deploy%20to%20EC2/badge.svg)](https://github.com/YOUR_USERNAME/blog/actions)
+[![Deploy Status](https://github.com/owais-io/blog/workflows/Deploy%20to%20EC2/badge.svg)](https://github.com/owais-io/blog/actions)
 [![Live Site](https://img.shields.io/badge/live-owais.io-blue)](https://owais.io)
 
-## 🚀 About This Project
+## About This Project
 
 This is my personal blog and portfolio website where I write comprehensive technical tutorials and share insights on topics including:
 
@@ -14,11 +14,11 @@ This is my personal blog and portfolio website where I write comprehensive techn
 - **AI/ML** - Artificial intelligence, machine learning implementations
 - **And more...**
 
-I built this project to demonstrate my full-stack development capabilities, cloud deployment expertise, and DevOps practices. It showcases my ability to architect, develop, deploy, and maintain a production-grade web application.
+I built this project to demonstrate my expertise in system architecture, cloud deployment, and DevOps practices. It showcases my ability to design, deploy, and maintain production-grade infrastructure and applications.
 
-## 🛠️ Tech Stack
+## Tech Stack
 
-### Frontend & Framework
+### Frontend & Framework (designed with the help of Claude)
 - **Next.js 14** - React framework with App Router
 - **TypeScript** - Type-safe development
 - **Tailwind CSS** - Utility-first styling
@@ -31,7 +31,7 @@ I built this project to demonstrate my full-stack development capabilities, clou
 - **Let's Encrypt** - Free SSL/TLS certificates via Certbot
 - **GitHub Actions** - Automated CI/CD pipeline
 
-## 🏗️ Architecture Overview
+## Architecture Overview
 
 ```
 User Request (HTTPS)
@@ -47,7 +47,7 @@ User Request (HTTPS)
     Static & Dynamic Content
 ```
 
-## 📦 AWS EC2 Deployment (Free Tier)
+## AWS EC2 Deployment (Free Tier)
 
 I deployed this application on AWS EC2 to gain hands-on experience with cloud infrastructure management while keeping costs minimal.
 
@@ -221,34 +221,81 @@ Updated EC2 security group to allow SSH access from GitHub Actions runners:
 
 ### Benefits of This CI/CD Setup
 
-✅ **Automated Deployments** - Push to main branch and changes go live automatically
-✅ **Zero Downtime** - PM2 performs graceful restarts
-✅ **Fast Iterations** - Typical deployment completes in 1-2 minutes
-✅ **Reduced Human Error** - Eliminates manual deployment steps
-✅ **Audit Trail** - Full deployment history in GitHub Actions logs
-✅ **Rollback Capability** - Can revert to previous commits if needed
+**Automated Deployments** - Push to main branch and changes go live automatically
+**Zero Downtime** - PM2 performs graceful restarts
+**Fast Iterations** - Typical deployment completes in 1-2 minutes
+**Reduced Human Error** - Eliminates manual deployment steps
+**Audit Trail** - Full deployment history in GitHub Actions logs
+**Rollback Capability** - Can revert to previous commits if needed
 
-## 🎯 Key Features & Learnings
+## 🔔 Monitoring & Alerting with CloudWatch
+
+To ensure high availability and immediate awareness of any issues, I implemented AWS CloudWatch alarms with SNS notifications.
+
+### Setup Process
+
+#### 1. **Create SNS Topic**
+Created an SNS topic to receive and distribute alerts:
+```bash
+# Via AWS Console:
+# SNS → Topics → Create topic
+# Type: Standard
+# Name: EC2-Instance-Down-Alert
+```
+
+#### 2. **Subscribe to Notifications**
+Configured email notifications for instant alerts:
+- Created email subscription to the SNS topic
+- Confirmed subscription via email link
+- Optional: Added SMS subscription for mobile alerts (format: +923001234567)
+
+#### 3. **Configure CloudWatch Alarm**
+Set up CloudWatch alarm to monitor instance health:
+- **Metric**: `StatusCheckFailed` (Per-Instance)
+- **Threshold**: Alert when ≥ 1
+- **Period**: 5 minutes (free tier)
+- **Action**: Send notification to SNS topic
+- **Result**: Immediate email alert when instance goes down
+
+### Monitoring Coverage
+
+**Current Alarms:**
+- **Instance Status Check** - Detects instance failures, stops, or crashes
+- Triggers within 5-10 minutes of failure
+- Email notification with instance details
+
+**Additional Recommended Alarms:**
+- High CPU Utilization (>80%) - Catch performance issues
+- Low CPU Credit Balance (<20) - Prevent t2.micro throttling
+- Disk Space Usage (>80%) - Requires CloudWatch agent
+- Memory Pressure (>90%) - Requires CloudWatch agent
+
+### Benefits
+- **Immediate Awareness** - Know about issues within minutes
+- **Proactive Response** - Address problems before users notice
+- **Free Tier Friendly** - Basic monitoring included in AWS free tier
+- **Uptime Tracking** - Historical data for reliability metrics
+
+## Key Features & Learnings
 
 ### What I Built
-- 📝 **MDX-powered blog** with syntax highlighting and rich content
-- 🏷️ **Dynamic tagging system** with filter functionality
-- 📱 **Responsive design** optimized for all devices
-- 🔍 **SEO optimization** with meta tags and sitemap
-- ⚡ **Performance optimized** with Next.js static generation
-- 🔒 **HTTPS everywhere** with automatic SSL renewal
+- **MDX-powered blog** with syntax highlighting and rich content
+- **Dynamic tagging system** with filter functionality
+- **Responsive design** optimized for all devices
+- **SEO optimization** with meta tags and sitemap
+- **Performance optimized** with Next.js static generation
+- **HTTPS everywhere** with automatic SSL renewal
 
 ### Skills Demonstrated
-- **Full-Stack Development** - Next.js, TypeScript, React, Tailwind
 - **Cloud Infrastructure** - AWS EC2, VPC, Security Groups, Elastic IP
 - **System Administration** - Linux, Nginx, PM2, SSH
 - **DevOps** - CI/CD pipelines, automated deployments, GitHub Actions
 - **Security** - SSL/TLS, SSH key management, firewall configuration
 - **DNS Management** - Domain configuration, A records, propagation
 
-### Challenges Overcome & Debugging Journey
+## Troubleshooting / Debugging
 
-#### 1. **Memory Constraints on t2.micro**
+### 1. **Memory Constraints on t2.micro**
 **Problem**: t2.micro instance has only 1GB RAM, which is insufficient for Next.js builds.
 
 **Error Encountered**:
@@ -269,7 +316,7 @@ sudo swapon /swapfile
 echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
 ```
 
-#### 2. **GitHub Actions SSH Authentication Failure**
+### 2. **GitHub Actions SSH Authentication Failure**
 **Problem**: First deployment attempt failed with SSH key parsing error.
 
 **Error Encountered**:
@@ -287,7 +334,7 @@ echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
 
 **Lesson Learned**: Always verify secret values are copied exactly as displayed in terminal.
 
-#### 3. **GitHub Actions Network Timeout**
+### 3. **GitHub Actions Network Timeout**
 **Problem**: After fixing the SSH key, deployment failed with connection timeout.
 
 **Error Encountered**:
@@ -309,7 +356,7 @@ Error: Process completed with exit code 1.
 - Keeping the SSH key secure in GitHub Secrets
 - Monitoring access logs regularly with `sudo tail -f /var/log/auth.log`
 
-#### 4. **DNS Propagation Delay**
+### 4. **DNS Propagation Delay**
 **Problem**: Domain didn't immediately point to EC2 instance after updating DNS records.
 
 **Root Cause**: DNS caching at multiple levels (local machine, ISP, global DNS servers).
@@ -334,7 +381,7 @@ curl -I http://98.90.226.233
 # Used: https://dnschecker.org
 ```
 
-#### 5. **Zero-Downtime Deployments**
+### 5. **Zero-Downtime Deployments**
 **Challenge**: Ensuring the site remains available during automated deployments.
 
 **Solution**: Leveraged PM2's graceful restart capability
@@ -345,7 +392,7 @@ curl -I http://98.90.226.233
 
 **Result**: Achieved seamless deployments with no user-facing downtime.
 
-## 🚀 Running Locally
+## Running Locally
 
 ```bash
 # Clone the repository
@@ -367,7 +414,7 @@ npm start
 
 Visit `http://localhost:3000` to see the site.
 
-## 📊 Project Stats
+## Project Stats
 
 - **Lines of Code**: 5000+ (TypeScript, TSX, CSS)
 - **Blog Posts**: Growing collection of technical tutorials
@@ -375,23 +422,19 @@ Visit `http://localhost:3000` to see the site.
 - **Deployment Time**: ~1-2 minutes (automated)
 - **Uptime**: 99.9% (monitored via PM2)
 
-## 🔗 Links
+## Links
 
 - **Live Site**: [owais.io](https://owais.io)
 - **GitHub Actions**: [Deployment History](https://github.com/YOUR_USERNAME/blog/actions)
-
-## 📝 License
-
-This project is open source and available under the [MIT License](LICENSE).
 
 ## 📧 Contact
 
 Feel free to reach out if you have questions about this project or want to discuss opportunities!
 
 - **Website**: [owais.io](https://owais.io)
-- **GitHub**: [@YOUR_USERNAME](https://github.com/YOUR_USERNAME)
-- **Email**: your.email@example.com
+- **GitHub**: [@owais-io](https://github.com/owais-io)
+- **Email**: owais.abbasi9@gmail.com
 
 ---
 
-**Built with ❤️ using Next.js, deployed on AWS EC2, and automated with GitHub Actions.**
+**Built using Next.js, deployed on AWS EC2, and automated with GitHub Actions.**

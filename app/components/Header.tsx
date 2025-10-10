@@ -30,7 +30,7 @@ export default function Header() {
     { href: '/tags', label: 'Tags' },
     { href: '/about', label: 'About' },
     { href: '/contact', label: 'Contact' },
-    // { href: '/projects', label: 'Projects' },
+    { href: '/projects', label: 'Projects' },
   ]
 
   return (

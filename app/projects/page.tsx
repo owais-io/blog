@@ -16,51 +16,36 @@ interface Project {
   githubUrl?: string
   liveUrl?: string
   status: 'completed' | 'in-progress' | 'planned'
+  highlights?: string[]
+  metrics?: {
+    label: string
+    value: string
+  }[]
 }
 
 const projects: Project[] = [
   {
     id: 1,
     title: "Personal Blog Platform",
-    description: "A modern, SEO-optimized blog built with Next.js 14 and Tailwind CSS. Features MDX support, tag filtering, pagination, and automated sitemap generation.",
-    technologies: ["Next.js", "TypeScript", "Tailwind CSS", "MDX", "Vercel"],
-    githubUrl: "https://github.com/owais/blog",
+    description: "A production-grade blog platform deployed on AWS EC2 (t2.micro) with fully automated CI/CD pipeline. Demonstrates expertise in cloud infrastructure, system administration, and DevOps best practices. Features zero-downtime deployments via GitHub Actions, Nginx reverse proxy, PM2 process management, and SSL/TLS encryption with Let's Encrypt. Overcame memory constraints on free tier by implementing swap space and optimizing Node.js build process. Achieved 99.9% uptime with 1-2 minute deployment cycles from git push to production.",
+    technologies: ["Next.js", "TypeScript", "AWS EC2", "GitHub Actions", "Linux", "Nginx", "PM2", "Let's Encrypt"],
+    githubUrl: "https://github.com/owais-io/blog",
     liveUrl: "https://owais.io",
-    status: "completed"
-  },
-  {
-    id: 2,
-    title: "Task Management Dashboard",
-    description: "A comprehensive task management application with real-time updates, team collaboration features, and advanced filtering capabilities.",
-    technologies: ["React", "Node.js", "PostgreSQL", "Socket.io", "Docker"],
-    githubUrl: "https://github.com/owais/task-manager",
-    liveUrl: "https://tasks.owais.io",
-    status: "completed"
-  },
-  {
-    id: 3,
-    title: "E-commerce Analytics Platform",
-    description: "A data visualization platform for e-commerce businesses to track sales, customer behavior, and inventory metrics with interactive charts and reports.",
-    technologies: ["Vue.js", "Python", "FastAPI", "Chart.js", "Redis"],
-    githubUrl: "https://github.com/owais/ecommerce-analytics",
-    status: "in-progress"
-  },
-  {
-    id: 4,
-    title: "Open Source Component Library",
-    description: "A collection of reusable React components with TypeScript support, comprehensive documentation, and Storybook integration.",
-    technologies: ["React", "TypeScript", "Storybook", "Rollup", "Jest"],
-    githubUrl: "https://github.com/owais/react-components",
-    liveUrl: "https://components.owais.io",
-    status: "in-progress"
-  },
-  {
-    id: 5,
-    title: "DevOps Automation Suite",
-    description: "A collection of tools and scripts for automating deployment pipelines, monitoring, and infrastructure management across cloud providers.",
-    technologies: ["Python", "Docker", "Kubernetes", "Terraform", "GitHub Actions"],
-    githubUrl: "https://github.com/owais/devops-suite",
-    status: "planned"
+    status: "completed",
+    highlights: [
+      "Fully automated CI/CD with GitHub Actions",
+      "Zero-downtime deployments using PM2 graceful restarts",
+      "SSL/TLS encryption with auto-renewal",
+      "Optimized for t2.micro free tier (1GB RAM)",
+      "Custom Nginx reverse proxy configuration",
+      "99.9% uptime with monitoring"
+    ],
+    metrics: [
+      { label: "Deployment Time", value: "1-2 min" },
+      { label: "Build Time", value: "~2 min" },
+      { label: "Uptime", value: "99.9%" },
+      { label: "Monthly Cost", value: "$0 (Free Tier)" }
+    ]
   }
 ]
 
@@ -89,7 +74,7 @@ export default function ProjectsPage() {
         </p>
       </div>
 
-      <div className="grid gap-8 md:grid-cols-2">
+      <div className="grid gap-8">
         {projects.map((project) => (
           <div
             key={project.id}
@@ -110,9 +95,38 @@ export default function ProjectsPage() {
             </div>
 
             {/* Project Description */}
-            <p className="text-gray-600 dark:text-gray-300 mb-4 leading-relaxed">
+            <p className="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
               {project.description}
             </p>
+
+            {/* Key Highlights */}
+            {project.highlights && project.highlights.length > 0 && (
+              <div className="mb-6">
+                <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-3">Key Highlights</h3>
+                <ul className="space-y-2">
+                  {project.highlights.map((highlight, index) => (
+                    <li key={index} className="flex items-start text-sm text-gray-600 dark:text-gray-300">
+                      <svg className="w-5 h-5 mr-2 text-green-500 dark:text-green-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      {highlight}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Project Metrics */}
+            {project.metrics && project.metrics.length > 0 && (
+              <div className="mb-6 grid grid-cols-2 sm:grid-cols-4 gap-4">
+                {project.metrics.map((metric, index) => (
+                  <div key={index} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 text-center">
+                    <div className="text-lg font-bold text-gray-900 dark:text-white">{metric.value}</div>
+                    <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">{metric.label}</div>
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* Technologies */}
             <div className="mb-6">
@@ -121,7 +135,7 @@ export default function ProjectsPage() {
                 {project.technologies.map((tech) => (
                   <span
                     key={tech}
-                    className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200"
+                    className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200"
                   >
                     {tech}
                   </span>
@@ -174,13 +188,13 @@ export default function ProjectsPage() {
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <a
-              href="mailto:hello@owais.io"
+              href="mailto:owais.abbasi9@gmail.com"
               className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-800 transition-colors"
             >
               Get in Touch
             </a>
             <a
-              href="https://github.com/owais"
+              href="https://github.com/owais-io"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center px-6 py-3 border border-gray-300 dark:border-gray-600 text-base font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
