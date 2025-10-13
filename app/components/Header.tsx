@@ -27,10 +27,11 @@ export default function Header() {
 
   const navItems = [
     { href: '/', label: 'Home' },
+    { href: '/projects', label: 'Projects' },
+    { href: '/categories', label: 'Categories' },
     { href: '/tags', label: 'Tags' },
     { href: '/about', label: 'About' },
     { href: '/contact', label: 'Contact' },
-    { href: '/projects', label: 'Projects' },
   ]
 
   return (
