@@ -1,0 +1,1388 @@
+---
+title: "Docker Container Debugging Fundamentals: Networking, Resource Management, and System Maintenance - Part 2"
+description: "Master advanced Docker debugging with docker attach, container networking, inter-container communication, resource monitoring with docker stats, build debugging, and system maintenance commands. Complete guide from beginner to advanced."
+date: "2025-10-15T18:35:00.000Z"
+tags: ["docker", "debugging", "networking", "docker-attach", "docker-stats", "docker-network"]
+published: true
+categories: ["Docker"]
+author: "Owais"
+seo:
+  canonical: "https://owais.io/blog/2025-10-15_docker-debugging-attach-network-resources-part2"
+  keywords: ["docker debugging", "docker attach", "docker network", "docker stats", "resource limits", "container networking", "inter-container communication", "docker system"]
+toc: true
+---
+
+## Introduction
+
+Welcome to Part 2 of our comprehensive Docker debugging series! In [Part 1](/blog/2025-10-15_docker-debugging-logs-exec-inspect-part1), you mastered viewing logs, executing commands inside containers, and inspecting container details. Now, we'll dive into advanced debugging techniques that are crucial for troubleshooting complex containerized applications.
+
+This guide covers container attachment, network debugging, resource monitoring, build troubleshooting, and system maintenance—skills that distinguish proficient DevOps engineers from beginners.
+
+<Callout type="info">
+🎯 **What You'll Learn in Part 2**:
+- Attach directly to container processes with `docker attach`
+- Detach from containers without stopping them
+- Debug container networking and inter-container communication
+- Inspect and create Docker networks
+- Monitor resource usage with `docker stats`
+- Troubleshoot Docker build failures
+- Maintain system health with cleanup commands
+
+**Prerequisites**:
+- Complete Part 1 of this series (or equivalent Docker knowledge)
+- Docker installed on your system
+- Basic understanding of networking concepts
+- debug-container from Part 1 (or create it following the setup)
+</Callout>
+
+## Quick Lab Setup Recap
+
+If you haven't completed Part 1 or need to recreate the test environment:
+
+```bash
+mkdir debug-practice && cd debug-practice
+
+# Create app.py (Python HTTP server with logging)
+cat > app.py << 'EOF'
+import time
+import sys
+import logging
+from http.server import HTTPServer, BaseHTTPRequestHandler
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
+class SimpleHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        logger.info(f"Received GET request for {self.path}")
+        if self.path == '/':
+            self.send_response(200)
+            self.send_header('Content-type', 'text/html')
+            self.end_headers()
+            self.wfile.write(b'<h1>Debug Lab Application</h1>')
+        elif self.path == '/error':
+            logger.error("Intentional error endpoint accessed")
+            self.send_response(500)
+            self.end_headers()
+            self.wfile.write(b'Internal Server Error')
+        elif self.path == '/slow':
+            logger.warning("Slow endpoint accessed - simulating delay")
+            time.sleep(5)
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(b'Slow response completed')
+        else:
+            logger.warning(f"404 - Path not found: {self.path}")
+            self.send_response(404)
+            self.end_headers()
+            self.wfile.write(b'Not Found')
+
+if __name__ == '__main__':
+    server = HTTPServer(('0.0.0.0', 8080), SimpleHandler)
+    logger.info("Starting server on port 8080")
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        logger.info("Server stopped")
+        server.server_close()
+EOF
+
+# Create Dockerfile
+cat > Dockerfile << 'EOF'
+FROM python:3.9-slim
+WORKDIR /app
+COPY app.py .
+EXPOSE 8080
+CMD [ "python", "app.py" ]
+EOF
+
+# Build and run
+docker build -t debug-app .
+docker run -d --name debug-container -p 8080:8080 debug-app
+```
+
+## Docker Attach: Connecting to the Main Process
+
+While `docker exec` creates a new process inside a container, `docker attach` connects your terminal directly to the container's main process (PID 1). This is useful for interactive containers or when you need to see the output in real-time.
+
+<Callout type="warning">
+**Critical Difference**:
+- **docker exec**: Creates a new separate process. Exiting doesn't stop the container.
+- **docker attach**: Attaches to the main process. `Ctrl+C` will stop the container!
+</Callout>
+
+### Demonstrating Attach with a Simple Container
+
+Let's create a container that continuously outputs messages:
+
+```bash
+docker run -d --name interactive-container alpine sh -c "while true; do echo 'Container is running...'; sleep 5; done"
+```
+
+**Command Breakdown:**
+- `alpine`: Minimal Linux distribution (~5MB image)
+- `sh -c "..."`: Runs a shell command
+- `while true; do ... done`: Infinite loop
+- `echo 'Container is running...'`: Prints message
+- `sleep 5`: Waits 5 seconds between iterations
+
+**Output:**
+```
+5fdc956d31e27ad8d75d747d4622c4f975fda26d1e2d56021057484d0fbc3b2d
+```
+
+Now attach to this container:
+
+```bash
+docker attach interactive-container
+```
+
+**Output:**
+```
+Container is running...
+Container is running...
+Container is running...
+Container is running...
+```
+
+You'll see the repeating output in real-time. This is the container's STDOUT stream.
+
+**What's Happening:**
+- Your terminal is now connected to the container's main process
+- You see everything the process outputs
+- Any input you type goes to the process's STDIN
+
+Press `Ctrl+C` to detach:
+
+**Result:**
+```
+^C
+```
+
+Check if the container is still running:
+
+```bash
+docker ps
+```
+
+**Output:**
+```
+CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+```
+
+The container is **stopped**! When you pressed `Ctrl+C`, you sent a SIGINT signal to the main process, terminating it and stopping the container.
+
+### Detaching Without Stopping: Ctrl+P, Ctrl+Q
+
+To detach from a container **without stopping it**, use the special escape sequence: `Ctrl+P`, `Ctrl+Q`.
+
+Let's try with a proper interactive container:
+
+```bash
+docker run -dit --name shell-container ubuntu bash
+```
+
+**Flag Breakdown:**
+- `-d`: Detached mode
+- `-i`: Interactive (keep STDIN open)
+- `-t`: Allocate a pseudo-TTY
+- `bash`: Run bash shell
+
+**Output:**
+```
+690e84a5b1f46365e4b444bf2deec8334d221001673619e79de5e4be206e1db9
+```
+
+<Callout type="info">
+**Why -dit?**
+- `-d`: Starts container in background
+- `-i` and `-t`: Required for interactive programs like bash
+- Without `-it`, bash would immediately exit (no interactive input)
+</Callout>
+
+Attach to the container:
+
+```bash
+docker attach shell-container
+```
+
+You'll get a bash prompt:
+
+```bash
+root@690e84a5b1f4:/#
+```
+
+Now you can run commands:
+
+```bash
+ls -al
+```
+
+**Output:**
+```
+total 0
+drwxr-xr-x.   1 root root   6 Oct 15 12:08 .
+drwxr-xr-x.   1 root root   6 Oct 15 12:08 ..
+-rwxr-xr-x.   1 root root   0 Oct 15 12:08 .dockerenv
+lrwxrwxrwx.   1 root root   7 Apr 22  2024 bin -> usr/bin
+drwxr-xr-x.   2 root root   6 Apr 22  2024 boot
+drwxr-xr-x.   5 root root 360 Oct 15 12:08 dev
+drwxr-xr-x.   1 root root  66 Oct 15 12:08 etc
+drwxr-xr-x.   3 root root  20 Oct  1 02:10 home
+...
+```
+
+Check processes:
+
+```bash
+ps aux
+```
+
+**Output:**
+```
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root           1  0.2  0.0   4588  4072 pts/0    Ss   12:08   0:00 bash
+root          11  0.0  0.0   7888  4060 pts/0    R+   12:08   0:00 ps aux
+```
+
+**Key Observation:**
+- PID 1 is bash (the main process)
+- We're directly interacting with this process through attach
+
+Now detach **without stopping** the container. Press:
+1. `Ctrl+P` (you won't see anything)
+2. `Ctrl+Q` immediately after
+
+**Output:**
+```
+read escape sequence
+```
+
+You're back at your host terminal. Verify the container is still running:
+
+```bash
+docker ps
+```
+
+**Output:**
+```
+CONTAINER ID   IMAGE     COMMAND   CREATED         STATUS         PORTS     NAMES
+690e84a5b1f4   ubuntu    "bash"    2 minutes ago   Up 2 minutes             shell-container
+```
+
+Perfect! The container is still running.
+
+### Docker Exec vs Docker Attach: Practical Comparison
+
+Let's demonstrate the key difference. Using `docker exec` to access the same container:
+
+```bash
+docker exec -it shell-container bash
+```
+
+You get another bash shell. Run:
+
+```bash
+ps aux
+```
+
+**Output:**
+```
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root           1  0.0  0.0   4588  4072 pts/0    Ss+  12:08   0:00 bash
+root          15  0.3  0.0   4588  4096 pts/1    Ss   12:12   0:00 bash
+root          25  0.0  0.0   7888  3964 pts/1    R+   12:12   0:00 ps aux
+```
+
+**Analysis:**
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">PID</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">TTY</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">1</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">pts/0</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Original bash (main process from docker attach)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">15</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">pts/1</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">New bash (created by docker exec)</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+Now exit from this exec session:
+
+```bash
+exit
+```
+
+Check if the container is still running:
+
+```bash
+docker ps
+```
+
+**Output:**
+```
+CONTAINER ID   IMAGE     COMMAND   CREATED         STATUS         PORTS     NAMES
+690e84a5b1f4   ubuntu    "bash"    3 minutes ago   Up 3 minutes             shell-container
+```
+
+Still running! Exiting from `docker exec` doesn't stop the container because we only terminated the secondary process (PID 15), not the main process (PID 1).
+
+## Container Networking: Debugging Communication
+
+Docker networking is often a source of confusion and bugs. Understanding how containers communicate is essential for troubleshooting connectivity issues.
+
+### Understanding Docker Inspect for Networking
+
+Get the IP address of our debug-container:
+
+```bash
+docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' debug-container
+```
+
+**Output:**
+```
+172.17.0.2
+```
+
+**Default Docker Network:**
+- Docker creates a bridge network called `bridge` (172.17.0.0/16 subnet)
+- Each container gets an IP from this range
+- Containers on the same network can communicate by IP
+
+Get the network ID:
+
+```bash
+docker inspect -f '{{range .NetworkSettings.Networks}}{{.NetworkID}}{{end}}' debug-container
+```
+
+**Output:**
+```
+28640f1f1918c84d789279470a428bd9933435a17f0fb51ce0661ff83ac9f10d
+```
+
+### Testing Inter-Container Communication
+
+Let's create another container and test communication with our debug-container.
+
+Start a lightweight Alpine container:
+
+```bash
+docker run -d --name network-test alpine sleep 3600
+```
+
+**Purpose:** Runs Alpine container that sleeps for 3600 seconds (1 hour), keeping it alive for testing.
+
+**Output:**
+```
+93c67017feb4c4bbf67311df110e7eab0b9d447e4a8f6f5ad5aa372bc885a881
+```
+
+Now ping the debug-container from network-test:
+
+```bash
+docker exec network-test ping -c 3 $(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' debug-container)
+```
+
+**Command Breakdown:**
+- `$(...)`: Command substitution - gets debug-container's IP
+- `ping -c 3`: Send 3 ICMP echo requests
+
+**Output:**
+```
+PING 172.17.0.2 (172.17.0.2): 56 data bytes
+64 bytes from 172.17.0.2: seq=0 ttl=64 time=5.269 ms
+64 bytes from 172.17.0.2: seq=1 ttl=64 time=0.120 ms
+64 bytes from 172.17.0.2: seq=2 ttl=64 time=0.141 ms
+
+--- 172.17.0.2 ping statistics ---
+3 packets transmitted, 3 packets received, 0% packet loss
+round-trip min/avg/max = 0.120/1.843/5.269 ms
+```
+
+**Success!** Containers can communicate on the default bridge network.
+
+### Testing HTTP Communication Between Containers
+
+Install curl in the network-test container:
+
+```bash
+docker exec network-test apk add --no-cache curl
+```
+
+**APK (Alpine Package Keeper):** Package manager for Alpine Linux
+- `add`: Install packages
+- `--no-cache`: Don't cache package index (saves space)
+
+**Output:**
+```
+fetch https://dl-cdn.alpinelinux.org/alpine/v3.22/main/x86_64/APKINDEX.tar.gz
+fetch https://dl-cdn.alpinelinux.org/alpine/v3.22/community/x86_64/APKINDEX.tar.gz
+(1/9) Installing brotli-libs (1.1.0-r2)
+(2/9) Installing c-ares (1.34.5-r0)
+(3/9) Installing libunistring (1.3-r0)
+(4/9) Installing libidn2 (2.3.7-r0)
+(5/9) Installing nghttp2-libs (1.65.0-r0)
+(6/9) Installing libpsl (0.21.5-r3)
+(7/9) Installing zstd-libs (1.5.7-r0)
+(8/9) Installing libcurl (8.14.1-r2)
+(9/9) Installing curl (8.14.1-r2)
+Executing busybox-1.37.0-r19.trigger
+OK: 12 MiB in 25 packages
+```
+
+Now test HTTP request from network-test to debug-container:
+
+```bash
+docker exec network-test curl http://$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' debug-container):8080
+```
+
+**Output:**
+```
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100    30    0    30    0     0   8136      0 --:--:-- --:--:-- --:--:-- 10000
+<h1>Debug Lab Application</h1>
+```
+
+**Perfect!** HTTP communication works between containers.
+
+### Port Conflicts and Multiple Instances
+
+Stop the original debug-container:
+
+```bash
+docker stop debug-container
+```
+
+**Output:**
+```
+debug-container
+```
+
+Start a new container with the same port mapping:
+
+```bash
+docker run -d --name debug-container-2 -p 8080:8080 debug-app
+```
+
+**Output:**
+```
+59c067747c20e446060591fdb48881d07fc4549e4d12d4d53ffa77311051e0c7
+```
+
+Check what's listening on port 8080 on the host:
+
+```bash
+netstat -tlnp | grep 8080
+```
+
+**Output:**
+```
+(Not all processes could be identified, non-owned process info
+ will not be shown, you would have to be root to see it all.)
+tcp        0      0 0.0.0.0:8080            0.0.0.0:*               LISTEN      -
+tcp6       0      0 :::8080                 :::*                    LISTEN      -
+```
+
+**Netstat Output Explanation:**
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Field</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Value</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Meaning</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Protocol</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">tcp / tcp6</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">TCP protocol (IPv4 and IPv6)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Local Address</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">0.0.0.0:8080</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Listening on all IPv4 interfaces, port 8080</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Local Address</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">:::8080</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Listening on all IPv6 interfaces, port 8080</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">State</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">LISTEN</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Waiting for incoming connections</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+Now try running another container with the same host port:
+
+```bash
+docker run -d --name debug-container-alt -p 8081:8080 debug-app
+```
+
+**Note the Change:**
+- `-p 8081:8080`: Maps host port 8081 to container port 8080
+- This allows multiple containers to run the same application on different host ports
+
+**Output:**
+```
+c1a6255a56a2619bc752662df387ecb7b10049e44ec5d95707a94d936e6a9ce2
+```
+
+Test the new container:
+
+```bash
+curl http://localhost:8081
+```
+
+**Output:**
+```
+<h1>Debug Lab Application</h1>
+```
+
+**Takeaway:** Multiple containers can run the same service by mapping to different host ports.
+
+### Inspecting Docker Networks
+
+List all Docker networks:
+
+```bash
+docker network ls
+```
+
+**Output:**
+```
+NETWORK ID     NAME      DRIVER    SCOPE
+28640f1f1918   bridge    bridge    local
+4014e1a64d4c   host      host      local
+b84fc03ca6b5   none      null      local
+```
+
+**Default Docker Networks:**
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Network</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Driver</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Purpose</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>bridge</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">bridge</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Default network for containers (isolated from host)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>host</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">host</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Removes network isolation, uses host's network directly</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>none</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">null</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">No networking (completely isolated)</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+Inspect the bridge network:
+
+```bash
+docker network inspect bridge
+```
+
+**Output (partial):**
+```json
+[
+    {
+        "Name": "bridge",
+        "Id": "28640f1f1918c84d789279470a428bd9933435a17f0fb51ce0661ff83ac9f10d",
+        "Created": "2025-10-15T15:16:15.692306095+05:00",
+        "Scope": "local",
+        "Driver": "bridge",
+        "EnableIPv4": true,
+        "EnableIPv6": false,
+        "IPAM": {
+            "Driver": "default",
+            "Options": null,
+            "Config": [
+                {
+                    "Subnet": "172.17.0.0/16",
+                    "Gateway": "172.17.0.1"
+                }
+            ]
+        },
+        "Internal": false,
+        "Attachable": false,
+        "Ingress": false,
+        "Containers": {
+            "59c067747c20e446060591fdb48881d07fc4549e4d12d4d53ffa77311051e0c7": {
+                "Name": "debug-container-2",
+                "EndpointID": "ea755d8ff3d68aa2f6fda5a8c676589e49c1cc2fa02006dc8e3004e030b8265a",
+                "MacAddress": "46:2d:54:17:e8:f3",
+                "IPv4Address": "172.17.0.2/16",
+                "IPv6Address": ""
+            },
+            "93c67017feb4c4bbf67311df110e7eab0b9d447e4a8f6f5ad5aa372bc885a881": {
+                "Name": "network-test",
+                "EndpointID": "e8102b076f920fd5a139924e9a6609464e0d4485bbdf24bfc0a093fc65936e97",
+                "MacAddress": "e2:fc:9f:02:be:01",
+                "IPv4Address": "172.17.0.3/16",
+                "IPv6Address": ""
+            },
+            "c1a6255a56a2619bc752662df387ecb7b10049e44ec5d95707a94d936e6a9ce2": {
+                "Name": "debug-container-alt",
+                "EndpointID": "e09f52d3204f1736e56def3d2aabe2707cf5055287feb8224788b5af511509a9",
+                "MacAddress": "0e:35:32:ae:20:ef",
+                "IPv4Address": "172.17.0.4/16",
+                "IPv6Address": ""
+            }
+        },
+        "Options": {
+            "com.docker.network.bridge.default_bridge": "true",
+            "com.docker.network.bridge.enable_icc": "true",
+            "com.docker.network.bridge.enable_ip_masquerade": "true",
+            "com.docker.network.bridge.host_binding_ipv4": "0.0.0.0",
+            "com.docker.network.bridge.name": "docker0",
+            "com.docker.network.driver.mtu": "1500"
+        }
+    }
+]
+```
+
+**Key Information:**
+- **Subnet**: 172.17.0.0/16 (65,536 possible IP addresses)
+- **Gateway**: 172.17.0.1 (Docker bridge gateway on the host)
+- **Containers**: Lists all containers on this network with their IPs
+- **enable_icc**: Inter-Container Communication enabled (containers can talk to each other)
+
+### Creating Custom Networks
+
+Create a user-defined network:
+
+```bash
+docker network create debug-network
+```
+
+**Output:**
+```
+dcee12b8288f156ecf79262d1a237070c4b3a89f888b52a083ccce24e98ff1b0
+```
+
+**Benefits of Custom Networks:**
+- **DNS resolution**: Containers can reach each other by name (not just IP)
+- **Better isolation**: Separate networks for different applications
+- **Custom IP ranges**: Control the subnet
+
+Run a container on the custom network:
+
+```bash
+docker run -d --name debug-app-custom --network debug-network -p 8082:8080 debug-app
+```
+
+**Command Breakdown:**
+- `--network debug-network`: Connects container to custom network
+- `-p 8082:8080`: Maps host port 8082 to container port 8080
+
+**Output:**
+```
+79a56362c3de7af1063212dbe0f801eb96c2a59f191d16efdda05f6d089d6058
+```
+
+<Callout type="info">
+**Custom Network Advantage**: On user-defined networks, containers can communicate using container names as DNS hostnames. This is not available on the default bridge network.
+</Callout>
+
+## Resource Management and Monitoring
+
+Understanding resource consumption is critical for debugging performance issues and preventing container crashes.
+
+### Running a Memory-Intensive Container
+
+Let's create a container with a memory limit and a Python script that intentionally consumes memory:
+
+```bash
+docker run -d --name memory-limited --memory=50m python:3.9-slim python -c "
+import time
+data = []
+while True:
+    data.append('x' * 1024 * 1024)  # Allocate 1MB
+    time.sleep(1)
+    print(f'Allocated {len(data)} MB')
+"
+```
+
+**Command Breakdown:**
+- `--memory=50m`: Limits container to 50MB of RAM
+- `data.append('x' * 1024 * 1024)`: Allocates 1MB string each iteration
+- The script will eventually exceed the 50MB limit
+
+**Output:**
+```
+2f3fb71d55dc18a0acbe8aaa28024f20e63af4f271fbd556f0e0a3a0101747b1
+```
+
+### Monitoring with Docker Stats
+
+View real-time resource usage:
+
+```bash
+docker stats memory-limited --no-stream
+```
+
+**Flag Explanation:**
+- `--no-stream`: Show current stats once (without continuous updates)
+
+**Output (Initial):**
+```
+CONTAINER ID   NAME             CPU %     MEM USAGE / LIMIT   MEM %     NET I/O         BLOCK I/O    PIDS
+2f3fb71d55dc   memory-limited   0.11%     13.41MiB / 50MiB    26.82%    2.56kB / 126B   0B / 201kB   1
+```
+
+**Columns Explained:**
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Column</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Meaning</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>CPU %</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">CPU usage percentage (0.11% = very light)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>MEM USAGE / LIMIT</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Current memory / Maximum allowed (13.41MB / 50MB)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>MEM %</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Memory usage percentage (26.82% of limit)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>NET I/O</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Network input/output (received / sent)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>BLOCK I/O</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Disk I/O (read / write)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>PIDS</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Number of processes/threads</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+Wait a few seconds and check again:
+
+```bash
+docker stats memory-limited --no-stream
+```
+
+**Output (After some time):**
+```
+CONTAINER ID   NAME             CPU %     MEM USAGE / LIMIT   MEM %     NET I/O         BLOCK I/O    PIDS
+2f3fb71d55dc   memory-limited   0.18%     24.47MiB / 50MiB    48.95%    2.99kB / 126B   0B / 201kB   1
+```
+
+Memory usage increased from 13.41MB to 24.47MB! The process is allocating memory as expected.
+
+### What Happens When Memory Limit is Exceeded?
+
+Try to view the logs:
+
+```bash
+docker logs memory-limited
+```
+
+**Output:**
+(Empty or no output)
+
+Wait a bit longer and check stats again:
+
+```bash
+docker stats memory-limited --no-stream
+```
+
+**Output:**
+```
+CONTAINER ID   NAME             CPU %     MEM USAGE / LIMIT   MEM %     NET I/O   BLOCK I/O   PIDS
+2f3fb71d55dc   memory-limited   0.00%     0B / 0B             0.00%     0B / 0B   0B / 0B     0
+```
+
+**Container Stopped!** All metrics are 0B, and PIDS = 0.
+
+Check what happened with inspect:
+
+```bash
+docker inspect memory-limited | grep -A 10 "Memory"
+```
+
+**Output:**
+```
+            "Memory": 52428800,
+            "NanoCpus": 0,
+            "CgroupParent": "",
+            "BlkioWeight": 0,
+            "BlkioWeightDevice": [],
+            "BlkioDeviceReadBps": [],
+            "BlkioDeviceWriteBps": [],
+            "BlkioDeviceReadIOps": [],
+            "BlkioDeviceWriteIOps": [],
+            "CpuPeriod": 0,
+--
+            "MemoryReservation": 0,
+            "MemorySwap": 104857600,
+            "MemorySwappiness": null,
+            "OomKillDisable": null,
+```
+
+**Key Values:**
+- `"Memory": 52428800`: 50MB in bytes (52,428,800 bytes = 50 * 1024 * 1024)
+- `"MemorySwap": 104857600`: 100MB (memory + swap = 50MB + 50MB)
+
+Check if the container was OOM killed:
+
+```bash
+docker inspect -f '{{.State.OOMKilled}}' memory-limited
+```
+
+**Output:**
+```
+true
+```
+
+**OOM (Out Of Memory) Kill**: When a container exceeds its memory limit, the Linux kernel's OOM Killer terminates the process to protect the system.
+
+## Debugging Build Failures
+
+Docker builds can fail for various reasons. Let's explore common issues and how to debug them.
+
+### Missing Files in Dockerfile
+
+Create a broken Dockerfile:
+
+```bash
+cat > Dockerfile.broken << 'EOF'
+FROM python:3.9-slim
+
+WORKDIR /app
+
+COPY non-existent-file.py .
+
+CMD [ "python", "non-existent-file.py" ]
+EOF
+```
+
+Try to build it:
+
+```bash
+docker build -f Dockerfile.broken -t broken-app .
+```
+
+**Output:**
+```
+[+] Building 2.1s (8/8) FINISHED                                           docker:default
+ => [internal] load build definition from Dockerfile.broken                          0.0s
+ => => transferring dockerfile: 208B                                                 0.0s
+ => [internal] load metadata for docker.io/library/python:3.9-slim                  1.8s
+ => [1/3] FROM docker.io/library/python:3.9-slim                                    0.0s
+ => CACHED [2/3] WORKDIR /app                                                        0.0s
+ => [internal] load build context                                                    0.0s
+ => => transferring context: 2B                                                      0.0s
+ => ERROR [3/3] COPY non-existent-file.py .                                          0.0s
+------
+ > [3/3] COPY non-existent-file.py .:
+------
+Dockerfile.broken:5
+--------------------
+   3 |     WORKDIR /app
+   4 |
+   5 | >>> COPY non-existent-file.py .
+   6 |
+   7 |     CMD [ "python", "non-existent-file.py" ]
+--------------------
+ERROR: failed to build: failed to solve: failed to compute cache key: failed to calculate checksum of ref 26292934-985b-44be-8e01-5d64a72e0099::ltjcaqv8utbjhm6gc6c8tq6fc: "/non-existent-file.py": not found
+```
+
+**Error Analysis:**
+- **Line 5**: `COPY non-existent-file.py .` failed
+- **Reason**: File doesn't exist in the build context
+- **Solution**: Ensure the file exists or fix the filename
+
+Verify no image was created:
+
+```bash
+docker images broken-app
+```
+
+**Output:**
+```
+REPOSITORY   TAG       IMAGE ID   CREATED   SIZE
+```
+
+Empty - no image was built.
+
+Attempting to run it:
+
+```bash
+docker run --name broken-container broken-app
+```
+
+**Output:**
+```
+Unable to find image 'broken-app:latest' locally
+docker: Error response from daemon: pull access denied for broken-app, repository does not exist or may require 'docker login': denied: requested access to the resource is denied.
+
+Run 'docker run --help' for more information.
+```
+
+**Key Takeaway**: Build failures prevent image creation. Always check build output for errors before trying to run containers.
+
+## System Maintenance: Cleanup Commands
+
+Over time, Docker accumulates stopped containers, unused images, and other resources that consume disk space.
+
+### Viewing System Information
+
+Check Docker system status:
+
+```bash
+docker system info
+```
+
+**Output (partial):**
+```
+Client: Docker Engine - Community
+ Version:    28.5.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ Containers: 9
+  Running: 2
+  Paused: 0
+  Stopped: 7
+ Images: 17
+ Server Version: 28.5.0
+ Storage Driver: overlay2
+  Backing Filesystem: xfs
+ ...
+ Kernel Version: 5.14.0-620.el9.x86_64
+ Operating System: CentOS Stream 9
+ OSType: linux
+ Architecture: x86_64
+ CPUs: 4
+ Total Memory: 7.501GiB
+```
+
+**Important Metrics:**
+- **Containers: 9** total (2 running, 7 stopped)
+- **Images: 17** stored images
+- **Storage Driver**: overlay2 (efficient layered filesystem)
+- **Total Memory**: 7.5GB available
+
+### Removing Stopped Containers
+
+List all containers:
+
+```bash
+docker ps -a
+```
+
+**Output:**
+```
+CONTAINER ID   IMAGE               COMMAND                   CREATED          STATUS                        PORTS     NAMES
+ab269e3c9e62   debug-problematic   "python debug-app.py"     2 minutes ago    Up 2 minutes                            problematic-app
+2f3fb71d55dc   python:3.9-slim     "python -c '\nimport …"   6 minutes ago    Exited (137) 4 minutes ago              memory-limited
+690e84a5b1f4   ubuntu              "bash"                    28 minutes ago   Up 28 minutes                           shell-container
+5fdc956d31e2   alpine              "sh -c 'while true; …"    30 minutes ago   Exited (130) 29 minutes ago             interactive-container
+...
+```
+
+Notice many containers with **STATUS = Exited** (stopped containers).
+
+Remove all stopped containers:
+
+```bash
+docker container prune
+```
+
+**Output:**
+```
+WARNING! This will remove all stopped containers.
+Are you sure you want to continue? [y/N] y
+Deleted Containers:
+2f3fb71d55dc18a0acbe8aaa28024f20e63af4f271fbd556f0e0a3a0101747b1
+5fdc956d31e27ad8d75d747d4622c4f975fda26d1e2d56021057484d0fbc3b2d
+79a56362c3de7af1063212dbe0f801eb96c2a59f191d16efdda05f6d089d6058
+c1a6255a56a2619bc752662df387ecb7b10049e44ec5d95707a94d936e6a9ce2
+59c067747c20e446060591fdb48881d07fc4549e4d12d4d53ffa77311051e0c7
+93c67017feb4c4bbf67311df110e7eab0b9d447e4a8f6f5ad5aa372bc885a881
+7629e1afa1f9b7703d5bdc85a99f251f95ab51382fc644a4ab21532101c09f4a
+
+Total reclaimed space: 57.3MB
+```
+
+**Reclaimed 57.3MB** by removing stopped containers!
+
+Verify cleanup:
+
+```bash
+docker ps -a
+```
+
+**Output:**
+```
+CONTAINER ID   IMAGE               COMMAND                 CREATED          STATUS          PORTS     NAMES
+ab269e3c9e62   debug-problematic   "python debug-app.py"   2 minutes ago    Up 2 minutes              problematic-app
+690e84a5b1f4   ubuntu              "bash"                  28 minutes ago   Up 28 minutes             shell-container
+```
+
+Only running containers remain!
+
+### Removing Unused Images
+
+List images:
+
+```bash
+docker images
+```
+
+**Output:**
+```
+REPOSITORY          TAG               IMAGE ID       CREATED         SIZE
+debug-problematic   latest            04a2ab98fdf4   3 minutes ago   130MB
+debug-app           latest            d47ca8df3269   2 hours ago     130MB
+python              3.9-slim          455962325b3b   5 days ago      130MB
+alpine              latest            706db57fb206   7 days ago      8.32MB
+demo-app            production        47dcd7814c19   11 days ago     192MB
+demo-app            insecure          552e0f2fbc4c   12 days ago     1.15GB
+...
+```
+
+Remove dangling images (untagged images that aren't used):
+
+```bash
+docker image prune
+```
+
+**Output:**
+```
+WARNING! This will remove all dangling images.
+Are you sure you want to continue? [y/N] y
+Total reclaimed space: 0B
+```
+
+No dangling images in this case.
+
+<Callout type="warning">
+**Be Careful with Aggressive Pruning**:
+```bash
+# Remove all unused images (not just dangling)
+docker image prune -a
+
+# Remove everything unused (containers, images, networks, volumes)
+docker system prune -a --volumes
+```
+
+These commands can delete images you might want to keep!
+</Callout>
+
+## Best Practices for Advanced Debugging
+
+### Docker Attach Best Practices
+
+1. **Know When to Use Attach vs Exec**
+   - **Use attach** for: Interactive containers (bash, Python interpreter), applications with direct terminal output
+   - **Use exec** for: Debugging running services, inspecting state without affecting main process
+
+2. **Always Use Detach Sequence**
+   - Remember: `Ctrl+P`, `Ctrl+Q` to detach without stopping
+   - Never use `Ctrl+C` unless you want to stop the container
+
+3. **Document Attach Sessions**
+   - Note when you attach to production containers
+   - Log any commands executed for audit trail
+
+### Networking Best Practices
+
+1. **Use Custom Networks**
+   - Create dedicated networks for each application stack
+   - Enable DNS-based communication (use container names, not IPs)
+   - Implement network segmentation for security
+
+2. **Plan Port Mappings**
+   - Document port usage to avoid conflicts
+   - Use dynamic port mapping (`-p 8080`) for development
+   - Use fixed mappings (`-p 8080:8080`) for production
+
+3. **Network Troubleshooting Workflow**
+   - Verify container is on the correct network
+   - Check IP address with `docker inspect`
+   - Test connectivity with `ping` or `curl` from another container
+   - Inspect network configuration with `docker network inspect`
+
+### Resource Management Best Practices
+
+1. **Set Appropriate Limits**
+   - Always set `--memory` limits in production
+   - Set `--cpus` to prevent CPU hogging
+   - Use `--memory-reservation` for soft limits
+
+2. **Monitor Regularly**
+   - Set up continuous monitoring with `docker stats`
+   - Alert on high memory or CPU usage
+   - Track trends over time
+
+3. **Handle OOM Kills Gracefully**
+   - Check logs immediately after container stops
+   - Verify OOMKilled status with inspect
+   - Adjust memory limits or optimize application
+
+### Build Debugging Best Practices
+
+1. **Use .dockerignore**
+   - Exclude unnecessary files from build context
+   - Speeds up builds and reduces errors
+
+2. **Leverage Build Cache**
+   - Order Dockerfile instructions from least to most frequently changed
+   - Use multi-stage builds to separate dependencies
+
+3. **Test Incrementally**
+   - Build and test each Dockerfile instruction
+   - Use `docker build --target <stage>` for multi-stage debugging
+
+### System Maintenance Best Practices
+
+1. **Regular Cleanup**
+   - Schedule weekly `docker system prune`
+   - Remove stopped containers promptly
+   - Clean up unused networks
+
+2. **Monitor Disk Usage**
+   - Check Docker's disk usage: `docker system df`
+   - Set up alerts for low disk space
+   - Consider using external log management
+
+3. **Backup Important Data**
+   - Export important images: `docker save -o image.tar myimage`
+   - Backup volumes before pruning
+   - Document running containers before major cleanup
+
+## Command Cheat Sheet
+
+### Docker Attach Commands
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Command</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Purpose</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker attach CONTAINER</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Attach to container's main process</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>Ctrl+P, Ctrl+Q</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Detach without stopping container</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker run -dit ubuntu bash</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Run interactive container in background</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### Docker Network Commands
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Command</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Purpose</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker network ls</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">List all networks</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker network inspect NETWORK</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">View network details</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker network create NAME</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Create custom network</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker run --network NAME IMAGE</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Run container on specific network</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker inspect -f '&#123;&#123;range .NetworkSettings.Networks&#125;&#125;&#123;&#123;.IPAddress&#125;&#125;&#123;&#123;end&#125;&#125;' CONTAINER</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Get container IP</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### Docker Stats and Resource Commands
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Command</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Purpose</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker stats</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Real-time stats for all containers</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker stats CONTAINER --no-stream</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Single snapshot of stats</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker run --memory=100m IMAGE</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Set memory limit</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker run --cpus=2 IMAGE</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Set CPU limit</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker inspect -f '&#123;&#123;.State.OOMKilled&#125;&#125;' CONTAINER</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Check if OOM killed</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### Docker System Maintenance Commands
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Command</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Purpose</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker system info</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Display system-wide information</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker system df</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Show Docker disk usage</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker container prune</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Remove all stopped containers</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker image prune</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Remove dangling images</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker image prune -a</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Remove all unused images</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker system prune</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Remove stopped containers, dangling images, unused networks</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker system prune -a --volumes</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Remove everything unused (⚠️ aggressive)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>docker ps -a</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">List all containers (running and stopped)</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+## Summary
+
+Congratulations! You've completed the comprehensive Docker debugging series. Across both parts, you've mastered:
+
+**Part 1 Skills:**
+✅ Viewing and analyzing logs with `docker logs`
+✅ Interactive debugging with `docker exec`
+✅ Container inspection with `docker inspect`
+
+**Part 2 Skills:**
+✅ Attaching to containers with `docker attach` and proper detachment
+✅ Debugging container networking and inter-container communication
+✅ Creating and managing custom networks
+✅ Monitoring resource usage with `docker stats`
+✅ Setting and debugging resource limits
+✅ Troubleshooting Docker build failures
+✅ Maintaining system health with cleanup commands
+
+**Complete Debugging Workflow:**
+1. **First Response**: Check logs with `docker logs -f`
+2. **Investigate**: Use `docker exec` to explore inside the container
+3. **Analyze Configuration**: Use `docker inspect` for detailed info
+4. **Test Connectivity**: Verify networking with ping/curl
+5. **Monitor Resources**: Use `docker stats` to identify bottlenecks
+6. **Maintain System**: Regular cleanup with prune commands
+
+These skills form the foundation for managing production Docker environments, troubleshooting complex issues, and building robust containerized applications.
+
+## Further Learning
+
+To continue your Docker journey:
+
+- **Docker Compose**: Multi-container orchestration for complex applications
+- **Docker Swarm**: Native clustering and orchestration
+- **Kubernetes**: Advanced container orchestration platform
+- **Container Security**: Scanning images, managing secrets, security best practices
+- **Monitoring Solutions**: Prometheus, Grafana, ELK stack for container monitoring
+
+---
+
+*Master these debugging techniques to confidently manage Docker containers in any environment!*
