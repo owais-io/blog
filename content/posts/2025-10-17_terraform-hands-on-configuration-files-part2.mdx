@@ -1,0 +1,1605 @@
+---
+title: "Terraform Hands-On: Understanding Configuration Files and AWS Resources - Part 2"
+description: "Deep dive into Terraform configuration files: main.tf, variables.tf, data.tf, security.tf, ec2.tf, and outputs.tf. Learn EC2, VPC, AMI, security groups, and AWS networking fundamentals with line-by-line explanations for absolute beginners."
+date: "2025-10-17T01:00:00.000Z"
+tags: ["terraform", "aws", "infrastructure-as-code", "devops", "ec2"]
+published: true
+categories: ["Infrastructure as Code", "Terraform"]
+author: "Owais"
+seo:
+  canonical: "https://owais.io/blog/2025-10-17_terraform-hands-on-configuration-files-part2"
+  keywords: ["terraform configuration", "terraform files", "aws ec2", "aws vpc", "security groups", "terraform variables", "terraform outputs", "ami", "aws networking"]
+toc: true
+---
+
+## Introduction
+
+Welcome back to our hands-on Terraform series! In Part 1, you set up Terraform, configured AWS credentials, and prepared your project structure. Now comes the exciting part—writing Terraform configuration to define and deploy real AWS infrastructure.
+
+By the end of this post, you'll understand every line of code in a complete Terraform project. More importantly, you'll understand the AWS concepts behind the code: what EC2 instances are, how VPCs work, why security groups matter, and how all these components fit together.
+
+<Callout type="info">
+🎯 **What You'll Learn in Part 2**:
+- Creating and understanding `main.tf` (Terraform core configuration)
+- Defining variables in `variables.tf` for flexibility
+- Querying AWS resources with `data.tf` (data sources)
+- Configuring security with `security.tf` (security groups)
+- Creating EC2 instances with `ec2.tf`
+- Exposing values with `outputs.tf`
+- **AWS Fundamentals**: EC2, VPC, subnets, AMIs, availability zones
+- **Networking Concepts**: Security groups, ingress/egress, CIDR blocks
+- **Best Practices**: Configuration organization and naming conventions
+
+**Prerequisites**:
+- Completed Part 1 (Terraform and AWS CLI installed and configured)
+- Text editor or IDE (VS Code, nano, vim, etc.)
+- Basic understanding of YAML/JSON-like syntax
+- Your `terraform-practice` directory ready
+
+**Series Progress**:
+- **Part 1**: ✅ Installation and AWS setup (completed)
+- **Part 2**: 📍 Configuration files and resources (current)
+- **Part 3**: ⏭️ Terraform workflow and state management (next)
+
+</Callout>
+
+## Understanding Terraform Configuration Files
+
+Before diving into code, let's understand how Terraform configuration files work together:
+
+### The Configuration File System
+
+Terraform uses files with the `.tf` extension written in **HashiCorp Configuration Language (HCL)**. HCL is designed to be:
+- Human-readable and writable
+- Declarative (describe what you want, not how to create it)
+- Expressive yet simple
+- Similar to JSON but more concise
+
+### File Naming Conventions
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">File Name</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Purpose</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Required?</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>main.tf</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Primary configuration, providers, core settings</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Convention (not required)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>variables.tf</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Variable definitions for parameterization</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">No, but best practice</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>outputs.tf</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Output values to display or use elsewhere</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">No, but highly recommended</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>data.tf</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Data source queries (existing resources)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">No, organizational choice</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>*.tf</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Any name works (security.tf, ec2.tf, etc.)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">No, use descriptive names</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<Callout type="info">
+💡 **Important**: Terraform reads **all** `.tf` files in a directory and treats them as one configuration. File names are purely for organization—you could put everything in one file, but splitting by purpose improves maintainability.
+</Callout>
+
+### Our Project Structure
+
+For this tutorial, we'll create six configuration files:
+
+```
+terraform-practice/
+├── main.tf          # Terraform and provider configuration
+├── variables.tf     # Variable definitions
+├── data.tf          # Data source queries
+├── security.tf      # Security group rules
+├── ec2.tf           # EC2 instance definition
+└── outputs.tf       # Output values
+```
+
+## Creating main.tf: Core Configuration
+
+Let's create our first configuration file. This defines which version of Terraform we require and which providers (AWS) we'll use.
+
+Create the file:
+
+```bash
+touch main.tf
+```
+
+Add the following content:
+
+```hcl title="main.tf" showLineNumbers
+terraform {
+    required_version = ">= 1.0"
+    required_providers {
+        aws = {
+            source = "hashicorp/aws"
+            version = "~> 5.0"
+        }
+    }
+}
+
+provider "aws" {
+    region = var.aws_region
+}
+```
+
+### Line-by-Line Explanation
+
+**Line 1: `terraform {`**
+- Begins the `terraform` configuration block
+- This block contains settings for Terraform itself (not cloud resources)
+- Every Terraform project should have this block
+
+**Line 2: `required_version = ">= 1.0"`**
+- Specifies minimum Terraform version required
+- `>=` means "greater than or equal to"
+- `1.0` ensures we have modern Terraform features
+- Prevents errors if someone uses an older version
+
+<Callout type="success">
+✅ **Why version constraints matter**: If your configuration uses features from Terraform 1.0+, running it with 0.15 would fail. Version constraints catch this early with a clear error message.
+</Callout>
+
+**Line 3: `required_providers {`**
+- Begins the providers configuration section
+- Providers are plugins that let Terraform interact with APIs
+- Each provider handles a specific platform (AWS, Azure, GCP, etc.)
+
+**Line 4-7: AWS Provider Configuration**
+```hcl
+aws = {
+    source = "hashicorp/aws"
+    version = "~> 5.0"
+}
+```
+
+Let's break down each setting:
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Setting</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Value</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Meaning</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>aws</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Local name for provider</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">How we'll reference this provider in our code</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>source</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">"hashicorp/aws"</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Where to download the provider (Terraform Registry)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>version</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">"~> 5.0"</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Any version 5.x (but not 6.0 or higher)</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+**Understanding `~> 5.0` (Pessimistic Version Constraint)**:
+- `~>` means "approximately greater than"
+- `~> 5.0` allows `5.1`, `5.2`, `5.99` but not `6.0`
+- This gets bug fixes and features but prevents breaking changes
+- Also called the "twiddle-wakka" operator
+
+**Line 11-13: Provider Configuration Block**
+```hcl
+provider "aws" {
+    region = var.aws_region
+}
+```
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Component</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Explanation</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>provider "aws"</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Configures the AWS provider with specific settings</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>region = var.aws_region</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Which AWS region to use (from variable)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>var.aws_region</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">References a variable (we'll define it shortly)</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+**How authentication works**:
+- Terraform uses AWS credentials from `~/.aws/credentials` (configured in Part 1)
+- No need to specify credentials in code (security best practice)
+- Provider automatically uses the credentials from AWS CLI configuration
+
+## Creating variables.tf: Flexible Configuration
+
+Variables make your Terraform configuration reusable and flexible. Instead of hard-coding values, you define variables that can be changed without modifying the code.
+
+Create the file:
+
+```bash
+touch variables.tf
+```
+
+Add the following content:
+
+```hcl title="variables.tf" showLineNumbers
+variable "aws_region" {
+    description = "AWS region for resources"
+    type = string
+    default = "us-east-1"
+}
+
+variable "instance_type" {
+    description = "EC2 instance type"
+    type = string
+    default = "t2.micro"
+}
+
+variable "key_name" {
+    description = "AWS key pair name for EC2 access"
+    type = string
+    default = "my-terraform-key"
+}
+
+variable "environment" {
+    description = "Environment name"
+    type = string
+    default = "dev"
+}
+```
+
+### Understanding Variable Blocks
+
+Each variable block follows this structure:
+
+```hcl
+variable "name" {
+    description = "Human-readable explanation"
+    type        = data_type
+    default     = default_value
+}
+```
+
+Let's examine each variable:
+
+### Variable 1: aws_region
+
+```hcl
+variable "aws_region" {
+    description = "AWS region for resources"
+    type = string
+    default = "us-east-1"
+}
+```
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Attribute</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Value</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Purpose</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Name</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>aws_region</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Identifies this variable in code</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Description</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">"AWS region for resources"</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Documentation for users</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Type</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>string</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Text value (e.g., "us-east-1")</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Default</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">"us-east-1"</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Value if not specified elsewhere</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+**Why this matters**: Different regions have different:
+- Pricing (us-east-1 is often cheapest)
+- Available services and features
+- Compliance requirements (data locality laws)
+- Latency to end users
+
+### Understanding AWS Regions
+
+AWS regions are physically separate geographic locations containing data centers. Each region:
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Region Code</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Location</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Common Use Cases</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>us-east-1</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">N. Virginia, USA</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Largest, most services, cheapest</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>us-west-2</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Oregon, USA</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">West coast applications</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>eu-west-1</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Ireland</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">European users, GDPR compliance</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>ap-southeast-1</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Singapore</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Asian Pacific users</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### Variable 2: instance_type
+
+```hcl
+variable "instance_type" {
+    description = "EC2 instance type"
+    type = string
+    default = "t2.micro"
+}
+```
+
+**What is an EC2 instance type?**
+
+An instance type determines the hardware characteristics of your virtual server:
+- CPU cores and speed
+- Memory (RAM)
+- Network performance
+- Storage type and capacity
+- Cost per hour
+
+### Understanding EC2 Instance Types
+
+EC2 instance types follow a naming pattern: **Family** + **Generation** + **Size**
+
+**Example**: `t2.micro`
+- **t**: T-series family (burstable performance)
+- **2**: Second generation
+- **micro**: Size (smallest in the family)
+
+**Common Instance Families**:
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Family</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Purpose</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Examples</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Best For</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>T (T2, T3, T4g)</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Burstable</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">t2.micro, t3.small</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Development, low-traffic websites</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>M (M5, M6i)</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">General purpose</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">m5.large, m6i.xlarge</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Balanced applications, web servers</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>C (C5, C6i)</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Compute optimized</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">c5.large, c6i.2xlarge</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">CPU-intensive tasks, batch processing</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>R (R5, R6i)</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Memory optimized</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">r5.large, r6i.xlarge</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Databases, in-memory caches</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+**T2.micro Specifications** (our choice):
+- 1 vCPU (shared, burstable)
+- 1 GB RAM
+- EBS storage only
+- Low to moderate network performance
+- **Cost**: Free tier eligible (750 hours/month for first year)
+
+<Callout type="success">
+✅ **Free Tier Tip**: `t2.micro` is perfect for learning because it's included in AWS free tier. You can run one t2.micro instance 24/7 for a year without charges (within free tier limits).
+</Callout>
+
+### Variable 3: key_name
+
+```hcl
+variable "key_name" {
+    description = "AWS key pair name for EC2 access"
+    type = string
+    default = "my-terraform-key"
+}
+```
+
+**What is an AWS Key Pair?**
+
+A key pair consists of:
+- **Private key**: Stored on your computer (like `my-key.pem`)
+- **Public key**: Stored in AWS
+
+These keys allow SSH access to your EC2 instances securely without passwords.
+
+**For this tutorial**: We're not actually using key-based SSH access, so this variable isn't critical. In production, you would:
+1. Create a key pair in AWS Console
+2. Download the private key file
+3. Reference the key pair name in Terraform
+4. Use the private key to SSH into instances
+
+### Variable 4: environment
+
+```hcl
+variable "environment" {
+    description = "Environment name"
+    type = string
+    default = "dev"
+}
+```
+
+**Purpose**: Tags resources with the environment (dev, staging, prod) for:
+- Cost tracking and allocation
+- Access control and security policies
+- Visual identification in AWS Console
+- Automated tooling and processes
+
+## Creating data.tf: Querying AWS Resources
+
+Data sources allow Terraform to query information about existing resources that aren't managed by Terraform. This is crucial because some resources (like default VPCs or AMI images) already exist in your AWS account.
+
+Create the file:
+
+```bash
+touch data.tf
+```
+
+Add the following content:
+
+```hcl title="data.tf" showLineNumbers
+data "aws_ami" "amazon_linux" {
+    most_recent = true
+    owners = ["amazon"]
+
+    filter {
+        name = "name"
+        values = ["amzn2-ami-hvm-*-x86_64-gp2"]
+    }
+
+    filter {
+        name = "virtualization-type"
+        values = ["hvm"]
+    }
+}
+
+
+data "aws_vpc" "default" {
+    default = true
+}
+
+
+data "aws_subnet" "default" {
+    vpc_id = data.aws_vpc.default.id
+    availability_zone = "${var.aws_region}a"
+    default_for_az = true
+}
+```
+
+### Data Source 1: Amazon Machine Image (AMI)
+
+```hcl
+data "aws_ami" "amazon_linux" {
+    most_recent = true
+    owners = ["amazon"]
+
+    filter {
+        name = "name"
+        values = ["amzn2-ami-hvm-*-x86_64-gp2"]
+    }
+
+    filter {
+        name = "virtualization-type"
+        values = ["hvm"]
+    }
+}
+```
+
+### Understanding AMIs (Amazon Machine Images)
+
+An AMI is a template for creating EC2 instances, containing:
+- Operating system (Linux, Windows, etc.)
+- Pre-installed software and configurations
+- Launch permissions and settings
+- Storage mapping
+
+Think of an AMI as a "stamp" or "template" for creating servers with identical configurations.
+
+**Line-by-Line Breakdown**:
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Line</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Code</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Explanation</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">1</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>data "aws_ami" "amazon_linux"</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Query AWS for an AMI, name it "amazon_linux" locally</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">2</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>most_recent = true</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">If multiple AMIs match, get the newest one</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">3</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>owners = ["amazon"]</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Only search AMIs published by Amazon (trusted)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">5-8</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`filter { name = "name" ... }`}</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Search for names matching pattern</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">10-13</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`filter { name = "virtualization-type" ... }`}</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Ensure HVM virtualization (modern standard)</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+**Understanding the name pattern**: `amzn2-ami-hvm-*-x86_64-gp2`
+- `amzn2`: Amazon Linux 2 (free, optimized for AWS)
+- `ami`: Amazon Machine Image
+- `hvm`: Hardware Virtual Machine (virtualization type)
+- `*`: Wildcard (matches any date/version)
+- `x86_64`: 64-bit Intel/AMD architecture
+- `gp2`: General Purpose SSD storage
+
+**Why query instead of hard-coding?**
+- AMIs are updated regularly for security patches
+- AMI IDs differ by region
+- This always gets the latest secure version automatically
+
+### Data Source 2: Default VPC
+
+```hcl
+data "aws_vpc" "default" {
+    default = true
+}
+```
+
+### Understanding VPC (Virtual Private Cloud)
+
+A VPC is your own private network within AWS, completely isolated from other AWS customers. Think of it as your own data center in the cloud.
+
+**VPC Components**:
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Component</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Purpose</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Analogy</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>VPC</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Private network space</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Your office building</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Subnets</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Network segments within VPC</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Floors in the building</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Route Tables</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Traffic routing rules</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Building directory/maps</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Internet Gateway</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Connect to internet</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Building's main entrance</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Security Groups</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Firewall rules</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Security guards at doors</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+**Default VPC**:
+- AWS creates one automatically in each region
+- Pre-configured with internet access
+- Has default subnets in each availability zone
+- Perfect for learning and simple projects
+- Production usually creates custom VPCs for better control
+
+**This data source**:
+- Finds your default VPC
+- `default = true` means "find the VPC marked as default"
+- We'll reference it as `data.aws_vpc.default.id` elsewhere
+
+### Data Source 3: Default Subnet
+
+```hcl
+data "aws_subnet" "default" {
+    vpc_id = data.aws_vpc.default.id
+    availability_zone = "${var.aws_region}a"
+    default_for_az = true
+}
+```
+
+### Understanding Subnets and Availability Zones
+
+**Subnets**: Subdivisions of a VPC's IP address range
+- Isolate resources logically
+- Each subnet exists in one availability zone
+- Can be public (internet-accessible) or private (internal only)
+
+**Availability Zones (AZs)**: Physically separate data centers within a region
+- Isolated from failures in other AZs
+- Connected with low-latency networking
+- Naming: region code + letter (`us-east-1a`, `us-east-1b`, etc.)
+
+**Line-by-Line Breakdown**:
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Line</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Code</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Explanation</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">1</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>data "aws_subnet" "default"</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Query for a subnet</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">2</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>vpc_id = data.aws_vpc.default.id</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Look in our default VPC (references previous data source)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">3</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`availability_zone = "\${var.aws_region}a"`}</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">In the "a" AZ of our region (us-east-1a)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">4</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>default_for_az = true</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Find the default subnet for this AZ</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+**String interpolation**: `"\${var.aws_region}a"`
+- `\${}` inserts variable values into strings
+- If `var.aws_region` is "us-east-1", result is "us-east-1a"
+- Dynamically constructs AZ names based on chosen region
+
+<Callout type="info">
+💡 **Why these data sources?**: We're using existing AWS infrastructure (default VPC and subnet) instead of creating our own. This is simpler for learning. Production environments typically create custom VPCs with specific network architecture.
+</Callout>
+
+## Creating security.tf: Firewall Rules
+
+Security groups act as virtual firewalls controlling inbound and outbound traffic to AWS resources. This is critical for protecting your infrastructure.
+
+Create the file:
+
+```bash
+touch security.tf
+```
+
+Add the following content:
+
+```hcl title="security.tf" showLineNumbers
+# Create security group for EC2 instance
+resource "aws_security_group" "terraform_sg" {
+    name_prefix = "terraform-lab-sg-"
+    description = "Security group for Terraform lab EC2 instance"
+    vpc_id      = data.aws_vpc.default.id
+
+  # Allow SSH access
+    ingress {
+        description = "SSH"
+        from_port   = 22
+        to_port     = 22
+        protocol    = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+
+    # Allow HTTP access
+    ingress {
+        description = "HTTP"
+        from_port   = 80
+        to_port     = 80
+        protocol    = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+
+    # Allow all outbound traffic
+    egress {
+        from_port   = 0
+        to_port     = 0
+        protocol    = "-1"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+
+    tags = {
+        Name        = "terraform-lab-sg"
+        Environment = var.environment
+        CreatedBy   = "Terraform"
+    }
+}
+```
+
+### Understanding Security Groups
+
+Security groups control network access using rules:
+- **Ingress rules**: Inbound traffic (requests coming TO your instance)
+- **Egress rules**: Outbound traffic (requests going FROM your instance)
+- **Stateful**: If traffic is allowed in, response is automatically allowed out
+
+**Security group behavior**:
+- Default: All inbound blocked, all outbound allowed
+- Rules are additive (you can only allow, not deny)
+- Changes apply immediately
+- Multiple security groups can be attached to one instance
+
+### Resource Block Breakdown
+
+**Line 2-5: Resource Declaration**
+```hcl
+resource "aws_security_group" "terraform_sg" {
+    name_prefix = "terraform-lab-sg-"
+    description = "Security group for Terraform lab EC2 instance"
+    vpc_id      = data.aws_vpc.default.id
+```
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Attribute</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Value</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Explanation</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>resource</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Keyword</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Declares we're creating a resource</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>"aws_security_group"</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Resource type</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">What kind of AWS resource</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>"terraform_sg"</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Local name</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">How we reference it in Terraform</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>name_prefix</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">"terraform-lab-sg-"</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">AWS adds unique suffix to prevent conflicts</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>description</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Text</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Visible in AWS Console, helps identify purpose</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>vpc_id</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Reference to VPC</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Security groups belong to a specific VPC</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### Ingress Rule 1: SSH Access
+
+```hcl
+ingress {
+    description = "SSH"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+}
+```
+
+**What this rule does**: Allows SSH connections to the server
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Attribute</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Value</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Meaning</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>from_port</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">22</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Starting port number in range</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>to_port</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">22</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Ending port (same = only port 22)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>protocol</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">"tcp"</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Transmission Control Protocol (reliable)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>cidr_blocks</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">["0.0.0.0/0"]</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Allow from any IP address (anywhere)</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+**Understanding CIDR blocks**:
+- `0.0.0.0/0`: Represents all possible IPv4 addresses
+- `/0` means "match any IP"
+- More specific example: `192.168.1.0/24` matches 192.168.1.0 through 192.168.1.255
+
+<Callout type="warning">
+⚠️ **Security Warning**: `0.0.0.0/0` allows connections from anywhere on the internet. For production, restrict to specific IP addresses or ranges. For example:
+- Your office: `"203.0.113.0/24"`
+- Your home: `"198.51.100.25/32"`
+- VPN: `"192.0.2.0/24"`
+</Callout>
+
+### Ingress Rule 2: HTTP Access
+
+```hcl
+ingress {
+    description = "HTTP"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+}
+```
+
+**What this rule does**: Allows web traffic to your server
+
+- **Port 80**: Standard HTTP (unencrypted web traffic)
+- **Public access**: Websites need to be accessible from anywhere
+- In production, you'd also add port 443 for HTTPS (encrypted)
+
+### Egress Rule: Outbound Traffic
+
+```hcl
+egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+}
+```
+
+**What this rule does**: Allows all outbound connections
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Attribute</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Value</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Meaning</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>from_port</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">0</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">All ports (0 is wildcard)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>to_port</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">0</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">All ports</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>protocol</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">"-1"</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">All protocols (TCP, UDP, ICMP, etc.)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>cidr_blocks</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">["0.0.0.0/0"]</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">To anywhere</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+**Why allow all outbound**:
+- Instance needs to download packages and updates
+- Applications need to make API calls
+- Standard practice for most workloads
+- Can be restricted in high-security environments
+
+### Resource Tags
+
+```hcl
+tags = {
+    Name        = "terraform-lab-sg"
+    Environment = var.environment
+    CreatedBy   = "Terraform"
+}
+```
+
+**Why tags matter**:
+- **Organization**: Group resources logically
+- **Cost tracking**: See spending by environment, project, etc.
+- **Automation**: Scripts can find resources by tags
+- **Compliance**: Required by many organizations
+
+## Creating ec2.tf: The EC2 Instance
+
+Now for the main attraction—creating the actual EC2 instance that will run our web server!
+
+Create the file:
+
+```bash
+touch ec2.tf
+```
+
+Add the following content:
+
+```hcl title="ec2.tf" showLineNumbers
+# Create EC2 instance
+resource "aws_instance" "terraform_instance" {
+  ami                    = data.aws_ami.amazon_linux.id
+  instance_type          = var.instance_type
+  subnet_id              = data.aws_subnet.default.id
+  vpc_security_group_ids = [aws_security_group.terraform_sg.id]
+
+  # User data script to install and start Apache
+  user_data = <<-EOF
+                #!/bin/bash
+                yum update -y
+                yum install -y httpd
+                systemctl start httpd
+                systemctl enable httpd
+                echo "<h1>Hello from Terraform Lab!</h1>" > /var/www/html/index.html
+                echo "<p>Instance ID: $(curl -s http://169.254.169.254/latest/meta-data/instance-id)</p>" >> /var/www/html/index.html
+                echo "<p>Availability Zone: $(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone)</p>" >> /var/www/html/index.html
+                EOF
+
+  tags = {
+    Name        = "terraform-lab-instance"
+    Environment = var.environment
+    CreatedBy   = "Terraform"
+  }
+}
+```
+
+### Understanding EC2 Instance Resource
+
+This block creates a virtual machine in AWS. Let's break down every attribute:
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Attribute</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Value</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Purpose</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>ami</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>data.aws_ami.amazon_linux.id</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Which OS/image to use (from data source)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>instance_type</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>var.instance_type</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Hardware size (t2.micro from variable)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>subnet_id</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>data.aws_subnet.default.id</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Which network subnet to place instance in</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>vpc_security_group_ids</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>[aws_security_group.terraform_sg.id]</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Which security group(s) control access</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>user_data</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Bash script</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Commands to run when instance first starts</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### Understanding User Data Scripts
+
+**User data** is a powerful feature that lets you run scripts automatically when an EC2 instance launches. It's executed as root during the first boot.
+
+**Our user data script breakdown**:
+
+```bash
+#!/bin/bash
+yum update -y
+```
+- **Purpose**: Updates all installed packages to latest versions
+- **Why**: Security patches and bug fixes
+- `-y`: Automatically answers "yes" to all prompts
+
+```bash
+yum install -y httpd
+```
+- **httpd**: Apache HTTP Server (web server software)
+- **Why**: We're creating a web server to demonstrate the instance works
+- Result: Installs Apache and all its dependencies
+
+```bash
+systemctl start httpd
+systemctl enable httpd
+```
+- `start httpd`: Starts Apache immediately
+- `enable httpd`: Configures Apache to start automatically after reboot
+- **systemctl**: Linux service management command
+
+```bash
+echo "<h1>Hello from Terraform Lab!</h1>" > /var/www/html/index.html
+```
+- Creates a simple HTML page
+- `>`: Overwrites the file (creates if doesn't exist)
+- `/var/www/html/index.html`: Apache's default document root
+
+```bash
+echo "<p>Instance ID: $(curl -s http://169.254.169.254/latest/meta-data/instance-id)</p>" >> /var/www/html/index.html
+```
+- `>>`: Appends to the file (doesn't overwrite)
+- `$(...)`: Command substitution (runs command, inserts output)
+- `curl -s`: Silently fetches data
+- `169.254.169.254`: EC2 metadata service (special IP)
+- Retrieves the instance's unique ID
+
+### EC2 Metadata Service
+
+The metadata service is a special endpoint available only from within EC2 instances:
+- IP address: `169.254.169.254`
+- Provides instance information (ID, region, AZ, etc.)
+- No authentication required
+- Only accessible from the instance itself (not from internet)
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Metadata Endpoint</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Returns</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>/latest/meta-data/instance-id</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Instance ID (e.g., i-0afea07377a6c62ff)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>/latest/meta-data/placement/availability-zone</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Availability zone (e.g., us-east-1a)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>/latest/meta-data/public-ipv4</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Public IP address</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>/latest/meta-data/hostname</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Internal hostname</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+## Creating outputs.tf: Exposing Important Values
+
+Outputs display values after Terraform completes, making it easy to find important information like IP addresses and DNS names.
+
+Create the file:
+
+```bash
+touch outputs.tf
+```
+
+Add the following content:
+
+```hcl title="outputs.tf" showLineNumbers
+# Output values
+output "instance_id" {
+    description = "ID of the EC2 instance"
+    value       = aws_instance.terraform_instance.id
+}
+
+output "instance_public_ip" {
+    description = "Public IP address of the EC2 instance"
+    value       = aws_instance.terraform_instance.public_ip
+}
+
+output "instance_public_dns" {
+    description = "Public DNS name of the EC2 instance"
+    value       = aws_instance.terraform_instance.public_dns
+}
+
+output "security_group_id" {
+    description = "ID of the security group"
+    value       = aws_security_group.terraform_sg.id
+}
+
+output "website_url" {
+    description = "URL to access the web server"
+    value       = "http://${aws_instance.terraform_instance.public_ip}"
+}
+```
+
+### Understanding Output Blocks
+
+Outputs serve multiple purposes:
+- Display important values after `terraform apply`
+- Can be queried with `terraform output`
+- Used by other Terraform configurations (modules)
+- Helpful for automation scripts
+
+**Output block structure**:
+
+```hcl
+output "name" {
+    description = "What this output represents"
+    value       = actual_value_to_output
+}
+```
+
+### Understanding Public IP vs. DNS
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Type</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Example</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Use Case</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Public IP</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">3.92.197.145</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Direct access, SSH, testing</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Public DNS</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">ec2-3-92-197-145.compute-1.amazonaws.com</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">More stable, works if IP changes</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+**Why both?**
+- **Public IP**: Simple, direct, but can change if instance stops/starts
+- **Public DNS**: Hostname that resolves to the IP, slightly more stable
+- Both work for accessing your web server
+
+**Private IP vs. Public IP**:
+- **Private IP**: Only accessible within the VPC (internal communication)
+- **Public IP**: Accessible from internet (external communication)
+- Our instance gets both automatically
+
+<Callout type="success">
+✅ **Configuration Complete!** You now have all six Terraform files created:
+- `main.tf`: Core Terraform and provider configuration
+- `variables.tf`: Flexible, reusable variable definitions
+- `data.tf`: Queries for existing AWS resources
+- `security.tf`: Network security and firewall rules
+- `ec2.tf`: The actual EC2 instance with web server
+- `outputs.tf`: Important values displayed after deployment
+
+In Part 3, we'll bring this to life by running Terraform commands!
+</Callout>
+
+## Configuration Files Summary
+
+Let's review how all these files work together:
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">File</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">What It Defines</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Dependencies</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>main.tf</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Terraform version, AWS provider</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Uses variables.tf</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>variables.tf</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Input variables with defaults</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">None (provides values to others)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>data.tf</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Queries for AMI, VPC, Subnet</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Uses variables.tf</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>security.tf</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Security group and rules</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Uses data.tf (VPC), variables.tf</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>ec2.tf</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">EC2 instance with web server</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Uses everything (AMI, subnet, security group, variables)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>outputs.tf</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Values to display after creation</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">References ec2.tf and security.tf</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### The Dependency Graph
+
+Terraform automatically determines the order to create resources based on dependencies:
+
+```
+variables.tf
+    ↓
+main.tf (configures AWS provider)
+    ↓
+data.tf (queries AWS)
+    ↓
+security.tf (creates security group)
+    ↓
+ec2.tf (creates instance with security group)
+    ↓
+outputs.tf (displays results)
+```
+
+## Best Practices Summary
+
+### Configuration Organization
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Practice</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Why It Matters</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Separate files by purpose</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Easier to find and modify specific configurations</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Use variables, not hard-coded values</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Reusable across environments, easier to change</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Add descriptions to all variables and outputs</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Self-documenting code, helps team members</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Use data sources for existing resources</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Avoid recreating infrastructure, leverage what exists</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Tag all resources consistently</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Cost tracking, automation, organization</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Use comments for complex logic</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Future you (and team) will thank you</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### Security Best Practices
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Practice</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Why It Matters</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Never hard-code credentials</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Security risk, credential leak possibility</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Restrict security group rules</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">0.0.0.0/0 is convenient but insecure for production</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Use latest AMIs</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Security patches and bug fixes</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Enable HTTPS in production</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Encrypted traffic protects user data</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Use key pairs for SSH access</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">More secure than passwords</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+## HCL Syntax Reference
+
+### Basic Syntax Elements
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Element</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Syntax</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Example</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Blocks</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`type "label" { ... }`}</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`resource "aws_instance" "web" { ... }`}</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Attributes</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>key = value</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>instance_type = "t2.micro"</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Comments</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code># single line</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code># This is a comment</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Variables</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>var.name</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>var.aws_region</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Resources</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>resource.name.attribute</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>aws_instance.web.id</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Data Sources</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>data.type.name.attribute</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>data.aws_ami.amazon_linux.id</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Interpolation</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`"\${expression}"`}</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`"\${var.region}a"`}</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Lists</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>[item1, item2]</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>["0.0.0.0/0"]</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Maps</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`{key = value}`}</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>{`{Name = "web"}`}</code></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+## Configuration Cheat Sheet
+
+### Quick Reference: All Files
+
+```bash
+# Create all files at once
+touch main.tf variables.tf data.tf security.tf ec2.tf outputs.tf
+
+# Typical file sizes (lines of code)
+main.tf       # ~15 lines
+variables.tf  # ~25 lines
+data.tf       # ~30 lines
+security.tf   # ~40 lines
+ec2.tf        # ~30 lines
+outputs.tf    # ~25 lines
+```
+
+### Common Patterns
+
+**Referencing a variable**:
+```hcl
+region = var.aws_region
+```
+
+**Referencing a data source**:
+```hcl
+ami = data.aws_ami.amazon_linux.id
+```
+
+**Referencing a resource**:
+```hcl
+vpc_security_group_ids = [aws_security_group.terraform_sg.id]
+```
+
+**String interpolation**:
+```hcl
+name = "\${var.environment}-server"
+```
+
+**Heredoc for multi-line strings**:
+```hcl
+user_data = <<-EOF
+    #!/bin/bash
+    echo "Hello World"
+    EOF
+```
+
+## What's Next?
+
+<div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900 dark:to-indigo-900 p-6 rounded-lg my-6">
+
+### Continue Your Terraform Journey
+
+In **Part 3: Terraform Workflow and State Management**, you'll discover:
+
+- **terraform init**: Initializing and understanding the .terraform directory
+- **terraform validate**: Checking configuration syntax
+- **terraform fmt**: Formatting code consistently
+- **terraform plan**: Previewing infrastructure changes in detail
+- **terraform apply**: Creating real AWS infrastructure
+- **terraform show**: Inspecting created resources
+- **terraform state**: Understanding state management
+- **terraform output**: Querying output values
+- **terraform destroy**: Safely removing infrastructure
+- Modifying infrastructure and applying changes
+- Understanding the state file and why it's critical
+- Best practices for state management
+- Troubleshooting common issues
+
+### Recommended Practice
+
+Before Part 3, review your configuration files:
+- Read through each file and understand every line
+- Try modifying variable defaults (change region or instance type)
+- Add additional tags to resources
+- Read AWS documentation about EC2, VPC, and security groups
+- Draw a diagram of how your resources connect
+
+</div>
+
+---
+
+<Callout type="success">
+🎉 **Fantastic Progress!** You've completed Part 2 and now have a complete, working Terraform configuration.
+
+You understand:
+- Every Terraform configuration file and its purpose
+- Core AWS concepts: EC2, VPC, AMI, security groups, subnets
+- HCL syntax and how resources reference each other
+- Variables, data sources, resources, and outputs
+- Security groups, ingress/egress rules, and CIDR blocks
+- User data scripts and EC2 metadata service
+
+**Ready to deploy?** Part 3 will walk you through every Terraform command to bring your infrastructure to life on AWS!
+</Callout>
+
+---
+
+*Part 2 of 3 in the Terraform Hands-On series. Continue with Part 3 to execute your Terraform configuration and manage infrastructure lifecycle.*

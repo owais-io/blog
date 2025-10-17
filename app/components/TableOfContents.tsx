@@ -11,6 +11,7 @@ interface TableOfContentsProps {
 export default function TableOfContents({ headings, className = '' }: TableOfContentsProps) {
   const [activeId, setActiveId] = useState<string>('')
   const [mounted, setMounted] = useState(false)
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     setMounted(true)
@@ -42,6 +43,35 @@ export default function TableOfContents({ headings, className = '' }: TableOfCon
       observer.disconnect()
     }
   }, [headings])
+
+  // Auto-expand section containing active heading (smart collapse)
+  useEffect(() => {
+    if (!activeId || !mounted) return
+
+    const activeHeading = headings.find(h => h.anchor === activeId)
+    if (!activeHeading) return
+
+    // Find the parent h2 for this heading
+    let parentH2Anchor: string | null = null
+
+    if (activeHeading.level === 3) {
+      // Find the nearest h2 before this h3
+      const activeIndex = headings.findIndex(h => h.anchor === activeId)
+      for (let i = activeIndex - 1; i >= 0; i--) {
+        if (headings[i].level === 2) {
+          parentH2Anchor = headings[i].anchor
+          break
+        }
+      }
+    } else if (activeHeading.level === 2) {
+      parentH2Anchor = activeHeading.anchor
+    }
+
+    // Only keep the active section expanded
+    if (parentH2Anchor) {
+      setExpandedSections(new Set([parentH2Anchor]))
+    }
+  }, [activeId, headings, mounted])
 
   // Auto-scroll TOC to keep active item in view
   useEffect(() => {
@@ -79,6 +109,49 @@ export default function TableOfContents({ headings, className = '' }: TableOfCon
     }
   }
 
+  const toggleSection = (anchor: string, event: React.MouseEvent) => {
+    event.stopPropagation()
+    setExpandedSections(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(anchor)) {
+        newSet.delete(anchor)
+      } else {
+        newSet.add(anchor)
+      }
+      return newSet
+    })
+  }
+
+  // Helper to check if a heading should be visible
+  const isHeadingVisible = (heading: TOCHeading, index: number): boolean => {
+    if (heading.level === 1 || heading.level === 2) {
+      return true // Always show h1 and h2
+    }
+
+    // For h3, check if parent h2 is expanded
+    if (heading.level === 3) {
+      // Find the nearest h2 before this h3
+      for (let i = index - 1; i >= 0; i--) {
+        if (headings[i].level === 2) {
+          return expandedSections.has(headings[i].anchor)
+        }
+      }
+    }
+
+    return false
+  }
+
+  // Helper to check if h2 has children (h3s)
+  const hasChildren = (heading: TOCHeading, index: number): boolean => {
+    if (heading.level !== 2) return false
+
+    // Check if next heading is h3
+    if (index + 1 < headings.length && headings[index + 1].level === 3) {
+      return true
+    }
+    return false
+  }
+
   if (!mounted || headings.length === 0) {
     return null
   }
@@ -99,8 +172,14 @@ export default function TableOfContents({ headings, className = '' }: TableOfCon
         }}
       >
         <ul className="space-y-1 text-sm">
-          {headings.map((heading) => {
+          {headings.map((heading, index) => {
             const isActive = activeId === heading.anchor
+            const isExpanded = expandedSections.has(heading.anchor)
+            const hasChildHeadings = hasChildren(heading, index)
+            const isVisible = isHeadingVisible(heading, index)
+
+            if (!isVisible) return null
+
             const levelClasses = {
               1: 'ml-0 text-gray-900 dark:text-gray-100 font-medium',
               2: 'ml-4 text-gray-600 dark:text-gray-400',
@@ -109,21 +188,40 @@ export default function TableOfContents({ headings, className = '' }: TableOfCon
 
             return (
               <li key={heading.id}>
-                <button
-                  onClick={() => scrollToHeading(heading.anchor)}
-                  className={`
-                    block w-full text-left py-1.5 text-sm transition-colors duration-150
-                    hover:text-gray-900 dark:hover:text-gray-100
-                    ${levelClasses[heading.level as keyof typeof levelClasses]}
-                    ${isActive
-                      ? 'text-sky-600 dark:text-sky-400 border-l-2 border-sky-600 dark:border-sky-400 -ml-px pl-4'
-                      : ''
-                    }
-                  `}
-                  aria-label={`Navigate to ${heading.text}`}
-                >
-                  {heading.text}
-                </button>
+                <div className="flex items-center">
+                  {hasChildHeadings && (
+                    <button
+                      onClick={(e) => toggleSection(heading.anchor, e)}
+                      className="flex-shrink-0 w-4 h-4 mr-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-transform duration-200"
+                      aria-label={isExpanded ? 'Collapse section' : 'Expand section'}
+                      style={{ marginLeft: heading.level === 2 ? '1rem' : '0' }}
+                    >
+                      <svg
+                        className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                      </svg>
+                    </button>
+                  )}
+                  <button
+                    onClick={() => scrollToHeading(heading.anchor)}
+                    className={`
+                      block w-full text-left py-1.5 text-sm transition-colors duration-150
+                      hover:text-gray-900 dark:hover:text-gray-100
+                      ${levelClasses[heading.level as keyof typeof levelClasses]}
+                      ${isActive
+                        ? 'text-sky-600 dark:text-sky-400 border-l-2 border-sky-600 dark:border-sky-400 -ml-px pl-4'
+                        : ''
+                      }
+                      ${!hasChildHeadings && heading.level === 2 ? 'ml-5' : ''}
+                    `}
+                    aria-label={`Navigate to ${heading.text}`}
+                  >
+                    {heading.text}
+                  </button>
+                </div>
               </li>
             )
           })}
@@ -138,6 +236,7 @@ export function CompactTableOfContents({ headings, className = '' }: TableOfCont
   const [isOpen, setIsOpen] = useState(false)
   const [activeId, setActiveId] = useState<string>('')
   const [mounted, setMounted] = useState(false)
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     setMounted(true)
@@ -168,6 +267,35 @@ export function CompactTableOfContents({ headings, className = '' }: TableOfCont
       observer.disconnect()
     }
   }, [headings])
+
+  // Auto-expand section containing active heading (smart collapse)
+  useEffect(() => {
+    if (!activeId || !mounted) return
+
+    const activeHeading = headings.find(h => h.anchor === activeId)
+    if (!activeHeading) return
+
+    // Find the parent h2 for this heading
+    let parentH2Anchor: string | null = null
+
+    if (activeHeading.level === 3) {
+      // Find the nearest h2 before this h3
+      const activeIndex = headings.findIndex(h => h.anchor === activeId)
+      for (let i = activeIndex - 1; i >= 0; i--) {
+        if (headings[i].level === 2) {
+          parentH2Anchor = headings[i].anchor
+          break
+        }
+      }
+    } else if (activeHeading.level === 2) {
+      parentH2Anchor = activeHeading.anchor
+    }
+
+    // Only keep the active section expanded
+    if (parentH2Anchor) {
+      setExpandedSections(new Set([parentH2Anchor]))
+    }
+  }, [activeId, headings, mounted])
 
   // Auto-scroll TOC to keep active item in view (for compact version)
   useEffect(() => {
@@ -203,6 +331,49 @@ export function CompactTableOfContents({ headings, className = '' }: TableOfCont
       })
       setIsOpen(false)
     }
+  }
+
+  const toggleSection = (anchor: string, event: React.MouseEvent) => {
+    event.stopPropagation()
+    setExpandedSections(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(anchor)) {
+        newSet.delete(anchor)
+      } else {
+        newSet.add(anchor)
+      }
+      return newSet
+    })
+  }
+
+  // Helper to check if a heading should be visible
+  const isHeadingVisible = (heading: TOCHeading, index: number): boolean => {
+    if (heading.level === 1 || heading.level === 2) {
+      return true // Always show h1 and h2
+    }
+
+    // For h3, check if parent h2 is expanded
+    if (heading.level === 3) {
+      // Find the nearest h2 before this h3
+      for (let i = index - 1; i >= 0; i--) {
+        if (headings[i].level === 2) {
+          return expandedSections.has(headings[i].anchor)
+        }
+      }
+    }
+
+    return false
+  }
+
+  // Helper to check if h2 has children (h3s)
+  const hasChildren = (heading: TOCHeading, index: number): boolean => {
+    if (heading.level !== 2) return false
+
+    // Check if next heading is h3
+    if (index + 1 < headings.length && headings[index + 1].level === 3) {
+      return true
+    }
+    return false
   }
 
   if (!mounted || headings.length === 0) {
@@ -285,8 +456,14 @@ export function CompactTableOfContents({ headings, className = '' }: TableOfCont
 
           <div className="flex-1 overflow-y-auto p-4 compact-toc-scrollable">
             <ul className="space-y-1">
-              {headings.map((heading) => {
+              {headings.map((heading, index) => {
                 const isActive = activeId === heading.anchor
+                const isExpanded = expandedSections.has(heading.anchor)
+                const hasChildHeadings = hasChildren(heading, index)
+                const isVisible = isHeadingVisible(heading, index)
+
+                if (!isVisible) return null
+
                 const levelClasses = {
                   1: 'ml-0 font-semibold',
                   2: 'ml-4',
@@ -295,21 +472,40 @@ export function CompactTableOfContents({ headings, className = '' }: TableOfCont
 
                 return (
                   <li key={heading.id}>
-                    <button
-                      onClick={() => scrollToHeading(heading.anchor)}
-                      className={`
-                        block w-full text-left py-3 px-3 rounded-lg text-sm transition-colors
-                        hover:bg-primary-50 dark:hover:bg-primary-900/20
-                        hover:text-primary-600 dark:hover:text-primary-400
-                        ${levelClasses[heading.level as keyof typeof levelClasses]}
-                        ${isActive
-                          ? 'text-primary-700 dark:text-primary-400 bg-primary-100 dark:bg-primary-900/30 font-medium'
-                          : 'text-gray-700 dark:text-gray-300'
-                        }
-                      `}
-                    >
-                      {heading.text}
-                    </button>
+                    <div className="flex items-center">
+                      {hasChildHeadings && (
+                        <button
+                          onClick={(e) => toggleSection(heading.anchor, e)}
+                          className="flex-shrink-0 w-6 h-6 mr-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-transform duration-200"
+                          aria-label={isExpanded ? 'Collapse section' : 'Expand section'}
+                          style={{ marginLeft: heading.level === 2 ? '1rem' : '0' }}
+                        >
+                          <svg
+                            className={`w-5 h-5 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </button>
+                      )}
+                      <button
+                        onClick={() => scrollToHeading(heading.anchor)}
+                        className={`
+                          block w-full text-left py-3 px-3 rounded-lg text-sm transition-colors
+                          hover:bg-primary-50 dark:hover:bg-primary-900/20
+                          hover:text-primary-600 dark:hover:text-primary-400
+                          ${levelClasses[heading.level as keyof typeof levelClasses]}
+                          ${isActive
+                            ? 'text-primary-700 dark:text-primary-400 bg-primary-100 dark:bg-primary-900/30 font-medium'
+                            : 'text-gray-700 dark:text-gray-300'
+                          }
+                          ${!hasChildHeadings && heading.level === 2 ? 'ml-7' : ''}
+                        `}
+                      >
+                        {heading.text}
+                      </button>
+                    </div>
                   </li>
                 )
               })}

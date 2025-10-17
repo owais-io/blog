@@ -1,0 +1,1137 @@
+---
+title: "Terraform Hands-On: Installation and AWS Setup for Beginners - Part 1"
+description: "Step-by-step guide to installing Terraform on multiple operating systems, setting up AWS CLI, configuring credentials, and preparing your first Terraform project. Complete with examples, outputs, and IAM best practices."
+date: "2025-10-17T00:00:00.000Z"
+tags: ["terraform", "aws", "infrastructure-as-code"]
+published: true
+categories: ["Infrastructure as Code", "Terraform"]
+author: "Owais"
+seo:
+  canonical: "https://owais.io/blog/2025-10-17_terraform-hands-on-installation-aws-setup-part1"
+  keywords: ["terraform installation", "aws cli setup", "terraform beginners", "iac tutorial", "aws credentials", "terraform aws", "devops tutorial", "cloud automation"]
+toc: true
+---
+
+## Introduction
+
+You've learned about Infrastructure as Code concepts and Terraform's architecture. Now it's time to get your hands dirty with actual implementation! In this comprehensive, hands-on series, we'll walk through every step of setting up Terraform, configuring AWS, and deploying real infrastructure to the cloud.
+
+By the end of this series, you'll have practical experience creating, modifying, and destroying AWS infrastructure using Terraform. More importantly, you'll understand what's happening at each step and why—knowledge you can apply to any cloud provider or infrastructure project.
+
+<Callout type="info">
+🎯 **What You'll Learn in Part 1**:
+- Installing Terraform on RHEL/CentOS, Ubuntu, macOS, and Windows
+- Understanding package managers and installation methods
+- Installing and configuring AWS CLI v2
+- Setting up AWS credentials securely
+- IAM best practices for Terraform access
+- Creating your first Terraform project structure
+- Understanding the terraform-practice directory layout
+
+**Prerequisites**:
+- Basic command-line familiarity
+- A computer with terminal/command prompt access
+- An AWS account (free tier is sufficient)
+- Ability to run commands with sudo/administrator privileges
+
+**Series Structure**:
+- **Part 1** (This post): Installation and AWS setup
+- **Part 2**: Terraform configuration files and resource definitions
+- **Part 3**: Terraform workflow, state management, and infrastructure lifecycle
+
+</Callout>
+
+## Understanding Terraform Installation
+
+Before installing Terraform, it's helpful to understand what you're installing and why different methods exist for different operating systems.
+
+### What is Terraform?
+
+Terraform is a single binary application written in Go. This means:
+- No complex dependencies or runtime environments needed
+- Works the same across all operating systems
+- Easy to install and update
+- Lightweight and fast to execute
+
+### Installation Methods Overview
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Method</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Operating Systems</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Advantages</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Best For</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Package Manager</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Linux (yum, apt, dnf)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Easy updates, system integration</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Production servers, long-term use</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Homebrew</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">macOS, Linux</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Simple, familiar to Mac users</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Development machines, macOS users</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Chocolatey</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Windows</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Windows-native package management</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Windows users, automation</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Manual Download</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">All platforms</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Version control, air-gapped systems</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Specific version requirements</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+## Installing Terraform on RHEL/CentOS/Rocky Linux
+
+We'll start with RHEL-based distributions since that's what we're using in this tutorial. This method works for RHEL 7/8/9, CentOS 7/8/9, Rocky Linux, AlmaLinux, and Fedora.
+
+### Step 1: Install yum-utils
+
+First, we need `yum-utils`, which provides the `yum-config-manager` utility for managing repository configurations.
+
+```bash
+sudo yum install -y yum-utils
+```
+
+**What this command does**:
+- `sudo`: Runs the command with administrative privileges
+- `yum install`: Package installation command for RHEL-based systems
+- `-y`: Automatically answers "yes" to all prompts
+- `yum-utils`: Package containing repository management utilities
+
+**Expected output**:
+
+```
+Last metadata expiration check: 1:06:51 ago on Fri 17 Oct 2025 12:17:09 AM PKT.
+Dependencies resolved.
+==============================================================================================================
+ Package                    Architecture           Version                    Repository                Size
+==============================================================================================================
+Installing:
+ yum-utils                  noarch                 4.3.0-23.el9               baseos                   39 k
+
+Transaction Summary
+==============================================================================================================
+Install  1 Package
+
+Total download size: 39 k
+Installed size: 23 k
+Downloading Packages:
+yum-utils-4.3.0-23.el9.noarch.rpm                                             37 kB/s |  39 kB     00:01
+--------------------------------------------------------------------------------------------------------------
+Total                                                                         17 kB/s |  39 kB     00:02
+Running transaction check
+Transaction check succeeded.
+Running transaction test
+Transaction test succeeded.
+Running transaction
+  Preparing        :                                                                                     1/1
+  Installing       : yum-utils-4.3.0-23.el9.noarch                                                       1/1
+  Running scriptlet: yum-utils-4.3.0-23.el9.noarch                                                       1/1
+  Verifying        : yum-utils-4.3.0-23.el9.noarch                                                       1/1
+
+Installed:
+  yum-utils-4.3.0-23.el9.noarch
+
+Complete!
+```
+
+**Understanding the output**:
+- **Dependencies resolved**: YUM calculated all required packages
+- **Transaction Summary**: Shows 1 package will be installed
+- **Download size**: 39 KB needs to be downloaded
+- **Installed size**: Will occupy 23 KB after installation
+- **Verifying**: Package integrity check completed successfully
+
+### Step 2: Add HashiCorp Repository
+
+Now we add HashiCorp's official repository to our system's package sources:
+
+```bash
+sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
+```
+
+**What this command does**:
+- `yum-config-manager`: Utility for managing YUM repository configuration
+- `--add-repo`: Adds a new repository to the system
+- URL points to HashiCorp's official RHEL repository configuration
+
+**Expected output**:
+
+```
+Adding repo from: https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
+```
+
+**Why we add a repository**:
+Repositories are collections of software packages maintained by organizations. HashiCorp maintains their own repository to ensure:
+- You get authentic, verified Terraform packages
+- Easy updates when new versions are released
+- Access to other HashiCorp tools (Vault, Consul, etc.)
+- Cryptographic signatures for package verification
+
+### Step 3: Install Terraform
+
+With the repository added, we can now install Terraform:
+
+```bash
+sudo yum -y install terraform
+```
+
+**What this command does**:
+- Connects to the HashiCorp repository
+- Downloads the latest stable Terraform package
+- Verifies the package signature for security
+- Installs Terraform to `/usr/bin/terraform`
+- Makes Terraform available system-wide
+
+**Expected output**:
+
+```
+Hashicorp Stable - x86_64                                                     3.6 MB/s | 2.0 MB     00:00
+Dependencies resolved.
+==============================================================================================================
+ Package                    Architecture           Version                    Repository                Size
+==============================================================================================================
+Installing:
+ terraform                  x86_64                 1.13.4-1                   hashicorp                 30 M
+
+Transaction Summary
+==============================================================================================================
+Install  1 Package
+
+Total download size: 30 M
+Installed size: 96 M
+Downloading Packages:
+terraform-1.13.4-1.x86_64.rpm                                                 7.5 MB/s |  30 MB     00:04
+--------------------------------------------------------------------------------------------------------------
+Total                                                                         7.5 MB/s |  30 MB     00:04
+Hashicorp Stable - x86_64                                                      35 kB/s | 3.9 kB     00:00
+Importing GPG key 0xA621E701:
+ Userid     : "HashiCorp Security (HashiCorp Package Signing) <security+packaging@hashicorp.com>"
+ Fingerprint: 798A EC65 4E5C 1542 8C8E 42EE AA16 FCBC A621 E701
+ From       : https://rpm.releases.hashicorp.com/gpg
+Key imported successfully
+Running transaction check
+Transaction check succeeded.
+Running transaction test
+Transaction test succeeded.
+Running transaction
+  Preparing        :                                                                                     1/1
+  Installing       : terraform-1.13.4-1.x86_64                                                           1/1
+  Verifying        : terraform-1.13.4-1.x86_64                                                           1/1
+
+Installed:
+  terraform-1.13.4-1.x86_64
+
+Complete!
+```
+
+**Understanding the output**:
+- **GPG key verification**: Ensures package authenticity and hasn't been tampered with
+- **Version 1.13.4**: The specific Terraform version being installed
+- **96 M installed size**: Terraform binary plus documentation
+- **Transaction succeeded**: Installation completed without errors
+
+### Step 4: Verify Installation
+
+Always verify that Terraform installed correctly:
+
+```bash
+terraform version
+```
+
+**Expected output**:
+
+```
+Terraform v1.13.4
+on linux_amd64
+```
+
+**What this tells us**:
+- **v1.13.4**: Terraform version number
+- **linux_amd64**: Operating system (Linux) and architecture (64-bit AMD/Intel)
+- This confirms Terraform is properly installed and accessible in your PATH
+
+<Callout type="success">
+✅ **Congratulations!** Terraform is now installed on your RHEL/CentOS system. The installation includes:
+- The `terraform` binary for executing commands
+- Auto-completion support (activated after first run)
+- Access to all Terraform providers through the Registry
+</Callout>
+
+## Installing Terraform on Other Operating Systems
+
+### Ubuntu/Debian Linux
+
+```bash
+# Update package index and install dependencies
+sudo apt-get update && sudo apt-get install -y gnupg software-properties-common
+
+# Add HashiCorp GPG key
+wget -O- https://apt.releases.hashicorp.com/gpg | \
+    gpg --dearmor | \
+    sudo tee /usr/share/keyrings/hashicorp-archive-keyring.gpg
+
+# Verify the key fingerprint
+gpg --no-default-keyring \
+    --keyring /usr/share/keyrings/hashicorp-archive-keyring.gpg \
+    --fingerprint
+
+# Add HashiCorp repository
+echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] \
+    https://apt.releases.hashicorp.com $(lsb_release -cs) main" | \
+    sudo tee /etc/apt/sources.list.d/hashicorp.list
+
+# Update and install Terraform
+sudo apt-get update && sudo apt-get install terraform
+```
+
+**Key differences from RHEL**:
+- Uses `apt-get` instead of `yum`
+- Requires explicit GPG key management
+- Uses `lsb_release` to detect Ubuntu/Debian version
+
+### macOS with Homebrew
+
+```bash
+# Install Homebrew (if not already installed)
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# Install Terraform
+brew tap hashicorp/tap
+brew install hashicorp/tap/terraform
+```
+
+**Why Homebrew**:
+- Most popular macOS package manager
+- Handles updates automatically
+- Integrates well with macOS development workflows
+- Also works on Linux as an alternative
+
+### Windows with Chocolatey
+
+```powershell
+# Install Chocolatey (if not already installed) - Run as Administrator
+Set-ExecutionPolicy Bypass -Scope Process -Force
+[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+
+# Install Terraform
+choco install terraform
+```
+
+**Windows alternative - Manual installation**:
+1. Download from https://www.terraform.io/downloads
+2. Extract the ZIP file
+3. Add terraform.exe location to PATH environment variable
+4. Restart PowerShell/Command Prompt
+
+<Callout type="warning">
+⚠️ **Windows Users**: If using manual installation, you must add Terraform to your PATH environment variable. Otherwise, you'll need to use the full path to terraform.exe every time.
+</Callout>
+
+## Installing AWS CLI
+
+Terraform will interact with AWS through the AWS APIs, but we need the AWS CLI to configure credentials and occasionally verify our infrastructure. The AWS CLI is a unified tool for managing AWS services from the command line.
+
+### Why Install AWS CLI?
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Purpose</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Example Use Case</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Credential Configuration</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Set up AWS access keys for Terraform to use</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Resource Verification</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Check that Terraform created resources correctly</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Manual Operations</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Perform one-off tasks not suitable for Terraform</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Troubleshooting</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Debug infrastructure issues and inspect resources</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### Installing AWS CLI v2 on Linux
+
+AWS CLI v2 is the current version with improved performance and new features. We'll download and install it using the official installation script.
+
+```bash
+# Download AWS CLI v2 installer
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+
+# Extract the downloaded archive
+unzip awscliv2.zip
+
+# Run the installer
+sudo ./aws/install
+```
+
+**Command breakdown**:
+
+**Command 1: `curl`**
+- `curl`: Tool for transferring data from/to servers
+- URL: AWS's official download location for Linux 64-bit
+- `-o "awscliv2.zip"`: Saves downloaded file as awscliv2.zip
+
+**Command 2: `unzip`**
+- Extracts the ZIP archive
+- Creates an `aws/` directory with installation files
+
+**Command 3: `sudo ./aws/install`**
+- Runs the installation script with administrator privileges
+- Installs AWS CLI to `/usr/local/bin/aws`
+- Makes it available system-wide
+
+**Expected output**:
+
+```
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100 59.3M  100 59.3M    0     0  4711k      0  0:00:12  0:00:12 --:--:-- 5953k
+Archive:  awscliv2.zip
+   creating: aws/
+   creating: aws/dist/
+  inflating: aws/README.md
+  inflating: aws/install
+  inflating: aws/THIRD_PARTY_LICENSES
+  [... many more files ...]
+You can now run: /usr/local/bin/aws --version
+```
+
+**Understanding the output**:
+- **59.3M downloaded**: Size of the AWS CLI installer
+- **Archive extraction**: Lists all extracted files
+- **Installation confirmation**: Shows where AWS CLI was installed
+
+### Verify AWS CLI Installation
+
+```bash
+aws --version
+```
+
+**Expected output**:
+
+```
+aws-cli/2.31.17 Python/3.13.7 Linux/5.14.0-620.el9.x86_64 exe/x86_64.centos.9
+```
+
+**Output breakdown**:
+- **aws-cli/2.31.17**: AWS CLI version
+- **Python/3.13.7**: Python version bundled with installer
+- **Linux/5.14.0-620.el9.x86_64**: Your kernel version
+- **exe/x86_64.centos.9**: Architecture and distribution
+
+### Installing AWS CLI on Other Platforms
+
+**macOS**:
+```bash
+# Download installer
+curl "https://awscli.amazonaws.com/AWSCLIV2.pkg" -o "AWSCLIV2.pkg"
+
+# Install
+sudo installer -pkg AWSCLIV2.pkg -target /
+```
+
+**Windows**:
+1. Download the MSI installer from https://awscli.amazonaws.com/AWSCLIV2.msi
+2. Run the downloaded MSI installer
+3. Follow the installation wizard
+4. Restart Command Prompt/PowerShell after installation
+
+<Callout type="info">
+💡 **Alternative Installation Methods**: You can also install AWS CLI using package managers (pip, Homebrew, Chocolatey), but the official installer is recommended as it's self-contained and doesn't interfere with system Python installations.
+</Callout>
+
+## Configuring AWS Credentials
+
+Before Terraform can create AWS resources, it needs permission to access your AWS account. This requires proper credential configuration following security best practices.
+
+### Understanding AWS IAM (Identity and Access Management)
+
+**What is IAM?**
+IAM is AWS's service for managing access to AWS resources. It allows you to control:
+- **Who** can access your AWS account (authentication)
+- **What** they can do (authorization/permissions)
+- **How** they access resources (access keys, passwords, roles)
+
+### IAM Best Practices for Terraform
+
+<Callout type="warning">
+⚠️ **Security First**: Never use your root AWS account credentials for Terraform! Always create a dedicated IAM user with minimal required permissions.
+</Callout>
+
+**The proper approach**:
+
+1. **Create an IAM Group** with specific permissions
+2. **Create an IAM User** and add them to the group
+3. **Generate Access Keys** for programmatic access
+4. **Configure AWS CLI** with these credentials
+5. **Rotate credentials** periodically for security
+
+### Step-by-Step: Creating IAM User for Terraform
+
+**Step 1: Sign in to AWS Console**
+- Go to https://console.aws.amazon.com/
+- Sign in with your root account or IAM admin user
+
+**Step 2: Navigate to IAM Service**
+- Search for "IAM" in the AWS services search bar
+- Click on "IAM" to open the Identity and Access Management dashboard
+
+**Step 3: Create IAM Group**
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Action</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Details</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">1. Click "User groups"</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">In the left sidebar of IAM dashboard</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">2. Click "Create group"</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Blue button in top right</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">3. Group name</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Enter: <code>TerraformUsers</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">4. Attach policies</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Search and select <code>AmazonEC2FullAccess</code> and <code>AmazonVPCFullAccess</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">5. Create group</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Click "Create group" button</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+**Step 4: Create IAM User**
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Action</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Details</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">1. Click "Users"</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">In the left sidebar</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">2. Click "Add users"</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Blue button in top right</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">3. User name</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Enter: <code>terraform-user</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">4. Access type</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Select "Programmatic access"</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">5. Add to group</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Select <code>TerraformUsers</code> group</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">6. Tags (optional)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Add tag: Key=<code>Purpose</code>, Value=<code>Terraform</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">7. Create user</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Review and click "Create user"</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+**Step 5: Save Access Keys**
+
+After creating the user, AWS displays the access keys **only once**:
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Credential Type</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Description</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Example Format</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Access Key ID</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Public identifier (like a username)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>AKIA4ZPZU833B3O5OM46</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Secret Access Key</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Private key (like a password) - shown once!</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>Xm3p77IWUH4AKtggeoyw9G6POhwAUnWt8jDt1sM/</code></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<Callout type="error">
+🚨 **Critical**: The Secret Access Key is shown only during creation. Download the CSV file or copy both keys immediately. If you lose it, you must create new access keys.
+</Callout>
+
+### Configuring AWS CLI with Credentials
+
+Now we'll configure the AWS CLI with the credentials we just created:
+
+```bash
+aws configure
+```
+
+This interactive command will prompt you for four pieces of information:
+
+**Expected interaction**:
+
+```
+AWS Access Key ID [None]: AKIA4ZPZU833B3O5OM46
+AWS Secret Access Key [None]: Xm3p77IWUH4AKtggeoyw9G6POhwAUnWt8jDt1sM/
+Default region name [None]: us-east-1
+Default output format [None]: json
+```
+
+**What each field means**:
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Field</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Purpose</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Recommended Value</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Access Key ID</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Identifies your IAM user</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Paste from IAM console</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Secret Access Key</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Authenticates your requests</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Paste from IAM console</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Default region</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Where to create resources</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>us-east-1</code> (N. Virginia)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Output format</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">CLI response format</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>json</code> (easiest to read)</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### Understanding AWS Regions
+
+AWS regions are geographic locations where AWS has data centers. Choosing the right region affects:
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Factor</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Impact</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Recommendation</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Latency</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Response time for users</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Choose region closest to users</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Cost</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Pricing varies by region</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">US regions often cheaper</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Compliance</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Data sovereignty laws</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Keep data in required jurisdiction</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Services</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Feature availability</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Newer services launch in us-east-1 first</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+**Popular AWS Regions**:
+- `us-east-1` (N. Virginia): Largest, most services, often cheapest
+- `us-west-2` (Oregon): Popular alternative, newer facility
+- `eu-west-1` (Ireland): Main European region
+- `ap-southeast-1` (Singapore): Main Asia Pacific region
+- `eu-central-1` (Frankfurt): GDPR-compliant European option
+
+### Where Credentials are Stored
+
+AWS CLI stores your credentials in files:
+
+```bash
+# Credentials file
+~/.aws/credentials
+```
+
+Content:
+```ini
+[default]
+aws_access_key_id = AKIA4ZPZU833B3O5OM46
+aws_secret_access_key = Xm3p77IWUH4AKtggeoyw9G6POhwAUnWt8jDt1sM/
+```
+
+```bash
+# Configuration file
+~/.aws/config
+```
+
+Content:
+```ini
+[default]
+region = us-east-1
+output = json
+```
+
+<Callout type="warning">
+⚠️ **Security Notice**: These files contain sensitive credentials. Ensure proper permissions:
+- Never commit them to Git
+- Keep file permissions restrictive (600)
+- Don't share these files
+- Add `~/.aws/credentials` to `.gitignore`
+</Callout>
+
+## Creating Your First Terraform Project
+
+Now that Terraform and AWS are configured, let's create a proper project structure. Good organization from the start prevents confusion and makes your infrastructure more maintainable.
+
+### Understanding Project Structure
+
+A well-organized Terraform project separates concerns and uses a modular approach:
+
+```bash
+mkdir terraform-practice
+```
+
+**What this does**:
+- Creates a new directory for your Terraform project
+- This will be your working directory
+- All Terraform files and state will live here
+
+**Expected output**: None (silent success)
+
+### Creating Directory Structure
+
+Professional Terraform projects often separate code into modules and environments:
+
+```bash
+mkdir -p {modules,environments/dev,environments/prod}
+```
+
+**Command breakdown**:
+- `mkdir -p`: Creates directories and parent directories as needed
+- `{}`: Bash brace expansion creates multiple directories
+- Creates: `modules/`, `environments/dev/`, and `environments/prod/`
+
+**Verify the structure**:
+
+```bash
+tree
+```
+
+**Expected output**:
+
+```
+.
+├── environments
+│   ├── dev
+│   └── prod
+└── modules
+
+4 directories, 0 files
+```
+
+**Understanding this structure**:
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Directory</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Purpose</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Contains</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>modules/</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Reusable infrastructure components</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Shared modules used by multiple environments</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>environments/dev/</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Development environment config</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Dev-specific settings and variable values</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>environments/prod/</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Production environment config</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Production settings with appropriate sizing</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+**For this tutorial**: We'll work in the root directory to keep things simple, but this structure shows you how real projects are organized.
+
+### Initializing Terraform
+
+Before creating any configuration files, let's initialize Terraform in our directory:
+
+```bash
+terraform init
+```
+
+**What this command does**:
+- Initializes the current directory as a Terraform working directory
+- Creates a `.terraform/` directory for provider plugins
+- Prepares the backend for state storage
+- Validates the directory structure
+
+**Expected output**:
+
+```
+Terraform initialized in an empty directory!
+
+The directory has no Terraform configuration files. You may begin working
+with Terraform immediately by creating Terraform configuration files.
+```
+
+**What this tells us**:
+- Terraform successfully initialized
+- Directory is ready for configuration files
+- No providers installed yet (we haven't specified any)
+- We can now create `.tf` configuration files
+
+<Callout type="success">
+✅ **Project Setup Complete!** You now have:
+- Terraform installed and verified
+- AWS CLI installed and configured
+- IAM user with appropriate permissions
+- Credentials stored securely
+- Project directory initialized
+- Understanding of proper project structure
+
+In Part 2, we'll create Terraform configuration files and define real AWS infrastructure!
+</Callout>
+
+## Best Practices Summary
+
+### Installation Best Practices
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Practice</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Why It Matters</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Use official repositories</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Ensures authentic, verified software</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Verify GPG signatures</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Confirms packages haven't been tampered with</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Check version after install</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Confirms successful installation</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Keep tools updated</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Security patches and new features</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### AWS Security Best Practices
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Practice</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Why It Matters</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Never use root account</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Root has unlimited access; compromise is catastrophic</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Create IAM groups first</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Easier to manage permissions at scale</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Use minimal permissions</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Principle of least privilege reduces risk</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Rotate credentials regularly</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Limits exposure from compromised keys</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Enable MFA on IAM users</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Additional layer of authentication</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Never commit credentials</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Prevents accidental public exposure</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### Project Organization Best Practices
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Practice</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Why It Matters</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Separate environments</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Prevents accidentally modifying production</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Use version control (Git)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Track changes, enable collaboration</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Create reusable modules</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">DRY principle, consistency across projects</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Document your infrastructure</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Helps team members understand decisions</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Use meaningful naming</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Makes purpose clear, easier to maintain</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+## Command Reference Cheat Sheet
+
+### Terraform Commands
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Command</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Purpose</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">When to Use</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>terraform version</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Display Terraform version</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Verify installation</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>terraform init</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Initialize working directory</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">First command in new project</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>terraform -help</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Show available commands</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Learn command options</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### AWS CLI Commands
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Command</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Purpose</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">When to Use</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>aws --version</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Display AWS CLI version</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Verify installation</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>aws configure</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Configure AWS credentials</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Initial setup or update credentials</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>aws sts get-caller-identity</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Verify AWS credentials</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Test authentication</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### System Commands
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Command</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Purpose</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Platform</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>sudo yum install -y package</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Install package on RHEL/CentOS</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">RHEL, CentOS, Fedora</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>sudo apt-get install package</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Install package on Ubuntu/Debian</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Ubuntu, Debian</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>brew install package</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Install package on macOS</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">macOS</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>choco install package</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Install package on Windows</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Windows</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>mkdir -p path/to/dir</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Create directory and parents</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">All platforms</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>tree</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Display directory tree</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Linux, macOS</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+## What's Next?
+
+<div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900 dark:to-indigo-900 p-6 rounded-lg my-6">
+
+### Continue Your Terraform Journey
+
+In **Part 2: Terraform Configuration Files Deep Dive**, you'll discover:
+
+- **main.tf**: Terraform core configuration and provider setup
+- **variables.tf**: Defining reusable variables and their purposes
+- **data.tf**: Querying existing AWS resources (AMIs, VPCs, Subnets)
+- **security.tf**: Creating security groups and firewall rules
+- **ec2.tf**: Launching EC2 instances with user data scripts
+- **outputs.tf**: Exposing important values for external use
+- Understanding EC2 instances, instance types, and AMIs
+- AWS VPC networking concepts
+- Security groups, ingress, and egress rules
+- Public vs. private IP addresses and DNS
+
+### Recommended Practice
+
+Before Part 2, try these exercises:
+- Install Terraform on a different operating system (if available)
+- Create additional IAM users with different permission sets
+- Experiment with AWS CLI commands to explore your account
+- Read about different AWS regions and their characteristics
+- Create a Git repository for your terraform-practice project
+
+</div>
+
+---
+
+<Callout type="success">
+🎉 **Excellent Work!** You've successfully completed Part 1 of the hands-on Terraform series.
+
+You now have a fully functional development environment with Terraform and AWS CLI configured securely. You understand IAM best practices, have credentials configured properly, and know how to organize Terraform projects.
+
+**Ready to build real infrastructure?** Part 2 will walk you through creating every configuration file needed to deploy an EC2 instance with a web server on AWS!
+</Callout>
+
+---
+
+*Part 1 of 3 in the Terraform Hands-On series. Continue with Part 2 to start writing Terraform configuration files and defining AWS infrastructure.*
