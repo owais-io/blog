@@ -203,6 +203,141 @@ Let's break down each setting:
   </table>
 </div>
 
+### How to Verify Provider Source on Terraform Registry
+
+![AWS Terraform Configuration](/images/aws_terraform.png)
+
+The `source = "hashicorp/aws"` line tells Terraform where to download the AWS provider plugin. Let's learn how to verify and explore this provider on the official Terraform Registry website.
+
+**Step-by-Step: Navigating the Terraform Registry**
+
+**Step 1: Visit the Terraform Registry**
+- Open your browser and go to: [https://registry.terraform.io](https://registry.terraform.io)
+- This is the official registry for Terraform providers and modules
+
+**Step 2: Search for the AWS Provider**
+- In the search bar at the top, type "aws"
+- Click on "hashicorp/aws" from the results
+- Or directly visit: [https://registry.terraform.io/providers/hashicorp/aws/latest](https://registry.terraform.io/providers/hashicorp/aws/latest)
+
+**Step 3: Understanding the Provider Page**
+
+When you land on the AWS provider page, you'll see several important sections:
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Section</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">What You'll Find</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Why It Matters</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Overview</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Provider description, usage examples</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Quick introduction to provider capabilities</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Documentation</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Complete reference for all resources</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Every AWS resource type you can create</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Versions</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">All available versions with changelogs</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">See what's new, check compatibility</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Resources</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">List of all AWS resources (EC2, S3, etc.)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Browse available resource types</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Data Sources</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Query existing AWS resources</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Learn what data you can fetch</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+**Step 4: Finding Specific Resource Documentation**
+
+Let's say you want to learn more about the `aws_instance` resource we're using:
+
+1. On the provider page, click **"Documentation"** in the left sidebar
+2. Scroll down to **"Resources"** section
+3. Find and click **"aws_instance"**
+4. You'll see:
+   - Complete list of arguments (required and optional)
+   - Attribute references (values you can access)
+   - Example configurations
+   - Import instructions
+
+**Step 5: Checking Version Information**
+
+To see available versions:
+
+1. Click the **"Versions"** tab near the top
+2. You'll see all published versions (e.g., 5.82.0, 5.81.0, 5.80.0...)
+3. Click any version to see:
+   - Release date
+   - Changelog (what changed in this version)
+   - Provider configuration for that specific version
+
+**Understanding the Source Format**
+
+The source `"hashicorp/aws"` follows this format:
+
+```
+[namespace]/[provider-name]
+```
+
+- **Namespace**: `hashicorp` - The organization that maintains the provider
+- **Provider Name**: `aws` - The cloud platform or service
+
+**Other Provider Examples**:
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Provider Source</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Platform</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Registry URL</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>hashicorp/azurerm</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Microsoft Azure</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">registry.terraform.io/providers/hashicorp/azurerm</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>hashicorp/google</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Google Cloud Platform</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">registry.terraform.io/providers/hashicorp/google</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>hashicorp/kubernetes</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Kubernetes</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">registry.terraform.io/providers/hashicorp/kubernetes</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>mongodb/mongodbatlas</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">MongoDB Atlas</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">registry.terraform.io/providers/mongodb/mongodbatlas</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<Callout type="info">
+💡 **Pro Tip**: When starting with a new provider, always check the Terraform Registry first. The documentation is comprehensive and includes practical examples for every resource type.
+</Callout>
+
 **Understanding `~> 5.0` (Pessimistic Version Constraint)**:
 - `~>` means "approximately greater than"
 - `~> 5.0` allows `5.1`, `5.2`, `5.99` but not `6.0`
@@ -385,6 +520,311 @@ AWS regions are physically separate geographic locations containing data centers
     </tbody>
   </table>
 </div>
+
+### AWS Console Perspective: How to Manually Provision Infrastructure
+
+Before diving deeper into Terraform, let's understand how you would provision the same infrastructure manually through the AWS Console. This helps you appreciate what Terraform automates and understand the AWS fundamentals.
+
+**Accessing the AWS Console**
+
+1. Open your browser and navigate to: [https://console.aws.amazon.com](https://console.aws.amazon.com)
+2. Sign in with your AWS account credentials
+3. You'll land on the AWS Management Console homepage
+
+#### Step 1: Selecting Your Region in AWS Console
+
+The first critical step when working with AWS is selecting the correct region:
+
+**How to Select a Region**:
+1. Look at the top-right corner of the AWS Console
+2. You'll see a dropdown showing your current region (e.g., "N. Virginia" or "us-east-1")
+3. Click on it to see all available regions
+4. Select your preferred region (e.g., "US East (N. Virginia)" for us-east-1)
+
+<Callout type="warning">
+⚠️ **Important**: Resources you create are region-specific! If you create an EC2 instance in us-east-1 and then switch to us-west-2, you won't see that instance. Always verify you're in the correct region.
+</Callout>
+
+**How to View All Regions and Their Details**:
+1. Click on the region dropdown in the console
+2. You'll see region names like:
+   - US East (N. Virginia) - `us-east-1`
+   - US West (Oregon) - `us-west-2`
+   - Europe (Ireland) - `eu-west-1`
+   - Asia Pacific (Singapore) - `ap-southeast-1`
+
+![AWS Regions Selection](/images/aws_regions.png)
+
+#### Step 2: Exploring EC2 Instance Types in AWS Console
+
+To understand and select instance types through the console:
+
+**Navigate to EC2 Dashboard**:
+1. In the AWS Console, search for "EC2" in the top search bar
+2. Click on "EC2" to open the EC2 Dashboard
+3. In the left sidebar, click "Instance Types" under "Instances"
+
+**Exploring Instance Types**:
+
+You'll see a searchable list of all available instance types. Here's what you can do:
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Action</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">How to Do It</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">What You'll Learn</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Search by name</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Type "t2.micro" in the search box</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Find specific instance types quickly</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Filter by family</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Use filters to show only T2, T3, M5, etc.</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Compare instances in same family</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>View specifications</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Click on any instance type</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">vCPUs, Memory, Network performance</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Check pricing</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Click "On-Demand Pricing" link</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Cost per hour for each instance type</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+**Example: Viewing t2.micro Details**:
+1. Search for "t2.micro" in the Instance Types page
+2. Click on "t2.micro" to see details:
+   - vCPUs: 1
+   - Memory: 1 GiB
+   - Instance Storage: EBS only
+   - Network Performance: Low to Moderate
+   - Free Tier Eligible: Yes
+
+#### Step 3: Launching an EC2 Instance Manually (Console Walkthrough)
+
+Let's walk through manually creating the same EC2 instance that our Terraform code provisions:
+
+**Launch Instance Wizard**:
+
+1. **From EC2 Dashboard**, click the orange "Launch Instance" button
+2. **You'll go through these steps**:
+
+**Step 1: Name and Tags**
+- **Name**: Enter "terraform-lab-instance" (or any name you prefer)
+- **Tags**: These are the same as the `tags` block in our Terraform code
+  - Click "Add additional tags" to add Environment, CreatedBy, etc.
+
+**Step 2: Application and OS Images (Amazon Machine Image)**
+
+This is where you select the AMI - remember our `data.aws_ami` data source in Terraform:
+
+- **Quick Start**: AWS provides popular AMIs here
+- **Find Amazon Linux 2**:
+  - Look for "Amazon Linux 2 AMI (HVM) - Kernel 5.10"
+  - Architecture: 64-bit (x86)
+  - This matches our data source filter: `amzn2-ami-hvm-*-x86_64-gp2`
+
+**How to Find the AMI ID**:
+- The AMI ID is shown under the AMI name (e.g., `ami-0abcdef1234567890`)
+- This ID is what Terraform retrieves with `data.aws_ami.amazon_linux.id`
+- Note: AMI IDs are different in each region!
+
+<Callout type="info">
+💡 **Terraform vs Manual**: In the console, you manually browse and select an AMI. In Terraform, the data source automatically finds the latest AMI matching your criteria, ensuring you always use the most up-to-date and secure version.
+</Callout>
+
+**Step 3: Instance Type**
+
+This corresponds to `var.instance_type` in our Terraform:
+
+- **Default selection**: Usually t2.micro or t3.micro
+- **Change instance type**: Click "All instance types" to see the full list
+- **For our tutorial**: Select "t2.micro" (Free tier eligible)
+- **You'll see**:
+  - 1 vCPU
+  - 1 GiB Memory
+  - Cost estimate per hour
+
+**Step 4: Key Pair (Login)**
+
+This is where you'd configure SSH access (our `var.key_name`):
+
+- **Select "Create a new key pair"** or choose existing
+- **Key pair name**: "my-terraform-key" (matches our variable)
+- **Key pair type**: RSA
+- **Private key file format**: .pem (for Linux/Mac) or .ppk (for Windows/PuTTY)
+- **Download the key**: Keep it safe, you can't download it again!
+
+**Step 5: Network Settings**
+
+This section corresponds to our VPC, subnet, and security group configuration:
+
+**VPC and Subnet**:
+- **VPC**: You'll see a dropdown - select "Default VPC"
+  - This is what `data.aws_vpc.default` finds in Terraform
+  - Usually shows as "vpc-XXXXXXXX (default)"
+- **Subnet**: Select "No preference" or choose a specific AZ
+  - For us-east-1a: Would show "subnet-XXXXXXXX | us-east-1a"
+  - This is what `data.aws_subnet.default` queries in Terraform
+
+**Auto-assign Public IP**:
+- Set to "Enable" (allows internet access)
+- This gives your instance a public IP address
+
+**Firewall (Security Groups)**:
+- **Select**: "Create security group" (or use existing)
+- **Security group name**: "terraform-lab-sg"
+- **Description**: "Security group for Terraform lab EC2 instance"
+
+**Add Security Group Rules**:
+
+This matches our `security.tf` file:
+
+1. **SSH Rule** (Port 22):
+   - Type: SSH
+   - Protocol: TCP
+   - Port range: 22
+   - Source: 0.0.0.0/0 (Anywhere IPv4) - ⚠️ Not recommended for production!
+   - Description: "SSH access"
+
+2. **HTTP Rule** (Port 80):
+   - Click "Add security group rule"
+   - Type: HTTP
+   - Protocol: TCP
+   - Port range: 80
+   - Source: 0.0.0.0/0 (Anywhere IPv4)
+   - Description: "HTTP access"
+
+**Outbound Rules**:
+- Default: All traffic allowed to 0.0.0.0/0 (our egress rule in Terraform)
+
+**Step 6: Configure Storage**
+
+- **Default**: 8 GiB gp2 (General Purpose SSD)
+- **Volume Type**: gp2, gp3, io1, io2, etc.
+- Usually, defaults are fine for testing
+
+**Step 7: Advanced Details**
+
+This is where you'd add **User Data** (our user_data script in ec2.tf):
+
+1. Scroll down to find "User data" text box
+2. Paste the bash script:
+
+```bash
+#!/bin/bash
+yum update -y
+yum install -y httpd
+systemctl start httpd
+systemctl enable httpd
+echo "<h1>Hello from Terraform Lab!</h1>" > /var/www/html/index.html
+echo "<p>Instance ID: $(curl -s http://169.254.169.254/latest/meta-data/instance-id)</p>" >> /var/www/html/index.html
+echo "<p>Availability Zone: $(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone)</p>" >> /var/www/html/index.html
+```
+
+**Step 8: Summary and Launch**
+
+- Review all your selections
+- Click "Launch Instance"
+- Wait 2-3 minutes for the instance to start
+
+#### Comparing Manual Console vs Terraform
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Aspect</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">AWS Console (Manual)</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Terraform (Code)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Time to deploy</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">10-15 minutes (clicking through wizard)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">2 minutes (terraform apply)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Reproducibility</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Must remember all settings, prone to errors</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Perfect - same code = same infrastructure</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Version control</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">No - changes not tracked</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Yes - Git tracks all changes</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Documentation</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Must write separate documentation</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Code is documentation</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Multiple environments</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Repeat process for dev, staging, prod</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Change variables, run apply</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Cleanup</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Manually delete each resource</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">terraform destroy (deletes everything)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Team collaboration</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Difficult - no shared state</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Easy - shared state, code review</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Learning curve</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Easy to start, UI-guided</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Steeper initial learning, powerful later</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<Callout type="success">
+✅ **Best Practice**: Use the AWS Console to explore and learn AWS services. Once you understand what you're building, use Terraform to manage it in production. The console is great for learning; Terraform is great for operating.
+</Callout>
+
+#### Verifying Instance Details in AWS Console
+
+After Terraform creates your instance (in Part 3), you can verify everything in the console:
+
+**View Your EC2 Instance**:
+1. Go to EC2 Dashboard
+2. Click "Instances" in the left sidebar
+3. You'll see your instance listed
+
+**Instance Details to Check**:
+- **Instance ID**: Matches `aws_instance.terraform_instance.id`
+- **Instance Type**: t2.micro (from `var.instance_type`)
+- **AMI ID**: The actual AMI Terraform selected
+- **VPC**: Default VPC ID
+- **Subnet**: Which AZ it's in (us-east-1a)
+- **Security Groups**: terraform-lab-sg-XXXXXX
+- **Public IPv4**: Matches Terraform output
+- **Tags**: Name, Environment, CreatedBy (from our tags blocks)
+
+**View Security Group**:
+1. Click "Security Groups" in the left sidebar
+2. Find "terraform-lab-sg-XXXXXX"
+3. Click on it and check the "Inbound rules" and "Outbound rules" tabs
+4. Verify they match our security.tf configuration
+
+This hands-on verification helps you understand the relationship between Terraform code and actual AWS resources!
 
 ### Variable 2: instance_type
 
