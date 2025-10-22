@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import Header from './components/Header'
 import { ThemeProvider } from './components/ThemeProvider'
+import ScrollToTop from './components/ScrollToTop'
 import { GoogleAnalytics } from '@next/third-parties/google'
 import Script from 'next/script'
 
@@ -82,6 +83,7 @@ export default function RootLayout({
           <main className="min-h-screen">
             {children}
           </main>
+          <ScrollToTop />
           <footer className="bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
               <div className="text-center text-gray-600 dark:text-gray-400">
