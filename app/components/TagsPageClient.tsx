@@ -344,7 +344,7 @@ export default function TagsPageClient({
                     {/* <time dateTime={post.date}>
                       {format(new Date(post.date), 'MMM d, yyyy')}
                     </time> */}
-                    <span>•</span>
+                    {/* <span>•</span> */}
                     <span>{post.readingTime}</span>
                   </div>
 
