@@ -4,6 +4,7 @@ import './globals.css'
 import Header from './components/Header'
 import { ThemeProvider } from './components/ThemeProvider'
 import { GoogleAnalytics } from '@next/third-parties/google'
+import Script from 'next/script'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -74,6 +75,19 @@ export default function RootLayout({
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
               <div className="text-center text-gray-600 dark:text-gray-400">
                 <p>&copy; {new Date().getFullYear()} owais.io. All rights reserved.</p>
+                <div className="flex justify-center gap-4 mt-3 mb-4 text-sm">
+                  <a href="/privacy" className="hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+                    Privacy Policy
+                  </a>
+                  <span>•</span>
+                  <a href="/about" className="hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+                    About
+                  </a>
+                  <span>•</span>
+                  <a href="/contact" className="hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+                    Contact
+                  </a>
+                </div>
                 <div className="flex justify-center gap-6 mt-4">
                   <a
                     href="https://linkedin.com/in/owais-io"
@@ -103,6 +117,12 @@ export default function RootLayout({
           </footer>
         </ThemeProvider>
         <GoogleAnalytics gaId="G-GTL0QED6PK" />
+        <Script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2882914404730852"
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   )

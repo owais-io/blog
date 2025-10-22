@@ -127,21 +127,6 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
                   </div>
                 </div>
 
-                {/* Tags */}
-                {post.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-2 justify-center mb-12">
-                    {post.tags.map((tag) => (
-                      <Link
-                        key={tag}
-                        href={`/?tag=${encodeURIComponent(tag)}`}
-                        className="tag-primary"
-                      >
-                        #{tag}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-
                 {/* Divider */}
                 <div className="w-24 h-1 bg-gradient-to-r from-primary-500 to-accent-500 rounded-full mx-auto mb-12" />
               </div>

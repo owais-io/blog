@@ -190,22 +190,6 @@ export default function HomePage({ searchParams }: HomePageProps) {
                             +{post.categories.length - 2} categories
                           </span>
                         )}
-
-                        {/* Tags */}
-                        {post.tags.slice(0, 3).map((tag) => (
-                          <Link
-                            key={tag}
-                            href={`/tags?tag=${encodeURIComponent(tag)}`}
-                            className="tag-primary"
-                          >
-                            #{tag}
-                          </Link>
-                        ))}
-                        {post.tags.length > 3 && (
-                          <span className="text-sm text-gray-500 dark:text-gray-400">
-                            +{post.tags.length - 3} tags
-                          </span>
-                        )}
                       </div>
                       
                       <Link
