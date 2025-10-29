@@ -1,5 +1,6 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
+import Image from 'next/image'
 import { format } from 'date-fns'
 import { getPostsMeta, getAllCategories, type CategorySortOrder } from './lib/blog'
 import PostsGrid from './components/PostsGrid'
@@ -15,8 +16,28 @@ interface HomePageProps {
 }
 
 export const metadata: Metadata = {
-  title: 'Home',
-  description: 'Welcome to Owais.io - A personal blog sharing insights on technology, development, and life.',
+  title: 'AI, Cloud & DevOps Tutorials - Tech Blog',
+  description: 'Learn AI, Cloud Computing, DevOps, Operating Systems, Kubernetes, Docker, and Terraform through practical tutorials and guides. Daily tech insights from an AIOps Engineer.',
+  openGraph: {
+    title: 'AI, Cloud & DevOps Tutorials - Owais.io',
+    description: 'Learn AI, Cloud Computing, DevOps, Operating Systems, Kubernetes, Docker, and Terraform through practical tutorials and guides.',
+    type: 'website',
+    url: 'https://owais.io',
+    images: [
+      {
+        url: '/api/og?title=Owais.io Tech Blog&category=AI%20%7C%20Cloud%20%7C%20DevOps',
+        width: 1200,
+        height: 630,
+        alt: 'Owais.io - AI, Cloud & DevOps Tutorials',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'AI, Cloud & DevOps Tutorials - Owais.io',
+    description: 'Learn AI, Cloud Computing, DevOps, Operating Systems, Kubernetes, Docker, and Terraform through practical tutorials and guides.',
+    images: ['/api/og?title=Owais.io Tech Blog&category=AI%20%7C%20Cloud%20%7C%20DevOps'],
+  },
 }
 
 export default function HomePage({ searchParams }: HomePageProps) {
@@ -88,42 +109,61 @@ export default function HomePage({ searchParams }: HomePageProps) {
           <section className="mb-20">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-10 tracking-tight">Latest Posts</h2>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {featuredPosts.map((post) => (
-                <article
-                  key={post.slug}
-                  className="card-elevated overflow-hidden hover:scale-[1.02] transition-transform group"
-                >
-                  <Link href={`/blog/${post.slug}`} className="block p-6">
-                    <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mb-3">
-                      <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
-                      </svg>
-                      {post.readingTime}
-                    </div>
+              {featuredPosts.map((post) => {
+                const ogImageUrl = `/api/og?title=${encodeURIComponent(post.title)}&category=${encodeURIComponent(post.categories[0] || '')}`
 
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors line-clamp-2 leading-snug">
-                      {post.title}
-                    </h3>
+                return (
+                  <article
+                    key={post.slug}
+                    className="card-elevated overflow-hidden hover:scale-[1.02] transition-transform group"
+                  >
+                    <Link href={`/blog/${post.slug}`} className="block">
+                      {/* Featured Image */}
+                      <div className="relative w-full aspect-[1200/630] overflow-hidden">
+                        <Image
+                          src={ogImageUrl}
+                          alt={post.title}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-300"
+                          sizes="(max-width: 1024px) 100vw, 50vw"
+                          priority
+                        />
+                      </div>
 
-                    {post.description && (
-                      <p className="text-base text-gray-600 dark:text-gray-300 mb-4 line-clamp-3 leading-relaxed">
-                        {post.description}
-                      </p>
-                    )}
+                      {/* Content */}
+                      <div className="p-6">
+                        <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mb-3">
+                          <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                          </svg>
+                          {post.readingTime}
+                        </div>
 
-                    <div className="flex flex-wrap gap-1.5">
-                      {post.categories.slice(0, 2).map((category) => (
-                        <span
-                          key={category}
-                          className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200"
-                        >
-                          {category}
-                        </span>
-                      ))}
-                    </div>
-                  </Link>
-                </article>
-              ))}
+                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors line-clamp-2 leading-snug">
+                          {post.title}
+                        </h3>
+
+                        {post.description && (
+                          <p className="text-base text-gray-600 dark:text-gray-300 mb-4 line-clamp-3 leading-relaxed">
+                            {post.description}
+                          </p>
+                        )}
+
+                        <div className="flex flex-wrap gap-1.5">
+                          {post.categories.slice(0, 2).map((category) => (
+                            <span
+                              key={category}
+                              className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200"
+                            >
+                              {category}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </Link>
+                  </article>
+                )
+              })}
             </div>
           </section>
         )}

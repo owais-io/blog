@@ -20,6 +20,18 @@ export interface BreadcrumbItem {
   url: string
 }
 
+export interface PersonSchemaProps {
+  name: string
+  jobTitle: string
+  description: string
+  url: string
+  image?: string
+  email?: string
+  sameAs?: string[]
+  alumniOf?: string
+  knowsAbout?: string[]
+}
+
 /**
  * Generates Article JSON-LD schema for blog posts
  * Helps search engines understand article content and display rich snippets
@@ -145,4 +157,58 @@ export function generateWebsiteSchema(url: string, name: string) {
       'query-input': 'required name=search_term_string',
     },
   }
+}
+
+/**
+ * Generates Person JSON-LD schema for author/about page
+ * Helps search engines understand the person's identity, expertise, and social profiles
+ * Can enable Google Knowledge Panel for personal branding
+ */
+export function generatePersonSchema({
+  name,
+  jobTitle,
+  description,
+  url,
+  image,
+  email,
+  sameAs = [],
+  alumniOf,
+  knowsAbout = [],
+}: PersonSchemaProps) {
+  const schema: any = {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    name: name,
+    jobTitle: jobTitle,
+    description: description,
+    url: url,
+  }
+
+  if (image) {
+    schema.image = {
+      '@type': 'ImageObject',
+      url: image,
+    }
+  }
+
+  if (email) {
+    schema.email = email
+  }
+
+  if (sameAs.length > 0) {
+    schema.sameAs = sameAs
+  }
+
+  if (alumniOf) {
+    schema.alumniOf = {
+      '@type': 'Organization',
+      name: alumniOf,
+    }
+  }
+
+  if (knowsAbout.length > 0) {
+    schema.knowsAbout = knowsAbout
+  }
+
+  return schema
 }

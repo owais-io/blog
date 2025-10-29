@@ -1,17 +1,59 @@
 import { Metadata } from 'next'
 import Image from 'next/image'
+import { generatePersonSchema } from '../lib/schema'
 
 export const metadata: Metadata = {
-  title: 'About',
-  description: 'Learn more about Owais - developer, writer, and technology enthusiast.',
+  title: 'About Owais - AIOps & DevSecOps Engineer',
+  description: 'Meet Owais, an AIOps and DevSecOps Engineer specializing in AI-driven automation, cloud infrastructure, and intelligent monitoring. Learn about my journey from Financial Accountant to tech professional.',
+  keywords: ['Owais', 'AIOps Engineer', 'DevSecOps', 'About', 'Bio', 'AI Engineer', 'Cloud Engineer', 'Python Developer', 'Linux Administrator'],
 }
 
 // Static page - no dynamic content
 export const dynamic = 'force-static'
 
 export default function AboutPage() {
+  // Generate Person JSON-LD schema
+  const personSchema = generatePersonSchema({
+    name: 'Owais',
+    jobTitle: 'AIOps Engineer & DevSecOps Engineer',
+    description: 'AIOps and DevSecOps Engineer specializing in AI-driven automation, cloud infrastructure, intelligent monitoring systems, and security integration throughout the DevOps pipeline.',
+    url: 'https://owais.io/about',
+    image: 'https://owais.io/profile.png',
+    email: 'owais.abbasi9@gmail.com',
+    sameAs: [
+      'https://twitter.com/owais_io',
+      'https://github.com/owais-io',
+      'https://www.linkedin.com/in/owais-io/',
+    ],
+    alumniOf: 'Al Nafi International College - UK Eduqual Level 6 Diploma in AIOps',
+    knowsAbout: [
+      'Artificial Intelligence',
+      'Cloud Computing',
+      'DevOps',
+      'DevSecOps',
+      'AIOps',
+      'Python Programming',
+      'Linux System Administration',
+      'Bash Scripting',
+      'AWS',
+      'Azure',
+      'Docker',
+      'Kubernetes',
+      'Infrastructure Automation',
+      'Security Integration',
+      'Systems Architecture',
+      'Intelligent Monitoring',
+    ],
+  })
+
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <>
+      {/* JSON-LD Person Schema for SEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(personSchema) }}
+      />
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
         <div className="px-6 py-8 sm:px-8 sm:py-12">
           {/* Header with profile image */}
@@ -160,5 +202,6 @@ export default function AboutPage() {
         </div>
       </div>
     </div>
+    </>
   )
 }

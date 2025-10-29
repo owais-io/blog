@@ -17,11 +17,30 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Owais.io - Personal Blog',
+    default: 'Owais.io - AI, Cloud & DevOps Tutorials',
     template: '%s | Owais.io'
   },
-  description: 'Personal blog and portfolio of Owais - sharing thoughts on technology, development, and life.',
-  keywords: ['blog', 'technology', 'development', 'programming', 'personal'],
+  description: 'Expert tutorials on AI, Cloud Computing, DevOps, and Operating Systems. Learn Kubernetes, Docker, Terraform, and modern infrastructure from an AIOps Engineer.',
+  keywords: [
+    'AI tutorials',
+    'Cloud Computing',
+    'DevOps',
+    'Operating Systems',
+    'Kubernetes',
+    'Docker',
+    'Terraform',
+    'AIOps',
+    'Linux',
+    'System Administration',
+    'Infrastructure',
+    'Tech Blog',
+    'CI/CD',
+    'AWS',
+    'Azure',
+    'Container Orchestration',
+    'Cloud Native',
+    'Infrastructure as Code'
+  ],
   authors: [{ name: 'Owais' }],
   creator: 'Owais',
   publisher: 'Owais',
@@ -35,14 +54,14 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     url: 'https://owais.io',
-    title: 'Owais.io - Personal Blog',
-    description: 'Personal blog and portfolio of Owais - sharing thoughts on technology, development, and life.',
+    title: 'Owais.io - AI, Cloud & DevOps Tutorials',
+    description: 'Expert tutorials on AI, Cloud Computing, DevOps, and Operating Systems. Learn Kubernetes, Docker, Terraform, and modern infrastructure.',
     siteName: 'Owais.io',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Owais.io - Personal Blog',
-    description: 'Personal blog and portfolio of Owais - sharing thoughts on technology, development, and life.',
+    title: 'Owais.io - AI, Cloud & DevOps Tutorials',
+    description: 'Expert tutorials on AI, Cloud Computing, DevOps, and Operating Systems. Learn Kubernetes, Docker, Terraform, and modern infrastructure.',
   },
   robots: {
     index: true,
@@ -70,7 +89,7 @@ export default function RootLayout({
     name: 'Owais.io',
     url: 'https://owais.io',
     logo: 'https://owais.io/logo.png',
-    description: 'Personal blog and portfolio of Owais - sharing thoughts on technology, development, and life.',
+    description: 'Expert tutorials on AI, Cloud Computing, DevOps, and Operating Systems. Learn Kubernetes, Docker, Terraform, and modern infrastructure from an AIOps Engineer.',
     socialProfiles: [
       'https://linkedin.com/in/owais-io',
       'https://github.com/owais-io',

@@ -10,6 +10,7 @@ import RelatedPosts from '../../components/RelatedPosts'
 import ShareButton from '../../components/ShareButton'
 import TableOfContents, { CompactTableOfContents } from '../../components/TableOfContents'
 import { generateArticleSchema, generateBreadcrumbSchema } from '../../lib/schema'
+import Breadcrumb from '../../components/Breadcrumb'
 
 interface BlogPostPageProps {
   params: {
@@ -33,6 +34,9 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
     }
   }
 
+  // Generate OG image URL
+  const ogImageUrl = `/api/og?title=${encodeURIComponent(post.title)}&category=${encodeURIComponent(post.categories[0] || '')}`
+
   return {
     title: post.title,
     description: post.description,
@@ -43,11 +47,20 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
       type: 'article',
       publishedTime: post.date,
       tags: post.tags,
+      images: [
+        {
+          url: ogImageUrl,
+          width: 1200,
+          height: 630,
+          alt: post.title,
+        },
+      ],
     },
     twitter: {
       card: 'summary_large_image',
       title: post.title,
       description: post.description,
+      images: [ogImageUrl],
     },
   }
 }
@@ -63,9 +76,12 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
 
   // Generate JSON-LD structured data
   const postUrl = `https://owais.io/blog/${params.slug}`
+  const ogImageUrl = `https://owais.io/api/og?title=${encodeURIComponent(post.title)}&category=${encodeURIComponent(post.categories[0] || '')}`
+
   const articleSchema = generateArticleSchema({
     post,
     url: postUrl,
+    imageUrl: ogImageUrl,
   })
 
   const breadcrumbSchema = generateBreadcrumbSchema([
@@ -103,8 +119,18 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
       {/* Main Layout Container */}
       {/* <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8"> */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Breadcrumb Navigation */}
+        <div className="pt-6 pb-4">
+          <Breadcrumb
+            items={[
+              { name: 'Home', href: '/' },
+              { name: 'Blog', href: '/' },
+              { name: post.title, href: `/blog/${params.slug}`, current: true },
+            ]}
+          />
+        </div>
 
-        <div className="flex gap-8 py-8">
+        <div className="flex gap-8 pb-8">
 
           {/* Desktop TOC Sidebar */}
           {post.tocEnabled && post.toc.hasContent && (
@@ -134,14 +160,14 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
 
                 <div className="flex flex-wrap items-center justify-center gap-6 text-gray-500 dark:text-gray-400 mb-8">
                   <div className="inline-flex items-center">
-                    {/* <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
                     </svg>
                     <time dateTime={post.date} className="font-medium">
                       {format(new Date(post.date), 'MMMM d, yyyy')}
-                    </time> */}
+                    </time>
                   </div>
-                  {/* <span className="w-1 h-1 bg-current rounded-full" /> */}
+                  <span className="w-1 h-1 bg-current rounded-full" />
                   <div className="inline-flex items-center">
                     <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
@@ -177,9 +203,9 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
                   <p className="text-gray-600 dark:text-gray-400 mb-2">
                     Thank you for reading!
                   </p>
-                  {/* <p className="text-sm text-gray-500 dark:text-gray-500">
+                  <p className="text-sm text-gray-500 dark:text-gray-500">
                     Published on {format(new Date(post.date), 'MMMM d, yyyy')}
-                  </p> */}
+                  </p>
                 </div>
 
                 <div className="flex gap-3">

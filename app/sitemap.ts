@@ -1,10 +1,11 @@
 import { MetadataRoute } from 'next'
-import { getAllPosts, getAllTags } from './lib/blog'
+import { getAllPosts, getAllTags, getAllCategories } from './lib/blog'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://owais.io'
   const posts = getAllPosts()
   const tags = getAllTags()
+  const categories = getAllCategories()
 
   // Static pages
   const staticPages = [
@@ -44,5 +45,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.5,
   }))
 
-  return [...staticPages, ...postPages, ...tagPages]
+  // Category pages
+  const categoryPages = categories.map((category) => ({
+    url: `${baseUrl}/?category=${encodeURIComponent(category)}`,
+    lastModified: new Date(),
+    changeFrequency: 'weekly' as const,
+    priority: 0.6,
+  }))
+
+  return [...staticPages, ...postPages, ...categoryPages, ...tagPages]
 }
