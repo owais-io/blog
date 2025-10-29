@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
+import SponsorAd from './SponsorAd'
 
 interface Post {
   slug: string
@@ -16,6 +17,16 @@ interface PostsGridProps {
 }
 
 export default function PostsGrid({ posts, selectedCategory, showTitle = true }: PostsGridProps) {
+  // Insert sponsor ad after every 6 posts (after 3rd row on desktop 2-column grid)
+  const postsWithAds: Array<Post | 'ad'> = []
+  posts.forEach((post, index) => {
+    postsWithAds.push(post)
+    // Add ad after every 6 posts (3 rows on desktop grid)
+    if ((index + 1) % 6 === 0 && index < posts.length - 1) {
+      postsWithAds.push('ad')
+    }
+  })
+
   return (
     <section>
       {showTitle && (
@@ -26,7 +37,18 @@ export default function PostsGrid({ posts, selectedCategory, showTitle = true }:
 
       {/* Mobile-First Grid: 1 column on mobile, 2 on tablet and desktop */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-        {posts.map((post, index) => {
+        {postsWithAds.map((item, index) => {
+          // Sponsor Ad
+          if (item === 'ad') {
+            return (
+              <div key={`ad-${index}`} className="sm:col-span-2">
+                <SponsorAd />
+              </div>
+            )
+          }
+
+          // Regular Post
+          const post = item
           const ogImageUrl = `/api/og?title=${encodeURIComponent(post.title)}&category=${encodeURIComponent(post.categories[0] || '')}`
 
           return (

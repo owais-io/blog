@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import Header from './components/Header'
@@ -15,17 +15,18 @@ const inter = Inter({
   fallback: ['system-ui', 'arial']
 })
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+}
+
 export const metadata: Metadata = {
   title: {
     default: 'Owais.io - AI, Cloud & DevOps Tutorials',
     template: '%s | Owais.io'
   },
   description: 'Expert tutorials on AI, Cloud Computing, DevOps, and Operating Systems. Learn Kubernetes, Docker, Terraform, and modern infrastructure from an AIOps Engineer.',
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 5,
-  },
   keywords: [
     'AI tutorials',
     'Cloud Computing',

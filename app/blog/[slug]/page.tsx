@@ -11,6 +11,7 @@ import ShareButton from '../../components/ShareButton'
 import TableOfContents, { CompactTableOfContents } from '../../components/TableOfContents'
 import { generateArticleSchema, generateBreadcrumbSchema } from '../../lib/schema'
 import Breadcrumb from '../../components/Breadcrumb'
+import SponsorAd from '../../components/SponsorAd'
 
 interface BlogPostPageProps {
   params: {
@@ -264,6 +265,11 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
                 </div>
               </div>
             </section>
+
+            {/* Sponsor Ad - After Blog Post */}
+            <div className="max-w-4xl mx-auto mb-16">
+              <SponsorAd />
+            </div>
           </main>
 
         </div>
