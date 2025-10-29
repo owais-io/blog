@@ -9,6 +9,7 @@ import { mdxComponents } from '../../components/MDXComponents'
 import RelatedPosts from '../../components/RelatedPosts'
 import ShareButton from '../../components/ShareButton'
 import TableOfContents, { CompactTableOfContents } from '../../components/TableOfContents'
+import { generateArticleSchema, generateBreadcrumbSchema } from '../../lib/schema'
 
 interface BlogPostPageProps {
   params: {
@@ -60,8 +61,30 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
 
   const relatedPosts = getRelatedPosts(params.slug, 4)
 
+  // Generate JSON-LD structured data
+  const postUrl = `https://owais.io/blog/${params.slug}`
+  const articleSchema = generateArticleSchema({
+    post,
+    url: postUrl,
+  })
+
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: 'Home', url: 'https://owais.io' },
+    { name: 'Blog', url: 'https://owais.io' },
+    { name: post.title, url: postUrl },
+  ])
+
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950">
+      {/* JSON-LD Structured Data for SEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
       {/* Back Navigation */}
       <div className="sticky top-0 z-30 bg-white/95 dark:bg-gray-950/95 backdrop-blur-sm border-b border-gray-200 dark:border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">

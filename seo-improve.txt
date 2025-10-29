@@ -1,0 +1,1099 @@
+================================================================================
+                    SEO IMPROVEMENT PLAN FOR OWAIS.IO
+                    Complete Task List & Step-by-Step Guide
+================================================================================
+
+Current SEO Score: 6.5/10
+Target SEO Score: 9/10
+Estimated Traffic Impact: +50-100% within 3-6 months
+
+================================================================================
+                            PRIORITY TASKS (WEEK 1)
+================================================================================
+
+--------------------------------------------------------------------------------
+TASK 1: Add Article JSON-LD Structured Data to Blog Posts
+--------------------------------------------------------------------------------
+Priority: CRITICAL
+Impact: Rich snippets in search results
+Time: 30 minutes
+
+What it does:
+Adds structured data that tells Google exactly what your content is about,
+enabling rich snippets in search results (author, date, reading time, etc.)
+
+STEP-BY-STEP IMPLEMENTATION:
+
+Step 1: Create a new component for structured data
+  - Location: app/components/ArticleStructuredData.tsx
+  - Purpose: Generate JSON-LD markup for blog articles
+
+Step 2: Write the component code:
+
+  interface ArticleStructuredDataProps {
+    title: string
+    description: string
+    author: string
+    datePublished: string
+    dateModified?: string
+    url: string
+    image?: string
+    keywords?: string[]
+  }
+
+  export default function ArticleStructuredData({
+    title,
+    description,
+    author,
+    datePublished,
+    dateModified,
+    url,
+    image,
+    keywords
+  }: ArticleStructuredDataProps) {
+    const structuredData = {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": title,
+      "description": description,
+      "author": {
+        "@type": "Person",
+        "name": author,
+        "url": "https://owais.io/about"
+      },
+      "datePublished": datePublished,
+      "dateModified": dateModified || datePublished,
+      "publisher": {
+        "@type": "Person",
+        "name": "Owais",
+        "url": "https://owais.io"
+      },
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": url
+      },
+      "image": image || "https://owais.io/profile.png",
+      "keywords": keywords?.join(", ")
+    }
+
+    return (
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
+    )
+  }
+
+Step 3: Import and use in blog post page (app/blog/[slug]/page.tsx)
+  - Add import at top:
+    import ArticleStructuredData from '../../components/ArticleStructuredData'
+
+  - Add component before closing </div> tag around line 225:
+
+    <ArticleStructuredData
+      title={post.title}
+      description={post.description}
+      author={post.author || "Owais"}
+      datePublished={post.date}
+      url={`https://owais.io/blog/${params.slug}`}
+      keywords={post.tags}
+    />
+
+Step 4: Test the implementation
+  - Run: npm run dev
+  - Open any blog post
+  - Right-click → View Page Source
+  - Search for "application/ld+json"
+  - Verify the JSON structure appears
+
+Step 5: Validate with Google's tool
+  - Visit: https://search.google.com/test/rich-results
+  - Enter your blog post URL
+  - Verify "BlogPosting" is detected
+
+--------------------------------------------------------------------------------
+TASK 2: Add OpenGraph and Twitter Image Tags
+--------------------------------------------------------------------------------
+Priority: CRITICAL
+Impact: Beautiful social media previews
+Time: 45 minutes
+
+What it does:
+Makes your links look beautiful when shared on social media (Facebook, Twitter,
+LinkedIn, Slack, Discord)
+
+STEP-BY-STEP IMPLEMENTATION:
+
+Step 1: Create a default OG image (1200x630px)
+  - Use Canva, Figma, or Photoshop
+  - Recommended design: Your blog name + tagline + gradient background
+  - Save as: public/og-default.png
+
+Step 2: Update root layout metadata (app/layout.tsx)
+  - Find the openGraph section (line 33)
+  - Add image array:
+
+    openGraph: {
+      type: 'website',
+      locale: 'en_US',
+      url: 'https://owais.io',
+      title: 'Owais.io - Personal Blog',
+      description: 'Personal blog and portfolio of Owais - sharing thoughts on technology, development, and life.',
+      siteName: 'Owais.io',
+      images: [
+        {
+          url: 'https://owais.io/og-default.png',
+          width: 1200,
+          height: 630,
+          alt: 'Owais.io - Technical Blog'
+        }
+      ]
+    },
+
+Step 3: Update Twitter metadata (line 41)
+
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Owais.io - Personal Blog',
+    description: 'Personal blog and portfolio of Owais - sharing thoughts on technology, development, and life.',
+    images: ['https://owais.io/og-default.png'],
+    creator: '@your_twitter_handle'
+  },
+
+Step 4: Update blog post metadata (app/blog/[slug]/page.tsx)
+  - Find generateMetadata function (line 26)
+  - Update the return statement:
+
+    return {
+      title: post.title,
+      description: post.description,
+      keywords: post.tags,
+      openGraph: {
+        title: post.title,
+        description: post.description,
+        type: 'article',
+        publishedTime: post.date,
+        tags: post.tags,
+        url: `https://owais.io/blog/${params.slug}`,
+        images: [
+          {
+            url: 'https://owais.io/og-default.png',
+            width: 1200,
+            height: 630,
+            alt: post.title
+          }
+        ]
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: post.title,
+        description: post.description,
+        images: ['https://owais.io/og-default.png']
+      },
+    }
+
+Step 5: (Optional) Create post-specific OG images
+  - For each post, create unique images in public/images/og/
+  - Name them: post-slug.png
+  - Update metadata to use:
+    images: [{ url: `https://owais.io/images/og/${params.slug}.png` }]
+
+Step 6: Test social sharing
+  - Use Facebook Sharing Debugger: https://developers.facebook.com/tools/debug/
+  - Use Twitter Card Validator: https://cards-dev.twitter.com/validator
+  - Enter your blog post URLs and verify images appear
+
+--------------------------------------------------------------------------------
+TASK 3: Uncomment and Restore Publish Dates in Blog Posts
+--------------------------------------------------------------------------------
+Priority: HIGH
+Impact: Freshness signals for SEO
+Time: 10 minutes
+
+What it does:
+Shows publication dates to users and search engines, improving freshness
+signals for SEO
+
+STEP-BY-STEP IMPLEMENTATION:
+
+Step 1: Open blog post page (app/blog/[slug]/page.tsx)
+
+Step 2: Find the commented date section (lines 114-119)
+  - Look for the commented <svg> and <time> elements
+
+Step 3: Uncomment the date display code:
+
+  <div className="inline-flex items-center">
+    <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+      <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+    </svg>
+    <time dateTime={post.date} className="font-medium">
+      {format(new Date(post.date), 'MMMM d, yyyy')}
+    </time>
+  </div>
+
+Step 4: Add separator back:
+
+  <span className="w-1 h-1 bg-current rounded-full" />
+
+Step 5: The final structure should be:
+
+  <div className="flex flex-wrap items-center justify-center gap-6 text-gray-500 dark:text-gray-400 mb-8">
+    <div className="inline-flex items-center">
+      <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+        <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+      </svg>
+      <time dateTime={post.date} className="font-medium">
+        {format(new Date(post.date), 'MMMM d, yyyy')}
+      </time>
+    </div>
+    <span className="w-1 h-1 bg-current rounded-full" />
+    <div className="inline-flex items-center">
+      <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+      </svg>
+      <span className="font-medium">{post.readingTime}</span>
+    </div>
+  </div>
+
+Step 6: Also uncomment the footer date (lines 157-159):
+
+  <p className="text-sm text-gray-500 dark:text-gray-500">
+    Published on {format(new Date(post.date), 'MMMM d, yyyy')}
+  </p>
+
+Step 7: Test
+  - Run dev server
+  - Visit any blog post
+  - Verify date appears below title and in footer
+
+--------------------------------------------------------------------------------
+TASK 4: Fix Homepage Title and Description with Keywords
+--------------------------------------------------------------------------------
+Priority: HIGH
+Impact: Better search engine rankings
+Time: 10 minutes
+
+What it does:
+Optimizes homepage metadata for better search engine rankings
+
+STEP-BY-STEP IMPLEMENTATION:
+
+Step 1: Open homepage file (app/page.tsx)
+
+Step 2: Find the metadata export (lines 16-19)
+
+Step 3: Replace with optimized version:
+
+  export const metadata: Metadata = {
+    title: 'Owais.io - AI, Cloud, DevOps & System Administration Blog',
+    description: 'Learn AIOps, Cloud Computing, Docker, Kubernetes, Python, Git, Linux, and Infrastructure as Code through practical tutorials and in-depth technical guides. Daily updates on modern DevOps practices.',
+    keywords: [
+      'AIOps',
+      'Cloud Computing',
+      'DevOps',
+      'Docker',
+      'Kubernetes',
+      'Python',
+      'Git',
+      'Linux',
+      'Terraform',
+      'Infrastructure as Code',
+      'System Administration',
+      'AI Operations',
+      'Technical Blog',
+      'DevOps Tutorial',
+      'Cloud Tutorial'
+    ],
+    openGraph: {
+      title: 'Owais.io - AI, Cloud, DevOps & System Administration Blog',
+      description: 'Learn AIOps, Cloud Computing, Docker, Kubernetes, Python, Git, Linux, and Infrastructure as Code through practical tutorials.',
+      url: 'https://owais.io',
+      type: 'website',
+      images: [
+        {
+          url: 'https://owais.io/og-default.png',
+          width: 1200,
+          height: 630,
+          alt: 'Owais.io Technical Blog'
+        }
+      ]
+    }
+  }
+
+Step 4: Verify the changes
+  - Save the file
+  - Visit homepage
+  - Right-click → View Page Source
+  - Check <title> and <meta name="description"> tags
+
+================================================================================
+                          SHORT-TERM TASKS (WEEK 2-4)
+================================================================================
+
+--------------------------------------------------------------------------------
+TASK 5: Add WebSite JSON-LD Schema to Root Layout
+--------------------------------------------------------------------------------
+Priority: MEDIUM
+Impact: Sitelinks search box in Google results
+Time: 20 minutes
+
+What it does:
+Tells Google about your website structure, enables sitelinks search box in
+results
+
+STEP-BY-STEP IMPLEMENTATION:
+
+Step 1: Create the component (app/components/WebsiteStructuredData.tsx)
+
+  export default function WebsiteStructuredData() {
+    const structuredData = {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Owais.io",
+      "alternateName": "Owais Tech Blog",
+      "url": "https://owais.io",
+      "description": "Technical blog covering AI, Cloud, DevOps, and System Administration",
+      "publisher": {
+        "@type": "Person",
+        "name": "Owais",
+        "url": "https://owais.io/about"
+      },
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://owais.io/?tag={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      }
+    }
+
+    return (
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
+    )
+  }
+
+Step 2: Import in root layout (app/layout.tsx)
+  - Add at top: import WebsiteStructuredData from './components/WebsiteStructuredData'
+
+Step 3: Add inside <body> tag (after line 77):
+
+  <body className={inter.className}>
+    <WebsiteStructuredData />
+    <ThemeProvider>
+      {/* rest of content */}
+    </ThemeProvider>
+  </body>
+
+Step 4: Test with Rich Results Test
+  - Visit: https://search.google.com/test/rich-results
+  - Enter: https://owais.io
+  - Verify "WebSite" schema is detected
+
+--------------------------------------------------------------------------------
+TASK 6: Add Person/Author Schema to About Page
+--------------------------------------------------------------------------------
+Priority: MEDIUM
+Impact: Author credibility in search results
+Time: 25 minutes
+
+What it does:
+Establishes you as the author entity, helps Google understand your credentials
+
+STEP-BY-STEP IMPLEMENTATION:
+
+Step 1: Open about page (app/about/page.tsx)
+
+Step 2: Create Person schema component (app/components/PersonStructuredData.tsx)
+
+  export default function PersonStructuredData() {
+    const structuredData = {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "name": "Owais",
+      "alternateName": "Owais Abbasi",
+      "url": "https://owais.io",
+      "image": "https://owais.io/profile.png",
+      "jobTitle": "AIOps Engineer",
+      "worksFor": {
+        "@type": "Organization",
+        "name": "Independent"
+      },
+      "description": "AIOps and DevSecOps Engineer specializing in AI-driven automation, cloud infrastructure, and intelligent monitoring systems",
+      "alumniOf": {
+        "@type": "EducationalOrganization",
+        "name": "Al Nafi International College",
+        "description": "UK Eduqual Level 6 Diploma in AIOps"
+      },
+      "knowsAbout": [
+        "Artificial Intelligence Operations (AIOps)",
+        "DevSecOps",
+        "Python Programming",
+        "Linux Systems Administration",
+        "Cloud Computing (AWS, Azure)",
+        "Docker",
+        "Infrastructure as Code",
+        "Terraform",
+        "Bash Scripting",
+        "System Architecture"
+      ],
+      "sameAs": [
+        "https://twitter.com/owais_io",
+        "https://github.com/owais-io",
+        "https://linkedin.com/in/owais-io"
+      ],
+      "email": "owais.abbasi9@gmail.com"
+    }
+
+    return (
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
+    )
+  }
+
+Step 3: Import and add to about page
+  - Add import: import PersonStructuredData from '../components/PersonStructuredData'
+  - Add before closing </div> (line 162):
+    <PersonStructuredData />
+
+Step 4: Update about page metadata
+
+  export const metadata: Metadata = {
+    title: 'About Owais - AIOps Engineer & Technical Writer',
+    description: 'AIOps and DevSecOps Engineer with expertise in AI-driven automation, cloud infrastructure (AWS, Azure), Docker, Python, and Linux. UK Eduqual Level 6 Diploma holder.',
+    keywords: ['AIOps Engineer', 'DevSecOps', 'AI Automation', 'Cloud Computing', 'Technical Writer'],
+    openGraph: {
+      title: 'About Owais - AIOps Engineer',
+      description: 'AIOps and DevSecOps Engineer specializing in AI-driven automation and cloud infrastructure',
+      url: 'https://owais.io/about',
+      type: 'profile',
+      images: [{
+        url: 'https://owais.io/profile.png',
+        width: 400,
+        height: 400,
+        alt: 'Owais - AIOps Engineer'
+      }]
+    }
+  }
+
+Step 5: Test with Rich Results Test
+  - Visit: https://search.google.com/test/rich-results
+  - Enter: https://owais.io/about
+  - Verify "Person" schema is detected
+
+--------------------------------------------------------------------------------
+TASK 7: Add Breadcrumb Schema to Blog Posts
+--------------------------------------------------------------------------------
+Priority: MEDIUM
+Impact: Breadcrumb navigation in search results
+Time: 25 minutes
+
+What it does:
+Shows breadcrumb navigation in Google search results (Home > Blog > Post Title)
+
+STEP-BY-STEP IMPLEMENTATION:
+
+Step 1: Create breadcrumb component (app/components/BreadcrumbStructuredData.tsx)
+
+  interface BreadcrumbItem {
+    name: string
+    url: string
+  }
+
+  interface BreadcrumbStructuredDataProps {
+    items: BreadcrumbItem[]
+  }
+
+  export default function BreadcrumbStructuredData({ items }: BreadcrumbStructuredDataProps) {
+    const structuredData = {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": items.map((item, index) => ({
+        "@type": "ListItem",
+        "position": index + 1,
+        "name": item.name,
+        "item": item.url
+      }))
+    }
+
+    return (
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
+    )
+  }
+
+Step 2: Add to blog post page (app/blog/[slug]/page.tsx)
+  - Import: import BreadcrumbStructuredData from '../../components/BreadcrumbStructuredData'
+  - Add before closing tag (around line 225):
+
+    <BreadcrumbStructuredData
+      items={[
+        { name: 'Home', url: 'https://owais.io' },
+        { name: 'Blog', url: 'https://owais.io/#posts' },
+        { name: post.title, url: `https://owais.io/blog/${params.slug}` }
+      ]}
+    />
+
+Step 3: (Optional) Add visual breadcrumb navigation
+  - Add this HTML after "Back to blog" button (after line 78):
+
+    <nav className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400 mb-4">
+      <Link href="/" className="hover:text-primary-600 dark:hover:text-primary-400">
+        Home
+      </Link>
+      <span>/</span>
+      <Link href="/#posts" className="hover:text-primary-600 dark:hover:text-primary-400">
+        Blog
+      </Link>
+      <span>/</span>
+      <span className="text-gray-900 dark:text-white truncate max-w-xs">
+        {post.title}
+      </span>
+    </nav>
+
+Step 4: Test
+  - Visit a blog post
+  - View page source
+  - Search for "BreadcrumbList"
+  - Test with Rich Results Test
+
+--------------------------------------------------------------------------------
+TASK 8: Update Sitemap to Include Category Pages
+--------------------------------------------------------------------------------
+Priority: MEDIUM
+Impact: Better crawling of category pages
+Time: 15 minutes
+
+What it does:
+Helps search engines discover all your category pages
+
+STEP-BY-STEP IMPLEMENTATION:
+
+Step 1: Open sitemap file (app/sitemap.ts)
+
+Step 2: Import getAllCategories function (line 2):
+
+  import { getAllPosts, getAllTags, getAllCategories } from './lib/blog'
+
+Step 3: Add category pages generation (after line 7):
+
+  const tags = getAllTags()
+  const categories = getAllCategories('alphabetical')
+
+Step 4: Create category page entries (after line 45):
+
+  // Category pages
+  const categoryPages = categories.map((category) => ({
+    url: `${baseUrl}/?category=${encodeURIComponent(category)}`,
+    lastModified: new Date(),
+    changeFrequency: 'weekly' as const,
+    priority: 0.6,
+  }))
+
+Step 5: Add to return statement (line 47):
+
+  return [...staticPages, ...postPages, ...categoryPages, ...tagPages]
+
+Step 6: Rebuild and test
+  - Run: npm run build
+  - Visit: http://localhost:3000/sitemap.xml
+  - Verify category URLs appear
+  - Check format is correct
+
+--------------------------------------------------------------------------------
+TASK 9: Add Google Search Console Verification Meta Tag
+--------------------------------------------------------------------------------
+Priority: HIGH
+Impact: Site monitoring and optimization
+Time: 15 minutes + verification
+
+What it does:
+Allows you to verify ownership of your site in Google Search Console for
+monitoring and optimization
+
+STEP-BY-STEP IMPLEMENTATION:
+
+Step 1: Go to Google Search Console
+  - Visit: https://search.google.com/search-console
+  - Click "Add Property"
+  - Enter: https://owais.io
+  - Choose "HTML tag" verification method
+
+Step 2: Copy the verification code
+  - Google will show: <meta name="google-site-verification" content="YOUR_CODE_HERE" />
+  - Copy the content value
+
+Step 3: Add to root layout (app/layout.tsx)
+  - Find the metadata object (line 17)
+  - Add verification in the other section (around line 57):
+
+    other: {
+      'google-adsense-account': 'ca-pub-2882914404730852',
+      'google-site-verification': 'YOUR_VERIFICATION_CODE_HERE'
+    },
+
+Step 4: Deploy the changes
+  - Commit and push to GitHub
+  - Wait for deployment to complete (1-2 minutes)
+
+Step 5: Verify in Search Console
+  - Go back to Search Console
+  - Click "Verify"
+  - Should see success message
+
+Step 6: Submit sitemap
+  - In Search Console, go to "Sitemaps"
+  - Enter: sitemap.xml
+  - Click "Submit"
+  - Google will start crawling your site
+
+Step 7: Monitor performance
+  - Check "Coverage" for indexing status
+  - Check "Performance" for search analytics
+  - Review any errors or warnings
+
+--------------------------------------------------------------------------------
+TASK 10: Enhance Article Metadata with Complete OpenGraph Data
+--------------------------------------------------------------------------------
+Priority: MEDIUM
+Impact: Complete social sharing optimization
+Time: 20 minutes
+
+What it does:
+Provides complete OpenGraph metadata for better social sharing
+
+STEP-BY-STEP IMPLEMENTATION:
+
+Step 1: Open blog post page (app/blog/[slug]/page.tsx)
+
+Step 2: Find generateMetadata function (line 26)
+
+Step 3: Replace with enhanced version:
+
+  export async function generateMetadata({ params }: BlogPostPageProps): Promise<Metadata> {
+    const post = getPostBySlug(params.slug)
+
+    if (!post) {
+      return {
+        title: 'Post Not Found',
+      }
+    }
+
+    const postUrl = `https://owais.io/blog/${params.slug}`
+    const ogImage = 'https://owais.io/og-default.png'
+
+    return {
+      title: post.title,
+      description: post.description,
+      keywords: post.tags,
+      authors: [{ name: post.author || 'Owais', url: 'https://owais.io/about' }],
+      creator: post.author || 'Owais',
+      publisher: 'Owais',
+      alternates: {
+        canonical: post.seo?.canonical || postUrl
+      },
+      openGraph: {
+        title: post.title,
+        description: post.description,
+        type: 'article',
+        url: postUrl,
+        publishedTime: post.date,
+        modifiedTime: post.date,
+        authors: ['Owais'],
+        section: post.categories[0] || 'Technology',
+        tags: post.tags,
+        images: [
+          {
+            url: ogImage,
+            width: 1200,
+            height: 630,
+            alt: post.title,
+            type: 'image/png'
+          }
+        ],
+        locale: 'en_US',
+        siteName: 'Owais.io'
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: post.title,
+        description: post.description,
+        images: [ogImage],
+        creator: '@owais_io',
+        site: '@owais_io'
+      },
+      robots: {
+        index: post.published !== false,
+        follow: post.published !== false,
+        'max-image-preview': 'large',
+        'max-snippet': -1
+      }
+    }
+  }
+
+Step 4: Test social sharing
+  - Deploy changes
+  - Test with:
+    - Facebook Sharing Debugger
+    - Twitter Card Validator
+    - LinkedIn Post Inspector
+    - Slack (paste URL in channel)
+
+--------------------------------------------------------------------------------
+TASK 11: Add Author Metadata to Blog Post Pages
+--------------------------------------------------------------------------------
+Priority: LOW
+Impact: Clear authorship attribution
+Time: 15 minutes
+
+What it does:
+Establishes clear authorship for each article
+
+STEP-BY-STEP IMPLEMENTATION:
+
+Step 1: Already covered in Task 10 with the authors field
+
+Step 2: Add visible author byline in blog post
+  - Open app/blog/[slug]/page.tsx
+  - Find the header section (around line 112)
+  - Add after reading time div (after line 127):
+
+    <span className="w-1 h-1 bg-current rounded-full" />
+    <div className="inline-flex items-center">
+      <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+        <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+      </svg>
+      <span className="font-medium">By {post.author || 'Owais'}</span>
+    </div>
+
+Step 3: Ensure author field exists in post frontmatter
+  - All posts should have: author: "Owais"
+  - Update POST_TEMPLATE.mdx to include it
+
+Step 4: Test display
+  - View blog posts
+  - Verify author name appears
+  - Check responsive layout
+
+--------------------------------------------------------------------------------
+TASK 12: Create Default OG/Twitter Images
+--------------------------------------------------------------------------------
+Priority: CRITICAL (Part of Task 2)
+Impact: Attractive social media previews
+Time: 1-2 hours (design time)
+
+What it does:
+Provides attractive social media preview images
+
+STEP-BY-STEP IMPLEMENTATION:
+
+Step 1: Design the default OG image
+  - Dimensions: 1200x630px (required for OG)
+  - Format: PNG or JPG
+  - Design elements:
+    - Site name: "Owais.io"
+    - Tagline: "AI, Cloud, DevOps & System Administration"
+    - Background: Gradient or tech-themed
+    - Your profile photo (optional)
+    - Colors: Match your brand (primary blue, accent green)
+
+Step 2: Use Canva (easy method)
+  - Go to: https://www.canva.com
+  - Search templates: "Facebook Post" or "Twitter Post"
+  - Customize with your branding
+  - Download as PNG
+
+Step 3: Alternative: Use Figma (design tool)
+  - Create frame: 1200x630px
+  - Add background gradient
+  - Add text layers
+  - Add logo/profile image
+  - Export as PNG
+
+Step 4: Alternative: Use online tool
+  - Visit: https://www.opengraph.xyz/
+  - Enter your text and colors
+  - Download generated image
+
+Step 5: Save to public folder
+  - File location: D:\blog\public\og-default.png
+  - Also create: public\twitter-default.png (same, 1200x628px for Twitter)
+
+Step 6: (Optional) Create category-specific images
+  - public/og-git.png - For Git posts
+  - public/og-docker.png - For Docker posts
+  - public/og-python.png - For Python posts
+  - public/og-terraform.png - For Terraform posts
+
+Step 7: Update metadata to use dynamic images
+  - In generateMetadata function:
+
+    const categoryImageMap: Record<string, string> = {
+      'Git': 'og-git.png',
+      'Docker': 'og-docker.png',
+      'Python': 'og-python.png',
+      'Terraform': 'og-terraform.png'
+    }
+
+    const ogImage = post.categories[0] && categoryImageMap[post.categories[0]]
+      ? `https://owais.io/${categoryImageMap[post.categories[0]]}`
+      : 'https://owais.io/og-default.png'
+
+Step 8: Test the images
+  - Deploy site
+  - Test URLs in:
+    - Facebook Debugger: https://developers.facebook.com/tools/debug/
+    - Twitter Card Validator: https://cards-dev.twitter.com/validator
+    - LinkedIn Inspector: https://www.linkedin.com/post-inspector/
+  - Verify images display correctly
+  - Check dimensions and quality
+
+================================================================================
+                      BONUS TASKS (OPTIONAL ADVANCED SEO)
+================================================================================
+
+--------------------------------------------------------------------------------
+TASK 13: Add FAQ Schema for Tutorial Posts
+--------------------------------------------------------------------------------
+Priority: LOW
+Impact: Rich FAQ snippets
+Time: 30 minutes per post
+
+What it does:
+Enables FAQ rich snippets for posts with Q&A sections
+
+Implementation:
+  - Identify posts with Q&A sections
+  - Create FAQPage schema component
+  - Add "@type": "FAQPage" with mainEntity array
+  - Each Q&A becomes a Question with acceptedAnswer
+  - Add to relevant posts
+
+--------------------------------------------------------------------------------
+TASK 14: Add HowTo Schema for Step-by-Step Guides
+--------------------------------------------------------------------------------
+Priority: LOW
+Impact: Recipe-style search results
+Time: 30 minutes per post
+
+What it does:
+For tutorial posts with steps, shows recipe-style results
+
+Implementation:
+  - Identify tutorial posts with clear steps
+  - Create HowToSchema component
+  - Include supply list, tools, estimated time
+  - Add step-by-step instructions array
+  - Add to relevant tutorial posts
+
+--------------------------------------------------------------------------------
+TASK 15: Implement Article Modification Tracking
+--------------------------------------------------------------------------------
+Priority: LOW
+Impact: Accurate freshness signals
+Time: 1 hour
+
+What it does:
+Tracks when articles are updated
+
+Implementation:
+  - Add updatedDate field to post frontmatter
+  - Update blog.ts to parse updatedDate
+  - Add "Last updated" display on posts
+  - Update sitemap to use modification dates
+  - Update Article schema to use modifiedTime
+
+--------------------------------------------------------------------------------
+TASK 16: Add Reading Progress Bar
+--------------------------------------------------------------------------------
+Priority: LOW
+Impact: Better engagement metrics
+Time: 45 minutes
+
+What it does:
+Visual indicator of reading progress, improves engagement
+
+Implementation:
+  - Create ReadingProgressBar component
+  - Track scroll position with useState/useEffect
+  - Calculate percentage of article read
+  - Show fixed progress bar at top
+  - Style to match theme
+
+--------------------------------------------------------------------------------
+TASK 17: Implement Internal Linking System
+--------------------------------------------------------------------------------
+Priority: MEDIUM
+Impact: Improved site architecture for SEO
+Time: 2-3 hours
+
+What it does:
+Automatic related post suggestions and contextual internal links
+
+Implementation:
+  - Analyze post content for keyword matches
+  - Suggest relevant internal links
+  - Add "See also" sections
+  - Track link graph for optimization
+  - Improve existing related posts algorithm
+
+--------------------------------------------------------------------------------
+TASK 18: Create XML Sitemap Index
+--------------------------------------------------------------------------------
+Priority: LOW
+Impact: Better for large sites
+Time: 1 hour
+
+What it does:
+Splits sitemap into multiple files for better crawling
+
+Implementation:
+  - Create sitemap-posts.xml
+  - Create sitemap-pages.xml
+  - Create sitemap-index.xml
+  - Update robots.txt to point to index
+  - Better for 100+ pages
+
+================================================================================
+                      TESTING & VALIDATION CHECKLIST
+================================================================================
+
+After completing all tasks:
+
+STRUCTURED DATA VALIDATION:
+  [ ] Test all pages with Rich Results Test
+  [ ] Verify no errors in schema markup
+  [ ] Check breadcrumb display
+  [ ] Confirm article schema detection
+
+SOCIAL MEDIA VALIDATION:
+  [ ] Test 5 blog post URLs in Facebook Debugger
+  [ ] Test 5 blog post URLs in Twitter Validator
+  [ ] Test homepage in LinkedIn Inspector
+  [ ] Verify images display correctly
+
+SEARCH CONSOLE:
+  [ ] Verify site ownership
+  [ ] Submit sitemap
+  [ ] Check coverage report (wait 48 hours)
+  [ ] Monitor indexing status
+
+TECHNICAL SEO:
+  [ ] Run Lighthouse audit (target 90+ SEO score)
+  [ ] Check mobile usability
+  [ ] Verify HTTPS works
+  [ ] Test page load speed
+
+ON-PAGE SEO:
+  [ ] All pages have unique titles
+  [ ] All pages have unique descriptions
+  [ ] All images have alt text
+  [ ] Internal linking works
+  [ ] No broken links
+
+================================================================================
+                      MONITORING & MAINTENANCE SCHEDULE
+================================================================================
+
+WEEKLY:
+  - Check Google Search Console for errors
+  - Review performance reports
+  - Monitor indexing status
+
+MONTHLY:
+  - Analyze top-performing content
+  - Update old posts with new information
+  - Fix any technical issues
+  - Review and improve meta descriptions
+
+QUARTERLY:
+  - Comprehensive SEO audit
+  - Competitor analysis
+  - Content gap analysis
+  - Backlink review
+
+================================================================================
+                              IMPORTANT URLS
+================================================================================
+
+Testing Tools:
+  - Rich Results Test: https://search.google.com/test/rich-results
+  - Facebook Debugger: https://developers.facebook.com/tools/debug/
+  - Twitter Validator: https://cards-dev.twitter.com/validator
+  - LinkedIn Inspector: https://www.linkedin.com/post-inspector/
+
+Google Services:
+  - Search Console: https://search.google.com/search-console
+  - Analytics: https://analytics.google.com
+
+Design Tools:
+  - Canva: https://www.canva.com
+  - OG Image Generator: https://www.opengraph.xyz/
+  - Figma: https://www.figma.com
+
+================================================================================
+                            EXPECTED RESULTS
+================================================================================
+
+After implementing all priority tasks (1-12):
+
+SEO Score Improvement:
+  - Current: 6.5/10
+  - Expected: 9/10
+
+Traffic Impact:
+  - Estimated increase: +50-100% organic traffic
+  - Timeline: 3-6 months after implementation
+  - Indexing improvements: Within 1-2 weeks
+
+Search Features Enabled:
+  - Rich snippets (article cards)
+  - Breadcrumb navigation
+  - Author attribution
+  - Social media previews
+  - Sitelinks search box (after gaining authority)
+
+================================================================================
+                              PRIORITY ORDER
+================================================================================
+
+WEEK 1 (Critical):
+  1. Task 1: Article JSON-LD structured data
+  2. Task 2: OpenGraph/Twitter images
+  3. Task 3: Restore publish dates
+  4. Task 4: Fix homepage metadata
+
+WEEK 2 (High Priority):
+  5. Task 9: Google Search Console setup
+  6. Task 5: WebSite schema
+  7. Task 8: Sitemap updates
+
+WEEK 3-4 (Medium Priority):
+  8. Task 6: Person schema
+  9. Task 7: Breadcrumb schema
+  10. Task 10: Enhanced article metadata
+  11. Task 11: Author metadata
+  12. Task 12: Category-specific OG images
+
+ONGOING (Bonus):
+  13-18. Advanced features as time permits
+
+================================================================================
+                                END OF GUIDE
+================================================================================
+
+This comprehensive guide will improve your SEO score from 6.5/10 to 9/10.
+Follow tasks in order for best results.
+
+Estimated total time: 8-12 hours for all priority tasks
+Expected ROI: 50-100% increase in organic traffic within 3-6 months
+
+Good luck!

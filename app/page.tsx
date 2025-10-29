@@ -2,8 +2,9 @@ import { Metadata } from 'next'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { getPostsMeta, getAllCategories, type CategorySortOrder } from './lib/blog'
-import LazyPostsGrid from './components/LazyPostsGrid'
+import PostsGrid from './components/PostsGrid'
 import CategoryPills from './components/CategoryPills'
+import Pagination from './components/Pagination'
 
 interface HomePageProps {
   searchParams: {
@@ -21,6 +22,7 @@ export const metadata: Metadata = {
 export default function HomePage({ searchParams }: HomePageProps) {
   const currentPage = parseInt(searchParams.page || '1', 10)
   const selectedCategory = searchParams.category
+  const postsPerPage = 10
 
   // Get sort order from URL parameter, fallback to 'recency'
   const sortParam = searchParams.sort
@@ -29,26 +31,30 @@ export default function HomePage({ searchParams }: HomePageProps) {
       ? sortParam as CategorySortOrder
       : 'recency'
 
-  const { posts, totalPages, totalPosts } = getPostsMeta(1, 1000, undefined, selectedCategory)
+  // Get all posts for categories and counts
+  const allPostsData = getPostsMeta(1, 1000)
   const allCategories = getAllCategories(categorySortOrder)
 
   // Get category counts
   const categoryCounts = new Map<string, number>()
-  const allPosts = getPostsMeta(1, 1000).posts
-  allPosts.forEach(post => {
+  allPostsData.posts.forEach(post => {
     post.categories.forEach(category => {
       categoryCounts.set(category, (categoryCounts.get(category) || 0) + 1)
     })
   })
 
-  // Split posts: first 2 are featured, rest are regular
-  const featuredPosts = posts.slice(0, 2)
-  const remainingPosts = posts.slice(2)
+  // Get paginated posts (10 per page)
+  const { posts, totalPages, totalPosts } = getPostsMeta(currentPage, postsPerPage, undefined, selectedCategory)
+
+  // Featured posts only on first page when no category selected
+  const showFeatured = !selectedCategory && currentPage === 1
+  const featuredPosts = showFeatured ? posts.slice(0, 2) : []
+  const gridPosts = showFeatured ? posts.slice(2) : posts
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section - Only show when no category is selected */}
-      {!selectedCategory && (
+      {/* Hero Section - Only show on first page when no category is selected */}
+      {!selectedCategory && currentPage === 1 && (
         <section className="relative overflow-hidden py-12 sm:py-19">
           <div className="absolute inset-0 bg-gradient-to-br from-primary-50 via-white to-accent-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 animate-gradient" />
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -76,9 +82,9 @@ export default function HomePage({ searchParams }: HomePageProps) {
         </section>
       )}
 
-      <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 ${selectedCategory ? 'pt-16' : ''}`}>
-        {/* Featured Posts - Only show when no category is selected */}
-        {!selectedCategory && featuredPosts.length > 0 && (
+      <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 ${selectedCategory || currentPage > 1 ? 'pt-16' : ''}`}>
+        {/* Featured Posts - Only show on first page when no category is selected */}
+        {showFeatured && featuredPosts.length > 0 && (
           <section className="mb-20">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-10 tracking-tight">Latest Posts</h2>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -130,14 +136,25 @@ export default function HomePage({ searchParams }: HomePageProps) {
           </section>
         )}
 
-        {/* Posts Grid with Lazy Loading */}
-        {/* Show remainingPosts when no category selected, all posts when category selected */}
-        {(selectedCategory ? posts : remainingPosts).length > 0 && (
-          <LazyPostsGrid
-            posts={selectedCategory ? posts : remainingPosts}
-            selectedCategory={selectedCategory}
-            showTitle={selectedCategory ? true : false}
-          />
+        {/* Posts Grid with Pagination */}
+        {gridPosts.length > 0 && (
+          <>
+            <PostsGrid
+              posts={gridPosts}
+              selectedCategory={selectedCategory}
+              showTitle={!!selectedCategory || currentPage > 1}
+            />
+
+            {/* Pagination */}
+            <div className="mt-12 sm:mt-16">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                basePath="/"
+                category={selectedCategory}
+              />
+            </div>
+          </>
         )}
 
         {/* Empty State */}

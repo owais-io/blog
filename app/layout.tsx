@@ -6,6 +6,7 @@ import { ThemeProvider } from './components/ThemeProvider'
 import ScrollToTop from './components/ScrollToTop'
 import { GoogleAnalytics } from '@next/third-parties/google'
 import Script from 'next/script'
+import { generateOrganizationSchema, generateWebsiteSchema } from './lib/schema'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -64,6 +65,20 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  // Generate JSON-LD structured data
+  const organizationSchema = generateOrganizationSchema({
+    name: 'Owais.io',
+    url: 'https://owais.io',
+    logo: 'https://owais.io/logo.png',
+    description: 'Personal blog and portfolio of Owais - sharing thoughts on technology, development, and life.',
+    socialProfiles: [
+      'https://linkedin.com/in/owais-io',
+      'https://github.com/owais-io',
+    ],
+  })
+
+  const websiteSchema = generateWebsiteSchema('https://owais.io', 'Owais.io')
+
   return (
     <html lang="en">
       <head>
@@ -72,6 +87,15 @@ export default function RootLayout({
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2882914404730852"
           crossOrigin="anonymous"
           strategy="beforeInteractive"
+        />
+        {/* JSON-LD Structured Data for SEO */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
         />
       </head>
       <body className={inter.className}>
