@@ -21,6 +21,11 @@ export const metadata: Metadata = {
     template: '%s | Owais.io'
   },
   description: 'Expert tutorials on AI, Cloud Computing, DevOps, and Operating Systems. Learn Kubernetes, Docker, Terraform, and modern infrastructure from an AIOps Engineer.',
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 5,
+  },
   keywords: [
     'AI tutorials',
     'Cloud Computing',
