@@ -35,9 +35,6 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
     }
   }
 
-  // Generate OG image URL
-  const ogImageUrl = `/api/og?title=${encodeURIComponent(post.title)}&category=${encodeURIComponent(post.categories[0] || '')}`
-
   return {
     title: post.title,
     description: post.description,
@@ -48,20 +45,11 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
       type: 'article',
       publishedTime: post.date,
       tags: post.tags,
-      images: [
-        {
-          url: ogImageUrl,
-          width: 1200,
-          height: 630,
-          alt: post.title,
-        },
-      ],
     },
     twitter: {
       card: 'summary_large_image',
       title: post.title,
       description: post.description,
-      images: [ogImageUrl],
     },
   }
 }
@@ -77,12 +65,11 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
 
   // Generate JSON-LD structured data
   const postUrl = `https://owais.io/blog/${params.slug}`
-  const ogImageUrl = `https://owais.io/api/og?title=${encodeURIComponent(post.title)}&category=${encodeURIComponent(post.categories[0] || '')}`
 
   const articleSchema = generateArticleSchema({
     post,
     url: postUrl,
-    imageUrl: ogImageUrl,
+    imageUrl: 'https://owais.io/profile.png',
   })
 
   const breadcrumbSchema = generateBreadcrumbSchema([

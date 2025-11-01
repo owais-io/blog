@@ -23,20 +23,11 @@ export const metadata: Metadata = {
     description: 'Learn AI, Cloud Computing, DevOps, Operating Systems, Kubernetes, Docker, and Terraform through practical tutorials and guides.',
     type: 'website',
     url: 'https://owais.io',
-    images: [
-      {
-        url: '/api/og?title=Owais.io Tech Blog&category=AI%20%7C%20Cloud%20%7C%20DevOps',
-        width: 1200,
-        height: 630,
-        alt: 'Owais.io - AI, Cloud & DevOps Tutorials',
-      },
-    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'AI, Cloud & DevOps Tutorials - Owais.io',
     description: 'Learn AI, Cloud Computing, DevOps, Operating Systems, Kubernetes, Docker, and Terraform through practical tutorials and guides.',
-    images: ['/api/og?title=Owais.io Tech Blog&category=AI%20%7C%20Cloud%20%7C%20DevOps'],
   },
 }
 
@@ -110,33 +101,28 @@ export default function HomePage({ searchParams }: HomePageProps) {
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-10 tracking-tight">Latest Posts</h2>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {featuredPosts.map((post) => {
-                const ogImageUrl = `/api/og?title=${encodeURIComponent(post.title)}&category=${encodeURIComponent(post.categories[0] || '')}`
-
                 return (
                   <article
                     key={post.slug}
                     className="card-elevated overflow-hidden hover:scale-[1.02] transition-transform group"
                   >
                     <Link href={`/blog/${post.slug}`} className="block">
-                      {/* Featured Image */}
-                      <div className="relative w-full aspect-[1200/630] overflow-hidden">
-                        <Image
-                          src={ogImageUrl}
-                          alt={post.title}
-                          fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-300"
-                          sizes="(max-width: 1024px) 100vw, 50vw"
-                          priority
-                        />
-                      </div>
-
                       {/* Content */}
                       <div className="p-6">
-                        <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mb-3">
-                          <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
-                          </svg>
-                          {post.readingTime}
+                        <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400 mb-3">
+                          <div className="flex items-center gap-1.5">
+                            <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+                            </svg>
+                            <span>{format(new Date(post.date), 'MMM d, yyyy')}</span>
+                          </div>
+                          <span className="text-gray-400 dark:text-gray-600">•</span>
+                          <div className="flex items-center gap-1.5">
+                            <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                            </svg>
+                            <span>{post.readingTime}</span>
+                          </div>
                         </div>
 
                         <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors line-clamp-2 leading-snug">
