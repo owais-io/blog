@@ -1,0 +1,38 @@
+[15:51:18 centos9@vm1 LFCS]$ # UNDERSTANDING USERS
+[15:58:12 centos9@vm1 LFCS]$ # explain what exactly is a user
+[15:58:31 centos9@vm1 LFCS]$ # explain types or kinds of user
+[16:00:26 centos9@vm1 LFCS]$ # such as system users, service users, root user
+[16:02:24 centos9@vm1 LFCS]$ # explain users in the context of hardware then kernel space, then permissions, and user space
+[16:03:46 centos9@vm1 LFCS]$ ps aux | head
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root           1  0.1  0.2 174876 17444 ?        Ss   15:35   0:02 /usr/lib/systemd/systemd rhgb --switched-root --system --deserialize 31
+root           2  0.0  0.0      0     0 ?        S    15:35   0:00 [kthreadd]
+root           3  0.0  0.0      0     0 ?        S    15:35   0:00 [pool_workqueue_]
+root           4  0.0  0.0      0     0 ?        I<   15:35   0:00 [kworker/R-rcu_g]
+root           5  0.0  0.0      0     0 ?        I<   15:35   0:00 [kworker/R-sync_]
+root           6  0.0  0.0      0     0 ?        I<   15:35   0:00 [kworker/R-slub_]
+root           7  0.0  0.0      0     0 ?        I<   15:35   0:00 [kworker/R-netns]
+root          10  0.0  0.0      0     0 ?        I    15:35   0:00 [kworker/u16:0-events_unbound]
+root          11  0.0  0.0      0     0 ?        I<   15:35   0:00 [kworker/R-mm_pe]
+[16:06:22 centos9@vm1 LFCS]$ ps aux | grep centos9 | head
+centos9     2870  0.0  0.2  25812 15780 ?        Ss   15:37   0:00 /usr/lib/systemd/systemd --user
+centos9     2872  0.0  0.1 176264  8388 ?        S    15:37   0:00 (sd-pam)
+centos9     2888  0.0  0.0 453016  7512 ?        Sl   15:37   0:00 /usr/bin/gnome-keyring-daemon --daemonize --login
+centos9     2893  0.0  0.0 377608  7116 tty2     Ssl+ 15:37   0:00 /usr/libexec/gdm-x-session --register-session --run-script gnome-session
+centos9     2896  4.6  1.0 293272 81700 tty2     Sl+  15:37   1:22 /usr/libexec/Xorg vt2 -displayfd 3 -auth /run/user/1000/gdm/Xauthority -nolisten tcp -background none -noreset -keeptty -novtswitch -verbose 3
+centos9     2905  0.0  0.0  10584  4600 ?        Ss   15:37   0:00 /usr/bin/dbus-broker-launch --scope user
+centos9     2907  0.0  0.0   6784  4680 ?        S    15:37   0:00 dbus-broker --log 4 --controller 9 --machine-id 158aabcff7b34160bffa96edea935b2f --max-bytes 100000000000000 --max-fds 25000000000000 --max-matches 5000000000
+centos9     2909  0.0  0.2 513080 17588 tty2     Sl+  15:37   0:00 /usr/libexec/gnome-session-binary
+centos9     2937  0.0  0.0 232044  1476 ?        S    15:37   0:00 /usr/bin/VBoxClient --clipboard
+centos9     2940  0.0  0.0 430876  4584 ?        Sl   15:37   0:00 /usr/bin/VBoxClient --clipboard
+[16:06:43 centos9@vm1 LFCS]$ # explain the output of above with respect to users
+[16:07:35 centos9@vm1 LFCS]$ 
+[16:07:36 centos9@vm1 LFCS]$ 
+[16:07:37 centos9@vm1 LFCS]$ # UNDERSTANDING THE ROLE OF OWNERSHIP
+[16:08:41 centos9@vm1 LFCS]$ # explain the relationship of file creation, file ownership by the user, user and a group, user and a group ownership, and private groups.
+[16:12:24 centos9@vm1 LFCS]$ id
+uid=1000(centos9) gid=1000(centos9) groups=1000(centos9),10(wheel),978(docker) context=unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023
+[16:17:15 centos9@vm1 LFCS]$ touch groupuser
+[16:17:24 centos9@vm1 LFCS]$ ls -l groupuser 
+-rw-r--r--. 1 centos9 centos9 0 Nov  4 16:17 groupuser
+[16:17:28 centos9@vm1 LFCS]$ # explain the above output from user and group point of view

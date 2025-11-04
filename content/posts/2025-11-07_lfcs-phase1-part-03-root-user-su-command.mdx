@@ -1,0 +1,1405 @@
+---
+title: "Understanding the Linux Root User and su Command: Complete Guide for LFCS"
+description: "Master the Linux root user and su command for LFCS certification. Learn about UID 0, root vs Windows Administrator, kernel relationship, su vs su - (login shells), /etc/profile, and when to use su with detailed practice labs."
+date: "2025-11-07T00:00:00.000Z"
+tags: ["linux", "lfcs", "root-user", "su-command", "privilege-escalation", "system-administration", "login-shell", "kernel"]
+published: true
+author: "Owais"
+categories: ["Linux", "LFCS Certification"]
+series: "LFCS Certification - Phase 1"
+seriesOrder: 3
+seo:
+  canonical: "https://owais.io/blog/2025-11-07_lfcs-phase1-part-03-root-user-su-command"
+  keywords: ["linux root user", "su command", "su vs su -", "lfcs certification", "linux privilege escalation", "uid 0", "login shell", "linux kernel", "root access"]
+toc: true
+---
+
+Welcome to **Part 3** of the LFCS Certification - Phase 1 series! In the previous posts, you learned about Linux distributions and group-based privilege management. Now we're diving deep into the **root user** - the most powerful account in Linux - and the **su command** for switching users and gaining root access.
+
+<Callout type="info">
+🎯 **What You'll Learn**: In this guide, you'll master:
+- What the root user is and why it's special (UID 0)
+- How root differs from Windows Administrator
+- Root user's direct relationship with the Linux kernel
+- The `su` command for switching users
+- Critical difference between `su` and `su -` (login shell)
+- How `/etc/profile` and environment variables are loaded
+- When to use `su` vs `sudo`
+- Security implications of root access
+- Best practices for working with root
+- 20+ comprehensive practice labs
+
+**Series**: LFCS Certification Preparation - Phase 1 (Post 3 of 52)
+**Previous**: [Part 2 - Understanding Groups (wheel and sudo)](/blog/2025-11-06_lfcs-phase1-part-02-understanding-groups-wheel-sudo)
+**Next**: Part 4 - Mastering sudo for Temporary Privilege Escalation
+</Callout>
+
+## What is the Root User?
+
+The **root user** is the superuser account in Linux - the most powerful account with unrestricted access to everything on the system.
+
+### Key Characteristics of Root
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Attribute</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Value</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Significance</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Username</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">root</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Default superuser account name</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>User ID (UID)</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">0</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">UID 0 = unlimited privileges</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Group ID (GID)</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">0</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Root group</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Home Directory</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">/root</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">NOT /home/root!</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Shell</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">/bin/bash</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Default command interpreter</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Permissions</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Unrestricted</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Can do absolutely anything</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### Checking Root User Information
+
+Let's examine the root user's entry in `/etc/passwd`:
+
+```bash
+grep "^root:" /etc/passwd
+```
+
+**Output:**
+```
+root:x:0:0:root:/root:/bin/bash
+```
+
+**Breaking down each field:**
+
+```
+root:x:0:0:root:/root:/bin/bash
+│    │ │ │ │    │     └─ Login shell
+│    │ │ │ │    └─────── Home directory
+│    │ │ │ └──────────── GECOS field (user info)
+│    │ │ └─────────────── GID (Group ID) = 0
+│    │ └───────────────── UID (User ID) = 0
+│    └─────────────────── Password (x = stored in /etc/shadow)
+└──────────────────────── Username
+```
+
+<Callout type="info">
+💡 **Critical Fact**: The magic of root is **UID 0**, not the username. Any account with UID 0 has full root privileges, regardless of its name. The kernel only checks the UID!
+</Callout>
+
+### What Makes Root Special?
+
+When logged in as root, you can:
+
+1. **Read, write, delete ANY file** on the system
+2. **Modify system configuration** files
+3. **Install and remove software**
+4. **Create, modify, delete users and groups**
+5. **Change file ownership and permissions**
+6. **Access hardware directly**
+7. **Kill any process** (including other users' processes)
+8. **Mount and unmount filesystems**
+9. **Modify kernel parameters**
+10. **Bypass most security restrictions**
+
+<Callout type="warning">
+⚠️ **With great power comes great responsibility!** As root, there's no "Are you sure?" prompt. `rm -rf /` will delete your entire system without hesitation.
+</Callout>
+
+## Root vs Windows Administrator
+
+Many newcomers to Linux compare the root user to Windows Administrator. While similar, there are important differences:
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Aspect</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Linux Root</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Windows Administrator</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Account Type</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Single superuser account</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Group membership (Administrators group)</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Identifier</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">UID 0</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">SID (Security Identifier)</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Restrictions</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Virtually none (can do anything)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Some UAC prompts and protected system files</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Daily Usage</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">NOT recommended</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Common (with UAC)</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Elevation</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">su or sudo</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">UAC (User Account Control)</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Philosophy</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Explicit elevation when needed</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Always elevated with prompts</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### Key Philosophical Difference
+
+**Linux approach**: Regular users have minimal privileges. Explicitly elevate to root only when needed using `su` or `sudo`.
+
+**Windows approach**: Administrators often work with elevated privileges, with UAC providing confirmation prompts.
+
+**Result**: Linux's approach is more secure by default - you must consciously decide to perform privileged operations.
+
+## Root User's Relationship with the Linux Kernel
+
+Understanding how root interacts with the kernel is crucial for system administration.
+
+### The Kernel and UID 0
+
+<div className="my-8 p-6 bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700">
+  <div className="text-center mb-4 text-lg font-semibold">Linux Kernel Permission Model</div>
+  <div className="space-y-4">
+    <div className="bg-blue-100 dark:bg-blue-900 p-4 rounded">
+      <div className="font-semibold mb-2">User Space (Applications)</div>
+      <div className="text-sm pl-4">
+        <div>• Regular User (UID 1000): Limited permissions</div>
+        <div>• Root User (UID 0): Unlimited permissions</div>
+      </div>
+    </div>
+    <div className="text-center text-2xl">↓ System Calls ↓</div>
+    <div className="bg-purple-100 dark:bg-purple-900 p-4 rounded">
+      <div className="font-semibold mb-2">Linux Kernel</div>
+      <div className="text-sm pl-4">
+        <div>• Checks UID of calling process</div>
+        <div>• If UID = 0 → Allow operation</div>
+        <div>• If UID ≠ 0 → Check permissions</div>
+      </div>
+    </div>
+    <div className="text-center text-2xl">↓ Hardware Access ↓</div>
+    <div className="bg-green-100 dark:bg-green-900 p-4 rounded">
+      <div className="font-semibold mb-2">Hardware Resources</div>
+      <div className="text-sm pl-4">
+        <div>• CPU, Memory, Disk, Network</div>
+        <div>• Only kernel can access directly</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+### How the Kernel Treats Root
+
+When a process makes a system call, the kernel checks:
+
+1. **What is the UID of this process?**
+   - If UID = 0: **Bypass most permission checks** and allow the operation
+   - If UID ≠ 0: Check file permissions, capabilities, and other restrictions
+
+2. **Example: Opening a protected file**
+
+```bash
+# As regular user
+cat /etc/shadow
+# Kernel checks: UID = 1000, file permissions = 000 (no access)
+# Result: Permission denied
+
+# As root
+cat /etc/shadow
+# Kernel checks: UID = 0
+# Result: Access granted (UID 0 bypasses permission checks)
+```
+
+### Linux Capabilities (Modern Approach)
+
+Modern Linux uses **capabilities** to divide root privileges into distinct units:
+
+- `CAP_CHOWN` - Change file ownership
+- `CAP_KILL` - Kill any process
+- `CAP_NET_ADMIN` - Network administration
+- `CAP_SYS_ADMIN` - Various system operations
+
+Root (UID 0) has **all capabilities** by default. This allows more granular privilege management.
+
+<Callout type="success">
+✅ **For LFCS**: Understand that root's power comes from UID 0, which the kernel treats specially. This is fundamental to Linux security and privilege escalation.
+</Callout>
+
+## Understanding the su Command
+
+The `su` command stands for **"substitute user"** or **"switch user"**. It allows you to become another user, most commonly root.
+
+### Basic su Usage
+
+**Switch to root:**
+
+```bash
+su -
+```
+
+**Example session:**
+
+```bash
+[centos9@centos ~]$ whoami
+centos9
+
+[centos9@centos ~]$ su -
+Password:           # Enter root password
+[root@centos ~]# whoami
+root
+
+[root@centos ~]# id
+uid=0(root) gid=0(root) groups=0(root)
+
+[root@centos ~]# exit
+logout
+[centos9@centos ~]$
+```
+
+**Explanation of what happened:**
+- `su -` prompts for root password
+- Shell changes to root user (UID 0)
+- Prompt changes to `#` (indicates root)
+- `exit` returns to original user
+
+### su Command Syntax
+
+```bash
+su [options] [username]
+```
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Command</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Meaning</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">What It Does</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">su -</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Switch to root with login shell</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Become root, load root's environment</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">su</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Switch to root without login shell</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Become root, keep current environment</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">su - username</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Switch to specific user with login</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Become user, load their environment</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">su username</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Switch to specific user without login</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Become user, keep environment</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+**Switch to specific user:**
+
+```bash
+su - john
+```
+
+This switches to user `john` with a full login shell.
+
+## The Critical Difference: su vs su -
+
+This is one of the most important concepts for LFCS and real-world system administration.
+
+### What's the Difference?
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Aspect</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">su (no dash)</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">su - (with dash)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Shell Type</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Non-login shell</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Login shell</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Working Directory</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Stays in current directory</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Changes to target user's home</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Environment Variables</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Inherits current user's environment</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Loads target user's environment</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>PATH variable</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Keeps your PATH</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Gets target user's PATH</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Runs</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">~/.bashrc only</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">/etc/profile, ~/.bash_profile, ~/.bashrc</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Recommended</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">❌ Rarely</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">✅ Almost always</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### Practical Example: su vs su -
+
+Let's see the difference in action:
+
+**Using `su` (without dash):**
+
+```bash
+[centos9@centos ~]$ pwd
+/home/centos9
+
+[centos9@centos ~]$ echo $USER
+centos9
+
+[centos9@centos ~]$ su
+Password:
+[root@centos centos9]# pwd
+/home/centos9              # Still in centos9's directory!
+
+[root@centos centos9]# echo $USER
+centos9                    # $USER still shows centos9!
+
+[root@centos centos9]# whoami
+root                       # But actually root
+
+[root@centos centos9]# exit
+```
+
+**Using `su -` (with dash):**
+
+```bash
+[centos9@centos ~]$ pwd
+/home/centos9
+
+[centos9@centos ~]$ echo $USER
+centos9
+
+[centos9@centos ~]$ su -
+Password:
+[root@centos ~]# pwd
+/root                      # Changed to root's home!
+
+[root@centos ~]# echo $USER
+root                       # $USER correctly shows root
+
+[root@centos ~]# whoami
+root
+
+[root@centos ~]# exit
+logout
+```
+
+<Callout type="warning">
+⚠️ **Always use `su -` with the dash!** Using `su` without the dash can cause problems because commands may not be in your PATH, and configuration files won't be loaded properly.
+</Callout>
+
+## Login Shells and /etc/profile
+
+Understanding login shells is crucial for knowing what happens when you run `su -`.
+
+### What is a Login Shell?
+
+A **login shell** is the first shell you get when logging into a system. It:
+- Reads and executes system-wide configuration from `/etc/profile`
+- Reads and executes user-specific configuration from `~/.bash_profile` or `~/.profile`
+- Sets up the user's environment completely
+
+### Configuration Files Loading Order
+
+When you run `su -`, these files are executed in order:
+
+<div className="my-8 p-6 bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700">
+  <div className="text-center mb-4 text-lg font-semibold">Login Shell Configuration Loading</div>
+  <div className="flex flex-col items-center space-y-4">
+    <div className="bg-blue-500 text-white px-6 py-3 rounded-lg font-semibold w-80 text-center">
+      User runs: su -
+    </div>
+    <div className="text-2xl">↓</div>
+    <div className="bg-purple-500 text-white px-6 py-3 rounded-lg font-semibold w-80 text-center">
+      1. /etc/profile
+    </div>
+    <div className="text-sm text-center">System-wide environment</div>
+    <div className="text-2xl">↓</div>
+    <div className="bg-purple-500 text-white px-6 py-3 rounded-lg font-semibold w-80 text-center">
+      2. /etc/profile.d/*.sh
+    </div>
+    <div className="text-sm text-center">Additional system-wide scripts</div>
+    <div className="text-2xl">↓</div>
+    <div className="bg-green-500 text-white px-6 py-3 rounded-lg font-semibold w-80 text-center">
+      3. ~/.bash_profile
+    </div>
+    <div className="text-sm text-center">User-specific environment (or ~/.profile)</div>
+    <div className="text-2xl">↓</div>
+    <div className="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold w-80 text-center">
+      4. ~/.bashrc
+    </div>
+    <div className="text-sm text-center">User-specific aliases and functions</div>
+    <div className="text-2xl">↓</div>
+    <div className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold w-80 text-center">
+      Shell Ready!
+    </div>
+  </div>
+</div>
+
+### /etc/profile: System-Wide Configuration
+
+Let's look at what `/etc/profile` does:
+
+```bash
+cat /etc/profile
+```
+
+**Common contents:**
+
+```bash
+# /etc/profile
+
+# System-wide environment and startup programs
+
+# Set PATH
+pathmunge () {
+    case ":${PATH}:" in
+        *:"$1":*)
+            ;;
+        *)
+            if [ "$2" = "after" ] ; then
+                PATH=$PATH:$1
+            else
+                PATH=$1:$PATH
+            fi
+    esac
+}
+
+# Path manipulation
+pathmunge /usr/local/bin
+pathmunge /usr/local/sbin
+pathmunge /usr/sbin
+
+# Set HOSTNAME
+HOSTNAME=`/usr/bin/hostname 2>/dev/null`
+
+# Set default umask
+umask 022
+
+# Load scripts from /etc/profile.d/
+for i in /etc/profile.d/*.sh ; do
+    if [ -r "$i" ]; then
+        . "$i"
+    fi
+done
+```
+
+**Key things `/etc/profile` does:**
+1. Sets the `PATH` environment variable
+2. Sets the hostname
+3. Sets default file creation mask (`umask`)
+4. Loads additional scripts from `/etc/profile.d/`
+
+### Checking Your Environment
+
+**After `su -`:**
+
+```bash
+[centos9@centos ~]$ su -
+Password:
+[root@centos ~]# echo $PATH
+/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/root/bin
+
+[root@centos ~]# echo $HOME
+/root
+
+[root@centos ~]# echo $USER
+root
+
+[root@centos ~]# pwd
+/root
+```
+
+All environment variables are properly set for root!
+
+## When to Use su vs sudo
+
+Both `su` and `sudo` elevate privileges, but they work differently:
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Aspect</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">su</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">sudo</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Password Required</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Target user's password (root)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Your own password</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Session Type</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Full root shell session</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Single command execution</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Security</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Less secure (root password shared)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">More secure (no root password needed)</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Auditability</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Harder to track (all actions as root)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Better logging (knows who ran what)</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Use Case</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Multiple admin tasks, troubleshooting</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Single commands, scripting</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Risk</strong></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Higher (easy to forget you're root)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Lower (each command requires sudo)</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### When to Use su
+
+**Use `su -` when:**
+1. You need to run multiple commands as root
+2. You're troubleshooting and need an interactive root session
+3. You're doing system maintenance or configuration
+4. You need to work as root for an extended period
+
+**Example scenario:**
+
+```bash
+# Need to edit multiple system files
+su -
+vi /etc/hosts
+vi /etc/hostname
+vi /etc/sysconfig/network-scripts/ifcfg-eth0
+systemctl restart network
+exit
+```
+
+### When to Use sudo
+
+**Use `sudo` when:**
+1. Running a single administrative command
+2. In production environments (better logging)
+3. When root password shouldn't be shared
+4. For automated scripts
+
+**Example scenario:**
+
+```bash
+# Single command
+sudo systemctl restart httpd
+
+# Quick package installation
+sudo dnf install nginx -y
+```
+
+<Callout type="success">
+✅ **Best Practice**: Prefer `sudo` for most tasks. Use `su -` only when you need an extended root session. Never use `su` without the dash unless you have a specific reason.
+</Callout>
+
+## Exiting Root Shell
+
+Always remember to exit root shell when done:
+
+```bash
+[root@centos ~]# exit
+logout
+[centos9@centos ~]$
+```
+
+Or use `Ctrl+D` keyboard shortcut.
+
+**Why it's important:**
+- Prevents accidental commands as root
+- Closes security exposure window
+- Good security hygiene
+
+## 🧪 Practice Labs
+
+Time to practice working with root and the su command!
+
+### Lab 1: Exploring the Root User (Beginner)
+
+1. Check if root user exists:
+   ```bash
+   grep "^root:" /etc/passwd
+   ```
+
+2. Examine root's UID and GID:
+   ```bash
+   id root
+   ```
+
+3. Check root's home directory:
+   ```bash
+   getent passwd root | cut -d: -f6
+   ```
+
+4. Try to access /root as regular user:
+   ```bash
+   ls /root
+   # Should get: Permission denied
+   ```
+
+5. Check /root permissions:
+   ```bash
+   ls -ld /root
+   ```
+
+### Lab 2: First Time Using su (Beginner)
+
+1. Check your current user:
+   ```bash
+   whoami
+   id
+   ```
+
+2. Switch to root with login shell:
+   ```bash
+   su -
+   # Enter root password
+   ```
+
+3. Verify you're now root:
+   ```bash
+   whoami
+   id
+   echo $USER
+   pwd
+   ```
+
+4. Check root's PATH:
+   ```bash
+   echo $PATH
+   ```
+
+5. List files in /root:
+   ```bash
+   ls -la /root
+   ```
+
+6. Exit root shell:
+   ```bash
+   exit
+   ```
+
+7. Verify you're back to regular user:
+   ```bash
+   whoami
+   ```
+
+### Lab 3: Comparing su vs su - (Intermediate)
+
+1. Note your current directory and environment:
+   ```bash
+   pwd
+   echo $USER
+   echo $HOME
+   echo $PATH
+   ```
+
+2. Use `su` WITHOUT dash:
+   ```bash
+   su
+   # Enter root password
+   pwd           # Still in your home directory!
+   echo $USER    # May still show your username
+   echo $HOME    # Shows root's home but you're not there
+   exit
+   ```
+
+3. Use `su` WITH dash:
+   ```bash
+   su -
+   # Enter root password
+   pwd           # Now in /root
+   echo $USER    # Shows root
+   echo $HOME    # Shows /root
+   exit
+   ```
+
+4. Document the differences you observed
+
+### Lab 4: Switching Between Users (Intermediate)
+
+1. As root, switch to another user:
+   ```bash
+   su -
+   su - centos9        # Switch from root to centos9
+   whoami
+   pwd
+   exit                # Back to root
+   exit                # Back to original user
+   ```
+
+2. Create a test user:
+   ```bash
+   sudo useradd -m testuser1
+   sudo passwd testuser1
+   ```
+
+3. Switch to test user:
+   ```bash
+   su - testuser1
+   whoami
+   pwd
+   exit
+   ```
+
+### Lab 5: Environment Variables Investigation (Intermediate)
+
+1. As regular user, check environment:
+   ```bash
+   env | grep -E 'USER|HOME|PATH|SHELL'
+   ```
+
+2. Switch to root with `su -`:
+   ```bash
+   su -
+   env | grep -E 'USER|HOME|PATH|SHELL'
+   # Compare the differences
+   exit
+   ```
+
+3. Check which config files were loaded:
+   ```bash
+   su -
+   # Check if .bash_profile was loaded
+   grep "profile" ~/.bash_profile
+   exit
+   ```
+
+### Lab 6: Testing Root Permissions (Intermediate)
+
+1. As regular user, try to read /etc/shadow:
+   ```bash
+   cat /etc/shadow
+   # Should fail: Permission denied
+   ```
+
+2. Check file permissions:
+   ```bash
+   ls -l /etc/shadow
+   ```
+
+3. Read as root:
+   ```bash
+   su -
+   cat /etc/shadow
+   # Works!
+   exit
+   ```
+
+4. As regular user, try to create file in /etc:
+   ```bash
+   touch /etc/testfile
+   # Should fail: Permission denied
+   ```
+
+5. As root:
+   ```bash
+   su -
+   touch /etc/testfile
+   ls -l /etc/testfile
+   rm /etc/testfile
+   exit
+   ```
+
+### Lab 7: /etc/profile Analysis (Advanced)
+
+1. View /etc/profile contents:
+   ```bash
+   cat /etc/profile
+   ```
+
+2. Check what's in /etc/profile.d/:
+   ```bash
+   ls -la /etc/profile.d/
+   ```
+
+3. Add custom message to test profile loading:
+   ```bash
+   su -
+   echo 'echo "Profile loaded!"' >> /root/.bash_profile
+   exit
+   su -
+   # Should see: Profile loaded!
+   exit
+   ```
+
+4. Clean up:
+   ```bash
+   su -
+   sed -i '/Profile loaded/d' /root/.bash_profile
+   exit
+   ```
+
+### Lab 8: PATH Variable Comparison (Advanced)
+
+1. Compare PATH as user vs root:
+   ```bash
+   echo "User PATH:"
+   echo $PATH
+
+   su -
+   echo "Root PATH:"
+   echo $PATH
+   exit
+   ```
+
+2. Check where commands are located:
+   ```bash
+   which useradd
+   which systemctl
+   which dnf
+   ```
+
+3. Notice these are in /usr/sbin - in root's PATH but not always in user's PATH
+
+### Lab 9: Security Testing (Advanced)
+
+1. Test that UID 0 is what matters:
+   ```bash
+   su -
+   id
+   # Note: uid=0(root)
+   exit
+   ```
+
+2. Check root's capabilities:
+   ```bash
+   su -
+   # Try operations only root can do:
+   systemctl status sshd
+   cat /var/log/secure | tail -10
+   useradd tempuser
+   userdel tempuser
+   exit
+   ```
+
+### Lab 10: Creating a Safe Root Session Script (Advanced)
+
+Create a script to safely work as root:
+
+```bash
+#!/bin/bash
+# safe-root-session.sh
+
+echo "================================================"
+echo "  ENTERING ROOT SESSION"
+echo "================================================"
+echo "WARNING: You are about to become root!"
+echo "Current user: $(whoami)"
+echo ""
+read -p "Type 'yes' to continue: " confirm
+
+if [ "$confirm" != "yes" ]; then
+    echo "Cancelled."
+    exit 0
+fi
+
+echo ""
+echo "Switching to root..."
+echo "Remember to type 'exit' when done!"
+echo "================================================"
+su -
+echo ""
+echo "================================================"
+echo "  ROOT SESSION ENDED"
+echo "================================================"
+echo "Back to regular user: $(whoami)"
+```
+
+Save and use:
+```bash
+chmod +x safe-root-session.sh
+./safe-root-session.sh
+```
+
+### Lab 11-15: Real-World Scenarios
+
+**Lab 11: System Update as Root**
+
+Perform system updates using root shell:
+
+```bash
+su -
+dnf check-update
+dnf update -y
+exit
+```
+
+**Lab 12: Log File Analysis**
+
+Analyze system logs (requires root):
+
+```bash
+su -
+tail -50 /var/log/messages
+grep "error" /var/log/messages | tail -20
+exit
+```
+
+**Lab 13: User Management Session**
+
+Create and configure multiple users as root:
+
+```bash
+su -
+useradd user1
+useradd user2
+passwd user1
+passwd user2
+usermod -aG wheel user1
+id user1
+id user2
+exit
+```
+
+**Lab 14: System Configuration Changes**
+
+Make system-wide configuration changes:
+
+```bash
+su -
+vi /etc/hosts
+# Add custom entries
+systemctl restart networking
+exit
+```
+
+**Lab 15: Emergency System Repair**
+
+Simulate fixing a system issue:
+
+```bash
+su -
+# Check disk space
+df -h
+# Check memory
+free -h
+# Check running processes
+ps aux | head -20
+# Clean up temporary files
+rm -rf /tmp/*
+exit
+```
+
+### Lab 16-20: Advanced Challenges
+
+**Lab 16**: Compare what files are created when switching with `su` vs `su -` (check history files)
+
+**Lab 17**: Create a script that checks if you're root and refuses to run if you are
+
+**Lab 18**: Time how long it takes for different shells to start (su vs su -)
+
+**Lab 19**: Document all environment variables that change between regular user and root
+
+**Lab 20**: Create a custom /etc/profile.d/ script that runs when any user logs in
+
+## 📚 Best Practices
+
+<div className="bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-900 dark:to-blue-900 p-6 rounded-lg my-8">
+
+### ✅ Root User and su Best Practices
+
+1. **Always use `su -` with the dash**
+   - Loads proper environment
+   - Changes to correct home directory
+   - Runs login scripts
+
+2. **Exit root shell immediately when done**
+   - Don't stay logged in as root
+   - Minimize time at elevated privileges
+   - Use `exit` or Ctrl+D
+
+3. **Prefer sudo over su for single commands**
+   - Better auditing and logging
+   - No need to share root password
+   - Principle of least privilege
+
+4. **Never browse the internet as root**
+   - Major security risk
+   - Malware has full system access
+   - Always use regular user for web
+
+5. **Double-check commands before pressing Enter**
+   - No undo for `rm -rf /`
+   - Typos can be catastrophic
+   - Think before you type
+
+6. **Use descriptive prompts**
+   - Make root prompt obvious (usually # vs $)
+   - Consider colored prompts for root
+   - Visual reminder you're in privileged mode
+
+7. **Don't disable root account unless necessary**
+   - Useful for recovery scenarios
+   - Single-user mode needs root access
+   - Keep it available but secured
+
+8. **Set strong root password**
+   - Long and complex
+   - Different from user passwords
+   - Store securely
+
+9. **Monitor root access**
+   - Check /var/log/secure regularly
+   - Investigate unexpected root logins
+   - Set up alerts for root access
+
+10. **Document why you need root access**
+    - Keep notes of admin tasks
+    - Helps troubleshooting later
+    - Good for auditing
+
+</div>
+
+## 🚨 Common Pitfalls to Avoid
+
+<Callout type="warning">
+
+### ❌ Mistakes to Avoid
+
+1. **Using `su` without the dash**
+   ```bash
+   su              # WRONG - incomplete environment
+   su -            # CORRECT - full login shell
+   ```
+
+2. **Forgetting you're root**
+   - Easy to accidentally run destructive commands
+   - Always check prompt before dangerous operations
+   - Use `whoami` if unsure
+
+3. **Leaving root shell open and walking away**
+   - Major security risk
+   - Anyone can use your session
+   - Always `exit` before leaving
+
+4. **Sharing root password widely**
+   - Use sudo instead
+   - Limit who knows root password
+   - Change it when people leave team
+
+5. **Running applications as root**
+   - Don't run GUI applications as root
+   - Don't run web browsers as root
+   - Don't run text editors unless needed
+
+6. **Not checking current directory as root**
+   ```bash
+   su -
+   # Always check where you are!
+   pwd
+   ```
+
+7. **Assuming you have root access**
+   - Not all users can su to root
+   - Check if you're in wheel/sudo group first
+   - Have backup plan
+
+8. **Using root for regular work**
+   - Root is for administration only
+   - Do regular work as regular user
+   - Only elevate when needed
+
+9. **Not testing commands first**
+   - Test with non-destructive operations
+   - Use `--dry-run` flags when available
+   - Verify syntax before execution
+
+10. **Ignoring the consequences of root access**
+    - Every command has system-wide impact
+    - No safety net
+    - Be extremely careful
+
+</Callout>
+
+## 📝 Command Cheat Sheet
+
+### Basic su Commands
+
+```bash
+# Switch to root with login shell (RECOMMENDED)
+su -
+
+# Switch to root without login shell (NOT recommended)
+su
+
+# Switch to specific user with login shell
+su - username
+
+# Switch to specific user without login shell
+su username
+
+# Exit root shell
+exit
+# or press Ctrl+D
+```
+
+### Checking Current User
+
+```bash
+# Show current username
+whoami
+
+# Show detailed user information
+id
+
+# Show user ID only
+id -u
+
+# Show username only
+id -un
+
+# Show all environment variables
+env
+
+# Show specific variables
+echo $USER
+echo $HOME
+echo $PATH
+echo $SHELL
+```
+
+### Root User Information
+
+```bash
+# View root's entry in passwd file
+grep "^root:" /etc/passwd
+
+# Check root's details
+id root
+
+# View root's home directory
+ls -la /root
+
+# Check root's shell
+getent passwd root | cut -d: -f7
+
+# View root's PATH (as root)
+su -
+echo $PATH
+```
+
+### Environment and Configuration
+
+```bash
+# View system-wide profile
+cat /etc/profile
+
+# List profile.d scripts
+ls -la /etc/profile.d/
+
+# View user's bash profile
+cat ~/.bash_profile
+
+# View user's bashrc
+cat ~/.bashrc
+
+# Show all aliases
+alias
+
+# Show all shell functions
+declare -F
+```
+
+### Permission Testing
+
+```bash
+# Try to access root-only file
+cat /etc/shadow          # Will fail as regular user
+
+# Access as root
+su -
+cat /etc/shadow          # Works as root
+exit
+
+# Check file permissions
+ls -l /etc/shadow
+ls -ld /root
+
+# Test write access
+touch /etc/testfile      # Fails as user
+su -
+touch /etc/testfile      # Works as root
+rm /etc/testfile
+exit
+```
+
+### Comparing su vs su -
+
+```bash
+# Test non-login shell
+su
+pwd                      # Still in your directory
+echo $USER              # May show your user
+exit
+
+# Test login shell
+su -
+pwd                      # Now in /root
+echo $USER              # Shows root
+exit
+```
+
+### Advanced Usage
+
+```bash
+# Run single command as root
+su -c "command"
+
+# Example: Check root's crontab
+su -c "crontab -l"
+
+# Switch to root then another user
+su -
+su - otheruser
+whoami
+exit
+exit
+
+# Check who can become root (wheel group members)
+getent group wheel
+```
+
+## 🎯 Key Takeaways
+
+<div className="bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-900 dark:to-blue-900 p-6 rounded-lg my-8">
+
+### ✅ Remember These Points
+
+1. **Root is UID 0** - That's what gives unlimited power, not the name
+2. **Root can do anything** - Read, write, delete, modify everything
+3. **Root's home is /root** - NOT /home/root
+4. **su = substitute user** - Become another user (usually root)
+5. **Always use su - with dash** - Loads proper environment and changes directory
+6. **su without dash is dangerous** - Incomplete environment causes problems
+7. **Exit immediately when done** - Don't stay as root longer than needed
+8. **Root is not Administrator** - More powerful, less restricted than Windows Admin
+9. **Kernel treats UID 0 specially** - Bypasses most permission checks
+10. **Login shell runs /etc/profile** - Sets up PATH and environment
+11. **Prefer sudo over su** - Better security, logging, and auditing
+12. **Root password = all access** - Protect it carefully, share minimally
+13. **No undo as root** - Commands execute immediately without confirmation
+14. **Visual cues matter** - # prompt means root, $ means regular user
+15. **Test in low-risk environments first** - Practice before production
+
+</div>
+
+## 🚀 What's Next?
+
+Now that you understand the root user and the `su` command, you're ready to learn about **sudo** - the safer, more modern approach to privilege escalation!
+
+**In the next post (Part 4)**, we'll cover:
+- What sudo is and why it's safer than su
+- Detailed sudo vs su comparison
+- Basic sudo usage and command syntax
+- Using `sudo -i` for interactive root shell
+- Default admin users on Ubuntu and RedHat
+- sudo timeout and password caching
+- sudo logging and auditability
+- Best practices for sudo usage
+
+**Coming Up in Phase 1:**
+- Part 5: Creating and Managing sudo Configuration (/etc/sudoers, visudo)
+- Part 6: Linux Command Basics (case sensitivity, options)
+- Part 7: Essential Navigation Commands (ls, pwd, cd, whoami)
+- And 45 more posts!
+
+---
+
+<Callout type="success">
+🎉 **Congratulations!** You've completed Part 3 of the LFCS Certification series. You now understand the Linux root user, the difference between su and su -, and how the kernel treats UID 0.
+
+**Practice is critical!** Complete the 20 practice labs to build confidence working with root access. Understanding root is fundamental to all Linux system administration.
+
+**Remember**: With great power comes great responsibility. Always think before you type as root!
+</Callout>
+
+## 💬 Discussion
+
+I'd love to hear about your experience:
+
+- Have you accidentally broken something as root? (We all have!)
+- Do you prefer su or sudo for your admin tasks?
+- What's your strategy for remembering when you're logged in as root?
+- Any close calls with dangerous root commands?
+
+**Connect with me:**
+- 🐙 [GitHub](https://github.com/owais-io) - LFCS practice scripts
+- 📧 [Contact](https://owais.io/contact) - Questions about LFCS
+
+---
+
+*This is Part 3 of 52 in the LFCS Certification - Phase 1 series. Stay tuned for Part 4: Mastering sudo for Temporary Privilege Escalation!*

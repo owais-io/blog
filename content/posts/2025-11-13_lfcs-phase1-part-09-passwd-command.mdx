@@ -1,0 +1,1446 @@
+---
+title: "Understanding the passwd Command: Managing User Passwords in Linux for LFCS"
+description: "Master the Linux passwd command for LFCS certification. Learn to change passwords, understand BAD PASSWORD warnings, password complexity requirements, passwd options, security best practices, and when sudo is needed with 20+ practice labs."
+date: "2025-11-13T00:00:00.000Z"
+tags: ["linux", "lfcs", "passwd", "password", "security", "user-management", "authentication", "command-line"]
+published: true
+author: "Owais"
+categories: ["Linux", "LFCS Certification"]
+series: "LFCS Certification - Phase 1"
+seriesOrder: 9
+seo:
+  canonical: "https://owais.io/blog/2025-11-13_lfcs-phase1-part-09-passwd-command"
+  keywords: ["linux passwd command", "change password linux", "password security", "lfcs certification", "bad password warning", "password complexity", "user password management"]
+toc: true
+---
+
+Welcome to **Part 9** of the LFCS Certification - Phase 1 series! You've learned file management with touch and timestamps. Now it's time to master the `passwd` command - one of the most important security tools in Linux for managing user passwords.
+
+<Callout type="info">
+🎯 **What You'll Learn**: In this comprehensive guide, you'll master:
+- What the `passwd` command does and why it's critical for security
+- Changing your own password as a regular user
+- Understanding the password change process step-by-step
+- Decoding "BAD PASSWORD" warnings and what they mean
+- Password complexity requirements in Linux
+- When you can override weak password warnings
+- Using sudo to change other users' passwords (admin only)
+- Advanced passwd options (lock, unlock, expire, status)
+- Password aging and expiration policies
+- Why root can change any password without knowing the current one
+- Password security best practices for system administrators
+- Understanding /etc/passwd and /etc/shadow files
+- 20+ comprehensive practice labs with solutions
+
+**Series**: LFCS Certification Preparation - Phase 1 (Post 9 of 52)
+**Previous**: [Part 8 - Understanding File Timestamps with touch](/blog/2025-11-12_lfcs-phase1-part-08-touch-command-file-timestamps)
+**Next**: Part 10 - Introduction to Linux Help Systems
+</Callout>
+
+## What is the passwd Command?
+
+The `passwd` command is used to **change user passwords** in Linux. It's one of the most frequently used commands for both users and system administrators.
+
+### Basic passwd Syntax
+
+```bash
+passwd                    # Change your own password
+passwd username           # Change another user's password (root only)
+```
+
+### Why passwd Matters
+
+**For Users:**
+- Change compromised passwords immediately
+- Update passwords to meet new security requirements
+- Maintain account security
+
+**For System Administrators:**
+- Reset forgotten user passwords
+- Enforce password policies
+- Lock/unlock user accounts
+- Set password expiration dates
+- Audit password status
+
+<Callout type="warning">
+⚠️ **Security Note**: Passwords are the first line of defense for your Linux system. Understanding how to properly manage them is critical for the LFCS exam and real-world security!
+</Callout>
+
+## Changing Your Own Password
+
+As a regular user, you can change your own password anytime with the `passwd` command.
+
+### The Password Change Process
+
+Let's walk through changing a password step by step:
+
+```bash
+[centos9@centos ~]$ passwd
+Changing password for user centos9.
+Current password:
+New password:
+Retype new password:
+passwd: all authentication tokens updated successfully.
+```
+
+**Step-by-step breakdown:**
+
+1. **Run passwd**: `passwd` (no arguments needed)
+2. **Prompted for current password**: Prove you're authorized to change it
+3. **Enter new password**: Type your new password (won't be visible)
+4. **Confirm new password**: Type it again to prevent typos
+5. **Success message**: Password changed successfully!
+
+<Callout type="info">
+💡 **Why Enter Current Password?**: If someone walks away from an unlocked terminal, they can't change your password without knowing the current one. This is a security feature!
+</Callout>
+
+### Password Input is Invisible
+
+When typing passwords, **nothing appears on screen** - no asterisks, no dots, nothing!
+
+```bash
+[centos9@centos ~]$ passwd
+Changing password for user centos9.
+Current password: ▌
+                  └─ You're typing here, but nothing shows!
+```
+
+**Why this happens:**
+- Security feature to prevent shoulder surfing
+- Prevents revealing password length
+- Standard behavior in Unix/Linux systems
+
+**Don't worry** - your typing is being captured even though you can't see it!
+
+## Understanding "BAD PASSWORD" Warnings
+
+Linux has built-in password quality checks. When you try to set a weak password, you'll see warnings:
+
+### Example: Password Too Simple
+
+```bash
+[centos9@centos ~]$ passwd
+Changing password for user centos9.
+Current password:
+New password:
+BAD PASSWORD: The password is shorter than 8 characters
+```
+
+### Example: Password Same as Old One
+
+```bash
+[centos9@centos ~]$ passwd
+Changing password for user centos9.
+Current password:
+New password:
+BAD PASSWORD: The password is the same as the old one
+passwd: Authentication token manipulation error
+```
+
+### Common BAD PASSWORD Messages
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Warning Message</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">What It Means</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Can Override?</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">The password is shorter than 8 characters</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Password must be at least 8 characters long</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">⚠️ Sometimes (if root/sudo)</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">The password is the same as the old one</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">You're trying to reuse your current password</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">❌ No</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">The password is a palindrome</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Password reads same forwards and backwards (like "racecar")</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">✅ Yes (warning only)</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">The password is too simple</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Password lacks complexity (no mix of types)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">✅ Yes (warning only)</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">The password contains the user name</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Username appears in the password</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">✅ Yes (warning only)</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">The password is based on a dictionary word</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Password is or contains a common dictionary word</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">✅ Yes (warning only)</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">The password fails the dictionary check</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Similar to dictionary word warning</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">✅ Yes (warning only)</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">The password contains too many same characters</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Too much repetition (like "aaaa1234")</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">✅ Yes (warning only)</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### Can You Override Warnings?
+
+**As a regular user:**
+- Some warnings are **blocking** - you must change the password
+- Some warnings let you continue if you **re-enter the same weak password**
+- "Same as old password" is always blocked
+
+**As root:**
+- Root can override almost any warning
+- This is intentional for administrative purposes
+- But still not recommended!
+
+### Example: Overriding a Warning
+
+```bash
+[centos9@centos ~]$ passwd
+Changing password for user centos9.
+Current password:
+New password:
+BAD PASSWORD: The password is too simple
+New password:
+# If you type the same weak password again, it may accept it
+Retype new password:
+passwd: all authentication tokens updated successfully.
+```
+
+<Callout type="warning">
+⚠️ **Security Best Practice**: Just because you *can* override a warning doesn't mean you *should*! Follow password complexity requirements for better security.
+</Callout>
+
+## Password Complexity Requirements
+
+Linux uses **PAM (Pluggable Authentication Modules)** to enforce password policies.
+
+### Default Requirements (Typical Linux System)
+
+**Minimum Requirements:**
+- **Length**: At least 8 characters (often configurable to 12-16)
+- **Can't be**: Same as old password
+- **Can't contain**: Username
+
+**Recommended Strong Password:**
+- **12+ characters** (longer is better)
+- **Mix of character types**:
+  - Uppercase letters (A-Z)
+  - Lowercase letters (a-z)
+  - Numbers (0-9)
+  - Special characters (!@#$%^&*)
+- **Not a dictionary word**
+- **Not easily guessable** (no "password123", "admin", etc.)
+
+### Good vs Bad Passwords
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Bad Password ❌</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Why It's Bad</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Better Alternative ✅</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">password</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Too common, dictionary word</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">P@ssw0rd!2024#Secure</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">123456</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Most common password, trivial</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">7mX$9pL#2kQ!wR</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">admin</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Too obvious, first guess for attackers</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">Adm!n$ecur3#2024</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">centos9123</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Contains username</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">Sky$Blue!Moon77</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">abc123</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Too short, too simple, predictable</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">MyC@t$Name!2024</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">qwerty</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Keyboard pattern, very common</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">Qw3rTy!@#XyZ</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### Password Strength Examples
+
+**Weak:** `password123` (9 chars, predictable)
+**Medium:** `MyPassword123` (13 chars, still somewhat predictable)
+**Strong:** `MyP@ssw0rd!2024` (15 chars, mixed types)
+**Very Strong:** `Tr0ub4dor&3#Sky` (15 chars, mixed, unpredictable)
+**Excellent:** `correct-horse-battery-staple-2024!` (34 chars, memorable passphrase)
+
+## Changing Other Users' Passwords (Root Only)
+
+As **root** or with **sudo**, you can change any user's password without knowing their current password.
+
+### Root Changing User Passwords
+
+```bash
+# As root
+[root@centos ~]# passwd centos9
+Changing password for user centos9.
+New password:
+Retype new password:
+passwd: all authentication tokens updated successfully.
+```
+
+**Notice:**
+- No "Current password" prompt - root doesn't need it!
+- Root can reset forgotten passwords
+- Root can bypass some password complexity checks
+
+### Using sudo to Change Passwords
+
+As a regular user with sudo privileges:
+
+```bash
+[centos9@centos ~]$ sudo passwd testuser
+[sudo] password for centos9:
+Changing password for user testuser.
+New password:
+Retype new password:
+passwd: all authentication tokens updated successfully.
+```
+
+**Key point:** You enter **your own sudo password** first, then set the new password for the target user.
+
+<Callout type="warning">
+⚠️ **Security Consideration**: The ability to change any user's password is powerful. Only trusted administrators should have sudo access to passwd!
+</Callout>
+
+## Advanced passwd Options
+
+The `passwd` command has many options for user account management.
+
+### passwd --help Output
+
+```bash
+[centos9@centos ~]$ passwd --help
+Usage: passwd [OPTION...] <accountName>
+  -k, --keep-tokens       keep non-expired authentication tokens
+  -d, --delete            delete the password for the named account (root only)
+  -l, --lock              lock the password for the named account (root only)
+  -u, --unlock            unlock the password for the named account (root only)
+  -e, --expire            expire the password for the named account (root only)
+  -f, --force             force operation
+  -x, --maximum=DAYS      maximum password lifetime (root only)
+  -n, --minimum=DAYS      minimum password lifetime (root only)
+  -w, --warning=DAYS      number of days warning users receives before expiration (root only)
+  -i, --inactive=DAYS     number of days after expiration when account becomes disabled (root only)
+  -S, --status            report password status on the named account (root only)
+      --stdin             read new tokens from stdin (root only)
+```
+
+### Most Important Options
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="bg-gray-50 dark:bg-gray-800">
+      <tr>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Option</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">What It Does</th>
+        <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-semibold">Example</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>-l, --lock</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Lock user account (disable login)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">passwd -l user1</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>-u, --unlock</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Unlock user account</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">passwd -u user1</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>-d, --delete</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Delete password (passwordless login)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">passwd -d user1</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>-e, --expire</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Force password change on next login</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">passwd -e user1</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>-S, --status</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Show password status information</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">passwd -S user1</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>-x DAYS</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Maximum password age (days until must change)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">passwd -x 90 user1</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>-n DAYS</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Minimum password age (days before can change)</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">passwd -n 7 user1</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>-w DAYS</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Warning days before password expires</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">passwd -w 14 user1</td>
+      </tr>
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>-i DAYS</code></td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Days inactive before account disabled</td>
+        <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 font-mono">passwd -i 30 user1</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### Example: Locking a User Account
+
+```bash
+[root@centos ~]# passwd -l testuser
+Locking password for user testuser.
+passwd: Success
+
+[root@centos ~]# passwd -S testuser
+testuser LK 2024-10-31 0 99999 7 -1 (Password locked.)
+```
+
+**What happened:**
+- Account is locked (LK status)
+- User cannot log in with password
+- Other authentication methods (SSH keys) might still work
+
+### Example: Forcing Password Change on Next Login
+
+```bash
+[root@centos ~]# passwd -e newemployee
+Expiring password for user newemployee.
+passwd: Success
+```
+
+**Use case:** When creating new user accounts, force them to set their own password on first login.
+
+### Example: Checking Password Status
+
+```bash
+[root@centos ~]# passwd -S centos9
+centos9 PS 2024-10-31 0 99999 7 -1 (Password set, SHA512 crypt.)
+```
+
+**Status breakdown:**
+- `centos9` - Username
+- `PS` - Password Set (other values: LK=Locked, NP=No Password)
+- `2024-10-31` - Last password change date
+- `0` - Minimum age (days before can change)
+- `99999` - Maximum age (days until must change)
+- `7` - Warning period (days of warning before expiration)
+- `-1` - Inactivity period (-1 means no inactivity enforcement)
+
+## Password Aging and Expiration
+
+Linux supports **password aging** - automatic expiration of passwords to force regular changes.
+
+### Setting Password Expiration
+
+```bash
+# Password expires after 90 days
+sudo passwd -x 90 username
+
+# Can't change password for first 7 days (prevent rapid changes)
+sudo passwd -n 7 username
+
+# Warn user 14 days before expiration
+sudo passwd -w 14 username
+```
+
+### Example: Complete Password Policy
+
+```bash
+# Set comprehensive password policy for user
+sudo passwd -x 90 -n 7 -w 14 -i 30 username
+```
+
+**This policy means:**
+- Password expires every **90 days** (must change)
+- Can't change password for first **7 days** (prevents gaming the system)
+- **14 day warning** before expiration
+- Account disabled **30 days** after password expires if not changed
+
+## Understanding /etc/passwd and /etc/shadow
+
+### /etc/passwd File
+
+Contains basic user account information:
+
+```bash
+centos9:x:1000:1000:centos9:/home/centos9:/bin/bash
+```
+
+**Fields (separated by colons):**
+1. `centos9` - Username
+2. `x` - Password placeholder (actual password in /etc/shadow)
+3. `1000` - User ID (UID)
+4. `1000` - Group ID (GID)
+5. `centos9` - Comment/Full name (GECOS field)
+6. `/home/centos9` - Home directory
+7. `/bin/bash` - Login shell
+
+<Callout type="info">
+💡 **Historical Note**: The `x` in the password field means the actual password hash is stored in `/etc/shadow` for better security. In old Unix systems, password hashes were stored directly in /etc/passwd, which was readable by everyone!
+</Callout>
+
+### /etc/shadow File
+
+Contains **encrypted passwords** and password aging information:
+
+```bash
+centos9:$6$xyz...:19655:0:99999:7:::
+```
+
+**Fields (separated by colons):**
+1. `centos9` - Username
+2. `$6$xyz...` - Encrypted password hash ($6$ = SHA-512)
+3. `19655` - Last password change (days since Jan 1, 1970)
+4. `0` - Minimum password age
+5. `99999` - Maximum password age
+6. `7` - Warning period
+7. (empty) - Inactivity period
+8. (empty) - Account expiration date
+9. (empty) - Reserved field
+
+**Password hash prefixes:**
+- `$1$` = MD5 (old, weak)
+- `$5$` = SHA-256
+- `$6$` = SHA-512 (modern standard)
+- `!` or `!!` = Account locked
+- `*` = Account disabled
+
+<Callout type="warning">
+⚠️ **Security**: Only root can read /etc/shadow! This file contains password hashes and must be protected.
+</Callout>
+
+## 🧪 Practice Labs
+
+Time to master password management with hands-on practice!
+
+### Lab 1: Changing Your Own Password (Beginner)
+
+**Tasks:**
+1. Check your current user with `whoami`
+2. Change your password using `passwd`
+3. Try using your old password (should fail)
+4. Log out and log back in with new password
+5. Change password back to original
+
+<details>
+<summary>Click to reveal solution</summary>
+
+```bash
+# Task 1: Verify current user
+whoami
+
+# Task 2: Change password
+passwd
+# Enter current password
+# Enter new password
+# Confirm new password
+
+# Task 3: Try old password again (should fail)
+passwd
+# Enter your NEW password as "current"
+# Try entering your OLD password as "new"
+# Should reject: "same as old one"
+
+# Task 4: Test new password
+exit
+# Log back in with new password
+
+# Task 5: Change back to original
+passwd
+# Enter current password (new one)
+# Enter original password
+# Confirm
+```
+
+**Key Learning:**
+- passwd requires current password for verification
+- Can't reuse the immediately previous password
+- Always test new passwords work before logging out completely!
+
+</details>
+
+### Lab 2: Understanding BAD PASSWORD Warnings (Beginner)
+
+**Tasks:**
+1. Try to set password to "12345" (too short)
+2. Try to set password to your username
+3. Try to set password to "password" (dictionary word)
+4. Try to set password to current password
+5. Finally, set a strong password that's accepted
+
+<details>
+<summary>Click to reveal solution</summary>
+
+```bash
+# Task 1: Too short password
+passwd
+# Current: [your current password]
+# New: 12345
+# Expected: "BAD PASSWORD: The password is shorter than 8 characters"
+
+# Task 2: Contains username
+passwd
+# New: centos9123 (or your username + 123)
+# Expected: "BAD PASSWORD: The password contains the user name"
+
+# Task 3: Dictionary word
+passwd
+# New: password
+# Expected: "BAD PASSWORD: The password is based on a dictionary word"
+
+# Task 4: Same as old
+passwd
+# New: [your current password]
+# Expected: "BAD PASSWORD: The password is the same as the old one"
+# This one CANNOT be overridden!
+
+# Task 5: Strong password
+passwd
+# New: MyStr0ng!P@ssw0rd2024
+# Should accept without warnings
+```
+
+**Key Learning:**
+- Different password checks have different severity levels
+- Some can be overridden (warnings), others cannot (errors)
+- Dictionary words and patterns are checked automatically
+
+</details>
+
+### Lab 3: Checking Password Status (Intermediate)
+
+**Tasks:**
+1. Check your own password status with `passwd -S`
+2. Interpret each field in the output
+3. Try to check another user's status (should fail as regular user)
+4. Use sudo to check another user's status
+5. Compare the output between different users
+
+<details>
+<summary>Click to reveal solution</summary>
+
+```bash
+# Task 1: Check your own status
+passwd -S
+# OR
+passwd -S $(whoami)
+
+# Example output:
+# centos9 PS 2024-10-31 0 99999 7 -1 (Password set, SHA512 crypt.)
+
+# Task 2: Interpretation
+# Field 1: centos9 - Username
+# Field 2: PS - Password Status (PS=set, LK=locked, NP=no password)
+# Field 3: 2024-10-31 - Last password change date
+# Field 4: 0 - Minimum age (days)
+# Field 5: 99999 - Maximum age (days)
+# Field 6: 7 - Warning period (days)
+# Field 7: -1 - Inactivity period
+
+# Task 3: Try checking another user (will fail)
+passwd -S root
+# Error: "passwd: Only root can specify a user name."
+
+# Task 4: Use sudo
+sudo passwd -S root
+
+# Task 5: Compare
+sudo passwd -S centos9
+sudo passwd -S root
+# Compare the aging policies
+```
+
+**Key Learning:**
+- Regular users can only check their own password status
+- Root/sudo needed to check other users
+- Password aging fields show the account's password policy
+
+</details>
+
+### Lab 4: Changing Other Users' Passwords (Intermediate - Requires sudo)
+
+**Tasks:**
+1. Create a test user account
+2. Try to change their password as regular user (should fail)
+3. Use sudo to successfully change their password
+4. Note that you DON'T need to know their current password
+5. Clean up by deleting the test user
+
+<details>
+<summary>Click to reveal solution</summary>
+
+```bash
+# Task 1: Create test user
+sudo useradd testuser1
+sudo passwd testuser1
+# Set initial password: TestPass123!
+
+# Task 2: Try without sudo (will fail)
+passwd testuser1
+# Error: "You may not view or modify password information for testuser1."
+
+# Task 3: Use sudo
+sudo passwd testuser1
+# Notice: NO "Current password" prompt!
+# New password: NewTestPass456!
+# Retype: NewTestPass456!
+
+# Task 4: Key observation
+# As admin (via sudo), you don't need current password
+# This is how admins reset forgotten passwords
+
+# Task 5: Cleanup
+sudo userdel -r testuser1
+```
+
+**Key Learning:**
+- Regular users cannot change other users' passwords
+- Root/sudo can change any password without knowing current password
+- This is how password resets work in real environments
+
+</details>
+
+### Lab 5: Locking and Unlocking Accounts (Advanced)
+
+**Tasks:**
+1. Create a test user with a password
+2. Lock the account using `passwd -l`
+3. Check status - should show "LK" (locked)
+4. Try to su to that user (should fail)
+5. Unlock the account
+6. Verify you can now su to the user
+
+<details>
+<summary>Click to reveal solution</summary>
+
+```bash
+# Task 1: Create and setup test user
+sudo useradd testuser2
+sudo passwd testuser2
+# Password: Test123!Pass
+
+# Task 2: Lock the account
+sudo passwd -l testuser2
+# Output: "Locking password for user testuser2."
+
+# Task 3: Check status
+sudo passwd -S testuser2
+# Should show: testuser2 LK ... (Password locked.)
+
+# Task 4: Try to su to locked user
+su - testuser2
+# Enter password: Test123!Pass
+# Should fail: "su: Authentication failure"
+
+# Task 5: Unlock the account
+sudo passwd -u testuser2
+# Output: "Unlocking password for user testuser2."
+
+# Task 6: Verify unlock worked
+su - testuser2
+# Enter password: Test123!Pass
+# Should succeed now!
+exit
+
+# Cleanup
+sudo userdel -r testuser2
+```
+
+**Key Learning:**
+- Locking prevents password authentication but doesn't delete the password
+- Locked accounts can't log in via password
+- SSH keys might still work on locked accounts (different auth method)
+- Unlock restores password authentication
+
+</details>
+
+### Lab 6: Forcing Password Change on Next Login (Advanced)
+
+**Tasks:**
+1. Create a new user account
+2. Set a temporary password
+3. Expire the password with `passwd -e`
+4. Simulate the user logging in (su to them)
+5. Observe the forced password change prompt
+6. Complete the password change
+
+<details>
+<summary>Click to reveal solution</summary>
+
+```bash
+# Task 1 & 2: Create user with temp password
+sudo useradd newemployee
+sudo passwd newemployee
+# Temporary password: TempPass123!
+
+# Task 3: Expire the password (force change on next login)
+sudo passwd -e newemployee
+# Output: "Expiring password for user newemployee."
+
+# Check status
+sudo passwd -S newemployee
+# Note the password change date is set to past or zero
+
+# Task 4: Simulate user login
+su - newemployee
+# Enter password: TempPass123!
+
+# Task 5: Observe forced change
+# You should see:
+# "You are required to change your password immediately (password aged)"
+# Current password: TempPass123!
+# New password: MyNewPass456!
+# Retype: MyNewPass456!
+
+# Task 6: Now logged in with new password
+whoami
+# Should show: newemployee
+exit
+
+# Cleanup
+sudo userdel -r newemployee
+```
+
+**Key Learning:**
+- `passwd -e` is perfect for new employee onboarding
+- Forces users to set their own secure password
+- Prevents admins from knowing users' permanent passwords
+- Common security best practice
+
+</details>
+
+### Lab 7: Setting Password Aging Policies (Advanced)
+
+**Tasks:**
+1. Create a test user
+2. Set password to expire after 30 days
+3. Set minimum password age to 2 days
+4. Set warning period to 7 days
+5. Check the complete status
+6. Verify the aging fields are set correctly
+
+<details>
+<summary>Click to reveal solution</summary>
+
+```bash
+# Task 1: Create test user
+sudo useradd policytest
+sudo passwd policytest
+# Password: PolicyTest123!
+
+# Task 2: Maximum age 30 days
+sudo passwd -x 30 policytest
+
+# Task 3: Minimum age 2 days
+sudo passwd -n 2 policytest
+
+# Task 4: Warning period 7 days
+sudo passwd -w 7 policytest
+
+# Alternative: Set all at once
+# sudo passwd -x 30 -n 2 -w 7 policytest
+
+# Task 5: Check complete status
+sudo passwd -S policytest
+# Output format:
+# policytest PS DATE 2 30 7 -1
+
+# Task 6: Verify fields
+# Field 4: Should be 2 (minimum)
+# Field 5: Should be 30 (maximum)
+# Field 6: Should be 7 (warning)
+
+# Also check with chage command
+sudo chage -l policytest
+
+# Cleanup
+sudo userdel -r policytest
+```
+
+**Key Learning:**
+- Password aging helps enforce security policies
+- Minimum age prevents users from immediately changing back
+- Warning period gives users time to prepare new password
+- These settings are per-user, can vary across accounts
+
+</details>
+
+### Lab 8: Examining /etc/shadow (Expert)
+
+**Tasks:**
+1. Try to read /etc/shadow as regular user (should fail)
+2. Use sudo to view your user's entry in /etc/shadow
+3. Identify each field in your shadow entry
+4. Lock your test account and see how the hash changes
+5. Compare a locked vs unlocked account entry
+
+<details>
+<summary>Click to reveal solution</summary>
+
+```bash
+# Task 1: Try without permission
+cat /etc/shadow
+# Error: "cat: /etc/shadow: Permission denied"
+
+# Task 2: Use sudo to view your entry
+sudo grep "^$(whoami):" /etc/shadow
+
+# Example output:
+# centos9:$6$xyz123...:19655:0:99999:7:::
+
+# Task 3: Field identification
+# Field 1: centos9 (username)
+# Field 2: $6$xyz... (password hash, $6$ = SHA-512)
+# Field 3: 19655 (days since 1970-01-01 of last change)
+# Field 4: 0 (minimum days between changes)
+# Field 5: 99999 (maximum days password is valid)
+# Field 6: 7 (warning days before expiration)
+# Field 7: (blank - inactivity days)
+# Field 8: (blank - account expiration date)
+# Field 9: (blank - reserved)
+
+# Task 4: See locked account format
+sudo useradd locktest
+sudo passwd locktest  # Set password
+sudo grep "^locktest:" /etc/shadow
+# Note the hash format
+
+# Lock the account
+sudo passwd -l locktest
+sudo grep "^locktest:" /etc/shadow
+# Now the hash should start with ! or !!
+# Example: !$6$xyz... (! prefix means locked)
+
+# Task 5: Compare
+echo "=== Unlocked account ==="
+sudo useradd unlocktest
+sudo passwd unlocktest
+sudo grep "^unlocktest:" /etc/shadow
+
+echo "=== Locked account ==="
+sudo grep "^locktest:" /etc/shadow
+
+# The locked one has ! or !! before the hash
+
+# Cleanup
+sudo userdel -r locktest
+sudo userdel -r unlocktest
+```
+
+**Key Learning:**
+- /etc/shadow is only readable by root (security!)
+- Password hashes are prefixed with algorithm identifier ($6$ = SHA-512)
+- Locked accounts have ! or !! prepended to the hash
+- Shadow file contains all password aging information
+
+</details>
+
+### Lab 9: Password Reset Simulation (Expert)
+
+**Scenario:** A user forgot their password. You need to reset it.
+
+**Tasks:**
+1. Create a user account (simulate existing user)
+2. "Forget" the password (you won't use it)
+3. As admin, reset their password to temporary one
+4. Expire the password so they must change it on next login
+5. Test the login and forced password change
+6. Document the process for your team
+
+<details>
+<summary>Click to reveal solution</summary>
+
+```bash
+# Task 1: Create user account
+sudo useradd forgotuser
+sudo passwd forgotuser
+# Set password (but we'll "forget" it)
+# Password: Original123!
+
+# Task 2: Simulate password forgotten
+# (We just won't use Original123! anymore)
+
+# Task 3: Admin resets to temporary password
+echo "=== ADMIN PASSWORD RESET PROCEDURE ==="
+echo "User: forgotuser"
+echo "Date: $(date)"
+echo "Admin: $(whoami)"
+
+sudo passwd forgotuser
+# Temporary password: TempReset789!
+# (In real scenario, communicate this securely to user)
+
+# Task 4: Force password change on next login
+sudo passwd -e forgotuser
+echo "Password expired - user will be forced to change on login"
+
+# Task 5: Simulate user login
+echo "=== USER LOGIN ATTEMPT ==="
+su - forgotuser
+# Password: TempReset789!
+# System prompts: "You are required to change your password immediately"
+# Current password: TempReset789!
+# New password: MyNewSecurePass123!
+# Retype: MyNewSecurePass123!
+
+whoami
+# Now logged in as forgotuser
+exit
+
+# Task 6: Documentation
+cat > password_reset_log.txt << 'EOF'
+PASSWORD RESET PROCEDURE
+
+Date: 2024-10-31
+User Account: forgotuser
+Admin Performing Reset: centos9
+Reason: User forgot password
+
+Steps Performed:
+1. Verified user identity (in-person/phone/ticket)
+2. Reset password using: sudo passwd forgotuser
+3. Set temporary password: [communicated securely]
+4. Forced password expiration: sudo passwd -e forgotuser
+5. Informed user they must change password on next login
+6. User successfully logged in and set new password
+
+Status: COMPLETED
+EOF
+
+cat password_reset_log.txt
+
+# Cleanup
+rm password_reset_log.txt
+sudo userdel -r forgotuser
+```
+
+**Key Learning:**
+- Password resets are common admin tasks
+- Always expire temporary passwords (force change on next login)
+- Document all password reset activities for audit trails
+- Never know user's final password (security best practice)
+- Communicate temporary passwords securely (not via email!)
+
+</details>
+
+### Lab 10: Complete User Lifecycle (Expert)
+
+**Scenario:** Complete employee onboarding and offboarding procedure.
+
+**Tasks:**
+1. Create new employee account (onboarding)
+2. Set temporary password and expire it
+3. Set password policy (90-day expiration, 7-day warning)
+4. Simulate employee working for a while
+5. Employee leaves company (offboarding)
+6. Lock account immediately
+7. Keep account for audit period (30 days)
+8. Finally remove account completely
+
+<details>
+<summary>Click to reveal solution</summary>
+
+```bash
+# ==========================================
+# EMPLOYEE ONBOARDING
+# ==========================================
+
+# Task 1: Create new employee account
+echo "=== ONBOARDING: Jane Doe (jdoe) ==="
+sudo useradd -c "Jane Doe - Marketing" jdoe
+sudo mkdir -p /home/jdoe
+sudo chown jdoe:jdoe /home/jdoe
+
+# Task 2: Set temporary password and expire
+sudo passwd jdoe
+# Temporary password: Welcome2024!
+sudo passwd -e jdoe
+echo "✓ Temporary password set and expired"
+
+# Task 3: Set password policy
+sudo passwd -x 90 -n 7 -w 14 -i 30 jdoe
+echo "✓ Password policy configured:"
+echo "  - Expires every 90 days"
+echo "  - Cannot change for first 7 days"
+echo "  - 14-day warning before expiration"
+echo "  - Account disabled 30 days after expiration"
+
+# Verify configuration
+sudo passwd -S jdoe
+
+# ==========================================
+# EMPLOYEE ACTIVE PERIOD
+# ==========================================
+
+# Task 4: Simulate employee login and password change
+echo ""
+echo "=== EMPLOYEE FIRST LOGIN ==="
+# In real scenario, employee would login and be forced to change password
+# Simulating with direct password change:
+echo "Employee sets their own secure password..."
+sudo passwd jdoe
+# New password: JaneSecure!Pass789
+
+# Check account is active
+sudo passwd -S jdoe
+echo "✓ Employee account active and configured"
+
+# ==========================================
+# EMPLOYEE OFFBOARDING
+# ==========================================
+
+# Task 5: Employee leaves company
+echo ""
+echo "=== OFFBOARDING: Jane Doe ==="
+echo "Date: $(date)"
+echo "Reason: Resignation"
+
+# Task 6: Immediately lock account
+sudo passwd -l jdoe
+echo "✓ Account locked (no password authentication)"
+
+# Also disable SSH key authentication and shell
+sudo usermod -s /sbin/nologin jdoe
+echo "✓ Shell changed to /sbin/nologin (cannot login)"
+
+# Verify locked status
+sudo passwd -S jdoe
+# Should show LK (locked)
+
+# Task 7: Document for audit retention
+cat > offboarding_jdoe.log << 'EOF'
+EMPLOYEE OFFBOARDING RECORD
+
+Employee: Jane Doe
+Username: jdoe
+Offboard Date: 2024-10-31
+Performed By: Admin (centos9)
+
+Actions Taken:
+[x] Account locked (passwd -l)
+[x] Shell disabled (/sbin/nologin)
+[x] SSH keys invalidated
+[x] Home directory preserved for audit
+[x] File ownership verified
+
+Retention Period: 30 days
+Scheduled Deletion: 2024-11-30
+EOF
+
+echo "✓ Offboarding documented"
+cat offboarding_jdoe.log
+
+# Task 8: After audit period (simulated), complete removal
+echo ""
+echo "=== AFTER AUDIT PERIOD (30 days) ==="
+echo "Final account deletion..."
+
+# Check for any remaining processes
+sudo pkill -u jdoe 2>/dev/null || echo "No processes running"
+
+# Backup home directory before deletion
+sudo tar -czf /root/jdoe-backup-$(date +%Y%m%d).tar.gz /home/jdoe 2>/dev/null
+echo "✓ Home directory backed up to /root/jdoe-backup-*.tar.gz"
+
+# Final deletion
+sudo userdel -r jdoe
+echo "✓ User account and home directory removed"
+
+# Verify deletion
+id jdoe 2>&1 || echo "✓ Account successfully deleted"
+
+# Cleanup
+rm offboarding_jdoe.log
+sudo rm -f /root/jdoe-backup-*.tar.gz
+```
+
+**Key Learning:**
+- Complete user lifecycle involves onboarding, management, and offboarding
+- Lock accounts immediately when employees leave (security!)
+- Keep accounts for audit period before final deletion
+- Document all actions for compliance and audit trails
+- Backup user data before deletion
+- Multi-step offboarding prevents unauthorized access
+
+</details>
+
+## 📚 Best Practices
+
+### For Users
+
+1. **Choose strong passwords**
+   - 12+ characters
+   - Mix of uppercase, lowercase, numbers, symbols
+   - No dictionary words
+   - Don't use personal information
+
+2. **Change passwords regularly**
+   - Follow your organization's policy
+   - Don't wait for expiration warnings
+
+3. **Never share passwords**
+   - Not even with IT support
+   - Especially not via email/chat
+
+4. **Use unique passwords**
+   - Different password for each system
+   - Consider a password manager
+
+5. **Change immediately if compromised**
+   - Don't wait if you suspect exposure
+   - Use `passwd` command immediately
+
+### For System Administrators
+
+1. **Enforce password policies**
+   ```bash
+   # Set organization-wide defaults in /etc/login.defs
+   PASS_MAX_DAYS 90
+   PASS_MIN_DAYS 7
+   PASS_WARN_AGE 14
+   ```
+
+2. **Use password aging**
+   ```bash
+   # Force regular password changes
+   passwd -x 90 -n 7 -w 14 username
+   ```
+
+3. **Force password change on account creation**
+   ```bash
+   # New users must set their own password
+   passwd -e newuser
+   ```
+
+4. **Lock unused accounts**
+   ```bash
+   # Disable accounts for inactive employees
+   passwd -l oldemployee
+   ```
+
+5. **Monitor password status**
+   ```bash
+   # Regular audit of password aging
+   for user in $(cut -d: -f1 /etc/passwd); do
+     echo "=== $user ==="
+     passwd -S $user 2>/dev/null
+   done
+   ```
+
+6. **Document password resets**
+   - Keep audit trail
+   - Note date, admin, reason
+   - Verify user identity before reset
+
+7. **Use strong hashing**
+   - Ensure SHA-512 ($6$) is used
+   - Check /etc/shadow for $6$ prefix
+   - Upgrade old MD5 ($1$) hashes
+
+## 🚨 Common Pitfalls to Avoid
+
+### Pitfall 1: Typing Password Wrong Multiple Times
+
+```bash
+passwd
+# Type wrong current password 3 times
+# Account might get locked!
+```
+
+**Solution:** Type carefully! Remember passwords are invisible when typing.
+
+### Pitfall 2: Forgetting to Test New Password
+
+```bash
+# Changed password but didn't test it
+passwd
+# Set new password
+exit
+# Now can't log back in!
+```
+
+**Solution:** Test new password before logging out completely. Open a second terminal first!
+
+### Pitfall 3: Using Weak Password Despite Warnings
+
+```bash
+passwd
+# "BAD PASSWORD: too simple"
+# Using same weak password again
+# It accepts it...
+```
+
+**Solution:** Listen to the warnings! Use strong passwords even if you can override.
+
+### Pitfall 4: Not Expiring Temporary Passwords
+
+```bash
+# Admin sets temporary password but doesn't expire it
+sudo passwd newuser  # Sets TempPass123
+# Forgot to run: sudo passwd -e newuser
+# User never changes it!
+```
+
+**Solution:** Always use `passwd -e` when setting temporary passwords.
+
+### Pitfall 5: Locking Root Account
+
+```bash
+# DON'T DO THIS!
+sudo passwd -l root
+# Now you can't su to root or use root login!
+```
+
+**Solution:** Never lock the root account! You might lock yourself out of system recovery.
+
+### Pitfall 6: Deleting Password Instead of Locking
+
+```bash
+# BAD: Deletes password (allows passwordless login!)
+sudo passwd -d username
+
+# GOOD: Locks account (prevents login)
+sudo passwd -l username
+```
+
+**Solution:** Use `-l` to lock accounts, not `-d`. Deleting passwords is dangerous!
+
+## 📝 Command Cheat Sheet
+
+### Basic passwd Commands
+
+```bash
+passwd                   # Change your own password
+passwd username          # Change another user's password (root only)
+passwd --help            # Show help and all options
+```
+
+### Password Status and Management
+
+```bash
+passwd -S username       # Show password status
+passwd -S                # Show your own password status
+```
+
+### Locking and Unlocking (Root/Sudo Only)
+
+```bash
+sudo passwd -l username  # Lock user account
+sudo passwd -u username  # Unlock user account
+sudo passwd -d username  # Delete password (dangerous!)
+```
+
+### Password Aging (Root/Sudo Only)
+
+```bash
+sudo passwd -x 90 user   # Password expires in 90 days
+sudo passwd -n 7 user    # Can't change for 7 days after setting
+sudo passwd -w 14 user   # Warn 14 days before expiration
+sudo passwd -i 30 user   # Disable account 30 days after expiration
+
+# Set multiple policies at once
+sudo passwd -x 90 -n 7 -w 14 -i 30 username
+```
+
+### Force Password Change
+
+```bash
+sudo passwd -e username  # Expire password (force change on next login)
+```
+
+### Checking Password Files
+
+```bash
+# View your entry in /etc/passwd (anyone can read)
+grep "^$(whoami):" /etc/passwd
+
+# View your entry in /etc/shadow (requires sudo)
+sudo grep "^$(whoami):" /etc/shadow
+
+# Check password hash algorithm
+sudo grep "^username:" /etc/shadow | cut -d: -f2
+# $6$ = SHA-512 (good)
+# $5$ = SHA-256 (okay)
+# $1$ = MD5 (weak, upgrade!)
+```
+
+## 🎯 Key Takeaways
+
+1. **passwd changes user passwords** - your own or others (with root/sudo)
+
+2. **Current password required** - prevents unauthorized changes from unlocked terminals
+
+3. **BAD PASSWORD warnings** - Linux checks password strength; some warnings can be overridden, others cannot
+
+4. **Strong passwords matter** - Use 12+ characters, mixed types, no dictionary words
+
+5. **Root doesn't need current password** - can reset any user's password (for forgotten password recovery)
+
+6. **Password aging enforces security** - `-x` (max age), `-n` (min age), `-w` (warning period)
+
+7. **Lock accounts, don't delete passwords** - Use `-l` to lock, not `-d` to delete
+
+8. **Force password changes** - Use `-e` to expire passwords on new accounts
+
+9. **/etc/shadow stores password hashes** - Only readable by root, contains aging info
+
+10. **Always expire temporary passwords** - Force users to set their own secure passwords
+
+11. **Document password resets** - Maintain audit trail for security compliance
+
+## 🚀 What's Next?
+
+You've mastered password management with the `passwd` command! You now understand how to change passwords, enforce security policies, and manage user authentication. In the next post, we'll begin exploring Linux help systems - starting with an introduction to how to find help when you need it.
+
+**Coming up in Part 10**: Introduction to Linux Help Systems
+- Why learning to find help is critical for sysadmins
+- Overview of Linux help resources (man, info, --help, tldr, /usr/share/doc)
+- When to use each help system
+- How to become self-sufficient in Linux
+- And much more!
+
+---
+
+<Callout type="success">
+🎉 **Congratulations!** You've completed Part 9 of the LFCS Certification series. You now understand password management, security policies, and the passwd command in depth. This knowledge is crucial for both the LFCS exam and real-world system administration!
+
+**Security Reminder**: Passwords are the first line of defense. Always use strong passwords, change them regularly, and never share them with anyone!
+</Callout>
