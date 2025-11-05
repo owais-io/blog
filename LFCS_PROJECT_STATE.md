@@ -1,74 +1,114 @@
 # LFCS Phase 1 Blog Series - Project State Document
 
 **Last Updated**: 2025-11-05
-**Status**: Posts 1-8 Completed - File Timestamps Mastered!
-**Session**: Session 4 - Completed Posts 7 and 8
-**Next Steps**: Proceed with Post 9 (Understanding the passwd Command)
+**Status**: Posts 1-15 Completed - Networking Section Started!
+**Session**: Session 8 - Completed Post 15 (Network Interfaces)
+**Next Steps**: Continue with Post 16 (hostname commands)
 
 ---
 
 ## 📝 Session Summary (Latest)
 
-### Session 4 - 2025-11-05
+### Session 8 - 2025-11-05
 **Accomplishments:**
-1. ✅ Verified Post 6 completion: Linux Command Basics (~8,000 words)
-   - Linux case sensitivity explained (LS vs ls)
-   - Command structure breakdown
-   - Short options (-a, -l) vs long options (--all)
-   - Single dash vs double dash explained
-   - Combining options (-al)
-   - Using --help for any command
-   - Common beginner mistakes
-   - 20+ comprehensive practice labs
+1. ✅ Completed Post 15: Understanding Network Interfaces with ip Command (~12,000 words)
+   - Comprehensive guide to Linux network interfaces
+   - Understanding interface naming (eth0, enp0s3, ens33, lo)
+   - Complete ip command reference (ip addr, ip link)
+   - Reading and interpreting interface output
+   - Interface states and flags (UP, DOWN, LOWER_UP)
+   - Bringing interfaces UP and DOWN
+   - Understanding loopback interface (lo)
+   - MAC addresses explained
+   - Temporary vs permanent network changes
+   - 20 comprehensive practice labs with collapsible solutions
+   - Real-world troubleshooting scenarios
+   - Network monitoring scripts and aliases
 
-2. ✅ Completed Post 7: Essential Navigation Commands (~10,000 words)
-   - whoami command (identifying current user)
-   - pwd command (print working directory)
-   - cd command with all shortcuts
-   - cd ~ (home directory)
-   - cd - (previous directory toggle)
-   - cd .. (parent directory)
-   - ls command (basic listing)
-   - ls -a (show hidden files/dotfiles)
-   - ls -l (long format with detailed info)
-   - Complete ls -l output breakdown (9 fields explained)
-   - File type indicators (-, d, l, b, c, s, p)
-   - Permission breakdown (owner/group/other)
-   - Combining options (ls -al, ls -laht)
-   - 20+ comprehensive practice labs
-   - Real-world navigation scenarios
+**Content Quality:**
+- Used same proven MDX structure as working posts 11-14
+- All syntax verified (no angle brackets, proper code blocks, template literals)
+- Comprehensive tables with Tailwind styling
+- Visual diagrams and decision flows
+- Best practices and common pitfalls sections
+- Complete command cheat sheet
 
-3. ✅ Completed Post 8: Understanding File Timestamps with touch (~9,000 words)
-   - What touch command does (create files + update timestamps)
-   - Creating empty files
-   - Understanding Linux's three timestamps (atime, mtime, ctime)
-   - atime (access time) - when file content was read
-   - mtime (modification time) - when file content was modified
-   - ctime (change time) - when file metadata/content changed
-   - Reading timestamps in ls -l output
-   - Using stat command to see all timestamps
-   - Updating timestamps with touch
-   - Advanced touch options (-a, -m, -c, -t, -r, -d)
-   - Why timestamps matter for backups, troubleshooting, security
-   - Real-world timestamp scenarios
-   - 20+ comprehensive practice labs with collapsible solutions
-   - Backup simulation lab
-
-**Posts Completed This Session**: 1 verified + 2 new posts (Posts 6-8)
-**Total Posts Now**: 8 of 52 (15.4%)
-**Total Words**: ~68,500 words
-**Status**: File timestamps mastered! Ready for passwd command.
-
-**User Feedback:**
-- Post 6 was already completed ✅
-- Requested Post 7 ✅
-- Requested Post 8 ✅
-- Loved the collapsible solution format in practice labs!
+**Status:** First networking post complete! Foundation established for upcoming network configuration posts.
 
 **Next Session Actions:**
-1. Write Post 9: Understanding the passwd Command
-2. Write Post 10: Introduction to Linux Help Systems
-3. Continue with Help Systems section (Posts 11-14)
+1. Write Post 16: Managing Hostnames with hostname and hostnamectl
+2. Continue with Filesystem Hierarchy section (Posts 17+)
+3. Then proceed with more advanced networking topics
+
+---
+
+### Session 7 - 2025-11-05
+**Accomplishments:**
+1. ✅ Successfully recreated Post 14 from scratch
+   - Deleted problematic version with MDX parsing errors
+   - Rewrote entire post using working posts (11, 13) as template
+   - Careful attention to MDX syntax (no angle brackets, proper code blocks)
+   - Post now renders successfully (HTTP 200)
+   - All content preserved: /usr/share/doc, tldr, zcat/zless/zgrep, 20 practice labs
+   - ~10,000 words of comprehensive documentation mastery content
+
+**Technical Resolution:**
+- Issue: Previous Post 14 had "Unexpected character `<` before name" MDX parsing error
+- Solution: Complete rewrite from scratch with clean MDX syntax
+- Verified: curl returns HTTP 200 (successful rendering)
+- All features working: tables, callouts, code blocks, practice labs with collapsible solutions
+
+**Status:** All 14 posts now rendering successfully! Documentation systems section complete.
+
+**Next Session Actions:**
+1. Write Post 15: Understanding Network Interfaces with ip Command
+2. Write Post 16: hostname commands
+3. Continue with Filesystem Hierarchy section (Posts 17+)
+
+---
+
+### Session 6 - 2025-11-05
+**Accomplishments:**
+1. ✅ Completed Post 11: Mastering man Pages Part 1: Basics (~8,600 words)
+   - Expanded from 5 to 20 comprehensive practice labs
+   - Fixed MDX rendering issues (angle brackets in text: `<30` → `under 30`, `([], <>, |)` → backticks)
+   - Post now renders successfully (HTTP 200)
+
+2. ✅ Completed Post 12: Mastering man Pages Part 2: Sections and Advanced Usage (~6,300 words)
+   - Deep dive into all 9 man page sections
+   - man -k (apropos) for keyword searching
+   - mandb command for rebuilding man page database
+   - Grep filtering techniques within man pages
+   - 20 comprehensive practice labs
+
+3. ✅ Completed Post 13: Using info, pinfo, and --help (~3,900 words)
+   - info command and navigation
+   - pinfo as modern alternative
+   - --help vs -h differences
+   - Complete comparison of all documentation methods
+   - 20 comprehensive practice labs
+
+4. ⚠️ Completed Post 14: Exploring /usr/share/doc and tldr (~4,450 words) - **HAD RENDERING ISSUE (FIXED IN SESSION 7)**
+   - /usr/share/doc directory exploration
+   - Reading compressed documentation files (zcat, zless, zgrep)
+   - tldr installation and usage
+   - Complete documentation workflow strategy
+   - 20 comprehensive practice labs
+   - **Issue**: MDX parsing error - "Unexpected character `<` before name"
+   - **Resolution**: Recreated from scratch in Session 7 - now renders successfully
+
+**Posts Completed This Session**: 4 posts (Posts 11-14)
+**Total Posts Now**: 14 of 52 (26.9%)
+**Total Words**: ~97,000 words
+**Status**: Documentation systems complete! (Post 14 fixed in Session 7)
+
+**Technical Issues:**
+- Post 14 had MDX parsing error (fixed in Session 7 by recreating from scratch)
+
+**Next Session Actions:**
+1. Write Post 15: Understanding Network Interfaces with ip Command
+2. Write Post 16: hostname commands
+3. Continue with Filesystem Hierarchy section (Posts 17+)
 
 ---
 
@@ -86,15 +126,22 @@
 - ✅ **Post 6**: Linux Command Basics (Case Sensitivity & Options) - COMPLETE
 - ✅ **Post 7**: Essential Navigation Commands (ls, pwd, cd, whoami) - COMPLETE
 - ✅ **Post 8**: Understanding File Timestamps with touch - COMPLETE
-- ⏳ **Post 9**: Understanding the passwd Command - NEXT TO WRITE
-- 📊 **Progress**: 8 of 52 posts (15.4%)
-- 📝 **Words Written**: ~68,500
+- ✅ **Post 9**: Understanding the passwd Command - COMPLETE
+- ✅ **Post 10**: Introduction to Linux Help Systems - COMPLETE
+- ✅ **Post 11**: Mastering man Pages Part 1: Basics - COMPLETE
+- ✅ **Post 12**: Mastering man Pages Part 2: Sections and Advanced Usage - COMPLETE
+- ✅ **Post 13**: Using info, pinfo, and --help - COMPLETE
+- ✅ **Post 14**: Exploring /usr/share/doc and tldr - COMPLETE (Fixed in Session 7)
+- ✅ **Post 15**: Understanding Network Interfaces with ip Command - COMPLETE
+- ⏳ **Post 16**: Managing Hostnames with hostname and hostnamectl - NEXT TO WRITE
+- 📊 **Progress**: 15 of 52 posts (28.8%)
+- 📝 **Words Written**: ~114,500
 
 **Immediate Next Steps:**
-1. Write Post 9: Understanding the passwd Command
-2. Write Post 10: Introduction to Linux Help Systems
-3. Continue with Help Systems section (Posts 11-14)
-4. Then proceed to Filesystem Hierarchy (Posts 15+)
+1. ✅ Post 14 rendering issue FIXED (recreated from scratch in Session 7)
+2. ✅ Post 15: Understanding Network Interfaces with ip Command COMPLETE
+3. Write Post 16: Managing Hostnames with hostname and hostnamectl
+4. Then proceed to Filesystem Hierarchy (Posts 17+)
 
 ---
 
@@ -426,10 +473,15 @@ The posts MUST follow the exact order of topics in lfcs-rough.txt:
 - [x] Post 6: Linux Command Basics (COMPLETED)
 - [x] Post 7: Essential Navigation Commands (COMPLETED)
 - [x] Post 8: Understanding File Timestamps with touch (COMPLETED)
-- [ ] Post 9: Understanding the passwd Command
-- [ ] Post 10: Introduction to Linux Help Systems
-- [ ] Posts 11-14: man pages, info, --help, /usr/share/doc
-- [ ] Posts 11-20: Filesystem Hierarchy
+- [x] Post 9: Understanding the passwd Command (COMPLETED)
+- [x] Post 10: Introduction to Linux Help Systems (COMPLETED)
+- [x] Post 11: Mastering man Pages Part 1: Basics (COMPLETED)
+- [x] Post 12: Mastering man Pages Part 2: Sections and Advanced Usage (COMPLETED)
+- [x] Post 13: Using info, pinfo, and --help (COMPLETED)
+- [x] Post 14: Exploring /usr/share/doc and tldr (COMPLETED - Fixed in Session 7)
+- [x] Post 15: Understanding Network Interfaces with ip Command (COMPLETED)
+- [ ] Post 16: Managing Hostnames with hostname and hostnamectl
+- [ ] Posts 17-20: Filesystem Hierarchy
 - [ ] Posts 21-29: File Operations & Links
 - [ ] Posts 30-41: Text Editors & Processing
 - [ ] Posts 42-52: SSH, Shell, I/O, Variables, Config
@@ -494,9 +546,138 @@ The posts MUST follow the exact order of topics in lfcs-rough.txt:
   - Backup simulation lab
   - Timestamp detective work scenarios
 
+### Post 11: Mastering man Pages Part 1: Basics
+- **File**: `2025-11-15_lfcs-phase1-part-11-mastering-man-pages-basics.mdx`
+- **Status**: ✅ COMPLETED - Ready for review
+- **Word Count**: ~8,600 words
+- **Content Includes**:
+  - What are man pages and why they're essential for LFCS
+  - Basic man command syntax (man command_name)
+  - Understanding man page structure (NAME, SYNOPSIS, DESCRIPTION, OPTIONS, etc.)
+  - Reading SYNOPSIS syntax correctly ([], <>, |, ..., bold, italic)
+  - Complete SYNOPSIS notation guide
+  - Navigation keys (Space, b, g, G, Enter, k, q)
+  - Searching within man pages (/, ?, n, N)
+  - Understanding all 9 man page sections (1-9)
+  - Focus on sections 1 (commands), 5 (config files), 8 (admin commands)
+  - How to specify section (man 1 vs man 5)
+  - Example: man 1 passwd vs man 5 passwd
+  - Efficient man page reading strategies (3-step approach)
+  - **20 comprehensive practice labs** with collapsible solutions
+  - Labs cover: navigation, searching, SYNOPSIS decoding, sections, debugging
+  - Real-world scenarios (user management, file operations, troubleshooting)
+  - Speed challenges and mastery tests
+  - Emergency LFCS exam scenarios (no internet)
+  - Best practices for LFCS exam preparation
+  - Common pitfalls to avoid
+  - Complete command cheat sheet
+
+### Post 12: Mastering man Pages Part 2: Sections and Advanced Usage
+- **File**: `2025-11-16_lfcs-phase1-part-12-man-pages-sections-advanced.mdx`
+- **Status**: ✅ COMPLETED - Ready for review
+- **Word Count**: ~6,300 words
+- **Content Includes**:
+  - Deep dive into all 9 man page sections
+  - Section 1: User commands
+  - Section 2: System calls
+  - Section 3: Library functions
+  - Section 4: Special files (devices)
+  - Section 5: File formats and configuration files
+  - Section 6: Games
+  - Section 7: Miscellaneous
+  - Section 8: System administration commands
+  - Section 9: Kernel routines
+  - man -k (apropos) for keyword searching across all man pages
+  - mandb command for rebuilding man page database
+  - Practical examples with passwd, crontab, fstab
+  - Grep filtering techniques within man pages
+  - Advanced search strategies
+  - **20 comprehensive practice labs** with collapsible solutions
+  - Real-world system administration scenarios
+  - Best practices and common pitfalls
+  - Complete command cheat sheet
+
+### Post 13: Using info, pinfo, and --help
+- **File**: `2025-11-17_lfcs-phase1-part-13-info-pinfo-help.mdx`
+- **Status**: ✅ COMPLETED - Ready for review
+- **Word Count**: ~3,900 words
+- **Content Includes**:
+  - info command explained (GNU documentation system)
+  - info navigation keys (n, p, u, l, Space, q)
+  - Understanding info node structure
+  - pinfo as modern, user-friendly alternative
+  - pinfo installation and usage
+  - --help option explained
+  - --help vs -h differences
+  - Complete comparison: man vs info vs --help
+  - When to use each documentation method
+  - Building complete documentation strategy
+  - Documentation decision flow
+  - **20 comprehensive practice labs** with collapsible solutions
+  - Practice with info, pinfo, and --help on various commands
+  - Documentation workflow scenarios
+  - Best practices and common pitfalls
+  - Complete command cheat sheet
+
+### Post 14: Exploring /usr/share/doc and tldr
+- **File**: `2025-11-18_lfcs-phase1-part-14-usr-share-doc-tldr.mdx`
+- **Status**: ✅ COMPLETED - Ready for review (Fixed in Session 7)
+- **Word Count**: ~10,000 words
+- **Content Includes**:
+  - /usr/share/doc directory exploration
+  - Package-specific documentation structure
+  - README, CHANGELOG, LICENSE files
+  - examples/ directories with configuration samples
+  - Reading compressed documentation files (zcat, zless, zgrep)
+  - Finding and using package examples
+  - tldr (Too Long; Didn't Read) introduction
+  - tldr installation (npm, pip, package manager)
+  - tldr usage for quick command examples
+  - Comparing tldr vs man vs info vs --help
+  - Complete documentation workflow hierarchy
+  - Building personal documentation library
+  - **20 comprehensive practice labs** with collapsible solutions
+  - Real-world package documentation exploration
+  - Best practices and common pitfalls
+  - Complete command cheat sheet
+- **Resolution**: Original version had MDX parsing errors. Recreated from scratch in Session 7 using working posts as templates. Now renders successfully (HTTP 200).
+
+### Post 15: Understanding Network Interfaces with ip Command
+- **File**: `2025-11-19_lfcs-phase1-part-15-network-interfaces-ip-command.mdx`
+- **Status**: ✅ COMPLETED - Ready for review
+- **Word Count**: ~12,000 words
+- **Content Includes**:
+  - What network interfaces are and types (loopback, ethernet, wireless, virtual)
+  - Understanding interface naming conventions (eth0, enp0s3, ens33, lo)
+  - Old vs new naming schemes explained
+  - The ip command structure and subcommands
+  - ip addr (ip a) command - viewing IP addresses and interfaces
+  - Understanding ip addr output line by line
+  - Interface flags explained (UP, LOWER_UP, BROADCAST, MULTICAST, etc.)
+  - Interface states (UP, DOWN, UNKNOWN)
+  - Understanding the loopback interface (lo) - 127.0.0.1
+  - ip link command - link layer information
+  - Differences between ip addr and ip link
+  - Bringing interfaces UP and DOWN with ip link set
+  - Why sudo is required for interface management
+  - Critical SSH safety warnings
+  - Temporary vs permanent network changes
+  - Understanding MAC addresses
+  - Brief output format (ip -br)
+  - Interface statistics (ip -s)
+  - MTU explained
+  - Troubleshooting network connectivity
+  - Finding default gateway and primary interface
+  - **20 comprehensive practice labs** with collapsible solutions
+  - Real-world troubleshooting scenarios
+  - Network monitoring scripts and helpful aliases
+  - Best practices and common pitfalls
+  - Complete command cheat sheet
+  - Comparison tables and visual diagrams
+
 ### Statistics
-- **Posts Completed**: 8 / 52 (15.4%)
-- **Words Written**: ~68,500
+- **Posts Completed**: 15 / 52 (28.8%)
+- **Words Written**: ~114,500
 - **Estimated Total Words**: 150,000-260,000
 - **Estimated Time**: Many hours of focused work
 

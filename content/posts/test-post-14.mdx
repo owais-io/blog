@@ -1,0 +1,106 @@
+---
+title: "Exploring /usr/share/doc and tldr for LFCS Certification"
+description: "Discover hidden Linux documentation in /usr/share/doc with READMEs, examples, and changelogs. Master tldr for quick command examples. Build your complete documentation strategy for LFCS exam success."
+date: "2025-11-18T00:00:00.000Z"
+tags: ["linux", "lfcs", "documentation", "tldr", "usr-share-doc", "package-documentation", "examples"]
+published: true
+author: "Owais"
+categories: ["Linux", "LFCS Certification"]
+series: "LFCS Certification - Phase 1"
+seriesOrder: 14
+seo:
+  canonical: "https://owais.io/blog/2025-11-18_lfcs-phase1-part-14-usr-share-doc-tldr"
+  keywords: ["linux documentation", "usr share doc", "tldr command", "lfcs certification", "package documentation", "linux examples", "readme files"]
+toc: true
+---
+
+Welcome to **Part 14** of the LFCS Certification - Phase 1 series! You've mastered man pages, info pages, and --help. Now let's uncover the hidden treasure trove of documentation in `/usr/share/doc` and discover tldr for lightning-fast command examples.
+
+<Callout type="info">
+🎯 **What You'll Learn**: In this comprehensive guide, you'll master:
+- What /usr/share/doc contains and why it matters
+- Navigating package documentation directories
+- Finding READMEs, examples, changelogs, and licenses
+- Understanding documentation organization by package
+- Installing tldr (Too Long; Didn't Read)
+- Using tldr for quick command examples
+- Comparing tldr vs man vs info vs --help
+- Building your complete documentation library
+- Finding configuration examples for real services
+- 20+ comprehensive practice labs with solutions
+
+**Series**: LFCS Certification Preparation - Phase 1 (Post 14 of 52)
+**Previous**: [Part 13 - Using info, pinfo, and --help](/blog/2025-11-17_lfcs-phase1-part-13-info-pinfo-help)
+**Next**: Part 15 - Understanding Network Interfaces with ip Command
+</Callout>
+
+## Understanding /usr/share/doc
+
+**What is /usr/share/doc?**
+A directory containing package-specific documentation installed alongside software packages.
+
+### Why /usr/share/doc Matters
+
+Unlike man and info pages, `/usr/share/doc` contains:
+- **README files** - Installation notes, usage tips
+- **Example configurations** - Real working examples
+- **Changelogs** - Version history and changes
+- **License files** - Software licenses
+- **HOWTOs** - Step-by-step guides
+- **Sample scripts** - Actual code you can use
+
+<Callout type="success">
+💡 **Pro Tip**: When configuring a complex service, ALWAYS check `/usr/share/doc/package-name/examples/` first! You'll often find complete, working configuration examples that save hours of work.
+</Callout>
+
+### Structure of /usr/share/doc
+
+```bash
+/usr/share/doc/
+├── package-name-1/
+│   ├── README
+│   ├── README.md
+│   ├── CHANGELOG.gz
+│   ├── LICENSE
+│   ├── examples/
+│   │   ├── config.example
+│   │   └── script.example
+│   └── NEWS.gz
+├── package-name-2/
+│   └── ...
+└── ...
+```
+
+## Exploring /usr/share/doc
+
+### Listing Installed Package Documentation
+
+```bash
+# List all package documentation
+ls /usr/share/doc/
+
+# Count how many packages have documentation
+ls /usr/share/doc/ | wc -l
+
+# Find specific package documentation
+ls /usr/share/doc/ | grep ssh
+```
+
+**Example output:**
+```bash
+ls /usr/share/doc/ | grep ssh
+openssh-8.7p1/
+openssh-clients-8.7p1/
+openssh-server-8.7p1/
+```
+
+### Viewing Package Documentation
+
+```bash
+# Explore a package's documentation
+
+
+## Test Section
+
+This is a test to see if the first 100 lines work.
+

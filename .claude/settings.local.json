@@ -1,7 +1,19 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(npx next lint:*)",
+      "Bash(curl:*)",
+      "Bash(awk:*)",
+      "Bash(pkill:*)",
+      "Bash(node /tmp/validate-mdx.js:*)",
+      "Bash(node /tmp/validate-mdx-detailed.js:*)",
+      "Bash(python3:*)",
+      "Bash(cat:*)",
+      "Bash(/home/centos9/blog/content/posts/test-post-14.mdx)",
+      "Bash(echo:*)",
+      "Bash(pgrep:*)",
+      "Bash(ss:*)"
     ],
     "deny": [],
     "ask": []
