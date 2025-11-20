@@ -1,12 +1,6 @@
-import { Metadata } from 'next'
+'use client'
 
-export const metadata: Metadata = {
-  title: 'Projects',
-  description: 'Explore the projects I\'ve worked on - from web applications to open source contributions.',
-}
-
-// Static page - no dynamic content
-export const dynamic = 'force-static'
+import { useState } from 'react'
 
 interface Project {
   id: number
@@ -27,12 +21,13 @@ const projects: Project[] = [
   {
     id: 1,
     title: "Personal Blog Platform",
-    description: "A production-grade blog platform deployed on AWS EC2 (t2.micro) with fully automated CI/CD pipeline. Demonstrates expertise in cloud infrastructure, system administration, and DevOps best practices. Features zero-downtime deployments via GitHub Actions, Nginx reverse proxy, PM2 process management, and SSL/TLS encryption with Let's Encrypt. Overcame memory constraints on free tier by implementing swap space and optimizing Node.js build process. Achieved 99.9% uptime with 1-2 minute deployment cycles from git push to production.",
+    description: "A production-grade blog platform deployed on AWS EC2 (t2.micro) with fully automated CI/CD pipeline. Built with AI-assistance to implement cloud infrastructure, system administration, and DevOps best practices. Features zero-downtime deployments via GitHub Actions, Nginx reverse proxy, PM2 process management, and SSL/TLS encryption with Let's Encrypt. Overcame memory constraints on free tier by implementing swap space and optimizing Node.js build process. Achieved 99.9% uptime with 1-2 minute deployment cycles from git push to production.",
     technologies: ["Next.js", "TypeScript", "AWS EC2", "GitHub Actions", "Linux", "Nginx", "PM2", "Let's Encrypt"],
     githubUrl: "https://github.com/owais-io/blog",
     liveUrl: "https://owais.io",
     status: "completed",
     highlights: [
+      "Built entirely with AI-assistance using Claude Code",
       "Fully automated CI/CD with GitHub Actions",
       "Zero-downtime deployments using PM2 graceful restarts",
       "SSL/TLS encryption with auto-renewal",
@@ -45,6 +40,56 @@ const projects: Project[] = [
       { label: "Build Time", value: "~2 min" },
       { label: "Uptime", value: "99.9%" },
       { label: "Monthly Cost", value: "$0 (Free Tier)" }
+    ]
+  },
+  {
+    id: 2,
+    title: "padho.net - South Asian News Simplification",
+    description: "An AI-powered news aggregation platform that leverages local LLMs (Ollama with 20B parameter gpt-oss model) to transform complex Guardian articles about India and Pakistan into accessible, simplified summaries. Built with AI-assistance to demonstrate practical application of open-source AI models for natural language processing. Features automated content fetching, intelligent filtering, prompt engineering for content transformation, and AWS S3 + CloudFront deployment with GitHub Actions CI/CD.",
+    technologies: ["Next.js", "TypeScript", "Ollama", "SQLite", "MDX", "AWS S3", "CloudFront", "Tailwind CSS", "GitHub Actions"],
+    githubUrl: "https://github.com/owais-io/padho",
+    liveUrl: "https://padho.net",
+    status: "completed",
+    highlights: [
+      "Built entirely with AI-assistance using Claude Code",
+      "Production deployment on AWS S3 + CloudFront with custom domain",
+      "Local LLM inference with 20B parameter model (no API costs)",
+      "Automated Guardian API integration with smart filtering",
+      "Custom prompt engineering for news simplification",
+      "Processes 2-5 min per article with 60-80 word summaries",
+      "SQLite-based three-table architecture for content pipeline",
+      "GitHub Actions CI/CD with automated deployments"
+    ],
+    metrics: [
+      { label: "Status", value: "Live" },
+      { label: "Model Size", value: "20B params" },
+      { label: "Privacy", value: "100% Local" },
+      { label: "Cost", value: "$0" }
+    ]
+  },
+  {
+    id: 3,
+    title: "parho.net - AI News Transformation",
+    description: "A production-deployed AI-powered platform that transforms complex news articles into accessible summaries using local large language models. Built with AI-assistance to showcase practical LLM integration with Next.js. Features the same 20B parameter Ollama model as padho.net, demonstrating content transformation pipeline from raw articles to static MDX files. Deployed to Vercel with automatic CI/CD, proving the viability of local AI models for production content generation.",
+    technologies: ["Next.js", "TypeScript", "Ollama", "SQLite", "MDX", "Vercel", "Tailwind CSS"],
+    githubUrl: "https://github.com/owais-io/parho",
+    liveUrl: "https://parho.net",
+    status: "completed",
+    highlights: [
+      "Built entirely with AI-assistance using Claude Code",
+      "Production deployment on Vercel with custom domain",
+      "Local LLM inference (privacy-first, zero API costs)",
+      "Complete AI-driven content transformation pipeline",
+      "Automated MDX file generation from AI summaries",
+      "Static site generation for optimal performance",
+      "Post-build security (admin pages excluded from production)",
+      "Real-time processing with progress tracking"
+    ],
+    metrics: [
+      { label: "Status", value: "Live" },
+      { label: "Model", value: "20B params" },
+      { label: "Deployment", value: "Vercel" },
+      { label: "Cost", value: "$0" }
     ]
   }
 ]
@@ -62,123 +107,216 @@ const statusLabels = {
 }
 
 export default function ProjectsPage() {
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null)
+
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-12">
         <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">
           Projects
         </h1>
         <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl">
-          Here are some of the projects I've been working on. From web applications to open source contributions, 
-          each project represents a journey of learning and problem-solving.
+          Here are some of the projects I've been working on. Click on any project card to view detailed information.
         </p>
       </div>
 
-      <div className="grid gap-8">
+      {/* Project Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
         {projects.map((project) => (
           <div
             key={project.id}
-            className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow"
+            onClick={() => setSelectedProject(project)}
+            className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden cursor-pointer hover:shadow-lg hover:border-blue-500 dark:hover:border-blue-500 transition-all duration-200 transform hover:-translate-y-1"
           >
-            {/* Project Header */}
-            <div className="flex items-start justify-between mb-4">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                {project.title}
-              </h2>
-              <span
-                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                  statusColors[project.status]
-                }`}
-              >
-                {statusLabels[project.status]}
-              </span>
-            </div>
-
-            {/* Project Description */}
-            <p className="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
-              {project.description}
-            </p>
-
-            {/* Key Highlights */}
-            {project.highlights && project.highlights.length > 0 && (
-              <div className="mb-6">
-                <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-3">Key Highlights</h3>
-                <ul className="space-y-2">
-                  {project.highlights.map((highlight, index) => (
-                    <li key={index} className="flex items-start text-sm text-gray-600 dark:text-gray-300">
-                      <svg className="w-5 h-5 mr-2 text-green-500 dark:text-green-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      {highlight}
-                    </li>
-                  ))}
-                </ul>
+            {/* Card Header */}
+            <div className="p-6">
+              <div className="flex items-start justify-between mb-3">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white line-clamp-2 flex-1">
+                  {project.title}
+                </h2>
+                <span
+                  className={`ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap ${
+                    statusColors[project.status]
+                  }`}
+                >
+                  {statusLabels[project.status]}
+                </span>
               </div>
-            )}
 
-            {/* Project Metrics */}
-            {project.metrics && project.metrics.length > 0 && (
-              <div className="mb-6 grid grid-cols-2 sm:grid-cols-4 gap-4">
-                {project.metrics.map((metric, index) => (
-                  <div key={index} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 text-center">
-                    <div className="text-lg font-bold text-gray-900 dark:text-white">{metric.value}</div>
-                    <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">{metric.label}</div>
-                  </div>
-                ))}
-              </div>
-            )}
+              {/* Short Description */}
+              <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-3">
+                {project.description}
+              </p>
 
-            {/* Technologies */}
-            <div className="mb-6">
-              <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Technologies Used</h3>
-              <div className="flex flex-wrap gap-2">
-                {project.technologies.map((tech) => (
+              {/* Top Technologies (show first 3) */}
+              <div className="flex flex-wrap gap-1.5 mb-4">
+                {project.technologies.slice(0, 3).map((tech) => (
                   <span
                     key={tech}
-                    className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200"
+                    className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
                   >
                     {tech}
                   </span>
                 ))}
+                {project.technologies.length > 3 && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400">
+                    +{project.technologies.length - 3} more
+                  </span>
+                )}
               </div>
+
+              {/* Quick Stats */}
+              {project.metrics && project.metrics.length > 0 && (
+                <div className="grid grid-cols-2 gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">
+                  {project.metrics.slice(0, 2).map((metric, index) => (
+                    <div key={index} className="text-center">
+                      <div className="text-sm font-bold text-gray-900 dark:text-white">{metric.value}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">{metric.label}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
-            {/* Project Links */}
-            <div className="flex items-center space-x-4">
-              {project.githubUrl && (
-                <a
-                  href={project.githubUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
-                >
-                  <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 0C5.374 0 0 5.373 0 12 0 17.302 3.438 21.8 8.207 23.387c.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/>
-                  </svg>
-                  View Code
-                </a>
-              )}
-              
-              {project.liveUrl && (
-                <a
-                  href={project.liveUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
-                >
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                  </svg>
-                  Live Demo
-                </a>
-              )}
+            {/* Card Footer */}
+            <div className="px-6 py-3 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  Click to view details
+                </span>
+                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
             </div>
           </div>
         ))}
       </div>
 
+      {/* Project Detail Modal */}
+      {selectedProject && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+          onClick={() => setSelectedProject(null)}
+        >
+          <div
+            className="bg-white dark:bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-6 flex items-start justify-between">
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-2">
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                    {selectedProject.title}
+                  </h2>
+                  <span
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      statusColors[selectedProject.status]
+                    }`}
+                  >
+                    {statusLabels[selectedProject.status]}
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedProject(null)}
+                className="ml-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6">
+              {/* Description */}
+              <p className="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
+                {selectedProject.description}
+              </p>
+
+              {/* Key Highlights */}
+              {selectedProject.highlights && selectedProject.highlights.length > 0 && (
+                <div className="mb-6">
+                  <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Key Highlights</h3>
+                  <ul className="space-y-2">
+                    {selectedProject.highlights.map((highlight, index) => (
+                      <li key={index} className="flex items-start text-sm text-gray-600 dark:text-gray-300">
+                        <svg className="w-5 h-5 mr-2 text-green-500 dark:text-green-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        {highlight}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Project Metrics */}
+              {selectedProject.metrics && selectedProject.metrics.length > 0 && (
+                <div className="mb-6 grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  {selectedProject.metrics.map((metric, index) => (
+                    <div key={index} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 text-center">
+                      <div className="text-lg font-bold text-gray-900 dark:text-white">{metric.value}</div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">{metric.label}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Technologies */}
+              <div className="mb-6">
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Technologies Used</h3>
+                <div className="flex flex-wrap gap-2">
+                  {selectedProject.technologies.map((tech) => (
+                    <span
+                      key={tech}
+                      className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200"
+                    >
+                      {tech}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Project Links */}
+              <div className="flex items-center gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                {selectedProject.githubUrl && (
+                  <a
+                    href={selectedProject.githubUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                  >
+                    <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 0C5.374 0 0 5.373 0 12 0 17.302 3.438 21.8 8.207 23.387c.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/>
+                    </svg>
+                    View Code
+                  </a>
+                )}
+
+                {selectedProject.liveUrl && (
+                  <a
+                    href={selectedProject.liveUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-800 transition-colors"
+                  >
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                    Live Demo
+                  </a>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Call to Action */}
-      <div className="mt-16 text-center">
+      <div className="mt-8 text-center">
         <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-8">
           <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
             Interested in collaborating?
