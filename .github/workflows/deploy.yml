@@ -17,10 +17,31 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
+            set -e  # Exit on any error
             cd ~/blog
-            git pull origin main
+
+            # Force sync with remote repository (prevents divergence issues)
+            echo "Fetching latest changes from origin..."
+            git fetch origin
+            git reset --hard origin/main
+            git clean -fd
+
+            # Clear Next.js cache for fresh build
+            echo "Clearing Next.js cache..."
+            rm -rf .next
+
+            # Install dependencies and build
+            echo "Installing dependencies..."
             export NODE_OPTIONS="--max-old-space-size=1536"
             npm install
+
+            echo "Building Next.js application..."
             npm run build
-            pm2 restart blog
+
+            # Restart or start PM2 app
+            echo "Restarting PM2 application..."
+            pm2 restart blog || pm2 start npm --name "blog" -- start
             pm2 save
+
+            echo "Deployment completed successfully!"
+            pm2 list
