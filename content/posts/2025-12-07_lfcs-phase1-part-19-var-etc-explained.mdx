@@ -1,0 +1,1773 @@
+---
+title: "LFCS Phase 1 Part 19: Understanding /var and /etc - Configuration and Variable Data"
+description: "Master /var and /etc directories in Linux. Learn about logs in /var/log, system configuration in /etc, understand critical files like /etc/passwd, /etc/fstab, and why these directories are essential for LFCS certification."
+date: "2025-12-10"
+tags: ["Linux", "LFCS", "var directory", "etc directory", "logs", "configuration", "system administration"]
+published: true
+author: "Owais"
+categories: ["Linux", "LFCS Certification"]
+series: "LFCS Certification - Phase 1"
+seriesOrder: 19
+---
+
+When troubleshooting issues, where do you look first? `/var/log`. When configuring your system, what do you edit? Files in `/etc`. These two directories—`/var` for variable data and `/etc` for system configuration—are the lifeblood of Linux system administration. In this comprehensive guide, we'll explore both directories in detail and understand why they're absolutely critical for managing Linux systems.
+
+<Callout type="info">
+🎯 **What You'll Learn**:
+- Complete understanding of `/var` (variable data)
+- Deep dive into `/var/log` for system logging
+- Understanding `/var/cache`, `/var/tmp`, `/var/spool`
+- Complete understanding of `/etc` (system configuration)
+- Critical files: `/etc/passwd`, `/etc/shadow`, `/etc/hosts`, `/etc/fstab`
+- Why `/etc` contains text-based configuration
+- Difference between `/tmp` and `/var/tmp`
+- How to read and interpret log files
+- Configuration file best practices
+- 20+ comprehensive practice labs
+
+**Series**: LFCS Certification - Phase 1 (Post 19 of 52)
+**Prerequisites**: Understanding filesystem hierarchy (Posts 17-18)
+</Callout>
+
+---
+
+## Understanding /var - Variable Data
+
+The `/var` directory contains files that are expected to **change frequently** during normal system operation.
+
+### What "Variable" Means
+
+Think of `/var` as the "living, breathing" part of your filesystem:
+
+<div className="my-8 p-6 bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 rounded-lg border-2 border-orange-200 dark:border-orange-800">
+  <div className="text-center mb-4 text-lg font-bold text-orange-900 dark:text-orange-100">The /var Analogy</div>
+  <div className="space-y-3 text-gray-700 dark:text-gray-300">
+    <p><strong>/usr</strong> - Like a library (rarely changes, mostly reading)</p>
+    <p><strong>/var</strong> - Like a notebook (constantly being written to)</p>
+    <p className="text-sm italic mt-4">/var contains logs, caches, mail queues, print queues—anything that changes!</p>
+  </div>
+</div>
+
+### Exploring /var Structure
+
+```bash title="List /var contents"
+ls -l /var
+```
+
+**Typical output:**
+```
+drwxr-xr-x.  2 root root   4096 Jun 25  2024 account
+drwxr-xr-x.  2 root root   4096 Jun 25  2024 adm
+drwxr-xr-x. 12 root root   4096 Oct 28 15:13 cache
+drwxr-xr-x.  3 root root     53 Oct 28 15:06 db
+drwxr-xr-x.  3 root root     18 Jun 25  2024 empty
+drwxr-xr-x.  2 root root      6 Jun 25  2024 games
+drwxr-xr-x.  2 root root      6 Jun 25  2024 gopher
+drwxr-xr-x.  4 root root   4096 Oct 28 15:13 lib
+drwxr-xr-x.  2 root root      6 Jun 25  2024 local
+lrwxrwxrwx.  1 root root     11 Jun 25  2024 lock -> ../run/lock
+drwxr-xr-x. 19 root root   4096 Nov  5 18:38 log
+lrwxrwxrwx.  1 root root     10 Jun 25  2024 mail -> spool/mail
+drwxr-xr-x.  2 root root      6 Jun 25  2024 nis
+drwxr-xr-x.  2 root root      6 Jun 25  2024 opt
+drwxr-xr-x.  2 root root      6 Jun 25  2024 preserve
+lrwxrwxrwx.  1 root root      6 Jun 25  2024 run -> ../run
+drwxr-xr-x. 10 root root    145 Oct 28 15:06 spool
+drwxrwxrwt.  9 root root    213 Nov  5 18:35 tmp
+drwxr-xr-x.  2 root root      6 Jun 25  2024 yp
+```
+
+---
+
+## /var/log - System and Application Logs
+
+`/var/log` is **the first place to look** when troubleshooting problems. It contains log files from the system and applications.
+
+### Why Logs Matter
+
+<Callout type="warning">
+🚨 **Critical for LFCS**: The ability to read and interpret logs is essential for system administration and a major part of the LFCS exam!
+</Callout>
+
+### Exploring /var/log
+
+```bash title="List log files"
+ls -lht /var/log | head -20
+```
+
+**Key log files:**
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Log File</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Contains</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>/var/log/messages</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">General system messages (CentOS/RHEL)</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>/var/log/syslog</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">General system messages (Ubuntu/Debian)</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>/var/log/auth.log</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Authentication and authorization (Ubuntu/Debian)</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>/var/log/secure</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Authentication and authorization (CentOS/RHEL)</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>/var/log/boot.log</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">System boot messages</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>/var/log/dmesg</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Kernel ring buffer (hardware messages)</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>/var/log/cron</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Cron job execution logs</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>/var/log/maillog</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Mail server logs</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>/var/log/audit/</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">SELinux audit logs</td>
+    </tr>
+  </tbody>
+</table>
+
+### Reading Log Files
+
+```bash title="View recent system messages"
+# CentOS/RHEL
+sudo tail -f /var/log/messages
+
+# Ubuntu/Debian
+sudo tail -f /var/log/syslog
+```
+
+**Example log entry:**
+```
+Nov  5 18:14:23 centos systemd[1]: Started Session 3 of user centos9.
+Nov  5 18:14:23 centos systemd-logind[850]: New session 3 of user centos9.
+Nov  5 18:14:45 centos sudo[12345]: centos9 : TTY=pts/0 ; PWD=/home/centos9 ; USER=root ; COMMAND=/bin/ls
+```
+
+**Breaking down a log line:**
+- `Nov  5 18:14:23` - Timestamp
+- `centos` - Hostname
+- `systemd[1]` - Process name and PID
+- `Started Session 3...` - Log message
+
+### Log Rotation
+
+Logs don't grow forever—they're rotated automatically:
+
+```bash title="Check log rotation config"
+ls /etc/logrotate.d/
+```
+
+**Example rotation:**
+```
+/var/log/messages       # Current log
+/var/log/messages-20241105  # Rotated last week
+/var/log/messages-20241029  # Rotated 2 weeks ago
+```
+
+<Callout type="info">
+💡 **Log Rotation**: Old logs are compressed (`.gz`) and eventually deleted to save space. Check `/etc/logrotate.conf` for settings.
+</Callout>
+
+---
+
+## /var/cache - Application Cache Data
+
+`/var/cache` contains cached data from applications—temporary data that speeds up programs.
+
+### What's Inside
+
+```bash title="Explore cache directory"
+ls -lh /var/cache
+```
+
+**Common cache directories:**
+- `/var/cache/man` - Cached man page data
+- `/var/cache/dnf` or `/var/cache/apt` - Package manager cache
+- `/var/cache/fontconfig` - Font cache
+
+### Package Manager Cache
+
+```bash title="Check package cache"
+# CentOS/RHEL
+sudo du -sh /var/cache/dnf
+
+# Ubuntu/Debian
+sudo du -sh /var/cache/apt
+```
+
+**Purpose**: Downloaded packages are cached so reinstalling doesn't require re-downloading.
+
+### Cleaning Cache
+
+```bash title="Clean package cache"
+# CentOS/RHEL
+sudo dnf clean all
+
+# Ubuntu/Debian
+sudo apt clean
+```
+
+This frees up disk space by removing cached packages.
+
+---
+
+## /var/tmp - Temporary Files (Persistent)
+
+`/var/tmp` contains temporary files that **persist across reboots** (unlike `/tmp`).
+
+### /tmp vs /var/tmp
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-8">
+  <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border-2 border-blue-300 dark:border-blue-700">
+    <h4 className="text-lg font-bold text-blue-700 dark:text-blue-300 mb-3">/tmp</h4>
+    <ul className="space-y-2 text-sm">
+      <li>✓ Cleared on reboot</li>
+      <li>✓ For current session</li>
+      <li>✓ Fast (often tmpfs in RAM)</li>
+      <li>✓ Example: wget downloads</li>
+    </ul>
+  </div>
+  <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border-2 border-green-300 dark:border-green-700">
+    <h4 className="text-lg font-bold text-green-700 dark:text-green-300 mb-3">/var/tmp</h4>
+    <ul className="space-y-2 text-sm">
+      <li>✓ Preserved across reboots</li>
+      <li>✓ For longer-term temp data</li>
+      <li>✓ On disk (persistent)</li>
+      <li>✓ Example: editor recovery files</li>
+    </ul>
+  </div>
+</div>
+
+**When to use which:**
+- `/tmp`: Working files you don't need after reboot
+- `/var/tmp`: Temporary files that should survive reboot
+
+---
+
+## /var/spool - Queued Data
+
+`/var/spool` contains data waiting to be processed (queues).
+
+### What's Queued?
+
+```bash title="Explore spool directory"
+ls -l /var/spool
+```
+
+**Common queues:**
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Directory</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Contains</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>/var/spool/mail</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">User mailboxes</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>/var/spool/cron</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">User crontabs</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>/var/spool/cups</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Print queue</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>/var/spool/at</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Scheduled `at` jobs</td>
+    </tr>
+  </tbody>
+</table>
+
+### Example: Mail Spool
+
+```bash title="Check your mailbox"
+ls -lh /var/spool/mail/$USER
+```
+
+System sends mail here (like cron job output).
+
+---
+
+## Understanding /etc - System Configuration
+
+The `/etc` directory contains **all system-wide configuration files**. The name historically meant "et cetera" but is now understood as **"Editable Text Configuration"**.
+
+### Why /etc is Critical
+
+<div className="my-8 p-6 bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 rounded-lg border-2 border-red-200 dark:border-red-800">
+  <div className="text-center mb-4 text-lg font-bold text-red-900 dark:text-red-100">The /etc Principle</div>
+  <div className="space-y-3 text-gray-700 dark:text-gray-300">
+    <p><strong>Text-based</strong> - Almost all files are plain text (human-readable!)</p>
+    <p><strong>Version-controllable</strong> - You can track changes with git</p>
+    <p><strong>Editable</strong> - System administrators can customize everything</p>
+    <p><strong>Critical</strong> - Misconfiguring /etc can break your system!</p>
+    <p className="text-sm italic mt-4">Always backup before editing /etc files!</p>
+  </div>
+</div>
+
+### Exploring /etc
+
+```bash title="List /etc contents"
+ls /etc | head -30
+```
+
+**You'll see hundreds of files and directories!**
+
+---
+
+## Critical Files in /etc
+
+Let's explore the most important files you'll encounter.
+
+### /etc/passwd - User Account Information
+
+Contains information about all user accounts (but NOT passwords—those are in `/etc/shadow`).
+
+```bash title="View /etc/passwd"
+cat /etc/passwd | head -10
+```
+
+**Example line:**
+```
+centos9:x:1000:1000:CentOS User:/home/centos9:/bin/bash
+```
+
+**Field breakdown:**
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Field</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Example</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Meaning</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">1. Username</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>centos9</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Login name</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">2. Password</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>x</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Password stored in /etc/shadow</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">3. UID</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>1000</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">User ID number</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">4. GID</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>1000</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Primary group ID</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">5. GECOS</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>CentOS User</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">User description</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">6. Home Directory</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>/home/centos9</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">User's home path</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">7. Shell</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>/bin/bash</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Login shell</td>
+    </tr>
+  </tbody>
+</table>
+
+**Reading the file:**
+```bash
+grep "^$USER:" /etc/passwd
+```
+
+### /etc/shadow - Encrypted Passwords
+
+Contains encrypted passwords and password aging information. Only readable by root!
+
+```bash title="View /etc/shadow (requires sudo)"
+sudo cat /etc/shadow | head -5
+```
+
+**Example line:**
+```
+centos9:$6$randomsalt$encryptedpasswordhash:19000:0:99999:7:::
+```
+
+**Key fields:**
+- Username
+- Encrypted password hash
+- Last password change date
+- Minimum days between password changes
+- Maximum days password is valid
+- Warning period before password expires
+
+<Callout type="warning">
+⚠️ **Security**: `/etc/shadow` is only readable by root (mode 000 or 400). Never make it world-readable!
+</Callout>
+
+### /etc/group - Group Definitions
+
+Contains group information.
+
+```bash title="View /etc/group"
+cat /etc/group | head -10
+```
+
+**Example line:**
+```
+wheel:x:10:centos9
+```
+
+**Fields:**
+1. Group name (`wheel`)
+2. Group password (rarely used, usually `x`)
+3. GID (`10`)
+4. Group members (`centos9`)
+
+### /etc/hosts - Static Hostname to IP Mapping
+
+We covered this in Post 16!
+
+```bash title="View /etc/hosts"
+cat /etc/hosts
+```
+
+**Example:**
+```
+127.0.0.1   localhost localhost.localdomain
+::1         localhost localhost.localdomain
+192.168.1.100  webserver
+```
+
+### /etc/hostname - System Hostname
+
+Your system's hostname (covered in Post 16):
+
+```bash title="View hostname"
+cat /etc/hostname
+```
+
+### /etc/fstab - Filesystem Table
+
+Defines how filesystems are mounted at boot.
+
+```bash title="View /etc/fstab"
+cat /etc/fstab
+```
+
+**Example:**
+```
+UUID=abc123  /       xfs     defaults        0 0
+UUID=def456  /boot   ext4    defaults        1 2
+UUID=ghi789  /home   xfs     defaults        1 2
+```
+
+**Fields:**
+1. Device (UUID or device path)
+2. Mount point
+3. Filesystem type
+4. Mount options
+5. Dump (backup utility)
+6. Pass (fsck order)
+
+<Callout type="warning">
+🚨 **Critical**: Errors in `/etc/fstab` can prevent your system from booting! Always backup before editing.
+</Callout>
+
+### /etc/sudoers - sudo Configuration
+
+Defines who can use `sudo` (covered in Post 5):
+
+```bash title="View sudoers file (use visudo to edit!)"
+sudo cat /etc/sudoers | grep -v '^#' | grep -v '^$'
+```
+
+**NEVER edit directly** - always use `visudo`!
+
+### /etc/ssh/sshd_config - SSH Server Configuration
+
+Configures the SSH server:
+
+```bash title="View SSH config"
+sudo cat /etc/ssh/sshd_config | grep -v '^#' | head -20
+```
+
+Common settings:
+- `Port 22` - SSH listens on port 22
+- `PermitRootLogin no` - Disable root login
+- `PasswordAuthentication yes` - Allow password auth
+
+### /etc/systemd/ - systemd Configuration
+
+systemd service configurations:
+
+```bash title="List systemd configs"
+ls /etc/systemd/system/
+```
+
+### /etc/cron.* - Scheduled Tasks
+
+Cron job configurations:
+
+```bash title="List cron directories"
+ls /etc/cron.*
+```
+
+**Structure:**
+- `/etc/crontab` - System crontab
+- `/etc/cron.d/` - Additional cron jobs
+- `/etc/cron.hourly/` - Scripts run hourly
+- `/etc/cron.daily/` - Scripts run daily
+- `/etc/cron.weekly/` - Scripts run weekly
+- `/etc/cron.monthly/` - Scripts run monthly
+
+---
+
+## Configuration File Best Practices
+
+### Always Backup Before Editing
+
+```bash title="Backup before editing"
+sudo cp /etc/config-file /etc/config-file.backup.$(date +%Y%m%d)
+sudo nano /etc/config-file
+```
+
+### Use Version Control
+
+```bash title="Track /etc with git"
+cd /etc
+sudo git init
+sudo git add .
+sudo git commit -m "Initial /etc snapshot"
+```
+
+After changes:
+```bash
+sudo git diff somefile
+sudo git commit -am "Updated somefile for reason"
+```
+
+### Test Changes Before Rebooting
+
+After modifying config files:
+```bash
+# Test SSH config
+sudo sshd -t
+
+# Test systemd unit
+sudo systemd-analyze verify myservice.service
+
+# Always test before reboot!
+```
+
+---
+
+## Why These Directories Matter
+
+### /var Growth Management
+
+`/var` can fill up quickly! Monitor it:
+
+```bash title="Check /var size"
+df -h /var
+
+# Find largest directories
+sudo du -sh /var/* | sort -rh | head -10
+```
+
+**Common causes of /var filling up:**
+- Old logs not being rotated
+- Package cache not being cleaned
+- Application data accumulating
+
+### /etc Configuration Management
+
+`/etc` is your system's brain. Track changes:
+
+```bash title="Monitor /etc changes"
+# Find recently modified files
+find /etc -type f -mtime -7
+
+# See what changed
+sudo git -C /etc log --oneline -10
+```
+
+---
+
+## 🧪 Practice Labs
+
+Time to explore /var and /etc! Remember: only solutions are collapsible.
+
+### Warm-Up Labs (Beginner)
+
+### Lab 1: Explore /var Structure (Beginner)
+
+**Task**: Navigate /var and identify all major subdirectories.
+
+**Steps**:
+1. List /var contents
+2. Check disk usage of /var
+3. Identify largest subdirectories
+4. Understand what each contains
+
+<details>
+<summary>Show Solution</summary>
+
+**Solution**:
+```bash
+# List /var
+ls -lh /var
+
+# Check total size
+du -sh /var
+
+# Check subdirectories
+sudo du -sh /var/* | sort -rh
+
+# Typically largest: /var/log, /var/cache, /var/lib
+
+# Count items
+ls /var | wc -l
+```
+
+**What you'll learn**: /var contains logs, caches, spools, and variable application data.
+
+**Expected**: /var is typically 1-10 GB depending on how long system has been running.
+</details>
+
+### Lab 2: Read System Logs (Beginner)
+
+**Task**: View recent system log entries and understand their format.
+
+**Steps**:
+1. Navigate to /var/log
+2. View the main system log
+3. Identify log entry components
+4. Search for specific events
+
+<details>
+<summary>Show Solution</summary>
+
+**Solution**:
+```bash
+# Navigate to logs
+cd /var/log
+
+# View recent messages (CentOS/RHEL)
+sudo tail -20 /var/log/messages
+
+# Or on Ubuntu/Debian
+sudo tail -20 /var/log/syslog
+
+# Follow logs in real-time
+sudo tail -f /var/log/messages
+
+# Press Ctrl+C to stop
+
+# Search for specific term
+sudo grep -i error /var/log/messages | tail -10
+
+# View authentication logs
+sudo tail /var/log/secure  # CentOS/RHEL
+sudo tail /var/log/auth.log  # Ubuntu/Debian
+```
+
+**What you'll learn**: Logs show timestamps, hostnames, processes, and messages.
+
+**Pro tip**: `tail -f` is essential for real-time troubleshooting!
+</details>
+
+### Lab 3: Explore /etc Configuration Files (Beginner)
+
+**Task**: Navigate /etc and identify critical configuration files.
+
+**Steps**:
+1. List /etc contents
+2. Count configuration files
+3. View /etc/passwd
+4. View /etc/hosts
+
+<details>
+<summary>Show Solution</summary>
+
+**Solution**:
+```bash
+# List /etc
+ls /etc | head -30
+
+# Count files
+ls /etc | wc -l
+
+# Typically 100-200+ items
+
+# View passwd
+cat /etc/passwd | head -10
+
+# Find your user
+grep "^$USER:" /etc/passwd
+
+# View hosts
+cat /etc/hosts
+
+# View hostname
+cat /etc/hostname
+```
+
+**What you'll learn**: /etc contains hundreds of text-based configuration files.
+
+**Important**: Most files are human-readable text!
+</details>
+
+### Lab 4: Check Log File Sizes (Beginner)
+
+**Task**: Identify which logs are taking up the most space.
+
+**Steps**:
+1. Navigate to /var/log
+2. List files by size
+3. Check for rotated logs
+4. Understand log rotation
+
+<details>
+<summary>Show Solution</summary>
+
+**Solution**:
+```bash
+# Go to logs
+cd /var/log
+
+# List by size
+ls -lhS
+
+# See total size
+du -sh /var/log
+
+# Find largest logs
+sudo du -sh /var/log/* | sort -rh | head -10
+
+# Check for rotated logs
+ls -lh messages*
+# Output: messages, messages-20241105, messages-20241029.gz
+
+# Compressed old logs save space!
+```
+
+**What you'll learn**: Log rotation prevents /var from filling up.
+
+**Automatic**: logrotate runs daily to manage logs.
+</details>
+
+### Lab 5: View Package Cache (Beginner)
+
+**Task**: Explore package manager cache in /var/cache.
+
+**Steps**:
+1. Navigate to /var/cache
+2. Find package manager cache
+3. Check cache size
+4. Understand what's cached
+
+<details>
+<summary>Show Solution</summary>
+
+**Solution**:
+```bash
+# Navigate to cache
+cd /var/cache
+
+# List contents
+ls
+
+# Check package cache size (CentOS/RHEL)
+sudo du -sh /var/cache/dnf
+
+# Or Ubuntu/Debian
+sudo du -sh /var/cache/apt
+
+# List cached packages
+sudo ls /var/cache/dnf/*/packages/ 2>/dev/null | head -20
+
+# Or
+sudo ls /var/cache/apt/archives/ | head -20
+```
+
+**What you'll learn**: Downloaded packages are cached for faster reinstallation.
+
+**Cleanup**: Use `dnf clean all` or `apt clean` to free space.
+</details>
+
+### Core Practice Labs (Intermediate)
+
+### Lab 6: Analyze /etc/passwd Format (Intermediate)
+
+**Task**: Deep dive into /etc/passwd structure and fields.
+
+**Steps**:
+1. View /etc/passwd
+2. Find system users vs regular users
+3. Identify disabled accounts
+4. Extract specific fields
+
+<details>
+<summary>Show Solution</summary>
+
+**Solution**:
+```bash
+# View passwd file
+cat /etc/passwd
+
+# Find your user
+grep "^$USER:" /etc/passwd
+
+# System users (UID < 1000)
+awk -F: '$3 < 1000 {print $1 " (UID: " $3 ")"}' /etc/passwd | head -10
+
+# Regular users (UID >= 1000)
+awk -F: '$3 >= 1000 {print $1 " (UID: " $3 ")"}' /etc/passwd
+
+# Find users with no login shell (disabled)
+grep '/nologin$' /etc/passwd | head -5
+
+# Extract just usernames
+cut -d: -f1 /etc/passwd | head -10
+
+# Extract usernames and home directories
+awk -F: '{print $1 ": " $6}' /etc/passwd | head -10
+```
+
+**What you'll learn**: /etc/passwd has a structured format with 7 colon-separated fields.
+
+**System users**: Services like `apache`, `mysql` have UID < 1000 and /sbin/nologin shell.
+</details>
+
+### Lab 7: Compare /tmp and /var/tmp (Intermediate)
+
+**Task**: Understand the difference between temporary directories.
+
+**Steps**:
+1. Create test files in both
+2. Check permissions
+3. Understand persistence
+4. Test sticky bit
+
+<details>
+<summary>Show Solution</summary>
+
+**Solution**:
+```bash
+# Check both directories
+ls -ld /tmp /var/tmp
+
+# Both should show sticky bit (t at the end)
+# drwxrwxrwt
+
+# Create test files
+echo "test" > /tmp/tempfile
+echo "test" > /var/tmp/vartempfile
+
+# Check them
+ls -l /tmp/tempfile
+ls -l /var/tmp/vartempfile
+
+# Key difference: /tmp cleared on reboot
+# /var/tmp persists across reboots
+
+# Check sizes
+du -sh /tmp /var/tmp
+
+# Clean up
+rm /tmp/tempfile /var/tmp/vartempfile
+```
+
+**What you'll learn**: Use /tmp for session data, /var/tmp for data that should survive reboot.
+
+**Sticky bit**: The 't' means only file owner can delete their files.
+</details>
+
+### Lab 8: Read and Search Log Files (Intermediate)
+
+**Task**: Practice log analysis and searching techniques.
+
+**Steps**:
+1. Search logs for specific patterns
+2. Filter by date/time
+3. Count occurrences
+4. Find error messages
+
+<details>
+<summary>Show Solution</summary>
+
+**Solution**:
+```bash
+# Search for errors
+sudo grep -i error /var/log/messages | tail -20
+
+# Search for user logins
+sudo grep "session opened" /var/log/secure | tail -10
+
+# Count failed login attempts
+sudo grep "Failed password" /var/log/secure | wc -l
+
+# Find logs from today
+sudo grep "$(date +'%b %e')" /var/log/messages | tail -20
+
+# Find SSH connections
+sudo grep sshd /var/log/secure | tail -20
+
+# Multiple patterns with egrep
+sudo egrep "error|fail|warning" /var/log/messages -i | tail -20
+
+# Get context around matches
+sudo grep -C 3 "error" /var/log/messages | tail -30
+```
+
+**What you'll learn**: grep is essential for log analysis.
+
+**Real-world**: Log analysis is critical for troubleshooting!
+</details>
+
+### Lab 9: Explore /etc/fstab (Intermediate)
+
+**Task**: Understand filesystem mount configuration.
+
+**Steps**:
+1. View /etc/fstab
+2. Identify each field
+3. Find your root filesystem
+4. Understand mount options
+
+<details>
+<summary>Show Solution</summary>
+
+**Solution**:
+```bash
+# View fstab
+cat /etc/fstab
+
+# Remove comments and empty lines
+cat /etc/fstab | grep -v '^#' | grep -v '^$'
+
+# Identify fields:
+# 1: Device (UUID or path)
+# 2: Mount point
+# 3: Filesystem type
+# 4: Options
+# 5: Dump (0 or 1)
+# 6: Pass (fsck order)
+
+# Find root filesystem
+grep " / " /etc/fstab
+
+# Find UUID of current root
+findmnt -n -o UUID /
+
+# List all mounts
+findmnt
+
+# Verify fstab syntax (doesn't mount, just checks)
+sudo mount -fav
+```
+
+**What you'll learn**: /etc/fstab controls automatic mounting at boot.
+
+**Critical**: Bad /etc/fstab can prevent boot!
+</details>
+
+### Lab 10: Check Log Rotation Configuration (Intermediate)
+
+**Task**: Understand how logs are rotated automatically.
+
+**Steps**:
+1. View logrotate configuration
+2. Check rotation schedule
+3. Find application-specific configs
+4. Manually rotate logs
+
+<details>
+<summary>Show Solution</summary>
+
+**Solution**:
+```bash
+# Main logrotate config
+cat /etc/logrotate.conf
+
+# Application-specific configs
+ls /etc/logrotate.d/
+
+# View specific rotation config
+cat /etc/logrotate.d/syslog
+
+# Typical settings:
+# - weekly: rotate weekly
+# - rotate 4: keep 4 old copies
+# - compress: gzip old logs
+# - delaycompress: compress on next rotation
+
+# Manually force rotation (test only!)
+sudo logrotate -f /etc/logrotate.conf
+
+# Check rotated logs
+ls -lh /var/log/messages*
+```
+
+**What you'll learn**: logrotate prevents logs from filling disk.
+
+**Automatic**: cron runs logrotate daily.
+</details>
+
+### Lab 11: Explore /var/spool (Intermediate)
+
+**Task**: Understand queued data in /var/spool.
+
+**Steps**:
+1. Navigate to /var/spool
+2. Check mail spool
+3. View cron spool
+4. Understand queue concept
+
+<details>
+<summary>Show Solution</summary>
+
+**Solution**:
+```bash
+# Navigate to spool
+cd /var/spool
+
+# List spool directories
+ls -l
+
+# Check mail spool
+ls -lh /var/spool/mail/
+
+# Check your mailbox
+ls -lh /var/spool/mail/$USER 2>/dev/null
+
+# View mail (if any)
+cat /var/spool/mail/$USER 2>/dev/null
+
+# Check cron spool
+sudo ls /var/spool/cron/
+
+# User crontabs stored here
+sudo cat /var/spool/cron/$USER 2>/dev/null
+
+# Check at jobs
+ls /var/spool/at/ 2>/dev/null
+```
+
+**What you'll learn**: Spools hold data waiting to be processed.
+
+**Examples**: Mail to deliver, print jobs queued, scheduled tasks.
+</details>
+
+### Lab 12: Find Recently Modified /etc Files (Intermediate)
+
+**Task**: Identify which configuration files were recently changed.
+
+**Steps**:
+1. Find files modified in last 7 days
+2. Sort by modification time
+3. Check what changed
+4. Understand change tracking
+
+<details>
+<summary>Show Solution</summary>
+
+**Solution**:
+```bash
+# Find files modified in last 7 days
+find /etc -type f -mtime -7
+
+# Sort by modification time (newest first)
+find /etc -type f -mtime -7 -exec ls -lt {} \; | head -20
+
+# Or simpler with ls
+ls -lt /etc | head -20
+
+# Find files modified today
+find /etc -type f -mtime 0
+
+# Check specific file modification time
+stat /etc/passwd
+
+# See what changed in a file (if using git)
+cd /etc
+sudo git diff HEAD passwd
+```
+
+**What you'll learn**: Tracking /etc changes helps identify configuration issues.
+
+**Best practice**: Use git in /etc to track all changes!
+</details>
+
+### Lab 13: Backup Critical /etc Files (Intermediate)
+
+**Task**: Create backups of important configuration files.
+
+**Steps**:
+1. Identify critical files
+2. Create timestamped backups
+3. Store in safe location
+4. Verify backups
+
+<details>
+<summary>Show Solution</summary>
+
+**Solution**:
+```bash
+# Create backup directory
+sudo mkdir -p /root/etc-backups
+
+# Backup critical files with timestamp
+DATE=$(date +%Y%m%d)
+
+sudo cp /etc/passwd /root/etc-backups/passwd.$DATE
+sudo cp /etc/group /root/etc-backups/group.$DATE
+sudo cp /etc/shadow /root/etc-backups/shadow.$DATE
+sudo cp /etc/fstab /root/etc-backups/fstab.$DATE
+sudo cp /etc/hosts /root/etc-backups/hosts.$DATE
+sudo cp /etc/hostname /root/etc-backups/hostname.$DATE
+
+# Or backup entire /etc
+sudo tar czf /root/etc-backup-$DATE.tar.gz /etc
+
+# Verify backup
+sudo tar tzf /root/etc-backup-$DATE.tar.gz | head -20
+
+# List backups
+sudo ls -lh /root/etc-backups/
+```
+
+**What you'll learn**: Always backup before editing system files!
+
+**Recovery**: Backups save you when things go wrong.
+</details>
+
+### Challenge Labs (Advanced)
+
+### Lab 14: Analyze Log Patterns (Advanced)
+
+**Task**: Extract meaningful statistics from log files.
+
+**Steps**:
+1. Count failed login attempts
+2. Identify most common errors
+3. Track user activity
+4. Generate report
+
+<details>
+<summary>Show Solution</summary>
+
+**Solution**:
+```bash
+# Create log analysis script
+cat > ~/analyze-logs.sh << 'EOF'
+#!/bin/bash
+
+echo "=== Log Analysis Report ==="
+echo "Generated: $(date)"
+echo
+
+# Failed login attempts
+echo "Failed Login Attempts:"
+sudo grep "Failed password" /var/log/secure 2>/dev/null | wc -l
+
+# Successful logins
+echo "Successful Logins:"
+sudo grep "session opened" /var/log/secure 2>/dev/null | wc -l
+
+# Top 5 error messages
+echo -e "\nTop 5 Error Types:"
+sudo grep -i error /var/log/messages 2>/dev/null | \
+    awk '{for(i=5;i<=NF;i++) printf "%s ", $i; print ""}' | \
+    sort | uniq -c | sort -rn | head -5
+
+# Most active users
+echo -e "\nMost Active Users:"
+sudo grep "session opened" /var/log/secure 2>/dev/null | \
+    awk '{print $(NF-5)}' | sort | uniq -c | sort -rn | head -5
+
+# System start times
+echo -e "\nRecent System Boots:"
+sudo grep "systemd\[1\]: Startup finished" /var/log/messages 2>/dev/null | tail -5
+EOF
+
+chmod +x ~/analyze-logs.sh
+
+# Run it
+~/analyze-logs.sh
+```
+
+**What you'll learn**: Log analysis reveals system usage patterns and issues.
+
+**Real-world**: Automated log analysis is crucial for security monitoring!
+</details>
+
+### Lab 15: Monitor /var Disk Usage Growth (Advanced)
+
+**Task**: Track how /var grows over time and identify culprits.
+
+**Steps**:
+1. Snapshot current /var usage
+2. Identify growth sources
+3. Find largest files
+4. Create monitoring script
+
+<details>
+<summary>Show Solution</summary>
+
+**Solution**:
+```bash
+# Create monitoring script
+cat > ~/var-monitor.sh << 'EOF'
+#!/bin/bash
+
+LOGFILE=~/var-usage-$(date +%Y%m%d).log
+
+echo "=== /var Usage Report ===" | tee $LOGFILE
+echo "Date: $(date)" | tee -a $LOGFILE
+echo | tee -a $LOGFILE
+
+# Total /var size
+echo "Total /var Usage:" | tee -a $LOGFILE
+du -sh /var | tee -a $LOGFILE
+echo | tee -a $LOGFILE
+
+# Subdirectory sizes
+echo "Subdirectory Breakdown:" | tee -a $LOGFILE
+sudo du -sh /var/* | sort -rh | head -10 | tee -a $LOGFILE
+echo | tee -a $LOGFILE
+
+# Largest log files
+echo "Largest Log Files:" | tee -a $LOGFILE
+sudo find /var/log -type f -size +10M -exec ls -lh {} \; 2>/dev/null | tee -a $LOGFILE
+echo | tee -a $LOGFILE
+
+# Cache sizes
+echo "Cache Sizes:" | tee -a $LOGFILE
+sudo du -sh /var/cache/* 2>/dev/null | sort -rh | head -5 | tee -a $LOGFILE
+
+echo "Report saved to: $LOGFILE"
+EOF
+
+chmod +x ~/var-monitor.sh
+
+# Run it
+~/var-monitor.sh
+
+# Run daily with cron
+(crontab -l 2>/dev/null; echo "0 2 * * * ~/var-monitor.sh") | crontab -
+```
+
+**What you'll learn**: Monitoring prevents /var from filling up.
+
+**Automated**: Set up daily monitoring to catch growth early!
+</details>
+
+### Lab 16: Create /etc Configuration Snapshot (Advanced)
+
+**Task**: Create a complete snapshot of /etc for disaster recovery.
+
+**Steps**:
+1. Backup all of /etc
+2. Document changes
+3. Create restore procedure
+4. Test backup integrity
+
+<details>
+<summary>Show Solution</summary>
+
+**Solution**:
+```bash
+# Create backup script
+cat > ~/backup-etc.sh << 'EOF'
+#!/bin/bash
+
+BACKUP_DIR=~/etc-snapshots
+DATE=$(date +%Y%m%d-%H%M%S)
+BACKUP_FILE="etc-snapshot-$DATE.tar.gz"
+
+mkdir -p $BACKUP_DIR
+
+echo "Creating /etc snapshot..."
+
+# Create compressed backup
+sudo tar czf $BACKUP_DIR/$BACKUP_FILE /etc
+
+# Create file list
+sudo tar tzf $BACKUP_DIR/$BACKUP_FILE > $BACKUP_DIR/filelist-$DATE.txt
+
+# Create checksums
+cd $BACKUP_DIR
+sha256sum $BACKUP_FILE > $BACKUP_FILE.sha256
+
+echo "Backup created: $BACKUP_DIR/$BACKUP_FILE"
+echo "Size: $(ls -lh $BACKUP_DIR/$BACKUP_FILE | awk '{print $5}')"
+echo "Files: $(wc -l < $BACKUP_DIR/filelist-$DATE.txt)"
+
+# Keep only last 10 backups
+ls -t $BACKUP_DIR/etc-snapshot-*.tar.gz | tail -n +11 | xargs rm -f 2>/dev/null
+
+echo "Old backups cleaned. Keeping 10 most recent."
+EOF
+
+chmod +x ~/backup-etc.sh
+
+# Run it
+~/backup-etc.sh
+
+# Verify backup
+cd ~/etc-snapshots
+sha256sum -c etc-snapshot-*.sha256 | tail -1
+```
+
+**What you'll learn**: Regular /etc backups enable quick disaster recovery.
+
+**Best practice**: Backup /etc before major configuration changes!
+</details>
+
+### Lab 17: Parse /etc/shadow Safely (Advanced)
+
+**Task**: Understand password aging from /etc/shadow without exposing passwords.
+
+**Steps**:
+1. View /etc/shadow structure
+2. Extract password aging info
+3. Find accounts without passwords
+4. Check expiring passwords
+
+<details>
+<summary>Show Solution</summary>
+
+**Solution**:
+```bash
+# View your entry in shadow (safe - no password revealed)
+sudo grep "^$USER:" /etc/shadow | cut -d: -f1,3-9
+
+# Shadow fields (after username and password):
+# 3: Last password change (days since epoch)
+# 4: Minimum password age
+# 5: Maximum password age
+# 6: Warning period
+# 7: Inactivity period
+# 8: Account expiration date
+# 9: Reserved
+
+# Check password aging for all users
+sudo awk -F: '{print $1 ": Max age=" $5 " days, Warning=" $6 " days"}' /etc/shadow | head -10
+
+# Find accounts that never expire
+sudo awk -F: '$5 == "" || $5 == "99999" {print $1}' /etc/shadow
+
+# Find locked accounts (password starts with !)
+sudo awk -F: '$2 ~ /^!/ {print $1 " (locked)"}' /etc/shadow
+
+# Find accounts with no password (dangerous!)
+sudo awk -F: '$2 == "" {print $1 " (NO PASSWORD!)"}' /etc/shadow
+```
+
+**What you'll learn**: /etc/shadow contains password aging and account status.
+
+**Security**: Accounts without passwords or that never expire are security risks!
+</details>
+
+### Lab 18: Clean Up /var Safely (Advanced)
+
+**Task**: Free up space in /var without breaking anything.
+
+**Steps**:
+1. Identify what can be safely removed
+2. Clean package cache
+3. Remove old logs
+4. Verify system still works
+
+<details>
+<summary>Show Solution</summary>
+
+**Solution**:
+```bash
+# Check current /var usage
+df -h /var
+
+# Clean package cache (safe)
+# CentOS/RHEL
+sudo dnf clean all
+
+# Ubuntu/Debian
+sudo apt clean
+sudo apt autoclean
+
+# Remove old journal logs (keep last 7 days)
+sudo journalctl --vacuum-time=7d
+
+# Find large log files
+sudo find /var/log -type f -size +100M
+
+# Rotate logs manually (if needed)
+sudo logrotate -f /etc/logrotate.conf
+
+# Remove old rotated logs (older than 60 days)
+sudo find /var/log -name "*.gz" -mtime +60 -delete
+
+# Check space freed
+df -h /var
+
+# Verify system still works
+systemctl status
+journalctl -n 20
+```
+
+**What you'll learn**: Regular /var cleanup prevents disk full issues.
+
+**Safe**: Package cache, old logs, and old journals can be safely removed.
+</details>
+
+### Lab 19: Track Configuration Changes with etckeeper (Advanced)
+
+**Task**: Set up automatic tracking of all /etc changes.
+
+**Steps**:
+1. Install etckeeper
+2. Initialize repository
+3. Make a test change
+4. View change history
+
+<details>
+<summary>Show Solution</summary>
+
+**Solution**:
+```bash
+# Install etckeeper
+# CentOS/RHEL
+sudo dnf install etckeeper git
+
+# Ubuntu/Debian
+sudo apt install etckeeper git
+
+# Initialize (creates git repo in /etc)
+sudo etckeeper init
+sudo etckeeper commit "Initial commit"
+
+# Make a test change
+echo "# Test comment" | sudo tee -a /etc/hosts
+
+# Commit the change
+sudo etckeeper commit "Added test comment to hosts"
+
+# View history
+cd /etc
+sudo git log --oneline
+
+# See what changed
+sudo git diff HEAD~1 HEAD
+
+# See uncommitted changes
+sudo git status
+
+# View all changes to a specific file
+sudo git log --follow --all -- hosts
+
+# Revert a file to previous version
+sudo git checkout HEAD~1 -- hosts
+```
+
+**What you'll learn**: etckeeper automatically tracks all /etc changes.
+
+**Powerful**: Full history of who changed what and when!
+</details>
+
+### Lab 20: Create Complete System Report (Advanced)
+
+**Task**: Generate comprehensive report of /var and /etc.
+
+**Steps**:
+1. Document /var usage
+2. Document /etc configuration
+3. Include critical files
+4. Create reference document
+
+<details>
+<summary>Show Solution</summary>
+
+**Solution**:
+```bash
+cat > ~/system-config-report.sh << 'EOF'
+#!/bin/bash
+
+REPORT=~/system-report-$(date +%Y%m%d).txt
+
+cat > $REPORT << 'REPORT'
+====================================================
+SYSTEM CONFIGURATION REPORT
+====================================================
+
+Generated: $(date)
+Hostname: $(hostname)
+Kernel: $(uname -r)
+
+=== /var ANALYSIS ===
+
+Total /var Usage:
+$(du -sh /var)
+
+Top 10 Largest Directories in /var:
+$(sudo du -sh /var/* | sort -rh | head -10)
+
+Recent Log Activity:
+$(sudo tail -5 /var/log/messages 2>/dev/null || sudo tail -5 /var/log/syslog)
+
+=== /etc ANALYSIS ===
+
+Total /etc Size:
+$(sudo du -sh /etc)
+
+Recent /etc Changes (last 7 days):
+$(sudo find /etc -type f -mtime -7 | wc -l) files modified
+
+Critical File Status:
+/etc/passwd: $(wc -l < /etc/passwd) users
+/etc/group: $(wc -l < /etc/group) groups
+/etc/hosts: $(grep -v '^#' /etc/hosts | grep -v '^$' | wc -l) entries
+/etc/fstab: $(grep -v '^#' /etc/fstab | grep -v '^$' | wc -l) filesystems
+
+Hostname Configuration:
+$(cat /etc/hostname)
+
+=== DISK USAGE SUMMARY ===
+$(df -h)
+
+====================================================
+REPORT
+
+cat $REPORT
+echo "Report saved to: $REPORT"
+EOF
+
+chmod +x ~/system-config-report.sh
+
+# Run it
+~/system-config-report.sh
+```
+
+**What you'll learn**: Documentation helps understand and maintain systems.
+
+**Professional**: Regular reports track system health over time!
+</details>
+
+---
+
+## 📚 Best Practices
+
+### For /var Management
+
+1. **Monitor disk usage regularly**
+   ```bash
+   df -h /var
+   ```
+
+2. **Configure log rotation properly**
+   ```bash
+   cat /etc/logrotate.conf
+   ```
+
+3. **Clean package cache periodically**
+   ```bash
+   sudo dnf clean all  # or apt clean
+   ```
+
+4. **Set up alerts for disk space**
+   - Alert when /var is 80% full
+   - Automate cleanup where safe
+
+### For /etc Management
+
+1. **Always backup before editing**
+   ```bash
+   sudo cp /etc/file /etc/file.backup
+   ```
+
+2. **Use version control**
+   ```bash
+   cd /etc
+   sudo git init
+   ```
+
+3. **Test configurations before reboot**
+   ```bash
+   sudo systemctl daemon-reload
+   sudo systemctl restart service
+   ```
+
+4. **Document changes**
+   - Keep a changelog
+   - Note why changes were made
+
+---
+
+## 🚨 Common Pitfalls
+
+### Pitfall 1: /var Filling Up
+
+**Problem**: Logs or cache fill /var, breaking system.
+
+**Prevention**:
+```bash
+# Monitor regularly
+df -h /var
+
+# Set up log rotation
+sudo vim /etc/logrotate.conf
+```
+
+### Pitfall 2: Breaking /etc/fstab
+
+**Problem**: Typo in /etc/fstab prevents boot.
+
+**Prevention**:
+```bash
+# Always backup
+sudo cp /etc/fstab /etc/fstab.backup
+
+# Test without mounting
+sudo mount -fav
+```
+
+### Pitfall 3: Losing /etc Changes
+
+**Problem**: Forgetting what you changed.
+
+**Solution**: Use git in /etc!
+```bash
+cd /etc
+sudo git init
+sudo git add .
+sudo git commit -m "Initial state"
+```
+
+### Pitfall 4: Deleting Active Logs
+
+**Problem**: Deleting logs a service is writing to.
+
+**Right way**:
+```bash
+# Don't delete, truncate
+sudo truncate -s 0 /var/log/messages
+
+# Or let logrotate handle it
+sudo logrotate -f /etc/logrotate.conf
+```
+
+---
+
+## 📝 Command Cheat Sheet
+
+### /var Commands
+```bash
+df -h /var                        # Check /var disk usage
+du -sh /var/*                     # Subdirectory sizes
+sudo tail -f /var/log/messages    # Follow system log
+sudo journalctl -f                # Follow systemd journal
+sudo dnf clean all                # Clean package cache
+sudo find /var/log -name "*.gz" -mtime +30 -delete  # Remove old logs
+```
+
+### /etc Commands
+```bash
+cat /etc/passwd                   # View user accounts
+grep "^$USER:" /etc/passwd        # Find your account
+cat /etc/group                    # View groups
+cat /etc/hosts                    # View hostname mappings
+cat /etc/fstab                    # View filesystem mounts
+sudo cat /etc/shadow              # View password info
+find /etc -mtime -7               # Recently changed files
+```
+
+### Backup Commands
+```bash
+sudo cp /etc/file /etc/file.backup.$(date +%Y%m%d)
+sudo tar czf /root/etc-backup.tar.gz /etc
+cd /etc && sudo git init && sudo git add . && sudo git commit -m "Initial"
+```
+
+---
+
+## 🎯 Key Takeaways
+
+<div className="my-8 p-6 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg border-2 border-green-200 dark:border-green-800">
+  <h3 className="text-xl font-bold mb-4 text-green-900 dark:text-green-100">Essential Concepts</h3>
+  <ul className="space-y-2 text-gray-700 dark:text-gray-300">
+    <li><strong>✓ /var</strong>: Variable data - logs, caches, spools (frequently changing)</li>
+    <li><strong>✓ /var/log</strong>: First place to check when troubleshooting</li>
+    <li><strong>✓ /var/cache</strong>: Package and application caches</li>
+    <li><strong>✓ /var/tmp</strong>: Temporary files that survive reboot</li>
+    <li><strong>✓ /etc</strong>: System configuration - all text-based files</li>
+    <li><strong>✓ /etc/passwd</strong>: User account information</li>
+    <li><strong>✓ /etc/shadow</strong>: Encrypted passwords (root-only)</li>
+    <li><strong>✓ /etc/fstab</strong>: Filesystem mount table (critical!)</li>
+    <li><strong>✓ Always backup</strong>: Before editing /etc files</li>
+    <li><strong>✓ Monitor /var</strong>: Prevent disk full issues</li>
+  </ul>
+</div>
+
+---
+
+## 🚀 What's Next?
+
+Excellent work! You've mastered /var and /etc—two of the most critical directories for Linux system administration. You now know:
+- ✅ How to read and analyze logs in /var/log
+- ✅ Understanding variable data in /var
+- ✅ All critical configuration files in /etc
+- ✅ How to safely backup and edit system files
+- ✅ Why these directories are essential for troubleshooting
+
+**In the next post (Part 20)**, we'll cover **Write Permissions and Access**—understanding where regular users can write files, using touch to test permissions, and why you can't write to certain directories. This completes our filesystem hierarchy deep dive!
+
+**Coming up:**
+- **Post 20**: Write Permissions and Access Control
+- **Post 21**: Using Wildcards for File Management
+- **Post 22**: Copying Files with cp Command
+
+---
+
+<Callout type="success">
+🎉 **Congratulations!** You've completed LFCS Phase 1 Part 19! You now understand the critical /var and /etc directories. These skills are essential for troubleshooting, configuration management, and the LFCS exam.
+
+**Practice suggestion**: Explore your system's /var/log directory. Read recent logs, search for errors, and get comfortable with log analysis. Then browse /etc and familiarize yourself with common configuration files!
+</Callout>
+
+---
+
+**Series Navigation:**
+- ← Previous: [Part 18 - Understanding /usr Directory Deep Dive](/blog/2025-12-07_lfcs-phase1-part-18-usr-directory-deep-dive)
+- → Next: Part 20 - Write Permissions and Access (Coming Soon)
+
+*Part of the LFCS Certification Preparation Series - Phase 1 of 9*

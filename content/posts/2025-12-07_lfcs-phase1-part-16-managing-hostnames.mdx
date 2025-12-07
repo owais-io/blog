@@ -1,0 +1,2108 @@
+---
+title: "LFCS Phase 1 Part 16: Managing Hostnames with hostname and hostnamectl"
+description: "Master Linux hostname management with both traditional hostname command and modern hostnamectl. Learn static vs transient hostnames, FQDN configuration, /etc/hosts file, and permanent hostname changes for LFCS certification."
+date: "2025-12-07"
+tags: ["Linux", "LFCS", "hostname", "hostnamectl", "networking", "system administration", "DNS", "FQDN"]
+published: true
+author: "Owais"
+categories: ["Linux", "LFCS Certification"]
+series: "LFCS Certification - Phase 1"
+seriesOrder: 16
+---
+
+Your Linux server sits on the network, but how do other systems know what to call it? How do you give your server a meaningful, memorable name instead of a generic identifier? In this comprehensive guide, we'll master Linux hostname management—a fundamental skill for any system administrator and a key topic for LFCS certification.
+
+<Callout type="info">
+🎯 **What You'll Learn**:
+- Understanding what a hostname is and why it matters
+- Viewing and setting hostnames with the `hostname` command
+- Understanding hostname types: static, transient, and pretty
+- Using `hostnamectl` for permanent hostname management
+- Getting IP addresses and FQDNs from hostname
+- Understanding the `/etc/hostname` and `/etc/hosts` files
+- Difference between temporary and permanent hostname changes
+- localhost and 127.0.0.1 explained
+- Hostname best practices for server management
+- 20+ comprehensive practice labs
+
+**Series**: LFCS Certification - Phase 1 (Post 16 of 52)
+**Prerequisites**: Understanding of network interfaces (see Post 15)
+</Callout>
+
+---
+
+## What is a Hostname?
+
+A **hostname** is a human-readable label assigned to a device on a network. Instead of remembering IP addresses like `192.168.100.154`, you can refer to your server as `webserver1` or `database-prod`.
+
+### Why Hostnames Matter
+
+Think of hostnames as name tags for your servers:
+
+<div className="my-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border-2 border-blue-200 dark:border-blue-800">
+  <div className="text-center mb-4 text-lg font-bold text-blue-900 dark:text-blue-100">Real-World Analogy</div>
+  <div className="space-y-3 text-gray-700 dark:text-gray-300">
+    <p><strong>Without hostnames:</strong> "Connect to 192.168.1.105"</p>
+    <p><strong>With hostnames:</strong> "Connect to webserver1"</p>
+    <p className="text-sm italic mt-4">Hostnames make server management human-friendly and memorable!</p>
+  </div>
+</div>
+
+### What Hostnames Are Used For
+
+1. **Identification**: Uniquely identify your server on a network
+2. **SSH Access**: `ssh user@hostname` instead of `ssh user@192.168.1.105`
+3. **Service Discovery**: Other services can find your server by name
+4. **Logging**: Log files show meaningful server names
+5. **Shell Prompt**: Your terminal shows you which server you're on
+6. **Monitoring**: Tools track servers by hostname
+7. **Documentation**: Server inventory lists use hostnames
+
+---
+
+## The hostname Command (Traditional Method)
+
+The `hostname` command is the traditional Unix/Linux tool for viewing and setting hostnames. It's simple, fast, and works on all Linux distributions.
+
+### Viewing Your Current Hostname
+
+The most basic usage—simply run `hostname` with no arguments:
+
+```bash title="View current hostname"
+hostname
+```
+
+**Example output:**
+```
+centos
+```
+
+This shows your system's current hostname. Simple and straightforward!
+
+### Understanding the Command Prompt
+
+Notice how your shell prompt typically shows your hostname:
+
+```
+[centos9@centos ~]$
+#         ^^^^^^
+#         This is your hostname
+```
+
+The format is usually `[username@hostname current_directory]$`
+
+- `centos9` - Your username
+- `centos` - Your hostname
+- `~` - Current directory (home directory)
+
+---
+
+## Getting Network Information from hostname
+
+The `hostname` command has several useful options for retrieving network-related information.
+
+### hostname -i: Show IP Addresses
+
+The `-i` (or `--ip-address`) option shows all IP addresses associated with your hostname:
+
+```bash title="Show all IP addresses"
+hostname -i
+```
+
+**Example output:**
+```
+fe80::9b6f:96bb:eae6:4030%enp0s3 fe80::375d:8fe6:b0ba:6f0f%enp0s8
+fd17:625c:f037:3:942d:4b70:afee:2773 192.168.100.154 10.0.3.15
+172.19.0.1 172.18.0.1 172.17.0.1
+```
+
+Let's break down this output:
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">IP Address</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Type</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>fe80::...</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">IPv6 Link-Local</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Local network communication only</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>fd17::...</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">IPv6 ULA</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">IPv6 private address</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>192.168.100.154</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">IPv4 Private</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Main LAN address</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>10.0.3.15</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">IPv4 Private</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">NAT network (VirtualBox)</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>172.*.0.1</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">IPv4 Private</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Docker bridge networks</td>
+    </tr>
+  </tbody>
+</table>
+
+**Why multiple IP addresses?**
+- Your server can have multiple network interfaces
+- Each interface can have multiple IP addresses
+- Virtual interfaces (Docker, VirtualBox) create additional addresses
+
+### hostname -f: Show FQDN (Fully Qualified Domain Name)
+
+The `-f` (or `--fqdn`) option attempts to show your **Fully Qualified Domain Name**:
+
+```bash title="Show FQDN"
+hostname -f
+```
+
+**Example output:**
+```
+centos
+```
+
+**What is an FQDN?**
+
+An FQDN is the complete domain name for a specific computer or host:
+- **Hostname**: `webserver1`
+- **Domain**: `example.com`
+- **FQDN**: `webserver1.example.com`
+
+<Callout type="info">
+💡 **Note**: If you don't have a domain configured, `hostname -f` will just return your hostname (same as `hostname` without options). This is common on home networks and virtual machines without DNS configuration.
+</Callout>
+
+### Other hostname Options
+
+Here are additional useful options:
+
+```bash title="Explore hostname options"
+# Show short hostname (up to the first dot)
+hostname -s
+
+# Show domain name only (if configured)
+hostname -d
+
+# Show DNS domain name (if configured)
+hostname -y
+
+# Show alias names (if any)
+hostname -a
+
+# Show all FQDNs
+hostname -A
+```
+
+<Callout type="warning">
+⚠️ **Important**: The `-i`, `-f`, and `-d` options depend on proper DNS/hosts file configuration. Without DNS setup, they may not return expected results.
+</Callout>
+
+---
+
+## Changing Your Hostname (Temporary)
+
+You can change your hostname using the `hostname` command, but you need superuser privileges.
+
+### Why sudo is Required
+
+Changing the system hostname affects the entire system, not just your user session. Therefore, you need root privileges:
+
+```bash title="Try changing hostname without sudo (will fail)"
+hostname vm1
+```
+
+**Output:**
+```
+hostname: you must be root to change the host name
+```
+
+The system protects the hostname from unauthorized changes. Let's use `sudo`:
+
+```bash title="Change hostname with sudo (temporary)"
+sudo hostname vm1
+```
+
+**No output = success!**
+
+Now verify the change:
+
+```bash title="Verify the new hostname"
+hostname
+```
+
+**Output:**
+```
+vm1
+```
+
+Success! Your hostname is now `vm1`.
+
+### Understanding Temporary Changes
+
+<Callout type="warning">
+🚨 **Critical Understanding**: Changes made with the `hostname` command are **temporary** and will be **lost on reboot**!
+</Callout>
+
+<div className="my-8">
+  <div className="flex flex-col items-center space-y-4 p-6 bg-amber-50 dark:bg-amber-900/20 rounded-lg border-2 border-amber-300 dark:border-amber-700">
+    <div className="bg-green-500 text-white px-6 py-3 rounded-lg font-semibold text-center">
+      Set hostname with: sudo hostname vm1
+    </div>
+    <div className="text-2xl">↓</div>
+    <div className="bg-blue-500 text-white px-6 py-3 rounded-lg font-semibold text-center">
+      Hostname is vm1 (active in memory)
+    </div>
+    <div className="text-2xl">↓</div>
+    <div className="bg-yellow-500 text-white px-6 py-3 rounded-lg font-semibold text-center">
+      System reboots
+    </div>
+    <div className="text-2xl">↓</div>
+    <div className="bg-red-500 text-white px-6 py-3 rounded-lg font-semibold text-center">
+      Hostname reverts to original value!
+    </div>
+  </div>
+</div>
+
+**When temporary changes are useful:**
+- Testing hostname configurations
+- Temporary troubleshooting
+- Short-lived environments
+- Quick demonstrations
+
+**When you need permanent changes:**
+- Production servers
+- Any system that will reboot
+- Long-term configurations
+- Professional environments
+
+---
+
+## The hostnamectl Command (Modern Method)
+
+`hostnamectl` is the modern, systemd-based tool for managing hostnames. It provides more features and makes **permanent** changes by default.
+
+### Why hostnamectl is Better for Production
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Feature</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">hostname</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">hostnamectl</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Changes persist on reboot?</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">❌ No (temporary)</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">✅ Yes (permanent)</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Shows system info</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">❌ No</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">✅ Yes (OS, kernel, etc.)</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Manages hostname types</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">❌ No</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">✅ Yes (static/transient/pretty)</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Works on all Linux?</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">✅ Yes (traditional)</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">✅ Yes (systemd systems)</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Ease of use</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Simple</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Feature-rich</td>
+    </tr>
+  </tbody>
+</table>
+
+### Viewing System Information with hostnamectl
+
+Run `hostnamectl` with no arguments to see comprehensive system information:
+
+```bash title="View full system information"
+hostnamectl
+```
+
+**Example output:**
+```
+   Static hostname: centos
+Transient hostname: vm1
+         Icon name: computer-vm
+           Chassis: vm
+        Machine ID: 158aabcff7b34160bffa96edea935b2f
+           Boot ID: e7a23cee36e043ebb3dfd5dd303b2f13
+    Virtualization: oracle
+  Operating System: CentOS Stream 9
+       CPE OS Name: cpe:/o:centos:centos:9
+            Kernel: Linux 5.14.0-626.el9.x86_64
+      Architecture: x86-64
+   Hardware Vendor: innotek GmbH
+    Hardware Model: VirtualBox
+  Firmware Version: VirtualBox
+```
+
+Let's break down this incredibly useful output:
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Field</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Explanation</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Static hostname</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Permanent hostname stored in <code>/etc/hostname</code></td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Transient hostname</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Temporary hostname set in memory (current session)</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Icon name</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Icon identifier used by desktop environments</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Chassis</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Hardware type (desktop, laptop, server, vm, etc.)</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Machine ID</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Unique identifier for this installation (from <code>/etc/machine-id</code>)</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Boot ID</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Unique ID for current boot session (changes after reboot)</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Virtualization</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Virtualization technology detected (oracle = VirtualBox)</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Operating System</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Full OS name and version</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>CPE OS Name</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Common Platform Enumeration identifier for security scanners</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Kernel</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Linux kernel version</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Architecture</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">CPU architecture (x86-64, ARM, etc.)</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Hardware Vendor/Model</strong></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Physical or virtual hardware manufacturer and model</td>
+    </tr>
+  </tbody>
+</table>
+
+<Callout type="success">
+✅ **Pro Tip**: `hostnamectl` gives you a comprehensive system snapshot in one command! This is invaluable when troubleshooting or documenting systems.
+</Callout>
+
+---
+
+## Understanding Hostname Types
+
+`hostnamectl` manages three distinct types of hostnames. Understanding the difference is crucial for proper system configuration.
+
+### 1. Static Hostname (Permanent)
+
+The **static hostname** is the permanent hostname stored in `/etc/hostname`. This survives reboots.
+
+- **File location**: `/etc/hostname`
+- **Persistence**: Permanent (survives reboot)
+- **Set at**: System installation or manually configured
+- **Purpose**: The "official" hostname for your system
+
+### 2. Transient Hostname (Temporary)
+
+The **transient hostname** is the current, active hostname in memory. This can differ from the static hostname.
+
+- **Storage**: Kernel memory (not a file)
+- **Persistence**: Temporary (lost on reboot)
+- **Set by**: DHCP, hostname command, or temporary overrides
+- **Purpose**: Runtime hostname (what the system currently uses)
+
+### 3. Pretty Hostname (Descriptive)
+
+The **pretty hostname** is a free-form, descriptive name that can include spaces and special characters.
+
+- **Storage**: `/etc/machine-info`
+- **Persistence**: Permanent
+- **Example**: "John's Development Workstation" or "Production Web Server 01"
+- **Purpose**: Human-friendly description for desktop environments
+
+<div className="grid grid-cols-1 md:grid-cols-3 gap-6 my-8">
+  <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border-2 border-blue-300 dark:border-blue-700">
+    <h4 className="text-lg font-bold text-blue-700 dark:text-blue-300 mb-3">Static</h4>
+    <p className="text-sm mb-2"><strong>File:</strong> /etc/hostname</p>
+    <p className="text-sm mb-2"><strong>Example:</strong> webserver1</p>
+    <p className="text-sm"><strong>Use:</strong> Official server name</p>
+  </div>
+  <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border-2 border-green-300 dark:border-green-700">
+    <h4 className="text-lg font-bold text-green-700 dark:text-green-300 mb-3">Transient</h4>
+    <p className="text-sm mb-2"><strong>Storage:</strong> Memory only</p>
+    <p className="text-sm mb-2"><strong>Example:</strong> temp-webserver</p>
+    <p className="text-sm"><strong>Use:</strong> Current runtime name</p>
+  </div>
+  <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border-2 border-purple-300 dark:border-purple-700">
+    <h4 className="text-lg font-bold text-purple-700 dark:text-purple-300 mb-3">Pretty</h4>
+    <p className="text-sm mb-2"><strong>File:</strong> /etc/machine-info</p>
+    <p className="text-sm mb-2"><strong>Example:</strong> My Web Server</p>
+    <p className="text-sm"><strong>Use:</strong> Friendly description</p>
+  </div>
+</div>
+
+---
+
+## Setting Hostnames with hostnamectl
+
+### Permanent Hostname Change (Recommended)
+
+To change your hostname permanently, use `hostnamectl hostname`:
+
+```bash title="Set permanent hostname"
+sudo hostnamectl hostname webserver1
+```
+
+**No output = success!**
+
+This command:
+1. ✅ Updates the **static hostname** (writes to `/etc/hostname`)
+2. ✅ Updates the **transient hostname** (active immediately)
+3. ✅ **Survives reboot** (permanent change)
+
+Verify the change:
+
+```bash title="Verify hostname change"
+hostnamectl
+```
+
+**Output:**
+```
+   Static hostname: webserver1
+Transient hostname: webserver1
+         Icon name: computer-vm
+           ...
+```
+
+Both static and transient now show `webserver1`!
+
+### Setting Only Static Hostname
+
+You can explicitly set only the static hostname:
+
+```bash title="Set only static hostname"
+sudo hostnamectl --static hostname production-db
+```
+
+This updates `/etc/hostname` but doesn't immediately change the running hostname until reboot (or manual update).
+
+### Setting Only Transient Hostname
+
+Set a temporary hostname for the current session:
+
+```bash title="Set only transient hostname"
+sudo hostnamectl --transient hostname temp-testing
+```
+
+This changes the current hostname but won't survive a reboot.
+
+### Setting Pretty Hostname
+
+Set a human-friendly description:
+
+```bash title="Set pretty hostname"
+sudo hostnamectl --pretty hostname "Production Database Server"
+```
+
+<Callout type="info">
+💡 **Note**: Pretty hostnames can contain spaces, uppercase letters, and special characters—unlike static/transient hostnames which must follow strict naming rules.
+</Callout>
+
+### Viewing Specific Hostname Types
+
+You can query each hostname type individually:
+
+```bash title="View specific hostname types"
+# View only static hostname
+hostnamectl --static
+
+# View only transient hostname
+hostnamectl --transient
+
+# View only pretty hostname
+hostnamectl --pretty
+```
+
+---
+
+## Hostname Naming Rules and Best Practices
+
+Not all characters are valid in hostnames. Follow these rules to avoid issues:
+
+### Valid Hostname Characters
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Allowed</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Not Allowed</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Reason</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Lowercase letters (a-z)</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Uppercase letters (A-Z)</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Case sensitivity issues in DNS</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Numbers (0-9)</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Spaces</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Breaks command parsing</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Hyphens (-)</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Underscores (_)</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Not valid in DNS standards</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Periods (.) for FQDN</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Special chars (!@#$%)</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Invalid in DNS</td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">1-63 characters</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">64+ characters</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">DNS label length limit</td>
+    </tr>
+  </tbody>
+</table>
+
+### Good Hostname Examples
+
+```
+✅ webserver1
+✅ db-prod-01
+✅ mail.example.com
+✅ ubuntu-dev
+✅ app-server-2024
+```
+
+### Bad Hostname Examples
+
+```
+❌ Web Server 1        (spaces)
+❌ DB_PROD_01          (underscores)
+❌ mail@example.com    (special characters)
+❌ WEBSERVER           (uppercase - works but not recommended)
+❌ my_awesome_server   (underscores)
+```
+
+### Professional Naming Conventions
+
+For production environments, consider these naming schemes:
+
+**By Function:**
+```
+webserver1, webserver2
+database-primary, database-replica
+mailserver, backupserver
+```
+
+**By Environment:**
+```
+prod-web-01, prod-web-02
+dev-app-01, dev-app-02
+staging-db-01
+```
+
+**By Location:**
+```
+nyc-web-01, nyc-web-02
+lon-db-01, lon-db-02
+```
+
+**By Team/Project:**
+```
+marketing-cms
+engineering-ci
+ops-monitoring
+```
+
+---
+
+## Understanding /etc/hostname File
+
+The static hostname is stored in a simple text file: `/etc/hostname`
+
+### Viewing /etc/hostname
+
+```bash title="View the hostname file"
+cat /etc/hostname
+```
+
+**Example output:**
+```
+centos
+```
+
+That's it! The file contains just one line: your hostname.
+
+### File Details
+
+```bash title="Check file details"
+ls -l /etc/hostname
+```
+
+**Output:**
+```
+-rw-r--r--. 1 root root 7 Nov  5 13:53 /etc/hostname
+```
+
+**Breakdown:**
+- **Permissions**: `-rw-r--r--` (owner can read/write, others read-only)
+- **Owner**: `root`
+- **Group**: `root`
+- **Size**: 7 bytes (just "centos\n")
+- **Only root can modify this file**
+
+### Manual Editing (Alternative Method)
+
+You can manually edit `/etc/hostname` instead of using `hostnamectl`:
+
+```bash title="Manually edit hostname file"
+sudo nano /etc/hostname
+```
+
+Change the content to your desired hostname:
+```
+webserver1
+```
+
+Save and exit. Then either:
+- **Reboot** for changes to take effect, OR
+- **Apply immediately**: `sudo hostnamectl hostname webserver1`
+
+<Callout type="warning">
+⚠️ **Best Practice**: Use `hostnamectl` instead of manual editing. It handles all the systemd integration automatically and updates both static and transient hostnames.
+</Callout>
+
+---
+
+## Understanding /etc/hosts File
+
+The `/etc/hosts` file maps hostnames to IP addresses locally, bypassing DNS. This is critical for basic networking and localhost resolution.
+
+### Viewing /etc/hosts
+
+```bash title="View the hosts file"
+cat /etc/hosts
+```
+
+**Example output:**
+```
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+
+192.168.100.154  centos
+```
+
+### Understanding the Format
+
+Each line follows this format:
+```
+IP_ADDRESS   hostname [alias1] [alias2] ...
+```
+
+**Line-by-line breakdown:**
+
+1. **`127.0.0.1   localhost localhost.localdomain ...`**
+   - `127.0.0.1` - IPv4 loopback address
+   - Maps to various localhost aliases
+   - Used for local-only communication
+
+2. **`::1         localhost ...`**
+   - `::1` - IPv6 loopback address (equivalent of 127.0.0.1 for IPv6)
+   - Same purpose as line 1, but for IPv6
+
+3. **`192.168.100.154  centos`**
+   - Maps your system's actual IP to its hostname
+   - Automatically added during installation
+
+### What is localhost and 127.0.0.1?
+
+**localhost** is a special hostname that always refers to "this computer" (the local machine).
+
+<div className="my-8 p-6 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg border-2 border-purple-200 dark:border-purple-800">
+  <div className="text-center mb-4 text-lg font-bold text-purple-900 dark:text-purple-100">The Localhost Concept</div>
+  <div className="space-y-3 text-gray-700 dark:text-gray-300">
+    <p><strong>127.0.0.1</strong> - The IPv4 loopback address</p>
+    <p><strong>::1</strong> - The IPv6 loopback address</p>
+    <p><strong>localhost</strong> - Hostname that resolves to loopback</p>
+    <p className="text-sm italic mt-4">Traffic sent to localhost never leaves your computer—it loops back internally!</p>
+  </div>
+</div>
+
+**Why localhost matters:**
+- **Testing**: Run web servers locally (http://localhost:8080)
+- **Development**: Database connections to localhost
+- **Security**: Services can bind to localhost-only for security
+- **Always available**: Works even without network connectivity
+
+### Adding Custom Hostname Mappings
+
+You can add custom hostname-to-IP mappings to `/etc/hosts`:
+
+```bash title="Edit hosts file"
+sudo nano /etc/hosts
+```
+
+Add lines like:
+```
+192.168.1.100   database-server db
+192.168.1.101   webserver web
+10.0.0.50       intranet
+```
+
+Now you can use these names instead of IP addresses:
+
+```bash title="Use custom hostnames"
+# Instead of: ssh user@192.168.1.100
+ssh user@database-server
+
+# Or use the alias:
+ssh user@db
+
+# Ping by hostname:
+ping webserver
+```
+
+<Callout type="success">
+✅ **Use Case**: The `/etc/hosts` file is perfect for small networks, development environments, or when you don't have DNS configured. It's also checked before DNS queries!
+</Callout>
+
+### /etc/hosts Priority Order
+
+When you type a hostname, Linux resolves it in this order:
+
+<div className="my-8">
+  <div className="flex flex-col items-center space-y-4">
+    <div className="bg-blue-500 text-white px-6 py-3 rounded-lg font-semibold text-center w-80">
+      1. Check /etc/hosts file first
+    </div>
+    <div className="text-2xl">↓</div>
+    <div className="bg-green-500 text-white px-6 py-3 rounded-lg font-semibold text-center w-80">
+      2. Query DNS servers if not found
+    </div>
+    <div className="text-2xl">↓</div>
+    <div className="bg-purple-500 text-white px-6 py-3 rounded-lg font-semibold text-center w-80">
+      3. Return "host not found" if still not resolved
+    </div>
+  </div>
+</div>
+
+This means `/etc/hosts` overrides DNS! You can use this to:
+- Block websites (map them to 127.0.0.1)
+- Override DNS for testing
+- Create local development domains
+
+---
+
+## Understanding Machine ID
+
+You might have noticed the **Machine ID** in `hostnamectl` output. Let's explore what this is.
+
+### Viewing Machine ID
+
+```bash title="View your machine ID"
+cat /etc/machine-id
+```
+
+**Example output:**
+```
+158aabcff7b34160bffa96edea935b2f
+```
+
+### What is Machine ID?
+
+The **machine ID** is a unique, persistent identifier for your Linux installation:
+
+- **File**: `/etc/machine-id`
+- **Format**: 32-character hexadecimal string (128-bit UUID)
+- **Created**: During system installation
+- **Purpose**: Uniquely identify this specific Linux installation
+- **Persistence**: Never changes (unless manually reset)
+
+### Why Machine ID Matters
+
+1. **Service Licensing**: Some software uses machine ID for licensing
+2. **Logging**: systemd journals use machine ID to organize logs
+3. **Clustering**: Helps identify nodes in clusters
+4. **Uniqueness**: Ensures system identity even if hostname changes
+
+<Callout type="info">
+💡 **Machine ID vs Hostname**: The hostname can change, but machine ID stays the same. Think of it as a "permanent name" while hostname is the "display name."
+</Callout>
+
+---
+
+## Getting Help with Hostname Commands
+
+### hostname Command Help
+
+```bash title="Get hostname help"
+hostname --help
+```
+
+**Key options:**
+```
+-a, --alias              Display alias names
+-A, --all-fqdns          Display all FQDNs
+-f, --fqdn               Display FQDN
+-i, --ip-address         Display IP addresses
+-I, --all-ip-addresses   Display all IP addresses
+-s, --short              Display short hostname
+-d, --domain             Display DNS domain name
+-y, --yp, --nis          Display NIS domain name
+```
+
+### hostnamectl Command Help
+
+```bash title="Get hostnamectl help"
+hostnamectl --help
+```
+
+**Commands:**
+```
+status                 Show current hostname settings
+hostname [NAME]        Get/set system hostname
+icon-name [NAME]       Get/set icon name for host
+chassis [NAME]         Get/set chassis type for host
+deployment [NAME]      Get/set deployment environment for host
+location [NAME]        Get/set location for host
+```
+
+**Options:**
+```
+--static            Only set static hostname
+--transient         Only set transient hostname
+--pretty            Only set pretty hostname
+```
+
+### Man Pages
+
+```bash title="Read detailed documentation"
+# Traditional hostname command
+man hostname
+
+# Modern hostnamectl command
+man hostnamectl
+
+# Hostname file format
+man 5 hostname
+
+# Hosts file format
+man 5 hosts
+```
+
+---
+
+## 🧪 Practice Labs
+
+Time to solidify your understanding with hands-on practice! These 20 labs progress from basic to advanced real-world scenarios.
+
+### Warm-Up Labs (Beginner)
+
+### Lab 1: View Your Current Hostname (Beginner)
+
+**Task**: Use three different methods to view your current hostname.
+
+**Steps**:
+1. Use the basic `hostname` command
+2. Use `hostnamectl` to see full system info
+3. Check what your shell prompt shows
+
+<details>
+<summary>Show Solution</summary>
+
+**Solution**:
+```bash
+# Method 1: Basic hostname command
+hostname
+
+# Method 2: hostnamectl (comprehensive)
+hostnamectl
+
+# Method 3: Check shell prompt
+# Your prompt shows: [username@HOSTNAME ~]$
+# Look at the part after the @ symbol
+```
+
+**What you'll see**: Your current hostname displayed in different contexts.
+
+**Why this matters**: Understanding multiple ways to check hostname helps in different troubleshooting scenarios.
+</details>
+
+### Lab 2: View All IP Addresses for Your Hostname (Beginner)
+
+**Task**: Display all IP addresses associated with your hostname.
+
+**Steps**:
+1. Use `hostname -i` to see all IPs
+2. Use `ip addr` to verify the IPs belong to your interfaces
+3. Identify which IP is your primary network IP
+
+<details>
+<summary>Show Solution</summary>
+
+**Solution**:
+```bash
+# Show all IPs for hostname
+hostname -i
+
+# Verify with ip command
+ip addr
+
+# Compare the outputs
+# Look for your main LAN IP (usually 192.168.x.x or 10.x.x.x)
+```
+
+**What you'll learn**: Systems often have multiple IPs (physical, virtual, IPv6, loopback).
+
+**Expected output**: Multiple IPs including localhost, LAN IP, and possibly Docker/VM IPs.
+</details>
+
+### Lab 3: Check for FQDN (Beginner)
+
+**Task**: Determine if your system has a Fully Qualified Domain Name configured.
+
+**Steps**:
+1. Run `hostname -f` to check FQDN
+2. Run regular `hostname` to compare
+3. Determine if you have a domain configured
+
+<details>
+<summary>Show Solution</summary>
+
+**Solution**:
+```bash
+# Check FQDN
+hostname -f
+
+# Check regular hostname
+hostname
+
+# Compare the two
+# If they're the same, you don't have a domain configured
+# If -f shows "hostname.domain.com", you have FQDN configured
+```
+
+**What to expect**: On most home/VM systems, both will show the same (no domain).
+
+**Why this matters**: Production servers often have FQDNs; understanding the difference is crucial.
+</details>
+
+### Lab 4: Read the /etc/hostname File (Beginner)
+
+**Task**: Examine the contents and permissions of the `/etc/hostname` file.
+
+**Steps**:
+1. Display the contents of `/etc/hostname`
+2. Check the file permissions and ownership
+3. Verify the content matches `hostname` command output
+
+<details>
+<summary>Show Solution</summary>
+
+**Solution**:
+```bash
+# View file contents
+cat /etc/hostname
+
+# Check file details
+ls -l /etc/hostname
+
+# Verify it matches current hostname
+hostname
+
+# All three should show the same value (static hostname)
+```
+
+**What you'll see**: A simple one-line file containing your hostname, owned by root.
+
+**Why this matters**: Understanding where the static hostname is stored helps with manual troubleshooting.
+</details>
+
+### Lab 5: Explore the /etc/hosts File (Beginner)
+
+**Task**: Examine your `/etc/hosts` file and understand its structure.
+
+**Steps**:
+1. Display `/etc/hosts` contents
+2. Identify the localhost entries
+3. Identify your system's hostname entry
+
+<details>
+<summary>Show Solution</summary>
+
+**Solution**:
+```bash
+# View the hosts file
+cat /etc/hosts
+
+# Look for these sections:
+# 127.0.0.1   localhost localhost.localdomain ...
+# ::1         localhost localhost.localdomain ...
+# [YOUR_IP]   [YOUR_HOSTNAME]
+
+# Test localhost resolution
+ping -c 2 localhost
+
+# Verify it goes to 127.0.0.1
+```
+
+**What you'll learn**: The hosts file maps hostnames to IPs locally, before DNS is queried.
+
+**Expected entries**: Localhost mappings for IPv4 and IPv6, plus your system's hostname.
+</details>
+
+### Core Practice Labs (Intermediate)
+
+### Lab 6: Temporarily Change Your Hostname (Intermediate)
+
+**Task**: Change your hostname temporarily using the `hostname` command, understanding it won't survive a reboot.
+
+**Steps**:
+1. Record your current hostname
+2. Try changing it without sudo (observe the error)
+3. Change it with sudo
+4. Verify the change
+5. Understand this is temporary
+
+<details>
+<summary>Show Solution</summary>
+
+**Solution**:
+```bash
+# Record current hostname
+echo "Original hostname: $(hostname)"
+
+# Try without sudo (will fail)
+hostname test-server
+# Error: "you must be root to change the host name"
+
+# Now with sudo
+sudo hostname test-server
+
+# Verify the change
+hostname
+# Output: test-server
+
+# Check hostnamectl
+hostnamectl
+# Notice: static hostname is still original, transient is test-server
+
+# Remember: This will revert after reboot!
+```
+
+**What you'll learn**: Temporary changes are useful for testing but don't persist.
+
+**Important**: Don't reboot yet if you want to continue with your temporary hostname for practice!
+</details>
+
+### Lab 7: Permanently Change Your Hostname (Intermediate)
+
+**Task**: Make a permanent hostname change using `hostnamectl`.
+
+**Steps**:
+1. Choose a new hostname (following naming rules)
+2. Set it with `hostnamectl hostname`
+3. Verify both static and transient are updated
+4. Check `/etc/hostname` file was updated
+
+<details>
+<summary>Show Solution</summary>
+
+**Solution**:
+```bash
+# Set permanent hostname
+sudo hostnamectl hostname myserver
+
+# Verify the change
+hostnamectl
+# Both static and transient should show "myserver"
+
+# Verify /etc/hostname was updated
+cat /etc/hostname
+# Output: myserver
+
+# This change will survive reboot!
+```
+
+**What you'll learn**: `hostnamectl` makes permanent changes by updating `/etc/hostname`.
+
+**Pro tip**: No reboot required—the change is immediate!
+</details>
+
+### Lab 8: Set a Pretty Hostname (Intermediate)
+
+**Task**: Set a human-friendly pretty hostname with spaces and capitals.
+
+**Steps**:
+1. Set a pretty hostname with descriptive text
+2. Verify it's different from static/transient
+3. Check where it's stored
+
+<details>
+<summary>Show Solution</summary>
+
+**Solution**:
+```bash
+# Set pretty hostname (can include spaces!)
+sudo hostnamectl --pretty hostname "Development Web Server"
+
+# View all hostname types
+hostnamectl
+
+# Check the pretty hostname specifically
+hostnamectl --pretty
+
+# See where it's stored
+cat /etc/machine-info
+# Should show: PRETTY_HOSTNAME="Development Web Server"
+```
+
+**What you'll learn**: Pretty hostnames are for human display, not system networking.
+
+**Use case**: Helpful for desktop environments and system documentation.
+</details>
+
+### Lab 9: Understanding Static vs Transient Hostnames (Intermediate)
+
+**Task**: Create a scenario where static and transient hostnames differ, then reconcile them.
+
+**Steps**:
+1. Set static hostname to one value
+2. Set transient hostname to a different value
+3. Observe the difference in `hostnamectl`
+4. Understand when this situation occurs
+
+<details>
+<summary>Show Solution</summary>
+
+**Solution**:
+```bash
+# Set different static and transient hostnames
+sudo hostnamectl --static hostname server-static
+sudo hostnamectl --transient hostname server-transient
+
+# Verify they're different
+hostnamectl
+# Static hostname: server-static
+# Transient hostname: server-transient
+
+# This is what happens when:
+# - DHCP assigns a hostname (transient)
+# - But /etc/hostname has a different value (static)
+
+# Reconcile them by setting both at once
+sudo hostnamectl hostname unified-server
+
+# Verify both match now
+hostnamectl
+```
+
+**What you'll learn**: Understanding when static and transient diverge helps troubleshoot hostname issues.
+
+**Real-world**: DHCP environments often cause static/transient mismatches.
+</details>
+
+### Lab 10: View Your Machine ID (Intermediate)
+
+**Task**: Examine your system's unique machine ID and understand its purpose.
+
+**Steps**:
+1. Display your machine ID
+2. Check its properties
+3. Verify it matches hostnamectl output
+4. Understand what it's used for
+
+<details>
+<summary>Show Solution</summary>
+
+**Solution**:
+```bash
+# View machine ID
+cat /etc/machine-id
+
+# Check file properties
+ls -l /etc/machine-id
+
+# Compare with hostnamectl
+hostnamectl | grep "Machine ID"
+
+# Both should show the same 32-character hex string
+
+# Try to find where it's used
+journalctl --list-boots
+# Each boot entry shows the machine ID
+```
+
+**What you'll learn**: Machine ID is a permanent, unique identifier for your installation.
+
+**Important**: Don't manually change this unless you have a very specific reason!
+</details>
+
+### Lab 11: Add Custom Hostname Mapping to /etc/hosts (Intermediate)
+
+**Task**: Add a custom hostname entry to `/etc/hosts` for a server on your network.
+
+**Steps**:
+1. Pick a local IP address (or use 127.0.0.1 for testing)
+2. Add a custom mapping to `/etc/hosts`
+3. Test the mapping with ping
+4. Understand /etc/hosts takes priority over DNS
+
+<details>
+<summary>Show Solution</summary>
+
+**Solution**:
+```bash
+# Backup the hosts file first
+sudo cp /etc/hosts /etc/hosts.backup
+
+# Edit the hosts file
+sudo nano /etc/hosts
+
+# Add this line (use 127.0.0.1 for testing):
+# 127.0.0.1   mytest testserver
+
+# Save and exit (Ctrl+O, Enter, Ctrl+X)
+
+# Test the mapping
+ping -c 2 mytest
+# Should ping 127.0.0.1
+
+ping -c 2 testserver
+# Also pings 127.0.0.1
+
+# Both hostnames now resolve to 127.0.0.1!
+```
+
+**What you'll learn**: `/etc/hosts` provides local name resolution without DNS.
+
+**Use case**: Development environments, blocking sites, or small networks without DNS.
+</details>
+
+### Lab 12: Test localhost Resolution (Intermediate)
+
+**Task**: Verify that localhost correctly resolves to the loopback addresses.
+
+**Steps**:
+1. Ping localhost and observe the IP
+2. Check both IPv4 and IPv6 loopback
+3. Verify /etc/hosts contains localhost mappings
+4. Test connecting to a local service via localhost
+
+<details>
+<summary>Show Solution</summary>
+
+**Solution**:
+```bash
+# Ping localhost (IPv4)
+ping -c 2 localhost
+# Should ping 127.0.0.1
+
+# Force IPv6
+ping -6 -c 2 localhost
+# Should ping ::1
+
+# Verify hosts file entries
+grep localhost /etc/hosts
+# Should show:
+# 127.0.0.1   localhost localhost.localdomain
+# ::1         localhost localhost.localdomain
+
+# Test localhost in a URL context
+curl http://localhost
+# (May fail if no web server running, but tests resolution)
+
+# Check what 127.0.0.1 reverse resolves to
+getent hosts 127.0.0.1
+# Output: 127.0.0.1       localhost ...
+```
+
+**What you'll learn**: localhost is critical for local service communication and testing.
+
+**Important**: localhost should always resolve to 127.0.0.1 (IPv4) and ::1 (IPv6).
+</details>
+
+### Lab 13: Compare hostname vs hostnamectl Output (Intermediate)
+
+**Task**: Run both commands and understand what additional information `hostnamectl` provides.
+
+**Steps**:
+1. Run `hostname` and note output
+2. Run `hostnamectl` and note all information
+3. Identify what extra data hostnamectl shows
+4. Determine which command to use when
+
+<details>
+<summary>Show Solution</summary>
+
+**Solution**:
+```bash
+# Basic hostname command
+hostname
+# Output: Just the hostname (e.g., "myserver")
+
+# Comprehensive hostnamectl
+hostnamectl
+# Output: Hostname, OS info, kernel version, hardware, etc.
+
+# What hostnamectl shows that hostname doesn't:
+# - Static vs transient vs pretty hostnames
+# - Operating system details
+# - Kernel version
+# - Architecture
+# - Virtualization type
+# - Hardware vendor/model
+# - Machine ID and Boot ID
+
+# When to use each:
+# hostname: Quick check in scripts or one-liners
+# hostnamectl: Detailed system information for documentation
+```
+
+**What you'll learn**: `hostnamectl` is a more comprehensive system information tool.
+
+**Decision guide**: Use `hostname` for scripts, `hostnamectl` for humans.
+</details>
+
+### Challenge Labs (Advanced)
+
+### Lab 14: Create a Hostname Change Script (Advanced)
+
+**Task**: Write a bash script that safely changes the hostname with validation.
+
+**Steps**:
+1. Create a script that accepts a hostname as argument
+2. Validate the hostname follows naming rules
+3. Change the hostname using hostnamectl
+4. Display confirmation
+
+<details>
+<summary>Show Solution</summary>
+
+**Solution**:
+```bash
+# Create the script
+nano ~/change-hostname.sh
+
+# Script content:
+#!/bin/bash
+
+# Check if hostname argument provided
+if [ -z "$1" ]; then
+    echo "Usage: $0 <new-hostname>"
+    echo "Example: $0 webserver1"
+    exit 1
+fi
+
+NEW_HOSTNAME="$1"
+
+# Validate hostname format
+if [[ ! "$NEW_HOSTNAME" =~ ^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$ ]]; then
+    echo "Error: Invalid hostname format"
+    echo "Rules: lowercase, numbers, hyphens only (1-63 chars)"
+    echo "Must start and end with alphanumeric character"
+    exit 1
+fi
+
+# Show current hostname
+echo "Current hostname: $(hostname)"
+
+# Change hostname
+echo "Changing hostname to: $NEW_HOSTNAME"
+sudo hostnamectl hostname "$NEW_HOSTNAME"
+
+# Verify change
+echo "New hostname: $(hostname)"
+hostnamectl --static
+
+# Save and exit, then make executable
+chmod +x ~/change-hostname.sh
+
+# Test the script
+~/change-hostname.sh webserver1
+
+# Test with invalid hostname
+~/change-hostname.sh Web_Server
+# Should show validation error
+```
+
+**What you'll learn**: Hostname validation and safe automated changes.
+
+**Real-world**: Scripts like this are used in server provisioning automation.
+</details>
+
+### Lab 15: Hostname Change Without Logout (Advanced)
+
+**Task**: Change hostname and update your shell prompt immediately without logging out.
+
+**Steps**:
+1. Note your current shell prompt
+2. Change the hostname
+3. Observe the prompt doesn't change
+4. Force the prompt to update
+
+<details>
+<summary>Show Solution</summary>
+
+**Solution**:
+```bash
+# Check current prompt
+echo $PS1
+# Shows prompt format with \h (hostname placeholder)
+
+# Current prompt shows old hostname
+# Example: [centos9@oldname ~]$
+
+# Change hostname
+sudo hostnamectl hostname newname
+
+# Prompt still shows old hostname!
+# This is because PS1 was set at login
+
+# Force prompt refresh (method 1: source bashrc)
+source ~/.bashrc
+
+# OR method 2: manually update PS1
+export PS1='[\u@\h \W]\$ '
+
+# Now prompt shows new hostname!
+# [centos9@newname ~]$
+
+# Alternatively, just open a new terminal tab/window
+```
+
+**What you'll learn**: Environment variables (like PS1) are set at login and don't auto-update.
+
+**Pro tip**: Opening a new terminal is the easiest way to see the new hostname in your prompt.
+</details>
+
+### Lab 16: Block a Website Using /etc/hosts (Advanced)
+
+**Task**: Use `/etc/hosts` to block access to a specific website by redirecting it to localhost.
+
+**Steps**:
+1. Pick a website to block (use a test site, not something you need!)
+2. Add a hosts entry redirecting it to 127.0.0.1
+3. Test that the site is blocked
+4. Understand how ad-blockers use this technique
+
+<details>
+<summary>Show Solution</summary>
+
+**Solution**:
+```bash
+# Backup hosts file
+sudo cp /etc/hosts /etc/hosts.backup
+
+# Edit hosts file
+sudo nano /etc/hosts
+
+# Add this line (example: block example.com):
+# 127.0.0.1   example.com www.example.com
+
+# Save and exit
+
+# Test the block
+ping -c 2 example.com
+# Should ping 127.0.0.1 instead of the real IP!
+
+# Try in browser
+curl -I http://example.com
+# Will try to connect to localhost (will fail unless you have local web server)
+
+# This is how ad-blockers work!
+# They add thousands of ad domains to /etc/hosts pointing to 127.0.0.1
+
+# Restore access when done
+sudo nano /etc/hosts
+# Remove or comment out the line you added
+```
+
+**What you'll learn**: `/etc/hosts` can override DNS for blocking or redirecting domains.
+
+**Use case**: Ad-blocking, parental controls, malware protection, or development testing.
+</details>
+
+### Lab 17: Create a Local Development Domain (Advanced)
+
+**Task**: Set up a local `.dev` domain for web development testing.
+
+**Steps**:
+1. Choose a development domain (e.g., `myproject.dev`)
+2. Map it to localhost in `/etc/hosts`
+3. Test the resolution
+4. Understand how this helps development workflows
+
+<details>
+<summary>Show Solution</summary>
+
+**Solution**:
+```bash
+# Edit hosts file
+sudo nano /etc/hosts
+
+# Add development domains:
+# 127.0.0.1   myproject.dev
+# 127.0.0.1   api.myproject.dev
+# 127.0.0.1   admin.myproject.dev
+
+# Save and exit
+
+# Test resolution
+ping -c 2 myproject.dev
+# Should ping 127.0.0.1
+
+getent hosts api.myproject.dev
+# Should show: 127.0.0.1   api.myproject.dev
+
+# Now if you run a local web server on port 80 or 8080:
+# You can access it via: http://myproject.dev:8080
+# Instead of: http://localhost:8080
+
+# Test with curl
+curl http://myproject.dev
+# (Will fail unless web server running, but tests DNS resolution)
+```
+
+**What you'll learn**: Local development domains make testing feel more like production.
+
+**Real-world**: Developers commonly use `.dev`, `.local`, or `.test` domains for local work.
+</details>
+
+### Lab 18: Investigate Hostname Resolution Order (Advanced)
+
+**Task**: Understand the order in which hostname resolution happens (hosts file vs DNS).
+
+**Steps**:
+1. Check the `/etc/nsswitch.conf` file for hostname resolution order
+2. Create a conflict between /etc/hosts and real DNS
+3. Observe which takes priority
+4. Understand the full resolution chain
+
+<details>
+<summary>Show Solution</summary>
+
+**Solution**:
+```bash
+# Check name service switch configuration
+grep hosts /etc/nsswitch.conf
+# Output: hosts: files dns myhostname
+# This means:
+# 1. Check /etc/hosts (files) first
+# 2. Then check DNS (dns)
+# 3. Then use myhostname (systemd fallback)
+
+# Create a conflict - add google.com to hosts
+sudo nano /etc/hosts
+# Add: 127.0.0.1   google.com
+
+# Save and exit
+
+# Test resolution
+getent hosts google.com
+# Output: 127.0.0.1   google.com
+# /etc/hosts overrides DNS!
+
+# Verify with ping
+ping -c 2 google.com
+# Pings 127.0.0.1, not real Google servers
+
+# This proves /etc/hosts has highest priority
+
+# Clean up
+sudo nano /etc/hosts
+# Remove the google.com line
+
+# Verify DNS works again
+ping -c 2 google.com
+# Now pings real Google IPs
+```
+
+**What you'll learn**: `/etc/hosts` always takes priority over DNS queries.
+
+**Why this matters**: Understanding resolution order helps troubleshoot connectivity issues.
+</details>
+
+### Lab 19: Simulate a Hostname Mismatch Scenario (Advanced)
+
+**Task**: Create and troubleshoot a scenario where different tools report different hostnames.
+
+**Steps**:
+1. Set different static and transient hostnames
+2. Manually edit `/etc/hostname` to a third value
+3. Use various commands to see the confusion
+4. Fix the mismatch properly
+
+<details>
+<summary>Show Solution</summary>
+
+**Solution**:
+```bash
+# Create the mismatch scenario
+sudo hostnamectl --static hostname static-name
+sudo hostnamectl --transient hostname transient-name
+
+# Manually edit /etc/hostname
+sudo nano /etc/hostname
+# Change to: manual-name
+# Save and exit
+
+# Now check various commands
+hostname
+# Shows: transient-name (current kernel hostname)
+
+hostnamectl --static
+# Shows: static-name (what hostnamectl thinks is static)
+
+cat /etc/hostname
+# Shows: manual-name (actual file content)
+
+# This is confusing! Different tools show different values.
+
+# Fix the mismatch properly
+sudo hostnamectl hostname corrected-name
+
+# Verify everything is consistent
+hostname                    # Should show: corrected-name
+hostnamectl --static        # Should show: corrected-name
+hostnamectl --transient     # Should show: corrected-name
+cat /etc/hostname           # Should show: corrected-name
+
+# Now everything is synchronized!
+```
+
+**What you'll learn**: Manual file editing can create inconsistencies; always use `hostnamectl`.
+
+**Troubleshooting**: If hostname seems wrong, check all three sources.
+</details>
+
+### Lab 20: Advanced Hostname Automation for Fleet Management (Advanced)
+
+**Task**: Create a script that sets hostnames based on system properties for a server fleet.
+
+**Steps**:
+1. Write a script that generates hostnames from system info
+2. Include role, location, and sequence number
+3. Validate and apply the hostname
+4. Make it idempotent (safe to run multiple times)
+
+<details>
+<summary>Show Solution</summary>
+
+**Solution**:
+```bash
+# Create advanced provisioning script
+nano ~/auto-hostname.sh
+
+# Script content:
+#!/bin/bash
+
+# Auto-generate hostname based on system properties
+
+# Configuration
+ROLE="web"          # Could be web, db, app, etc.
+LOCATION="nyc"      # Datacenter location
+SEQUENCE="01"       # Server number
+
+# Get MAC address last 4 chars for uniqueness
+MAC=$(ip link show | grep -m1 ether | awk '{print $2}' | tr -d ':' | tail -c 5)
+
+# Generate hostname: role-location-sequence-mac
+GENERATED_HOSTNAME="${ROLE}-${LOCATION}-${SEQUENCE}-${MAC}"
+
+# Convert to lowercase
+GENERATED_HOSTNAME=$(echo "$GENERATED_HOSTNAME" | tr '[:upper:]' '[:lower:]')
+
+echo "Generated hostname: $GENERATED_HOSTNAME"
+echo "Current hostname: $(hostname)"
+
+# Check if already set
+if [ "$(hostname)" = "$GENERATED_HOSTNAME" ]; then
+    echo "Hostname already correct. No changes needed."
+    exit 0
+fi
+
+# Validate format
+if [[ ! "$GENERATED_HOSTNAME" =~ ^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$ ]]; then
+    echo "Error: Generated hostname invalid!"
+    exit 1
+fi
+
+# Apply hostname
+echo "Setting hostname to: $GENERATED_HOSTNAME"
+sudo hostnamectl hostname "$GENERATED_HOSTNAME"
+
+# Verify
+echo "Verification:"
+hostnamectl --static
+
+# Make executable
+chmod +x ~/auto-hostname.sh
+
+# Run the script
+~/auto-hostname.sh
+
+# Example output: web-nyc-01-a4b2
+```
+
+**What you'll learn**: Automated hostname generation for infrastructure as code.
+
+**Real-world**: Cloud providers and orchestration tools use similar logic for auto-naming instances.
+
+**Advanced**: Could extend with environment variables, pull from metadata servers, or integrate with Ansible/Terraform.
+</details>
+
+---
+
+## 📚 Best Practices for Hostname Management
+
+### For Production Servers
+
+1. **Use Descriptive Names**
+   ```
+   ✅ prod-web-01, prod-db-primary
+   ❌ server1, myserver
+   ```
+
+2. **Include Environment in Name**
+   ```
+   ✅ prod-app-01, staging-app-01, dev-app-01
+   ```
+
+3. **Use Consistent Naming Schemes**
+   - Document your naming convention
+   - Train your team on the scheme
+   - Use automation to enforce it
+
+4. **Always Use hostnamectl for Changes**
+   - Don't manually edit `/etc/hostname` unless absolutely necessary
+   - Use `hostnamectl` for consistent, permanent changes
+   - Avoid the old `hostname` command for production changes
+
+5. **Document Hostname Changes**
+   - Keep a server inventory
+   - Log all hostname changes
+   - Include rationale for changes
+
+### For Development/Testing
+
+1. **Use Local Domains**
+   - `.dev`, `.local`, `.test` for development
+   - Add to `/etc/hosts` for testing
+   - Never use production domain names
+
+2. **Temporary Changes Are OK**
+   - Use `hostname` command for quick tests
+   - Remember changes don't persist
+
+3. **Reset After Testing**
+   - Restore original hostnames
+   - Clean up `/etc/hosts` entries
+
+### Security Considerations
+
+1. **Don't Include Sensitive Info in Hostnames**
+   ```
+   ❌ db-password-prod
+   ❌ api-key-12345
+   ```
+
+2. **Limit Who Can Change Hostnames**
+   - Only root/sudo users can change hostnames
+   - Audit hostname changes in production
+
+3. **Monitor Hostname Changes**
+   - Unexpected hostname changes can indicate compromise
+   - Alert on hostname modifications in production
+
+### Network Integration
+
+1. **Configure Proper DNS**
+   - Register hostnames in DNS when possible
+   - Use FQDN for production servers
+   - Ensure reverse DNS is configured
+
+2. **Update /etc/hosts for Local Resolution**
+   - Add critical servers to `/etc/hosts`
+   - Provides fallback if DNS fails
+   - Useful for troubleshooting
+
+3. **Consider DHCP Interactions**
+   - DHCP can set transient hostname
+   - May conflict with static hostname
+   - Document your DHCP policy
+
+---
+
+## 🚨 Common Pitfalls to Avoid
+
+### Pitfall 1: Forgetting Hostname Changes Are Temporary
+
+**Problem**: Using `hostname` command and expecting it to persist after reboot.
+
+```bash
+# ❌ Wrong: Temporary change
+sudo hostname webserver1
+# Reboots and hostname reverts!
+
+# ✅ Right: Permanent change
+sudo hostnamectl hostname webserver1
+# Survives reboot
+```
+
+### Pitfall 2: Invalid Characters in Hostnames
+
+**Problem**: Using uppercase, underscores, or special characters.
+
+```bash
+# ❌ Wrong: Invalid characters
+sudo hostnamectl hostname Web_Server_1
+
+# ✅ Right: Valid format
+sudo hostnamectl hostname web-server-1
+```
+
+### Pitfall 3: Manually Editing /etc/hostname Without Updating Runtime
+
+**Problem**: Editing the file but not applying the change.
+
+```bash
+# ❌ Wrong way:
+sudo nano /etc/hostname
+# Changed to "newserver"
+hostname
+# Still shows old hostname!
+
+# ✅ Right way: Use hostnamectl
+sudo hostnamectl hostname newserver
+# Updates both file and runtime
+```
+
+### Pitfall 4: Hostname Changes Don't Update Shell Prompt
+
+**Problem**: Expecting prompt to update immediately.
+
+**Solution**: Open new terminal or run `source ~/.bashrc`
+
+### Pitfall 5: Forgetting to Update /etc/hosts
+
+**Problem**: Changing hostname but not updating `/etc/hosts`.
+
+```bash
+# After changing hostname to webserver1:
+# ❌ Forgot to update /etc/hosts
+ping $(hostname)
+# May fail or resolve incorrectly
+
+# ✅ Update /etc/hosts
+sudo nano /etc/hosts
+# Add: 192.168.1.100  webserver1
+```
+
+### Pitfall 6: Not Understanding Static vs Transient
+
+**Problem**: Confusion when `hostnamectl` shows different static and transient values.
+
+**Solution**: Use `sudo hostnamectl hostname <name>` to set both at once.
+
+### Pitfall 7: Testing Hostname Resolution Without Clearing DNS Cache
+
+**Problem**: DNS cache prevents seeing `/etc/hosts` changes immediately.
+
+**Solution**: Most Linux systems don't cache by default, but if using `systemd-resolved`:
+
+```bash
+# Clear systemd-resolved cache
+sudo systemd-resolve --flush-caches
+```
+
+---
+
+## 📝 Command Cheat Sheet
+
+### hostname Command Reference
+
+```bash
+# View current hostname
+hostname
+
+# View all IP addresses
+hostname -i
+
+# View FQDN
+hostname -f
+
+# View short hostname
+hostname -s
+
+# View domain name
+hostname -d
+
+# Change hostname (temporary)
+sudo hostname newname
+
+# Get help
+hostname --help
+man hostname
+```
+
+### hostnamectl Command Reference
+
+```bash
+# View full system info (including hostname)
+hostnamectl
+
+# View only static hostname
+hostnamectl --static
+
+# View only transient hostname
+hostnamectl --transient
+
+# View only pretty hostname
+hostnamectl --pretty
+
+# Set hostname (permanent - sets both static and transient)
+sudo hostnamectl hostname newname
+
+# Set only static hostname
+sudo hostnamectl --static hostname newname
+
+# Set only transient hostname
+sudo hostnamectl --transient hostname newname
+
+# Set pretty hostname
+sudo hostnamectl --pretty hostname "My Server"
+
+# Get help
+hostnamectl --help
+man hostnamectl
+```
+
+### File Locations
+
+```bash
+# Static hostname file
+cat /etc/hostname
+
+# Hosts file (local DNS)
+cat /etc/hosts
+
+# Machine ID
+cat /etc/machine-id
+
+# Pretty hostname location
+cat /etc/machine-info
+
+# Name service switch config
+grep hosts /etc/nsswitch.conf
+```
+
+### Quick Checks
+
+```bash
+# One-liner: Show all hostname info
+echo "Hostname: $(hostname), FQDN: $(hostname -f), IPs: $(hostname -i)"
+
+# Check if static and transient match
+hostnamectl | grep hostname
+
+# View machine ID
+hostnamectl | grep "Machine ID"
+```
+
+---
+
+## 🎯 Key Takeaways
+
+<div className="my-8 p-6 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg border-2 border-green-200 dark:border-green-800">
+  <h3 className="text-xl font-bold mb-4 text-green-900 dark:text-green-100">Essential Concepts</h3>
+  <ul className="space-y-2 text-gray-700 dark:text-gray-300">
+    <li><strong>✓ hostname command</strong>: Traditional tool for viewing/setting hostnames (changes are temporary)</li>
+    <li><strong>✓ hostnamectl command</strong>: Modern systemd tool for permanent hostname management (recommended)</li>
+    <li><strong>✓ Three hostname types</strong>: Static (permanent in /etc/hostname), Transient (current runtime), Pretty (human-friendly)</li>
+    <li><strong>✓ /etc/hostname file</strong>: Stores the static hostname (permanent across reboots)</li>
+    <li><strong>✓ /etc/hosts file</strong>: Maps hostnames to IPs locally, overrides DNS</li>
+    <li><strong>✓ localhost</strong>: Special hostname that always refers to this computer (127.0.0.1 or ::1)</li>
+    <li><strong>✓ Naming rules</strong>: Use lowercase, numbers, hyphens only (1-63 chars)</li>
+    <li><strong>✓ hostname -i</strong>: Shows all IP addresses for your hostname</li>
+    <li><strong>✓ hostname -f</strong>: Shows FQDN (if configured)</li>
+    <li><strong>✓ Machine ID</strong>: Unique, permanent identifier in /etc/machine-id</li>
+  </ul>
+</div>
+
+---
+
+## 🚀 What's Next?
+
+Excellent work! You've mastered hostname management—a fundamental skill for Linux system administration. You can now:
+- ✅ View hostnames using multiple methods
+- ✅ Set temporary hostnames for testing
+- ✅ Make permanent hostname changes with hostnamectl
+- ✅ Understand static, transient, and pretty hostnames
+- ✅ Configure local name resolution with /etc/hosts
+- ✅ Follow professional hostname naming conventions
+
+**In the next post (Part 17)**, we'll dive into the **Linux Filesystem Hierarchy**—understanding the structure and purpose of directories like `/etc`, `/var`, `/usr`, `/home`, and more. You'll learn why Linux organizes files the way it does and where to find critical system files.
+
+**Coming up in this series:**
+- **Post 17**: Understanding Linux Filesystem Hierarchy Part 1: Overview
+- **Post 18**: /usr Directory Deep Dive
+- **Post 19**: /var and /etc Explained
+- **Post 20**: Understanding Write Permissions and Access
+
+---
+
+<Callout type="success">
+🎉 **Congratulations!** You've completed LFCS Phase 1 Part 16! You now understand how to manage Linux hostnames like a professional system administrator. These skills are essential for server management, networking, and the LFCS exam.
+
+**Practice suggestion**: Try setting up a meaningful hostname on your test system, add a few entries to `/etc/hosts` for local services, and practice using both `hostname` and `hostnamectl` commands until they feel natural!
+</Callout>
+
+---
+
+**Series Navigation:**
+- ← Previous: [Part 15 - Understanding Network Interfaces with ip Command](/blog/2025-11-19_lfcs-phase1-part-15-network-interfaces-ip-command)
+- → Next: Part 17 - Understanding Linux Filesystem Hierarchy (Coming Soon)
+
+*Part of the LFCS Certification Preparation Series - Phase 1 of 9*

@@ -1,13 +1,151 @@
 # LFCS Phase 1 Blog Series - Project State Document
 
-**Last Updated**: 2025-11-05
-**Status**: Posts 1-15 Completed - Networking Section Started!
-**Session**: Session 8 - Completed Post 15 (Network Interfaces)
-**Next Steps**: Continue with Post 16 (hostname commands)
+**Last Updated**: 2025-12-07
+**Status**: Posts 1-19 Completed - Filesystem Hierarchy Deep Dives Complete!
+**Session**: Session 11 - Completed Posts 18 and 19 (Filesystem Deep Dives)
+**Next Steps**: Continue with Post 20 (Write Permissions and Access Control)
 
 ---
 
 ## 📝 Session Summary (Latest)
+
+### Session 11 - 2025-12-07
+**Accomplishments:**
+1. ✅ Completed Post 18: Understanding /usr Directory Deep Dive (~6,759 words)
+   - Comprehensive guide to /usr directory structure and organization
+   - /usr/bin explained - user command binaries (1000+ commands)
+   - /usr/sbin explained - system administration binaries
+   - /usr/lib and /usr/lib64 - shared libraries and dependencies
+   - ldd command for library dependency analysis
+   - /usr/share explained - architecture-independent data
+   - Man pages location (/usr/share/man)
+   - Application data, icons, themes in /usr/share
+   - /usr/local for locally installed software (stow pattern)
+   - /usr/include for C/C++ development headers
+   - Symlinks: /bin → /usr/bin, /sbin → /usr/sbin on modern systems
+   - Package manager integration (rpm -ql, dpkg -L)
+   - $PATH variable and command search order
+   - Understanding which command for finding binaries
+   - Comprehensive library management concepts
+   - 20 comprehensive practice labs with collapsible solutions
+   - Labs cover: exploring /usr, package file tracking, library dependencies, local installs
+
+2. ✅ Completed Post 19: Understanding /var and /etc Explained (~6,072 words)
+   - Comprehensive guide to /var (variable data) directory
+   - /var/log explained - system logs and troubleshooting
+   - Critical log files: messages, secure, boot.log, dmesg
+   - Log rotation concepts and implementation
+   - /var/cache explained - package manager and application caches
+   - /var/tmp vs /tmp differences (persistence across reboots)
+   - /var/spool explained - mail, cron, print queue data
+   - Complete guide to /etc (configuration files)
+   - /etc/passwd format and all 7 fields explained
+   - /etc/shadow format with password encryption details
+   - /etc/group for group management
+   - /etc/hosts for hostname resolution
+   - /etc/hostname for system hostname
+   - /etc/fstab for filesystem mounting (all 6 fields)
+   - /etc/sudoers for sudo configuration
+   - Configuration file best practices and backups
+   - 20 comprehensive practice labs with collapsible solutions
+   - Labs cover: log analysis, configuration management, backups, monitoring
+
+**Content Quality:**
+- Used proven MDX structure with lab solutions only collapsible
+- All syntax verified (no dangerous `<code>{{` patterns)
+- Both posts have exactly 20 labs with 20 "Show Solution" buttons
+- Extensive comparison tables with Tailwind styling
+- Visual directory structure diagrams
+- Field-by-field breakdowns of critical config files
+- Best practices and common pitfalls sections
+- Complete command cheat sheets
+
+**Status:** Filesystem Hierarchy deep dives complete! Posts 18-19 provide comprehensive coverage of /usr, /var, and /etc. Ready to move to Post 20 (Write Permissions).
+
+**Next Session Actions:**
+1. Write Post 20: Understanding Write Permissions and Access Control
+2. Continue with file operations and links section (Posts 21+)
+
+---
+
+### Session 10 - 2025-12-07
+**Accomplishments:**
+1. ✅ Completed Post 17: Understanding Linux Filesystem Hierarchy Part 1 - Overview (~8,273 words)
+   - Comprehensive guide to Linux filesystem organization
+   - "Everything is a file" philosophy explained
+   - Complete overview of all major directories
+   - FHS (Filesystem Hierarchy Standard) detailed
+   - Root directory (/) as the starting point
+   - System binaries: /bin, /sbin, /lib, /lib64
+   - Boot files: /boot directory explained
+   - Configuration: /etc directory deep dive
+   - Variable data: /var directory structure
+   - User directories: /home and /root
+   - Shared resources: /usr overview
+   - Virtual filesystems: /proc, /sys, /dev explained
+   - Temporary files: /tmp and /run
+   - Mount points: /media and /mnt
+   - Optional software: /opt and /srv
+   - Directory classification: read-only vs writable
+   - Real vs virtual filesystems comparison
+   - Complete reference chart for all directories
+   - 20 comprehensive practice labs with collapsible solutions
+   - Labs cover: exploring directories, permissions, virtual filesystems, devices
+   - Advanced labs: calculating sizes, creating filesystem maps, system info extraction
+
+**Content Quality:**
+- Used proven MDX structure with lab solutions only collapsible
+- All syntax verified (no double braces, proper code blocks)
+- Extensive comparison tables with Tailwind styling
+- Visual filesystem tree diagrams
+- Comprehensive directory classification grids
+- Best practices and common pitfalls sections
+- Complete command cheat sheet
+- man hier reference included
+
+**Status:** Filesystem Hierarchy section started! Foundation for Posts 18-20 established.
+
+**Next Session Actions:**
+1. Write Post 18: Understanding /usr Directory Deep Dive
+2. Write Post 19: Understanding /var and /etc Explained
+3. Write Post 20: Write Permissions and Access Control
+
+---
+
+### Session 9 - 2025-12-07
+**Accomplishments:**
+1. ✅ Completed Post 16: Managing Hostnames with hostname and hostnamectl (~7,664 words)
+   - Comprehensive guide to Linux hostname management
+   - Traditional hostname command vs modern hostnamectl
+   - Understanding static, transient, and pretty hostnames
+   - Temporary vs permanent hostname changes
+   - hostname -i (IP addresses) and hostname -f (FQDN)
+   - /etc/hostname and /etc/hosts files explained
+   - localhost and 127.0.0.1 detailed explanation
+   - Machine ID concept
+   - Hostname naming rules and best practices
+   - Professional naming conventions for production
+   - 20 comprehensive practice labs with collapsible solutions
+   - Real-world scenarios: auto-hostname generation, local dev domains, website blocking
+   - Advanced troubleshooting and fleet management examples
+
+**Content Quality:**
+- Used proven MDX structure from previous posts
+- All syntax verified (no double braces, proper code blocks)
+- Comprehensive comparison tables with Tailwind styling
+- Visual decision flow diagrams
+- Multiple real-world examples and analogies
+- Best practices and common pitfalls sections
+- Complete command cheat sheet for both commands
+
+**Status:** Networking basics section complete! Ready to move into Filesystem Hierarchy.
+
+**Next Session Actions:**
+1. Write Post 17: Understanding Linux Filesystem Hierarchy Part 1: Overview
+2. Write Post 18: /usr Directory Deep Dive
+3. Continue with remaining filesystem posts
+
+---
 
 ### Session 8 - 2025-11-05
 **Accomplishments:**
@@ -133,15 +271,23 @@
 - ✅ **Post 13**: Using info, pinfo, and --help - COMPLETE
 - ✅ **Post 14**: Exploring /usr/share/doc and tldr - COMPLETE (Fixed in Session 7)
 - ✅ **Post 15**: Understanding Network Interfaces with ip Command - COMPLETE
-- ⏳ **Post 16**: Managing Hostnames with hostname and hostnamectl - NEXT TO WRITE
-- 📊 **Progress**: 15 of 52 posts (28.8%)
-- 📝 **Words Written**: ~114,500
+- ✅ **Post 16**: Managing Hostnames with hostname and hostnamectl - COMPLETE
+- ✅ **Post 17**: Understanding Linux Filesystem Hierarchy Part 1: Overview - COMPLETE
+- ✅ **Post 18**: Understanding /usr Directory Deep Dive - COMPLETE
+- ✅ **Post 19**: Understanding /var and /etc Explained - COMPLETE
+- ⏳ **Post 20**: Write Permissions and Access Control - NEXT TO WRITE
+- 📊 **Progress**: 19 of 52 posts (36.5%)
+- 📝 **Words Written**: ~143,268
 
 **Immediate Next Steps:**
 1. ✅ Post 14 rendering issue FIXED (recreated from scratch in Session 7)
 2. ✅ Post 15: Understanding Network Interfaces with ip Command COMPLETE
-3. Write Post 16: Managing Hostnames with hostname and hostnamectl
-4. Then proceed to Filesystem Hierarchy (Posts 17+)
+3. ✅ Post 16: Managing Hostnames with hostname and hostnamectl COMPLETE
+4. ✅ Post 17: Understanding Linux Filesystem Hierarchy Part 1: Overview COMPLETE
+5. ✅ Post 18: Understanding /usr Directory Deep Dive COMPLETE
+6. ✅ Post 19: Understanding /var and /etc Explained COMPLETE
+7. Write Post 20: Understanding Write Permissions and Access Control
+8. Then proceed with file operations and links section (Posts 21+)
 
 ---
 
@@ -480,8 +626,11 @@ The posts MUST follow the exact order of topics in lfcs-rough.txt:
 - [x] Post 13: Using info, pinfo, and --help (COMPLETED)
 - [x] Post 14: Exploring /usr/share/doc and tldr (COMPLETED - Fixed in Session 7)
 - [x] Post 15: Understanding Network Interfaces with ip Command (COMPLETED)
-- [ ] Post 16: Managing Hostnames with hostname and hostnamectl
-- [ ] Posts 17-20: Filesystem Hierarchy
+- [x] Post 16: Managing Hostnames with hostname and hostnamectl (COMPLETED)
+- [x] Post 17: Understanding Linux Filesystem Hierarchy Part 1: Overview (COMPLETED)
+- [x] Post 18: Understanding /usr Directory Deep Dive (COMPLETED)
+- [x] Post 19: Understanding /var and /etc Explained (COMPLETED)
+- [ ] Post 20: Write Permissions and Access Control
 - [ ] Posts 21-29: File Operations & Links
 - [ ] Posts 30-41: Text Editors & Processing
 - [ ] Posts 42-52: SSH, Shell, I/O, Variables, Config
@@ -675,9 +824,150 @@ The posts MUST follow the exact order of topics in lfcs-rough.txt:
   - Complete command cheat sheet
   - Comparison tables and visual diagrams
 
+### Post 16: Managing Hostnames with hostname and hostnamectl
+- **File**: `2025-12-07_lfcs-phase1-part-16-managing-hostnames.mdx`
+- **Status**: ✅ COMPLETED - Ready for review
+- **Word Count**: ~7,664 words
+- **Content Includes**:
+  - What is a hostname and why it matters
+  - The hostname command (traditional method)
+  - Viewing current hostname
+  - hostname -i (show all IP addresses)
+  - hostname -f (show FQDN - Fully Qualified Domain Name)
+  - Changing hostname temporarily (requires sudo)
+  - Understanding temporary vs permanent changes
+  - The hostnamectl command (modern systemd method)
+  - Viewing comprehensive system information
+  - Understanding hostname types: static, transient, pretty
+  - Static hostname (permanent in /etc/hostname)
+  - Transient hostname (temporary in memory)
+  - Pretty hostname (human-friendly description)
+  - Setting permanent hostnames with hostnamectl
+  - Setting specific hostname types (--static, --transient, --pretty)
+  - Hostname naming rules and best practices
+  - Valid vs invalid characters in hostnames
+  - Professional naming conventions
+  - Understanding /etc/hostname file
+  - Understanding /etc/hosts file
+  - localhost and 127.0.0.1 explained
+  - IPv4 vs IPv6 loopback addresses
+  - Adding custom hostname mappings
+  - Hostname resolution order (hosts file vs DNS)
+  - Understanding Machine ID (/etc/machine-id)
+  - Comparison: hostname vs hostnamectl
+  - **20 comprehensive practice labs** with collapsible solutions
+  - Real-world scenarios: hostname change scripts, website blocking, local dev domains
+  - Advanced labs: fleet management, hostname mismatch troubleshooting
+  - Best practices for production servers
+  - Common pitfalls and how to avoid them
+  - Complete command cheat sheet for both commands
+  - Comparison tables and visual decision flows
+
+### Post 17: Understanding Linux Filesystem Hierarchy Part 1 - Overview
+- **File**: `2025-12-07_lfcs-phase1-part-17-filesystem-hierarchy-overview.mdx`
+- **Status**: ✅ COMPLETED - Ready for review
+- **Word Count**: ~8,273 words
+- **Content Includes**:
+  - "Everything is a file" philosophy explained in detail
+  - The root directory (/) as the filesystem starting point
+  - Complete FHS (Filesystem Hierarchy Standard) overview
+  - System binaries and libraries: /bin, /sbin, /lib, /lib64
+  - Boot and kernel files: /boot directory deep dive
+  - Configuration files: /etc directory comprehensive guide
+  - Variable data: /var directory structure and subdirectories
+  - User directories: /home and /root explained
+  - Shared resources: /usr overview (detailed in Post 18)
+  - Virtual filesystems: /proc, /sys, /dev thoroughly explained
+  - Temporary files: /tmp and /run differences
+  - Mount points: /media and /mnt usage
+  - Optional software: /opt and /srv purposes
+  - Directory classification: read-only vs writable
+  - Real vs virtual filesystems comparison grids
+  - Complete reference chart for all major directories
+  - man hier documentation reference
+  - Quick reference chart with examples
+  - **20 comprehensive practice labs** with collapsible solutions only
+  - Warm-up labs: exploring root, finding home, /etc configs, virtual filesystems
+  - Intermediate labs: /var navigation, /usr structure, write permissions, /proc processes
+  - Advanced labs: directory sizes, filesystem maps, hidden files, mounts, system info
+  - Best practices for navigation and safety
+  - Common pitfalls and how to avoid them
+  - Complete command cheat sheet for filesystem navigation
+
+### Post 18: Understanding /usr Directory Deep Dive
+- **File**: `2025-12-07_lfcs-phase1-part-18-usr-directory-deep-dive.mdx`
+- **Status**: ✅ COMPLETED - Ready for review
+- **Word Count**: ~6,759 words
+- **Content Includes**:
+  - Comprehensive /usr directory structure and organization
+  - /usr/bin explained - user command binaries (1000+ commands available)
+  - Common commands in /usr/bin: tar, ssh, vim, grep, awk, etc.
+  - /usr/sbin explained - system administration binaries
+  - Differences between /usr/bin and /usr/sbin
+  - /usr/lib and /usr/lib64 - shared libraries and dependencies
+  - Understanding library naming conventions (.so files)
+  - ldd command for analyzing library dependencies
+  - ldconfig for library cache management
+  - /usr/share explained - architecture-independent data
+  - Man pages location and structure (/usr/share/man)
+  - Application data, documentation, icons, themes in /usr/share
+  - /usr/local for locally installed software (not package manager)
+  - /usr/local hierarchy mirrors /usr (bin, sbin, lib, share)
+  - GNU Stow pattern for /usr/local management
+  - /usr/include for C/C++ development headers
+  - Understanding symlinks: /bin → /usr/bin, /sbin → /usr/sbin on modern systems
+  - Package manager integration (rpm -ql, dpkg -L)
+  - $PATH variable and command search order
+  - which command for finding binary locations
+  - whereis command for comprehensive file location
+  - Library search path and LD_LIBRARY_PATH
+  - **20 comprehensive practice labs** with collapsible solutions only
+  - Labs cover: exploring /usr structure, package file tracking, library dependencies
+  - Advanced labs: local software installation, PATH manipulation, dependency analysis
+  - Best practices for /usr directory management
+  - Common pitfalls and safety tips
+  - Complete command cheat sheet
+
+### Post 19: Understanding /var and /etc Explained
+- **File**: `2025-12-07_lfcs-phase1-part-19-var-etc-explained.mdx`
+- **Status**: ✅ COMPLETED - Ready for review
+- **Word Count**: ~6,072 words
+- **Content Includes**:
+  - Complete guide to /var (variable data) directory
+  - /var/log explained - centralized system logging
+  - Critical log files: /var/log/messages, /var/log/secure, /var/log/boot.log
+  - dmesg command and /var/log/dmesg
+  - journalctl and systemd journal integration
+  - Log rotation concepts with logrotate
+  - /var/cache explained - package manager and application caches
+  - dnf/yum cache location and management
+  - /var/tmp vs /tmp differences (persistence across reboots)
+  - /var/spool explained - queued data (mail, cron, print jobs)
+  - /var/spool/cron for user crontabs
+  - /var/spool/mail for email storage
+  - Complete guide to /etc (system configuration files)
+  - /etc/passwd format - all 7 fields explained (username:x:UID:GID:GECOS:home:shell)
+  - /etc/shadow format - password encryption and aging fields
+  - /etc/group format for group management
+  - /etc/hosts for hostname to IP resolution
+  - /etc/hostname for system hostname
+  - /etc/fstab for filesystem mounting - all 6 fields explained
+  - /etc/fstab device, mount point, filesystem type, options, dump, pass
+  - /etc/sudoers for sudo configuration
+  - Configuration file best practices and backup strategies
+  - Understanding .rpmsave and .rpmnew files
+  - Version control for /etc using etckeeper
+  - **20 comprehensive practice labs** with collapsible solutions only
+  - Labs cover: log analysis, troubleshooting with logs, configuration management
+  - Advanced labs: log monitoring, configuration backups, fstab editing
+  - Real-world scenarios: finding failed logins, analyzing boot issues
+  - Best practices for configuration management
+  - Common pitfalls and safety warnings
+  - Complete command cheat sheet
+
 ### Statistics
-- **Posts Completed**: 15 / 52 (28.8%)
-- **Words Written**: ~114,500
+- **Posts Completed**: 19 / 52 (36.5%)
+- **Words Written**: ~143,268
 - **Estimated Total Words**: 150,000-260,000
 - **Estimated Time**: Many hours of focused work
 
@@ -826,5 +1116,5 @@ grep -A 100 "# topic keyword" /home/centos9/blog/lfcs-rough.txt
 
 **END OF STATE DOCUMENT**
 
-*Last Updated: 2025-11-05*
-*Next Action: Await Post 1 review, then continue with Post 2*
+*Last Updated: 2025-12-07*
+*Next Action: Continue with Post 20 (Write Permissions and Access Control)*

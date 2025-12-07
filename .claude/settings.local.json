@@ -13,7 +13,8 @@
       "Bash(/home/centos9/blog/content/posts/test-post-14.mdx)",
       "Bash(echo:*)",
       "Bash(pgrep:*)",
-      "Bash(ss:*)"
+      "Bash(ss:*)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": []
