@@ -1,0 +1,1437 @@
+---
+title: "LFCS Phase 1 Part 30: Introduction to Text Editors - vi and vim Basics"
+description: "Master the essential vi/vim text editor for Linux system administration. Learn modes, basic editing, navigation, saving, and essential commands required for LFCS certification."
+date: "2025-12-21"
+tags: ["Linux", "LFCS", "vi", "vim", "text editor", "vimtutor", "system administration"]
+published: true
+author: "Owais"
+categories: ["Linux", "LFCS Certification"]
+series: "LFCS Certification - Phase 1"
+seriesOrder: 30
+---
+
+You can view files, but now you need to **edit** them. On Linux servers, especially minimal installations and emergency recovery systems, graphical editors aren't available. This is where **vi** (and its improved version **vim**) becomes essential. Every Linux system has vi/vim installed by default.
+
+For the LFCS exam, you **must** know how to use vi/vim. You'll need to edit configuration files, create scripts, and modify system settings. While nano is easier for beginners, vi/vim is ubiquitous and understanding it is a core competency for system administrators.
+
+<Callout type="info">
+🎯 **What You'll Learn**:
+- Why vi/vim is essential for system administrators
+- Understanding vi/vim's modal editing concept
+- The three modes: Normal, Insert, and Command-line
+- Basic navigation (h, j, k, l, w, b, gg, G)
+- Entering and exiting Insert mode
+- Saving and quitting (:w, :q, :wq, :q!)
+- Basic editing (delete, undo, redo)
+- Searching and replacing text
+- Working with lines (dd, yy, p)
+- Using vimtutor for practice
+- Essential vim commands for daily use
+
+**Series**: LFCS Certification - Phase 1 (Post 30 of 52)
+</Callout>
+
+---
+
+## Why vi/vim?
+
+### The Reality of Linux Administration
+
+```bash
+# You're troubleshooting a server issue via SSH
+# The system is in minimal mode, no GUI
+# You need to edit /etc/fstab to fix boot issues
+# What editor do you use?
+
+$ vi /etc/fstab
+# vi is ALWAYS available
+```
+
+**Why vi/vim is critical**:
+- ✅ **Installed by default** on every Linux/Unix system
+- ✅ **Works over SSH** with minimal bandwidth
+- ✅ **Works in recovery mode** when GUI isn't available
+- ✅ **Extremely powerful** for experienced users
+- ✅ **Required knowledge** for LFCS certification
+
+### vi vs vim
+
+```bash
+$ which vi
+/usr/bin/vi
+
+$ which vim
+/usr/bin/vim
+```
+
+**Differences**:
+- **vi**: Original editor from 1976, basic features
+- **vim**: "Vi IMproved" (1991), enhanced with syntax highlighting, undo/redo, plugins
+
+**Good news**: On modern Linux systems, `vi` is usually a symlink to `vim`:
+
+```bash
+$ ls -l /usr/bin/vi
+lrwxrwxrwx. 1 root root 3 Jun 25 2024 /usr/bin/vi -> vim
+```
+
+<Callout type="success">
+💡 **For this tutorial**: We'll use `vim` but everything applies to `vi` as well. The commands we'll learn work on both.
+</Callout>
+
+---
+
+## Understanding vim's Modal Nature
+
+**This is the #1 concept to understand**: vim is a **modal editor**.
+
+### What Does "Modal" Mean?
+
+Unlike modern editors where you just start typing, vim has different **modes** for different tasks:
+
+| Mode | Purpose | How to Enter |
+|------|---------|--------------|
+| **Normal** | Navigate and execute commands | Press `Esc` (default mode when vim opens) |
+| **Insert** | Type and edit text | Press `i`, `a`, `o`, `O` from Normal mode |
+| **Visual** | Select text | Press `v`, `V`, `Ctrl+v` from Normal mode |
+| **Command-line** | Execute commands (save, quit, search) | Press `:`, `/`, `?` from Normal mode |
+
+### Why Modal Editing?
+
+**Traditional editor thinking**:
+```
+Open file → Type → Save → Close
+```
+
+**vim thinking**:
+```
+Open file (Normal mode)
+  ↓
+Navigate to location (Normal mode)
+  ↓
+Enter Insert mode (press i)
+  ↓
+Type text
+  ↓
+Exit Insert mode (press Esc)
+  ↓
+Save and quit (:wq)
+```
+
+**Advantage**: Your hands never leave the home row. Navigation and commands use regular keys, not arrow keys or mouse.
+
+---
+
+## Getting Started with vim
+
+### Opening a File
+
+```bash
+# Create/edit a file
+$ vim myfile.txt
+
+# Edit existing file
+$ vim /etc/hosts
+
+# Open at specific line
+$ vim +10 myfile.txt
+
+# Open in read-only mode
+$ view myfile.txt
+```
+
+### What You See When vim Opens
+
+```
+~
+~
+~
+~
+~
+~
+~
+"myfile.txt" [New File]
+```
+
+**Key observations**:
+- The `~` characters indicate empty lines
+- Status line at bottom shows filename
+- Cursor is blinking in top-left
+- You're in **Normal mode** (can't type yet!)
+
+---
+
+## Normal Mode: Navigation
+
+When vim opens, you're in **Normal mode**. This is for navigation and commands, not typing.
+
+### Basic Movement (The Arrow Keys Alternative)
+
+Instead of arrow keys, vim uses:
+
+```
+    k (up)
+    ↑
+h ← ↓ → l
+    j (down)
+```
+
+**Why h, j, k, l?**
+- They're on the home row (faster than reaching for arrows)
+- Historical: Vi was created on a keyboard without arrow keys
+
+**Practice**:
+```bash
+$ vim practice.txt
+# Press h, j, k, l to move around
+# Notice cursor movement
+```
+
+### Word-Based Movement
+
+```
+w = move forward one word
+b = move backward one word
+e = move to end of current word
+```
+
+**Example**:
+```
+The quick brown fox jumps over the lazy dog
+^
+Cursor here
+
+Press w → moves to "quick"
+Press w → moves to "brown"
+Press b → moves back to "quick"
+Press e → moves to end of "quick"
+```
+
+### Line-Based Movement
+
+```
+0 = move to beginning of line
+^ = move to first non-whitespace character
+$ = move to end of line
+```
+
+### File-Based Movement
+
+```
+gg = go to first line
+G  = go to last line
+10G = go to line 10
+```
+
+---
+
+## Insert Mode: Actually Typing Text
+
+### Entering Insert Mode
+
+From Normal mode, press one of these keys:
+
+| Key | Action |
+|-----|--------|
+| `i` | Insert before cursor |
+| `a` | Insert **a**fter cursor |
+| `I` | Insert at beginning of line |
+| `A` | Insert at end of line |
+| `o` | **O**pen new line below |
+| `O` | **O**pen new line above |
+
+### Your First Edit
+
+```bash
+$ vim myfile.txt
+# You're in Normal mode
+# Press i to enter Insert mode
+# Notice bottom shows: -- INSERT --
+# Type: Hello World
+# Press Esc to return to Normal mode
+```
+
+**What you'll see**:
+```
+Hello World
+~
+~
+-- INSERT --
+```
+
+<Callout type="warning">
+⚠️ **Most Common Beginner Mistake**: Trying to type immediately when vim opens. Remember: vim opens in Normal mode. Press `i` first!
+</Callout>
+
+### Exiting Insert Mode
+
+**Always press `Esc` to return to Normal mode**.
+
+This is the most important key in vim. Your workflow:
+```
+Normal mode → i (enter Insert) → type text → Esc (back to Normal)
+```
+
+---
+
+## Saving and Quitting
+
+All save/quit commands are executed from **Command-line mode** (start with `:`).
+
+### Basic Save and Quit Commands
+
+From Normal mode (press Esc first if in Insert mode):
+
+```
+:w         Write (save) file
+:q         Quit vim
+:wq        Write and quit
+:q!        Quit without saving (discard changes)
+:wq!       Force write and quit
+```
+
+### Step-by-Step: Edit and Save a File
+
+```bash
+$ vim test.txt
+
+# 1. Press i to enter Insert mode
+# 2. Type: This is a test file
+# 3. Press Esc to return to Normal mode
+# 4. Type: :w (you'll see it at the bottom)
+# 5. Press Enter
+# Result: "test.txt" [New] 1L, 21C written
+
+# 6. Type: :q
+# 7. Press Enter
+# Result: vim closes
+```
+
+### Common Scenarios
+
+**Made changes and want to save**:
+```
+:w
+```
+
+**Made changes and want to save and quit**:
+```
+:wq
+```
+
+**Made mistakes and want to quit without saving**:
+```
+:q!
+```
+
+**vim won't let you quit**:
+```
+E37: No write since last change (add ! to override)
+```
+**Solution**: Either save (`:w`) or force quit (`:q!`)
+
+---
+
+## Basic Editing Commands
+
+All of these work in **Normal mode**.
+
+### Deleting Text
+
+| Command | Action |
+|---------|--------|
+| `x` | Delete character under cursor |
+| `X` | Delete character before cursor |
+| `dd` | Delete entire line |
+| `dw` | Delete word |
+| `d$` | Delete from cursor to end of line |
+| `d0` | Delete from cursor to beginning of line |
+
+**Examples**:
+```bash
+# Original text:
+The quick brown fox
+
+# Cursor on 'q' in "quick"
+# Press x → deletes 'q'
+The uick brown fox
+
+# Press dd → deletes entire line
+(line disappears)
+```
+
+### Undo and Redo
+
+```
+u       = Undo last change
+Ctrl+r  = Redo (undo the undo)
+```
+
+**Practice**:
+```bash
+$ vim test.txt
+# Type some text in Insert mode
+# Press Esc to Normal mode
+# Press dd to delete line
+# Press u to undo (line comes back)
+# Press Ctrl+r to redo (line disappears again)
+```
+
+### Copy (Yank) and Paste
+
+In vim terminology:
+- **Copy** = Yank (y)
+- **Paste** = Put (p)
+
+| Command | Action |
+|---------|--------|
+| `yy` | Yank (copy) entire line |
+| `yw` | Yank word |
+| `p` | Put (paste) after cursor |
+| `P` | Put (paste) before cursor |
+
+**Example workflow**:
+```bash
+Line 1: Important text
+Line 2: Other stuff
+
+# Move cursor to Line 1
+# Press yy (yanks the line)
+# Move cursor to Line 2
+# Press p (pastes below Line 2)
+
+Result:
+Line 1: Important text
+Line 2: Other stuff
+Line 1: Important text
+```
+
+### Deleting Multiple Lines
+
+```
+3dd = Delete 3 lines
+5dd = Delete 5 lines
+```
+
+**How it works**: Number + command
+```
+d   = delete
+dd  = delete line
+3dd = delete 3 lines
+```
+
+Same pattern works for yank:
+```
+3yy = Yank 3 lines
+```
+
+---
+
+## Searching Text
+
+### Forward Search
+
+From Normal mode:
+```
+/pattern
+```
+
+**Example**:
+```bash
+# In vim with this text:
+The quick brown fox
+jumps over the lazy dog
+
+# Press: /fox
+# Press Enter
+# Cursor jumps to "fox"
+
+# Press n to find next occurrence
+# Press N to find previous occurrence
+```
+
+### Backward Search
+
+```
+?pattern
+```
+
+Searches backward from cursor position.
+
+### Search Navigation
+
+```
+n = Next match (in same direction)
+N = Previous match (opposite direction)
+```
+
+---
+
+## Find and Replace
+
+### Replace Single Character
+
+```
+r = Replace character under cursor
+```
+
+**Example**:
+```
+Word: cat
+Cursor on 'c'
+Press: rb
+Result: bat
+```
+
+### Find and Replace (Substitute)
+
+**Syntax**:
+```
+:s/old/new/        Replace first occurrence on current line
+:s/old/new/g       Replace all occurrences on current line
+:%s/old/new/g      Replace all occurrences in entire file
+:%s/old/new/gc     Replace all with confirmation
+```
+
+**Examples**:
+```bash
+# Replace "cat" with "dog" on current line
+:s/cat/dog/
+
+# Replace all "cat" with "dog" in entire file
+:%s/cat/dog/g
+
+# Replace with confirmation (asks yes/no for each)
+:%s/cat/dog/gc
+```
+
+---
+
+## Visual Mode: Selecting Text
+
+### Entering Visual Mode
+
+From Normal mode:
+
+```
+v       = Character-wise visual mode
+V       = Line-wise visual mode
+Ctrl+v  = Block visual mode
+```
+
+### Visual Mode Workflow
+
+```bash
+1. Enter visual mode (press v)
+2. Move cursor to extend selection
+3. Perform operation (d, y, etc.)
+```
+
+**Example**:
+```bash
+The quick brown fox
+
+# Move cursor to 'q' in "quick"
+# Press v (enter visual mode)
+# Press w w (select "quick brown")
+# Press d (delete selection)
+
+Result:
+The fox
+```
+
+---
+
+## Line Numbers
+
+### Show Line Numbers
+
+```
+:set number
+```
+
+**Shorthand**:
+```
+:se nu
+```
+
+### Hide Line Numbers
+
+```
+:set nonumber
+```
+
+**What you see**:
+```
+  1 Line one
+  2 Line two
+  3 Line three
+```
+
+### Jump to Specific Line
+
+```
+:10         Go to line 10
+10G         Go to line 10 (from Normal mode)
+```
+
+---
+
+## vimtutor: The Best Way to Learn
+
+vim comes with an interactive tutorial.
+
+### Starting vimtutor
+
+```bash
+$ vimtutor
+```
+
+**What you get**:
+```
+===============================================================================
+=    W e l c o m e   t o   t h e   V I M   T u t o r    -    Version 1.7    =
+===============================================================================
+     Vim is a very powerful editor that has many commands, too many to
+     explain in a tutor such as this.  This tutor is designed to describe
+     enough of the commands that you will be able to easily use Vim as
+     an all-purpose editor.
+
+     The approximate time required to complete the tutor is 30 minutes,
+     depending upon how much time is spent with experimentation.
+```
+
+**Why vimtutor is excellent**:
+- ✅ Interactive (you actually practice on the file)
+- ✅ Safe (it's a copy, can't break anything)
+- ✅ Comprehensive (covers all basics)
+- ✅ Takes ~30 minutes
+- ✅ Best way to build muscle memory
+
+<Callout type="success">
+💡 **Recommendation**: Run `vimtutor` at least once. It's the fastest way to become comfortable with vim.
+</Callout>
+
+---
+
+## Essential vim Commands Quick Reference
+
+### Navigation
+
+```bash
+h, j, k, l    # Left, Down, Up, Right
+w             # Forward one word
+b             # Backward one word
+0             # Beginning of line
+$             # End of line
+gg            # First line of file
+G             # Last line of file
+10G           # Go to line 10
+```
+
+### Modes
+
+```bash
+i             # Insert before cursor
+a             # Insert after cursor
+o             # Open line below
+O             # Open line above
+Esc           # Return to Normal mode
+v             # Visual mode
+V             # Visual line mode
+```
+
+### Editing
+
+```bash
+x             # Delete character
+dd            # Delete line
+3dd           # Delete 3 lines
+dw            # Delete word
+d$            # Delete to end of line
+yy            # Yank (copy) line
+3yy           # Yank 3 lines
+p             # Paste after cursor
+P             # Paste before cursor
+u             # Undo
+Ctrl+r        # Redo
+r             # Replace single character
+```
+
+### Search and Replace
+
+```bash
+/pattern      # Search forward
+?pattern      # Search backward
+n             # Next match
+N             # Previous match
+:s/old/new/   # Replace on current line
+:%s/old/new/g # Replace in entire file
+```
+
+### Save and Quit
+
+```bash
+:w            # Write (save)
+:q            # Quit
+:wq           # Write and quit
+:q!           # Quit without saving
+:wq!          # Force write and quit
+```
+
+### Settings
+
+```bash
+:set number   # Show line numbers
+:set nonumber # Hide line numbers
+```
+
+---
+
+## Installing vim
+
+vim comes pre-installed on most Linux distributions. If not:
+
+### RedHat/CentOS/Rocky/AlmaLinux
+
+```bash
+$ sudo dnf install vim
+```
+
+### Debian/Ubuntu
+
+```bash
+$ sudo apt install vim
+```
+
+### Check Installation
+
+```bash
+$ which vim
+/usr/bin/vim
+
+$ vim --version
+VIM - Vi IMproved 8.2
+```
+
+---
+
+## Common Beginner Mistakes
+
+### 1. Typing Immediately When vim Opens
+
+**Symptom**: You type "hello" and strange things happen (h moves cursor left, e moves to end of word, etc.)
+
+**Solution**: vim opens in Normal mode. Press `i` first!
+
+### 2. Can't Exit vim
+
+**Symptom**: You're stuck in vim and can't get out!
+
+**Solution**:
+```
+1. Press Esc (ensure you're in Normal mode)
+2. Type :q!
+3. Press Enter
+```
+
+### 3. Made Changes and vim Won't Quit
+
+**Symptom**:
+```
+E37: No write since last change (add ! to override)
+```
+
+**Solution**:
+- Save then quit: `:wq`
+- Discard changes: `:q!`
+
+### 4. Accidentally Entered Replace Mode
+
+**Symptom**: Everything you type overwrites existing text
+
+**Cause**: You pressed `R` (Replace mode)
+
+**Solution**: Press `Esc` to return to Normal mode
+
+### 5. vim Is Beeping or Flashing
+
+**Cause**: You're trying invalid commands (like pressing Esc repeatedly in Normal mode)
+
+**Solution**: Just press `Esc` once and continue
+
+---
+
+## 🧪 Practice Labs
+
+### Lab 1: Opening and Quitting vim (Beginner)
+
+**Task**: Open vim, then quit without making changes.
+
+<details>
+<summary><strong>Show Solution</strong></summary>
+
+```bash
+$ vim
+
+# You're now in vim
+# Press: :q
+# Press Enter
+# vim closes
+```
+
+**Key concept**: `:q` quits vim when no changes were made.
+</details>
+
+---
+
+### Lab 2: Create and Save a File (Beginner)
+
+**Task**: Create a file called `hello.txt` with the text "Hello World" and save it.
+
+<details>
+<summary><strong>Show Solution</strong></summary>
+
+```bash
+$ vim hello.txt
+
+# 1. Press i to enter Insert mode
+# 2. Type: Hello World
+# 3. Press Esc to return to Normal mode
+# 4. Type: :wq
+# 5. Press Enter
+
+# Verify the file was created
+$ cat hello.txt
+Hello World
+```
+
+**Key concept**: `i` enters Insert mode, `Esc` returns to Normal, `:wq` saves and quits.
+</details>
+
+---
+
+### Lab 3: Edit Existing File (Beginner)
+
+**Task**: Open `hello.txt`, add a second line "Welcome to vim", and save.
+
+<details>
+<summary><strong>Show Solution</strong></summary>
+
+```bash
+$ vim hello.txt
+
+# File opens with "Hello World"
+# 1. Press o to open new line below
+# 2. Type: Welcome to vim
+# 3. Press Esc
+# 4. Type: :wq
+# 5. Press Enter
+
+# Verify
+$ cat hello.txt
+Hello World
+Welcome to vim
+```
+
+**Key concept**: `o` opens a new line below cursor and enters Insert mode.
+</details>
+
+---
+
+### Lab 4: Navigate with hjkl (Beginner)
+
+**Task**: Create a file with 5 lines and practice navigating using h, j, k, l.
+
+<details>
+<summary><strong>Show Solution</strong></summary>
+
+```bash
+$ vim navigation.txt
+
+# Press i and type:
+Line 1
+Line 2
+Line 3
+Line 4
+Line 5
+
+# Press Esc
+# Press gg (go to first line)
+# Press j j j (move down 3 lines to Line 4)
+# Press k k (move up 2 lines to Line 2)
+# Press l l (move right 2 characters)
+# Press h (move left 1 character)
+
+# Save and quit: :wq
+```
+
+**Key concept**: h=left, j=down, k=up, l=right
+</details>
+
+---
+
+### Lab 5: Delete Lines (Beginner)
+
+**Task**: Create a file with 5 lines, delete line 3, then save.
+
+<details>
+<summary><strong>Show Solution</strong></summary>
+
+```bash
+$ vim delete.txt
+
+# Press i and type 5 lines
+Line 1
+Line 2
+Line 3
+Line 4
+Line 5
+
+# Press Esc
+# Press gg to go to first line
+# Press j j to go to line 3
+# Press dd to delete line 3
+# Result: Line 3 disappears
+
+# Save: :wq
+```
+
+**Key concept**: `dd` deletes the entire current line.
+</details>
+
+---
+
+### Lab 6: Undo and Redo (Beginner)
+
+**Task**: Delete a line, undo it, then redo the deletion.
+
+<details>
+<summary><strong>Show Solution</strong></summary>
+
+```bash
+$ vim undo.txt
+
+# Create some text
+# Press i
+This line will be deleted
+This line stays
+
+# Press Esc
+# Move to first line (gg)
+# Press dd (deletes "This line will be deleted")
+# Press u (undo - line comes back)
+# Press Ctrl+r (redo - line disappears again)
+
+# Quit without saving: :q!
+```
+
+**Key concept**: `u` = undo, `Ctrl+r` = redo
+</details>
+
+---
+
+### Lab 7: Copy and Paste Lines (Intermediate)
+
+**Task**: Copy line 1 and paste it after line 3.
+
+<details>
+<summary><strong>Show Solution</strong></summary>
+
+```bash
+$ vim copy.txt
+
+# Press i and create:
+Line 1: Important
+Line 2: Regular
+Line 3: Last
+
+# Press Esc
+# Press gg (go to line 1)
+# Press yy (yank/copy line 1)
+# Press 3G (go to line 3)
+# Press p (paste below line 3)
+
+# Result:
+Line 1: Important
+Line 2: Regular
+Line 3: Last
+Line 1: Important
+
+# Save: :wq
+```
+
+**Key concept**: `yy` copies line, `p` pastes below cursor.
+</details>
+
+---
+
+### Lab 8: Search Text (Intermediate)
+
+**Task**: Create a file with multiple occurrences of "test" and practice searching.
+
+<details>
+<summary><strong>Show Solution</strong></summary>
+
+```bash
+$ vim search.txt
+
+# Press i and type:
+This is a test file
+Another test here
+Final test at end
+
+# Press Esc
+# Press gg (go to beginning)
+# Type: /test
+# Press Enter (cursor jumps to first "test")
+# Press n (jumps to next "test")
+# Press n (jumps to next "test")
+# Press N (jumps back to previous "test")
+
+# Quit: :q!
+```
+
+**Key concept**: `/pattern` searches, `n` finds next, `N` finds previous.
+</details>
+
+---
+
+### Lab 9: Find and Replace (Intermediate)
+
+**Task**: Replace all occurrences of "old" with "new" in a file.
+
+<details>
+<summary><strong>Show Solution</strong></summary>
+
+```bash
+$ vim replace.txt
+
+# Press i and type:
+This is old text
+Another old word
+The old way
+
+# Press Esc
+# Type: :%s/old/new/g
+# Press Enter
+
+# Result:
+This is new text
+Another new word
+The new way
+
+# Save: :wq
+```
+
+**Key concept**: `:%s/old/new/g` replaces all occurrences in file.
+</details>
+
+---
+
+### Lab 10: Line Numbers (Intermediate)
+
+**Task**: Enable line numbers, jump to line 5, then disable line numbers.
+
+<details>
+<summary><strong>Show Solution</strong></summary>
+
+```bash
+$ vim numbers.txt
+
+# Create several lines of text
+# Press Esc
+# Type: :set number
+# Press Enter (line numbers appear on left)
+
+  1 Line one
+  2 Line two
+  3 Line three
+  4 Line four
+  5 Line five
+
+# Type: :5 (or 5G)
+# Press Enter (cursor jumps to line 5)
+
+# Type: :set nonumber
+# Press Enter (line numbers disappear)
+
+# Quit: :q!
+```
+
+**Key concept**: `:set number` shows lines, `:N` or `NG` jumps to line N.
+</details>
+
+---
+
+### Lab 11: Insert at Beginning/End of Line (Intermediate)
+
+**Task**: Practice using I and A to insert at line boundaries.
+
+<details>
+<summary><strong>Show Solution</strong></summary>
+
+```bash
+$ vim insert.txt
+
+# Press i and type:
+  This is centered text
+
+# Press Esc
+# Press I (capital i - inserts at beginning of line)
+# Type: START:
+# Press Esc
+
+# Result:
+START:  This is centered text
+
+# Press A (inserts at end of line)
+# Type:  :END
+# Press Esc
+
+# Result:
+START:  This is centered text :END
+
+# Quit: :q!
+```
+
+**Key concept**: `I` inserts at line start, `A` inserts at line end.
+</details>
+
+---
+
+### Lab 12: Delete Multiple Lines (Intermediate)
+
+**Task**: Create 10 lines and delete lines 3-5 (3 lines total).
+
+<details>
+<summary><strong>Show Solution</strong></summary>
+
+```bash
+$ vim multidelete.txt
+
+# Create 10 lines
+# Press Esc
+# Go to line 3: 3G
+# Delete 3 lines: 3dd
+
+# Lines 3, 4, 5 are now deleted
+# Remaining lines renumber automatically
+
+# Quit: :q!
+```
+
+**Key concept**: `Ndd` deletes N lines starting from cursor.
+</details>
+
+---
+
+### Lab 13: Visual Mode Selection (Intermediate)
+
+**Task**: Use visual mode to select and delete a block of text.
+
+<details>
+<summary><strong>Show Solution</strong></summary>
+
+```bash
+$ vim visual.txt
+
+# Press i and type:
+Keep this line
+Delete this
+And this
+And this too
+Keep this line
+
+# Press Esc
+# Move to "Delete this" line
+# Press V (capital v - line visual mode)
+# Press j j (select 3 lines)
+# Press d (delete selection)
+
+# Result:
+Keep this line
+Keep this line
+
+# Quit: :q!
+```
+
+**Key concept**: `V` enters line visual mode, movement extends selection, `d` deletes.
+</details>
+
+---
+
+### Lab 14: Word Navigation (Advanced)
+
+**Task**: Practice navigating by words using w, b, and e.
+
+<details>
+<summary><strong>Show Solution</strong></summary>
+
+```bash
+$ vim words.txt
+
+# Press i and type:
+The quick brown fox jumps over the lazy dog
+
+# Press Esc
+# Press 0 (go to beginning of line)
+# Press w (cursor moves to "quick")
+# Press w (cursor moves to "brown")
+# Press w (cursor moves to "fox")
+# Press b (cursor moves back to "brown")
+# Press e (cursor moves to end of "brown" - the 'n')
+# Press $ (cursor moves to end of line)
+# Press 0 (cursor moves to beginning of line)
+
+# Quit: :q!
+```
+
+**Key concept**: `w`=next word start, `b`=previous word start, `e`=word end, `0`=line start, `$`=line end.
+</details>
+
+---
+
+### Lab 15: Replace Character (Advanced)
+
+**Task**: Use `r` to fix typos without entering Insert mode.
+
+<details>
+<summary><strong>Show Solution</strong></summary>
+
+```bash
+$ vim replace.txt
+
+# Press i and type:
+The cxt is on the mxt
+
+# Press Esc
+# Move cursor to 'x' in "cxt"
+# Press: ra (replaces 'x' with 'a')
+# Result: The cat is on the mxt
+
+# Move cursor to 'x' in "mxt"
+# Press: ra
+# Result: The cat is on the mat
+
+# Save: :wq
+```
+
+**Key concept**: `r` followed by a character replaces character under cursor.
+</details>
+
+---
+
+### Lab 16: Combine Commands (Advanced)
+
+**Task**: Delete from cursor to end of line using `d$`.
+
+<details>
+<summary><strong>Show Solution</strong></summary>
+
+```bash
+$ vim combine.txt
+
+# Press i and type:
+Keep this part but delete the rest of this line
+
+# Press Esc
+# Move cursor to 'b' in "but"
+# Press: d$ (delete from cursor to end of line)
+
+# Result:
+Keep this part
+
+# Quit: :q!
+```
+
+**Key concept**: `d` (delete) + `$` (to end of line) = delete to end of line.
+</details>
+
+---
+
+### Lab 17: Edit System File with sudo (Advanced)
+
+**Task**: Edit /etc/hosts using vim with sudo (read-only without sudo).
+
+<details>
+<summary><strong>Show Solution</strong></summary>
+
+```bash
+# Try without sudo (read-only)
+$ vim /etc/hosts
+# Notice: "readonly" in status line
+
+# Quit: :q!
+
+# Edit with sudo
+$ sudo vim /etc/hosts
+
+# Add a comment
+# Press i
+# Add line: # Test comment
+# Press Esc
+# Save: :wq
+
+# Verify
+$ sudo tail -1 /etc/hosts
+# Test comment
+```
+
+**Key concept**: System files require sudo to edit. Use `sudo vim` for write access.
+</details>
+
+---
+
+### Lab 18: Open File at Specific Line (Advanced)
+
+**Task**: Open a file directly at line 10.
+
+<details>
+<summary><strong>Show Solution</strong></summary>
+
+```bash
+# Create a file with 20 lines
+$ seq 1 20 > numbers.txt
+
+# Open at line 10
+$ vim +10 numbers.txt
+
+# vim opens with cursor on line 10
+# Notice cursor is on "10"
+
+# Quit: :q!
+```
+
+**Key concept**: `vim +N filename` opens file at line N.
+</details>
+
+---
+
+### Lab 19: vimtutor Practice (Advanced)
+
+**Task**: Complete at least Lesson 1 of vimtutor.
+
+<details>
+<summary><strong>Show Solution</strong></summary>
+
+```bash
+$ vimtutor
+
+# Follow the interactive tutorial
+# Lesson 1 teaches:
+# - h, j, k, l movement
+# - :q! to quit
+# - x to delete character
+# - i to insert
+# - A to append at end of line
+
+# Complete at least Lesson 1 (takes ~5 minutes)
+# Quit vimtutor when done: :q!
+```
+
+**Key concept**: vimtutor is the best hands-on practice tool for vim.
+</details>
+
+---
+
+### Lab 20: Create a Multi-Line Document (Advanced)
+
+**Task**: Create a complete document using various vim techniques.
+
+<details>
+<summary><strong>Show Solution</strong></summary>
+
+```bash
+$ vim document.txt
+
+# Press i and create:
+LINUX SYSTEM ADMINISTRATION
+---------------------------
+
+Date: 2025-12-08
+Author: Your Name
+
+Introduction:
+This document covers basic system administration tasks.
+
+Topics:
+1. File management
+2. User management
+3. Network configuration
+
+Conclusion:
+Practice makes perfect!
+
+# Press Esc
+# Enable line numbers: :set number
+# Go to line 1: gg
+# Copy title: yy
+# Go to end: G
+# Paste below: p
+# Delete last line: dd
+# Find "management": /management
+# Press n to find next occurrence
+# Replace all "management" with "admin": :%s/management/admin/g
+# Save: :wq
+
+# View result
+$ cat document.txt
+```
+
+**Key concept**: Combining multiple vim techniques in real-world editing.
+</details>
+
+---
+
+## 🎯 Key Takeaways
+
+<Callout type="success">
+**Master These Concepts**:
+
+1. **vim is modal** - Normal, Insert, Visual, Command-line modes
+2. **vim opens in Normal mode** - press `i` to start typing
+3. **Esc always returns to Normal mode** - your safety key
+4. **Navigation in Normal mode** - h, j, k, l, w, b, gg, G
+5. **Insert mode keys** - i, a, o, O, I, A
+6. **Save and quit** - :w (save), :q (quit), :wq (save and quit), :q! (quit without saving)
+7. **Basic editing** - dd (delete line), yy (copy line), p (paste)
+8. **Undo and redo** - u (undo), Ctrl+r (redo)
+9. **Search** - /pattern (search), n (next), N (previous)
+10. **vimtutor** - the best way to practice (run `vimtutor`)
+
+**Emergency Exit Sequence**:
+```
+Esc → :q! → Enter
+```
+This always gets you out of vim.
+
+**Quick Decision Guide**:
+- Need to type → Press `i` first
+- Made mistake → Press `u` to undo
+- Stuck → Press `Esc` repeatedly, then `:q!`
+- Want to learn → Run `vimtutor`
+</Callout>
+
+---
+
+## 🚀 What's Next?
+
+**Coming Up Next**:
+- **Post 31**: Advanced vim Techniques (buffers, windows, marks)
+- **Post 32**: Introduction to Text Processing (grep, cut, sort)
+
+---
+
+<Callout type="success">
+🎉 **Congratulations!** You've learned the essentials of vi/vim! You can now:
+- Open and close files in vim
+- Navigate using keyboard commands
+- Enter and exit Insert mode
+- Make basic edits (delete, copy, paste)
+- Save and quit properly
+- Search and replace text
+- Use vimtutor for practice
+
+vim has a steep learning curve, but it's worth it. Every minute you invest in learning vim pays dividends throughout your career as a system administrator. Run `vimtutor` at least once, and practice these commands daily until they become muscle memory! 🚀
+</Callout>

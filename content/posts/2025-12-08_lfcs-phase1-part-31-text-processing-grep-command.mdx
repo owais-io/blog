@@ -1,0 +1,1290 @@
+---
+title: "LFCS Phase 1 Part 31: Text Processing with grep - Searching and Filtering"
+description: "Master the grep command for searching text patterns in files and command output. Learn regular expressions, filtering, context lines, and recursive searching. Essential for LFCS certification."
+date: "2025-12-22"
+tags: ["Linux", "LFCS", "grep", "text processing", "pattern matching", "regex", "filtering"]
+published: true
+author: "Owais"
+categories: ["Linux", "LFCS Certification"]
+series: "LFCS Certification - Phase 1"
+seriesOrder: 31
+---
+
+You know how to view files. Now you need to **search** them. The `grep` command is one of the most powerful and frequently used tools in Linux. It searches files for patterns and displays matching lines. Whether you're analyzing logs, finding configuration settings, or filtering command output, grep is essential.
+
+For the LFCS exam, grep proficiency is critical. You'll use it constantly to troubleshoot issues, find specific configurations, and analyze system logs. Understanding grep patterns, options, and how to combine it with other commands is a core system administration skill.
+
+<Callout type="info">
+🎯 **What You'll Learn**:
+- What grep is and why it's essential
+- Basic pattern matching and searching files
+- Case-insensitive search with -i
+- Inverting matches with -v (exclude patterns)
+- Listing filenames only with -l
+- Showing context with -A, -B, -C
+- Recursive searching with -r and -R
+- Counting matches with -c
+- Showing line numbers with -n
+- Using grep with pipes for filtering
+- Combining grep with other commands
+- Suppressing errors with 2>/dev/null
+- Real-world grep use cases
+
+**Series**: LFCS Certification - Phase 1 (Post 31 of 52)
+</Callout>
+
+---
+
+## What is grep?
+
+**grep** = **G**lobal **R**egular **E**xpression **P**rint
+
+### The Purpose
+
+grep searches for patterns in text and displays lines that match.
+
+**Simple example**:
+```bash
+$ grep anna users.txt
+anna
+annabelle
+belle anna
+anna belle
+```
+
+**What happened**: grep found all lines containing "anna".
+
+### Why grep is Essential
+
+```bash
+# Find which user has a specific UID
+$ grep 1000 /etc/passwd
+centos9:x:1000:1000:centos9:/home/centos9:/bin/bash
+
+# Find errors in logs
+$ grep error /var/log/messages
+
+# Check if a service is running
+$ ps aux | grep httpd
+
+# Find configuration settings
+$ grep "ServerName" /etc/httpd/conf/httpd.conf
+```
+
+**Use cases**:
+- 🔍 Searching log files for errors
+- 📁 Finding specific configuration values
+- 🔬 Filtering command output
+- 🐛 Debugging issues
+- 📊 Analyzing system information
+
+---
+
+## Basic grep Syntax
+
+```bash
+grep [OPTIONS] PATTERN [FILE...]
+```
+
+**Components**:
+- `PATTERN` = What to search for
+- `FILE` = Where to search (can be multiple files)
+- `OPTIONS` = How to search (-i, -v, -r, etc.)
+
+### Simplest Example
+
+```bash
+$ grep root /etc/passwd
+root:x:0:0:root:/root:/bin/bash
+operator:x:11:0:operator:/root:/sbin/nologin
+```
+
+**What happened**:
+- Searched `/etc/passwd`
+- Found lines containing "root"
+- Displayed matching lines
+
+---
+
+## Basic Pattern Matching
+
+### Search Single File
+
+```bash
+$ grep anna users.txt
+anna
+annabelle
+belle anna
+anna belle
+```
+
+### Search Multiple Files
+
+```bash
+$ grep centos /etc/passwd /etc/group
+/etc/passwd:centos9:x:1000:1000:centos9:/home/centos9:/bin/bash
+/etc/group:wheel:x:10:centos9
+/etc/group:centos9:x:1000:
+/etc/group:docker:x:978:centos9
+```
+
+**Notice**: Each line shows `filename:match`
+
+### Search with Wildcards
+
+```bash
+$ grep centos /etc/*
+# Searches all files in /etc/ for "centos"
+```
+
+**Problem**: You'll see lots of "Is a directory" errors:
+```bash
+grep: /etc/accountsservice: Is a directory
+grep: /etc/alsa: Is a directory
+```
+
+**Solution**: Suppress errors with `2>/dev/null`:
+```bash
+$ sudo grep centos /etc/* 2>/dev/null
+/etc/chrony.conf:pool 2.centos.pool.ntp.org iburst
+/etc/group:wheel:x:10:centos9
+/etc/passwd:centos9:x:1000:1000:centos9:/home/centos9:/bin/bash
+```
+
+---
+
+## Case-Insensitive Search (-i)
+
+By default, grep is **case-sensitive**.
+
+### Default Behavior (Case-Sensitive)
+
+```bash
+$ echo "Hello World" > test.txt
+$ grep hello test.txt
+# No output - "hello" doesn't match "Hello"
+```
+
+### Case-Insensitive with -i
+
+```bash
+$ grep -i hello test.txt
+Hello World
+```
+
+**Real-world example**:
+```bash
+# Find "error", "Error", "ERROR", etc.
+$ grep -i error /var/log/messages
+```
+
+---
+
+## Invert Match (-v)
+
+The `-v` option shows lines that **do NOT** match the pattern.
+
+### Basic Example
+
+```bash
+$ cat users.txt
+anna
+annabelle
+bella
+annna
+belle anna
+anna belle
+
+$ grep -v anna users.txt
+bella
+```
+
+**Result**: Only "bella" doesn't contain "anna".
+
+### Real-World Use: Filtering grep Itself
+
+**Problem**:
+```bash
+$ ps aux | grep http
+centos9  4519  0.0  0.0 221672  2504 pts/0  S+  14:00  0:00 grep --color=auto http
+```
+
+The grep command itself shows up in the results!
+
+**Solution**:
+```bash
+$ ps aux | grep http | grep -v grep
+# No output if httpd isn't running
+# Only shows httpd if it's running
+```
+
+**Alternative (better)**:
+```bash
+$ ps aux | grep '[h]ttp'
+# The square brackets prevent grep from matching itself
+```
+
+---
+
+## List Filenames Only (-l)
+
+Instead of showing matching lines, show only filenames that contain matches.
+
+### Default Behavior
+
+```bash
+$ sudo grep centos /etc/* 2>/dev/null
+/etc/chrony.conf:pool 2.centos.pool.ntp.org iburst
+/etc/group:wheel:x:10:centos9
+/etc/group:centos9:x:1000:
+# ... many lines ...
+```
+
+### With -l (Filenames Only)
+
+```bash
+$ sudo grep -l centos /etc/* 2>/dev/null
+/etc/chrony.conf
+/etc/group
+/etc/group-
+/etc/gshadow
+/etc/gshadow-
+/etc/mtab
+/etc/os-release
+/etc/passwd
+/etc/passwd-
+/etc/shadow
+/etc/shadow-
+/etc/subgid
+/etc/subgid-
+/etc/subuid
+/etc/subuid-
+/etc/system-release-cpe
+```
+
+**Use case**: Find which configuration files mention a specific setting.
+
+---
+
+## Context Lines (-A, -B, -C)
+
+Show lines **around** the match for context.
+
+### After Context (-A)
+
+Show N lines **after** each match.
+
+```bash
+$ grep -A5 centos /etc/passwd
+centos9:x:1000:1000:centos9:/home/centos9:/bin/bash
+stapunpriv:x:159:159:systemtap unprivileged user:/var/lib/stapunpriv:/sbin/nologin
+pesign:x:982:981:Group for the pesign signing daemon:/run/pesign:/sbin/nologin
+vboxadd:x:981:1::/var/run/vboxadd:/bin/false
+labuser:x:1001:1001::/home/labuser:/bin/bash
+apache:x:48:48:Apache:/usr/share/httpd:/sbin/nologin
+```
+
+**What happened**: Found "centos" line + 5 lines after it.
+
+### Before Context (-B)
+
+Show N lines **before** each match.
+
+```bash
+$ grep -B5 centos /etc/passwd
+gnome-initial-setup:x:985:984::/run/gnome-initial-setup/:/sbin/nologin
+sshd:x:74:74:Privilege-separated SSH:/usr/share/empty.sshd:/usr/sbin/nologin
+chrony:x:984:983:chrony system user:/var/lib/chrony:/sbin/nologin
+dnsmasq:x:983:982:Dnsmasq DHCP and DNS server:/var/lib/dnsmasq:/usr/sbin/nologin
+tcpdump:x:72:72::/:/sbin/nologin
+centos9:x:1000:1000:centos9:/home/centos9:/bin/bash
+```
+
+**What happened**: Found "centos" line + 5 lines before it.
+
+### Combined Context (-C)
+
+Show N lines **both before and after** each match.
+
+```bash
+$ grep -C3 tcpdump /etc/passwd
+sshd:x:74:74:Privilege-separated SSH:/usr/share/empty.sshd:/usr/sbin/nologin
+chrony:x:984:983:chrony system user:/var/lib/chrony:/sbin/nologin
+dnsmasq:x:983:982:Dnsmasq DHCP and DNS server:/var/lib/dnsmasq:/usr/sbin/nologin
+tcpdump:x:72:72::/:/sbin/nologin
+centos9:x:1000:1000:centos9:/home/centos9:/bin/bash
+stapunpriv:x:159:159:systemtap unprivileged user:/var/lib/stapunpriv:/sbin/nologin
+pesign:x:982:981:Group for the pesign signing daemon:/run/pesign:/sbin/nologin
+```
+
+**What happened**: Found "tcpdump" + 3 lines before + 3 lines after.
+
+**Equivalent command**:
+```bash
+$ grep -A3 -B3 tcpdump /etc/passwd
+```
+
+<Callout type="success">
+💡 **Pro Tip**: Use context lines when searching logs. If you find an error, you often need the surrounding log entries to understand what happened.
+</Callout>
+
+---
+
+## Recursive Search (-r and -R)
+
+Search through directories and all subdirectories.
+
+### Basic Recursive Search
+
+```bash
+$ grep -r "ServerName" /etc/httpd/
+# Searches all files under /etc/httpd/ for "ServerName"
+```
+
+### Difference: -r vs -R
+
+- `-r` = Recursive, but **skips symbolic links**
+- `-R` = Recursive, **follows symbolic links**
+
+**Recommendation**: Use `-r` unless you specifically need to follow symlinks.
+
+### Recursive with Line Numbers
+
+```bash
+$ grep -rn "error" /var/log/
+# Shows filename:line_number:matching_line
+```
+
+---
+
+## Count Matches (-c)
+
+Show count of matching lines instead of the lines themselves.
+
+### Count in Single File
+
+```bash
+$ grep -c bash /etc/passwd
+3
+```
+
+**Meaning**: 3 lines contain "bash".
+
+### Count Across Multiple Files
+
+```bash
+$ grep -c root /etc/passwd /etc/group
+/etc/passwd:2
+/etc/group:1
+```
+
+---
+
+## Show Line Numbers (-n)
+
+Display line numbers with matches.
+
+### Without Line Numbers
+
+```bash
+$ grep root /etc/passwd
+root:x:0:0:root:/root:/bin/bash
+operator:x:11:0:operator:/root:/sbin/nologin
+```
+
+### With Line Numbers (-n)
+
+```bash
+$ grep -n root /etc/passwd
+1:root:x:0:0:root:/root:/bin/bash
+10:operator:x:11:0:operator:/root:/sbin/nologin
+```
+
+**Format**: `line_number:matching_line`
+
+---
+
+## Using grep with Pipes
+
+grep's real power comes from filtering command output.
+
+### Filter Process List
+
+```bash
+$ ps aux | grep httpd
+# Shows only processes related to httpd
+```
+
+### Filter Network Connections
+
+```bash
+$ ss -tuln | grep :80
+# Shows only connections on port 80
+```
+
+### Find Specific Users
+
+```bash
+$ who | grep centos
+centos9  pts/0  2025-11-02 14:00 (192.168.1.100)
+```
+
+### Chaining Multiple greps
+
+```bash
+$ ps aux | grep python | grep -v grep
+# Shows python processes, excluding grep itself
+```
+
+---
+
+## Common grep Options Summary
+
+| Option | Description | Example |
+|--------|-------------|---------|
+| `-i` | Case-insensitive | `grep -i error log.txt` |
+| `-v` | Invert match (exclude) | `grep -v comment config.txt` |
+| `-l` | List filenames only | `grep -l pattern *.txt` |
+| `-n` | Show line numbers | `grep -n TODO code.py` |
+| `-c` | Count matches | `grep -c error log.txt` |
+| `-r` | Recursive search | `grep -r pattern /path/` |
+| `-A N` | Show N lines after | `grep -A5 error log.txt` |
+| `-B N` | Show N lines before | `grep -B5 error log.txt` |
+| `-C N` | Show N lines around | `grep -C3 error log.txt` |
+| `-w` | Match whole words | `grep -w cat animals.txt` |
+| `-x` | Match whole lines | `grep -x "exact line" file.txt` |
+| `-E` | Extended regex | `grep -E "cat|dog" file.txt` |
+| `-o` | Show only matched part | `grep -o "[0-9]*" file.txt` |
+
+---
+
+## Real-World Use Cases
+
+### 1. Find Errors in Logs
+
+```bash
+# Find all errors in system log
+$ sudo grep -i error /var/log/messages
+
+# With context (5 lines before and after)
+$ sudo grep -C5 -i error /var/log/messages
+
+# Count error occurrences
+$ sudo grep -c -i error /var/log/messages
+```
+
+### 2. Find Configuration Settings
+
+```bash
+# Find all uncommented lines in config file
+$ grep -v "^#" /etc/ssh/sshd_config | grep -v "^$"
+
+# Explanation:
+# grep -v "^#" = exclude lines starting with #
+# grep -v "^$" = exclude empty lines
+```
+
+### 3. Check Running Processes
+
+```bash
+# Is nginx running?
+$ ps aux | grep nginx | grep -v grep
+
+# Better way:
+$ ps aux | grep '[n]ginx'
+```
+
+### 4. Find Files Modified Recently
+
+```bash
+# Find all .log files
+$ find /var/log -name "*.log" -exec grep -l "error" {} \;
+
+# Lists only log files containing "error"
+```
+
+### 5. Search User Information
+
+```bash
+# Find all users with bash shell
+$ grep bash$ /etc/passwd
+
+# Count users with bash
+$ grep -c bash$ /etc/passwd
+```
+
+### 6. Network Troubleshooting
+
+```bash
+# Find which process uses port 80
+$ sudo ss -tulnp | grep :80
+
+# Check firewall rules for port 22
+$ sudo iptables -L | grep 22
+```
+
+### 7. Analyze System Information
+
+```bash
+# Find CPU model
+$ grep "model name" /proc/cpuinfo
+
+# Find total memory
+$ grep MemTotal /proc/meminfo
+
+# Find kernel version
+$ grep PRETTY_NAME /etc/os-release
+```
+
+---
+
+## Combining grep with Other Commands
+
+### With find
+
+```bash
+# Find and search in all .conf files
+$ find /etc -name "*.conf" -exec grep -H "port" {} \;
+```
+
+### With cat
+
+```bash
+# View file and highlight matches
+$ cat /etc/passwd | grep --color root
+```
+
+### With sort
+
+```bash
+# Find unique error types
+$ grep error /var/log/messages | sort | uniq
+```
+
+### With wc (Word Count)
+
+```bash
+# Count how many errors
+$ grep error /var/log/messages | wc -l
+```
+
+### With tail
+
+```bash
+# Monitor log for errors in real-time
+$ tail -f /var/log/messages | grep --color error
+```
+
+---
+
+## Advanced Patterns
+
+### Match Whole Words (-w)
+
+```bash
+$ cat animals.txt
+cat
+catch
+concatenate
+
+$ grep cat animals.txt
+cat
+catch
+concatenate
+
+$ grep -w cat animals.txt
+cat
+```
+
+**Difference**: `-w` matches "cat" as a whole word, not as part of "catch".
+
+### Extended Regex (-E)
+
+```bash
+# Match "cat" OR "dog"
+$ grep -E "cat|dog" animals.txt
+
+# Match lines starting with "Error" or "Warning"
+$ grep -E "^(Error|Warning)" log.txt
+```
+
+### Match Lines Starting With Pattern (^)
+
+```bash
+# Lines starting with "root"
+$ grep "^root" /etc/passwd
+root:x:0:0:root:/root:/bin/bash
+```
+
+### Match Lines Ending With Pattern ($)
+
+```bash
+# Users with bash shell
+$ grep "bash$" /etc/passwd
+root:x:0:0:root:/root:/bin/bash
+centos9:x:1000:1000:centos9:/home/centos9:/bin/bash
+```
+
+---
+
+## Common Pitfalls
+
+### 1. Forgetting to Escape Special Characters
+
+**Problem**:
+```bash
+$ grep file. log.txt
+# The . matches ANY character, not a literal dot
+```
+
+**Solution**:
+```bash
+$ grep 'file\.' log.txt
+# Or use single quotes
+$ grep 'file.' log.txt
+```
+
+### 2. grep Matching Itself in ps Output
+
+**Problem**:
+```bash
+$ ps aux | grep httpd
+centos9  1234  0.0  0.0  grep httpd  # ← grep itself shows up
+```
+
+**Solution**:
+```bash
+$ ps aux | grep '[h]ttpd'
+# Or
+$ ps aux | grep httpd | grep -v grep
+```
+
+### 3. Case Sensitivity
+
+**Problem**:
+```bash
+$ grep error log.txt
+# Misses "Error", "ERROR", etc.
+```
+
+**Solution**:
+```bash
+$ grep -i error log.txt
+```
+
+### 4. Not Suppressing Directory Errors
+
+**Problem**:
+```bash
+$ grep pattern /etc/*
+grep: /etc/subdirectory: Is a directory
+# ... lots of errors ...
+```
+
+**Solution**:
+```bash
+$ grep pattern /etc/* 2>/dev/null
+# Or use recursive search
+$ grep -r pattern /etc/
+```
+
+---
+
+## Best Practices
+
+<div className="overflow-x-auto">
+<table className="w-full border-collapse border border-gray-300">
+<thead className="bg-gray-100">
+<tr>
+<th className="border border-gray-300 px-4 py-2">✅ DO</th>
+<th className="border border-gray-300 px-4 py-2">❌ DON'T</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td className="border border-gray-300 px-4 py-2">Use <code>-i</code> for case-insensitive searches</td>
+<td className="border border-gray-300 px-4 py-2">Assume patterns are case-insensitive</td>
+</tr>
+<tr>
+<td className="border border-gray-300 px-4 py-2">Use context lines (<code>-A</code>, <code>-B</code>, <code>-C</code>) for log analysis</td>
+<td className="border border-gray-300 px-4 py-2">Look at matches in isolation</td>
+</tr>
+<tr>
+<td className="border border-gray-300 px-4 py-2">Suppress errors with <code>2>/dev/null</code></td>
+<td className="border border-gray-300 px-4 py-2">Let errors clutter output</td>
+</tr>
+<tr>
+<td className="border border-gray-300 px-4 py-2">Use <code>-l</code> to find files quickly</td>
+<td className="border border-gray-300 px-4 py-2">Parse full grep output when you only need filenames</td>
+</tr>
+<tr>
+<td className="border border-gray-300 px-4 py-2">Use <code>-n</code> when you need line numbers</td>
+<td className="border border-gray-300 px-4 py-2">Manually count lines to find location</td>
+</tr>
+<tr>
+<td className="border border-gray-300 px-4 py-2">Use <code>[h]ttpd</code> to avoid grep matching itself</td>
+<td className="border border-gray-300 px-4 py-2">Filter with <code>grep -v grep</code> every time</td>
+</tr>
+<tr>
+<td className="border border-gray-300 px-4 py-2">Combine grep with pipes for filtering</td>
+<td className="border border-gray-300 px-4 py-2">Manually scan through command output</td>
+</tr>
+<tr>
+<td className="border border-gray-300 px-4 py-2">Use <code>-w</code> for whole word matches</td>
+<td className="border border-gray-300 px-4 py-2">Get partial matches when you need exact words</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+---
+
+## 🧪 Practice Labs
+
+### Lab 1: Basic grep Search (Beginner)
+
+**Task**: Search for "root" in /etc/passwd.
+
+<details>
+<summary><strong>Show Solution</strong></summary>
+
+```bash
+$ grep root /etc/passwd
+root:x:0:0:root:/root:/bin/bash
+operator:x:11:0:operator:/root:/sbin/nologin
+```
+
+**Key concept**: Basic pattern matching - grep finds all lines containing "root".
+</details>
+
+---
+
+### Lab 2: Case-Insensitive Search (Beginner)
+
+**Task**: Find "error" (any case) in /var/log/messages.
+
+<details>
+<summary><strong>Show Solution</strong></summary>
+
+```bash
+$ sudo grep -i error /var/log/messages
+# Shows "error", "Error", "ERROR", "ErRoR", etc.
+```
+
+**Key concept**: `-i` makes grep case-insensitive.
+</details>
+
+---
+
+### Lab 3: Count Matches (Beginner)
+
+**Task**: Count how many users have "/bin/bash" as their shell.
+
+<details>
+<summary><strong>Show Solution</strong></summary>
+
+```bash
+$ grep -c bash$ /etc/passwd
+3
+```
+
+**Explanation**:
+- `bash$` = lines ending with "bash"
+- `-c` = count matches
+
+**Key concept**: `-c` counts matching lines instead of displaying them.
+</details>
+
+---
+
+### Lab 4: Invert Match (Beginner)
+
+**Task**: Show all lines in /etc/passwd that do NOT contain "nologin".
+
+<details>
+<summary><strong>Show Solution</strong></summary>
+
+```bash
+$ grep -v nologin /etc/passwd
+root:x:0:0:root:/root:/bin/bash
+sync:x:5:0:sync:/sbin:/bin/sync
+shutdown:x:6:0:shutdown:/sbin:/sbin/shutdown
+halt:x:7:0:halt:/sbin:/sbin/halt
+centos9:x:1000:1000:centos9:/home/centos9:/bin/bash
+labuser:x:1001:1001::/home/labuser:/bin/bash
+vboxadd:x:981:1::/var/run/vboxadd:/bin/false
+```
+
+**Key concept**: `-v` inverts the match (shows lines that DON'T match).
+</details>
+
+---
+
+### Lab 5: Show Line Numbers (Beginner)
+
+**Task**: Find "centos" in /etc/group and show line numbers.
+
+<details>
+<summary><strong>Show Solution</strong></summary>
+
+```bash
+$ grep -n centos /etc/group
+10:wheel:x:10:centos9
+45:centos9:x:1000:
+58:docker:x:978:centos9
+```
+
+**Key concept**: `-n` shows line numbers before each match.
+</details>
+
+---
+
+### Lab 6: List Filenames Only (Intermediate)
+
+**Task**: Find which files in /etc/ contain "centos" (filenames only).
+
+<details>
+<summary><strong>Show Solution</strong></summary>
+
+```bash
+$ sudo grep -l centos /etc/* 2>/dev/null
+/etc/chrony.conf
+/etc/group
+/etc/group-
+/etc/gshadow
+/etc/gshadow-
+/etc/mtab
+/etc/os-release
+/etc/passwd
+/etc/passwd-
+/etc/shadow
+/etc/shadow-
+```
+
+**Key concept**: `-l` lists only filenames that contain matches, not the matches themselves.
+</details>
+
+---
+
+### Lab 7: Context Lines - After (Intermediate)
+
+**Task**: Find "centos9" in /etc/passwd and show 3 lines after it.
+
+<details>
+<summary><strong>Show Solution</strong></summary>
+
+```bash
+$ grep -A3 centos9 /etc/passwd
+centos9:x:1000:1000:centos9:/home/centos9:/bin/bash
+stapunpriv:x:159:159:systemtap unprivileged user:/var/lib/stapunpriv:/sbin/nologin
+pesign:x:982:981:Group for the pesign signing daemon:/run/pesign:/sbin/nologin
+vboxadd:x:981:1::/var/run/vboxadd:/bin/false
+```
+
+**Key concept**: `-A3` shows the match plus 3 lines after.
+</details>
+
+---
+
+### Lab 8: Context Lines - Before (Intermediate)
+
+**Task**: Find "centos9" in /etc/passwd and show 2 lines before it.
+
+<details>
+<summary><strong>Show Solution</strong></summary>
+
+```bash
+$ grep -B2 centos9 /etc/passwd
+dnsmasq:x:983:982:Dnsmasq DHCP and DNS server:/var/lib/dnsmasq:/usr/sbin/nologin
+tcpdump:x:72:72::/:/sbin/nologin
+centos9:x:1000:1000:centos9:/home/centos9:/bin/bash
+```
+
+**Key concept**: `-B2` shows 2 lines before the match.
+</details>
+
+---
+
+### Lab 9: Context Lines - Around (Intermediate)
+
+**Task**: Find "tcpdump" in /etc/passwd with 2 lines of context (before and after).
+
+<details>
+<summary><strong>Show Solution</strong></summary>
+
+```bash
+$ grep -C2 tcpdump /etc/passwd
+chrony:x:984:983:chrony system user:/var/lib/chrony:/sbin/nologin
+dnsmasq:x:983:982:Dnsmasq DHCP and DNS server:/var/lib/dnsmasq:/usr/sbin/nologin
+tcpdump:x:72:72::/:/sbin/nologin
+centos9:x:1000:1000:centos9:/home/centos9:/bin/bash
+stapunpriv:x:159:159:systemtap unprivileged user:/var/lib/stapunpriv:/sbin/nologin
+```
+
+**Key concept**: `-C2` shows 2 lines before AND 2 lines after the match.
+</details>
+
+---
+
+### Lab 10: Recursive Search (Intermediate)
+
+**Task**: Search recursively for "ServerName" in /etc/httpd/ (if it exists).
+
+<details>
+<summary><strong>Show Solution</strong></summary>
+
+```bash
+$ sudo grep -r "ServerName" /etc/httpd/ 2>/dev/null
+# Shows all files under /etc/httpd/ containing "ServerName"
+```
+
+**Alternative** (if httpd not installed):
+```bash
+$ sudo grep -r "port" /etc/ssh/
+/etc/ssh/sshd_config:#Port 22
+/etc/ssh/sshd_config:#GatewayPorts no
+```
+
+**Key concept**: `-r` searches recursively through directories.
+</details>
+
+---
+
+### Lab 11: Pipe with grep (Intermediate)
+
+**Task**: Find all processes running as root using ps and grep.
+
+<details>
+<summary><strong>Show Solution</strong></summary>
+
+```bash
+$ ps aux | grep "^root"
+root  1  0.0  0.1  systemd
+root  2  0.0  0.0  kthreadd
+# ... many root processes ...
+```
+
+**Explanation**:
+- `ps aux` = show all processes
+- `grep "^root"` = lines starting with "root"
+
+**Key concept**: Pipe commands to grep for filtering output.
+</details>
+
+---
+
+### Lab 12: Exclude Comments (Intermediate)
+
+**Task**: Show all non-commented, non-empty lines in /etc/ssh/sshd_config.
+
+<details>
+<summary><strong>Show Solution</strong></summary>
+
+```bash
+$ grep -v "^#" /etc/ssh/sshd_config | grep -v "^$"
+Include /etc/ssh/sshd_config.d/*.conf
+AuthorizedKeysFile .ssh/authorized_keys
+Subsystem sftp /usr/libexec/openssh/sftp-server
+```
+
+**Explanation**:
+- `grep -v "^#"` = exclude lines starting with #
+- `grep -v "^$"` = exclude empty lines
+
+**Key concept**: Chain multiple greps to filter progressively.
+</details>
+
+---
+
+### Lab 13: Whole Word Match (Advanced)
+
+**Task**: Create a test file and demonstrate whole word matching.
+
+<details>
+<summary><strong>Show Solution</strong></summary>
+
+```bash
+# Create test file
+$ cat > words.txt
+cat
+catch
+concatenate
+
+# Normal grep (matches all)
+$ grep cat words.txt
+cat
+catch
+concatenate
+
+# Whole word only
+$ grep -w cat words.txt
+cat
+```
+
+**Key concept**: `-w` matches whole words only, not partial matches.
+</details>
+
+---
+
+### Lab 14: Find Lines Starting With Pattern (Advanced)
+
+**Task**: Find all users whose username starts with "s" in /etc/passwd.
+
+<details>
+<summary><strong>Show Solution</strong></summary>
+
+```bash
+$ grep "^s" /etc/passwd
+sync:x:5:0:sync:/sbin:/bin/sync
+shutdown:x:6:0:shutdown:/sbin:/sbin/shutdown
+sshd:x:74:74:Privilege-separated SSH:/usr/share/empty.sshd:/usr/sbin/nologin
+sssd:x:990:990:User for sssd:/:/sbin/nologin
+setroubleshoot:x:988:988:SELinux troubleshoot server:/var/lib/setroubleshoot:/usr/sbin/nologin
+stapunpriv:x:159:159:systemtap unprivileged user:/var/lib/stapunpriv:/sbin/nologin
+```
+
+**Key concept**: `^` means "beginning of line".
+</details>
+
+---
+
+### Lab 15: Find Lines Ending With Pattern (Advanced)
+
+**Task**: Find all lines in /etc/passwd ending with "/bin/bash".
+
+<details>
+<summary><strong>Show Solution</strong></summary>
+
+```bash
+$ grep "/bin/bash$" /etc/passwd
+root:x:0:0:root:/root:/bin/bash
+centos9:x:1000:1000:centos9:/home/centos9:/bin/bash
+labuser:x:1001:1001::/home/labuser:/bin/bash
+```
+
+**Key concept**: `$` means "end of line".
+</details>
+
+---
+
+### Lab 16: Extended Regex with OR (Advanced)
+
+**Task**: Find lines containing "bash" OR "false" in /etc/passwd.
+
+<details>
+<summary><strong>Show Solution</strong></summary>
+
+```bash
+$ grep -E "bash|false" /etc/passwd
+root:x:0:0:root:/root:/bin/bash
+centos9:x:1000:1000:centos9:/home/centos9:/bin/bash
+vboxadd:x:981:1::/var/run/vboxadd:/bin/false
+labuser:x:1001:1001::/home/labuser:/bin/bash
+```
+
+**Explanation**:
+- `-E` = Extended regex
+- `bash|false` = "bash" OR "false"
+
+**Key concept**: Extended regex allows OR operations with `|`.
+</details>
+
+---
+
+### Lab 17: Monitor Logs in Real-Time (Advanced)
+
+**Task**: Monitor /var/log/messages for errors in real-time (requires sudo).
+
+<details>
+<summary><strong>Show Solution</strong></summary>
+
+```bash
+$ sudo tail -f /var/log/messages | grep --color -i error
+# Waits and highlights errors as they appear
+# Press Ctrl+C to stop
+```
+
+**Key concept**: Combine `tail -f` with grep for live log monitoring.
+</details>
+
+---
+
+### Lab 18: Count Different Types of Shells (Advanced)
+
+**Task**: Count how many users use each type of shell.
+
+<details>
+<summary><strong>Show Solution</strong></summary>
+
+```bash
+$ cut -d: -f7 /etc/passwd | sort | uniq -c | sort -rn
+     25 /sbin/nologin
+      3 /bin/bash
+      2 /usr/sbin/nologin
+      1 /usr/sbin/nologin
+      1 /sbin/shutdown
+      1 /sbin/halt
+      1 /bin/sync
+      1 /bin/false
+```
+
+**Explanation**:
+- `cut -d: -f7` = extract 7th field (shell)
+- `sort` = sort shells
+- `uniq -c` = count unique entries
+- `sort -rn` = sort numerically, reverse
+
+**Key concept**: Combine grep with other text processing tools.
+</details>
+
+---
+
+### Lab 19: Find Empty Lines (Advanced)
+
+**Task**: Find and count empty lines in /etc/ssh/sshd_config.
+
+<details>
+<summary><strong>Show Solution</strong></summary>
+
+```bash
+$ grep -c "^$" /etc/ssh/sshd_config
+15
+```
+
+**Explanation**:
+- `^$` = start of line immediately followed by end of line (empty)
+- `-c` = count
+
+**Key concept**: `^$` pattern matches empty lines.
+</details>
+
+---
+
+### Lab 20: Complex Filter Chain (Advanced)
+
+**Task**: Find all running processes, exclude kernel threads, and show only unique command names.
+
+<details>
+<summary><strong>Show Solution</strong></summary>
+
+```bash
+$ ps aux | grep -v "\[" | awk '{print $11}' | sort | uniq
+/sbin/agetty
+/sbin/auditd
+/usr/bin/dbus-daemon
+/usr/bin/python3
+/usr/lib/systemd/systemd
+/usr/sbin/NetworkManager
+/usr/sbin/chronyd
+/usr/sbin/crond
+/usr/sbin/sshd
+bash
+```
+
+**Explanation**:
+- `ps aux` = all processes
+- `grep -v "\["` = exclude kernel threads (they have [brackets])
+- `awk '{print $11}'` = print 11th field (command)
+- `sort | uniq` = unique commands
+
+**Key concept**: Grep is often part of complex pipelines.
+</details>
+
+---
+
+## 📝 Command Cheat Sheet
+
+```bash
+# Basic searches
+grep pattern file                # Search for pattern
+grep pattern file1 file2         # Search multiple files
+grep pattern /path/*             # Search with wildcards
+
+# Common options
+grep -i pattern file             # Case-insensitive
+grep -v pattern file             # Invert (exclude pattern)
+grep -n pattern file             # Show line numbers
+grep -c pattern file             # Count matches
+grep -l pattern files            # List filenames only
+grep -w pattern file             # Match whole words
+
+# Context
+grep -A3 pattern file            # Show 3 lines after
+grep -B3 pattern file            # Show 3 lines before
+grep -C3 pattern file            # Show 3 lines around
+
+# Recursive
+grep -r pattern /path/           # Recursive search
+grep -rn pattern /path/          # Recursive with line numbers
+
+# Pattern anchors
+grep "^pattern" file             # Lines starting with pattern
+grep "pattern$" file             # Lines ending with pattern
+grep "^$" file                   # Empty lines
+
+# Extended regex
+grep -E "cat|dog" file           # OR operation
+
+# With pipes
+command | grep pattern           # Filter command output
+ps aux | grep httpd              # Find processes
+grep pattern file | grep other   # Chain greps
+
+# Suppress errors
+grep pattern /etc/* 2>/dev/null  # Hide permission errors
+
+# Monitoring
+tail -f /var/log/messages | grep error  # Live error monitoring
+```
+
+---
+
+## 🎯 Key Takeaways
+
+<Callout type="success">
+**Master These Concepts**:
+
+1. **grep searches for patterns** in files and output
+2. **-i makes searches case-insensitive** (use frequently)
+3. **-v inverts matches** (exclude patterns)
+4. **-l lists filenames only** (faster when you need files, not content)
+5. **-n shows line numbers** (helpful for editing files)
+6. **-A, -B, -C show context** (essential for log analysis)
+7. **-r searches recursively** through directories
+8. **2>/dev/null suppresses errors** (cleaner output)
+9. **^ and $ anchor patterns** to line start/end
+10. **Pipe grep to filter output** (most powerful usage)
+
+**Quick Decision Guide**:
+- Find in one file → `grep pattern file`
+- Case doesn't matter → Add `-i`
+- Need line numbers → Add `-n`
+- Show filenames only → Add `-l`
+- Exclude pattern → Use `-v`
+- Need context → Use `-A`, `-B`, or `-C`
+- Search directories → Use `-r`
+- Filter command output → `command | grep pattern`
+</Callout>
+
+---
+
+## 🚀 What's Next?
+
+**Coming Up Next**:
+- **Post 32**: Text Processing with cut, sort, and uniq
+- **Post 33**: Advanced Text Processing with awk and sed
+
+---
+
+<Callout type="success">
+🎉 **Congratulations!** You've mastered the grep command! You can now:
+- Search files for patterns efficiently
+- Use case-insensitive and inverted searches
+- Show context around matches for better understanding
+- Search recursively through directories
+- Filter command output with pipes
+- Count matches and list filenames
+- Use basic regex patterns (^, $, |)
+
+grep is one of the most frequently used Linux commands. Practice these labs until searching becomes second nature. Every day you'll use grep - for logs, configs, troubleshooting, and filtering output! 🚀
+</Callout>

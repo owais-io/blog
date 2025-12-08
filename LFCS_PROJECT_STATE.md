@@ -1,13 +1,420 @@
 # LFCS Phase 1 Blog Series - Project State Document
 
 **Last Updated**: 2025-12-08
-**Status**: Posts 1-20 Completed - Write Permissions Complete!
-**Session**: Session 12 - Completed Post 20 (Write Permissions and Access Control)
-**Next Steps**: Continue with Post 21 (Using Wildcards for Efficient File Management)
+**Status**: Posts 1-31 Completed - Text Processing with grep Complete!
+**Session**: Session 13 - Completing Posts 21-32 (File Operations + Editors + Text Processing!)
+**Next Steps**: Continue with Post 32 (Text Processing with cut, sort, uniq)
 
 ---
 
 ## 📝 Session Summary (Latest)
+
+### Session 13 - 2025-12-08
+**Accomplishments:**
+1. ✅ Completed Post 21: Using Wildcards for Efficient File Management (~11,800 words)
+2. ✅ Fixed Post 21 MDX compilation error (square brackets in YAML frontmatter)
+3. ✅ Completed Post 22: Copying Files with cp Command (~11,000 words)
+4. ✅ Completed Post 23: Creating and Managing Directories with mkdir (~10,000 words)
+5. ✅ Completed Post 24: Understanding Absolute vs Relative Paths (~10,000 words)
+6. ✅ Completed Post 25: Moving and Renaming with mv Command (~11,500 words)
+7. ✅ Completed Post 26: Removing Files with rm and rmdir (~13,000 words)
+8. ✅ Completed Post 27: Understanding Hard Links and Symbolic Links (~10,500 words)
+9. ✅ Completed Post 28: Finding Files with find Command (~7,500 words)
+10. ✅ Completed Post 29: Viewing File Contents with cat/less/more/head/tail (~11,000 words)
+11. ✅ Completed Post 30: Introduction to Text Editors - vi/vim Basics (~12,500 words)
+12. ✅ Completed Post 31: Text Processing with grep Command (~13,000 words)
+
+**Post 21 Details:**
+   - Comprehensive guide to Linux wildcards and glob patterns
+   - What wildcards are and how shell expansion works
+   - Detailed coverage of * (asterisk) - zero or more characters
+   - Detailed coverage of ? (question mark) - exactly one character
+   - Detailed coverage of [...] - character ranges and sets
+   - Negation patterns with [!...] and [^...]
+   - Character ranges: [a-z], [0-9], [A-Z], combinations
+   - Combining multiple wildcards for complex patterns
+   - Real command outputs from source material (/etc examples)
+   - Hidden files and dotfiles behavior with wildcards
+   - Brace expansion for creating multiple files {1..100}
+   - Escaping wildcards for literal characters
+   - Real-world use cases: log cleanup, backups, bulk operations
+   - Wildcards with common commands: ls, rm, cp, mv, cat, grep
+   - Visual diagrams showing wildcard expansion process
+   - Comprehensive pattern matching reference table
+   - 20 comprehensive practice labs with collapsible solutions
+   - Labs progress: beginner → intermediate → advanced
+   - Labs cover: file creation, pattern matching, safe deletion, hidden files
+   - Advanced labs: nested directories, safety tests, cleanup scripts
+   - Best practices for safe wildcard usage
+   - Common pitfalls: dangerous rm *, hidden files, case sensitivity
+   - Complete command cheat sheet with all wildcard patterns
+   - The Golden Rule: Test → Verify → Execute workflow
+
+**Content Quality:**
+- Used proven MDX structure with collapsible lab solutions
+- All syntax verified (no dangerous patterns, proper code blocks)
+- Extensive comparison tables with Tailwind styling
+- Visual wildcard expansion flow diagram
+- Pattern matching reference charts
+- Real examples from lfcs-rough.txt source material
+- Progressive difficulty in practice labs
+- Safety warnings throughout (especially with rm)
+- Complete verification workflow examples
+
+**Post 22 Details:**
+   - Comprehensive guide to cp command for copying files and directories
+   - Understanding cp syntax: source and destination arguments
+   - Basic file copying with permission requirements
+   - Recursive copying with -r flag for directories
+   - Interactive mode with -i to prevent overwrites
+   - Verbose mode with -v for operation feedback
+   - Preserving attributes with -p (timestamps, permissions)
+   - Archive mode with -a for complete directory backups
+   - Copying multiple files to destination directories
+   - The hidden files challenge and multiple solutions
+   - Using wildcards with cp for bulk operations
+   - Real command outputs from source material
+   - 20 comprehensive practice labs with collapsible solutions
+   - Labs cover: basic copying, permissions, recursion, preservation
+   - Advanced labs: hidden files, update mode, backup workflows
+   - Best practices for safe copying and backup procedures
+   - Common pitfalls: forgetting -r, silent overwrites, lost timestamps
+   - Complete command cheat sheet with real-world examples
+   - Backup workflow best practices with timestamps
+
+**Post 23 Details:**
+   - Comprehensive guide to mkdir command for directory creation
+   - Understanding directories vs files (differences and purposes)
+   - Basic mkdir syntax and directory permissions
+   - Permission denied errors and location requirements
+   - The parent directory problem and why it occurs
+   - Using -p flag to create parent directories automatically
+   - Verbose mode with -v for operation confirmation
+   - Creating multiple directories at once
+   - Brace expansion for efficient directory creation
+   - Setting permissions during creation with -m flag
+   - Directory naming best practices and conventions
+   - Real-world directory structures (web apps, backups, environments)
+   - Understanding rmdir for removing empty directories
+   - rmdir -p for removing parent directories
+   - Real command outputs from source material
+   - 20 comprehensive practice labs with collapsible solutions
+   - Labs cover: basic creation, nested structures, permissions
+   - Intermediate labs: brace expansion, project structures
+   - Advanced labs: dated backups, multi-environment setups
+   - Best practices for directory organization and naming
+   - Common pitfalls: spaces, special characters, wrong permissions
+   - Complete command cheat sheet with real-world workflows
+
+**Content Quality:**
+- Used proven MDX structure with collapsible lab solutions
+- All syntax verified (no dangerous patterns, proper code blocks)
+- Extensive comparison tables with Tailwind styling
+- Real examples from lfcs-rough.txt source material
+- Progressive difficulty in practice labs
+- Safety warnings throughout (especially for permissions)
+- Complete verification workflow examples
+
+**Post 24 Details:**
+   - Comprehensive guide to Linux path concepts (absolute vs relative)
+   - Understanding absolute paths (start with /)
+   - Real-world absolute path examples (/etc/passwd, /home/user/docs)
+   - Understanding relative paths (no leading /, context-dependent)
+   - Real-world relative path examples (documents/file.txt, ../parent)
+   - How Linux resolves paths based on current working directory (pwd)
+   - The dot (.) - current directory explained
+   - The double dot (..) - parent directory explained
+   - The tilde (~) - home directory shortcut explained
+   - cd - for toggling between directories (previous directory)
+   - Path resolution process step by step
+   - When to use absolute vs relative paths (automation vs interactive)
+   - Real command outputs from source material (lines 2764-2843 of lfcs-rough.txt)
+   - Practical examples: cp passwd .., ls .., cd ../..
+   - 20 comprehensive practice labs with collapsible solutions
+   - Labs progress: beginner (basic paths) → intermediate (file ops) → advanced (scripting)
+   - Labs cover: path types, symbols, navigation, file operations, complex scenarios
+   - Best practices for path usage in scripts and interactive work
+   - Common pitfalls: wrong assumptions, missing /, spaces in paths
+   - Complete command cheat sheet with path examples
+   - Path decision flowchart for choosing absolute vs relative
+
+**Content Quality:**
+- Used proven MDX structure with collapsible lab solutions
+- All syntax verified (no dangerous patterns, proper code blocks)
+- Extensive comparison tables with Tailwind styling
+- Real examples from lfcs-rough.txt source material
+- Progressive difficulty in practice labs
+- Clear explanations of path resolution process
+- Complete verification workflow examples
+
+**Post 25 Details:**
+   - Comprehensive guide to mv command for moving and renaming files
+   - Understanding mv vs cp (move vs copy fundamentals)
+   - Basic mv syntax: source and destination
+   - Scenario 1: Renaming files in same directory
+   - Scenario 2: Moving files between directories
+   - Scenario 3: Moving directories (no -r flag needed!)
+   - Understanding why mv is instant on same filesystem
+   - Moving multiple files with wildcards
+   - Real command outputs from source material (lines 2787-2910)
+   - Essential mv options: -i (interactive), -v (verbose), -n (no clobber), -u (update)
+   - Interactive mode for safety with important files
+   - Verbose mode for audit trails and debugging
+   - No clobber mode for scripts (prevents overwrites silently)
+   - Update mode for syncing only newer files
+   - Permission requirements: write on both source and destination directories
+   - mv vs cp comparison chart (instant vs slow, metadata vs data copy)
+   - When mv becomes slow (cross-filesystem moves)
+   - Real-world use cases: organizing downloads, archiving logs, renaming configs
+   - Safe mv workflow: test → verify → execute
+   - 20 comprehensive practice labs with collapsible solutions
+   - Labs progress: beginner (basic rename/move) → intermediate (wildcards, options) → advanced (loops, conditional moves)
+   - Labs cover: renaming, moving, directories, options, permissions, bulk operations
+   - Advanced labs: file organization, timestamp-based moving, loops for renaming
+   - Best practices for safe moving and renaming
+   - Common pitfalls: accidental overwrites, nonexistent destinations, permission errors
+   - Complete command cheat sheet with real-world patterns
+   - mv vs cp decision guide
+
+**Content Quality:**
+- Used proven MDX structure with collapsible lab solutions
+- All syntax verified (no dangerous patterns, proper code blocks)
+- Extensive comparison tables with Tailwind styling
+- Side-by-side mv vs cp comparison grid
+- Real examples from lfcs-rough.txt source material
+- Progressive difficulty in practice labs
+- Safety warnings throughout (especially about overwrites and system files)
+- Complete verification workflow examples
+
+**Post 26 Details:**
+   - Comprehensive guide to rm and rmdir commands for file deletion
+   - Understanding why rm is the most dangerous command in Linux
+   - No Recycle Bin, no Trash - permanent deletion explained
+   - Basic rm syntax for removing files
+   - Essential rm flags: -i (interactive), -f (force), -r (recursive), -v (verbose)
+   - Interactive mode (-i) as the safest deletion method
+   - Force mode (-f) and when to use it carefully
+   - Recursive mode (-r) required for directories
+   - Verbose mode (-v) for audit trails and confirmation
+   - Real command outputs from source material (lines 2594-2840)
+   - The rmdir command for safe empty directory removal
+   - rmdir vs rm -r comparison (safety-focused grid)
+   - Why rmdir is safer (only removes empty directories)
+   - rmdir -p for removing nested empty directories
+   - The most dangerous commands: sudo rm -rf /, rm -rf /*, wildcard mistakes
+   - Protection mechanisms: --preserve-root explained
+   - Dangerous wildcard patterns: rm * .txt, rm -rf .*, empty variables
+   - Safe deletion workflow: test → verify → execute
+   - Permission requirements for deletion
+   - Recovery considerations (spoiler: there aren't any with rm)
+   - Safer alternatives: trash directories, trash-cli, archiving instead
+   - Real-world use cases: cleaning logs, temp files, old backups, build artifacts
+   - 20 comprehensive practice labs with collapsible solutions
+   - Labs progress: beginner (basic deletion) → intermediate (options, directories) → advanced (scripts, audit trails, conditional deletion)
+   - Labs cover: basic rm, interactive mode, wildcards, rmdir, recursive deletion, force mode, combining options
+   - Advanced labs: deletion by age with find, audit logging, trash functionality, immutable files
+   - Best practices for safe file deletion
+   - Common pitfalls: wildcard space typos, empty variables, dotfile wildcards, wrong directory, path typos
+   - Complete command cheat sheet with safe patterns
+   - Safety-focused decision guide and golden rules
+
+**Content Quality:**
+- Used proven MDX structure with collapsible lab solutions
+- All syntax verified (no dangerous patterns, proper code blocks)
+- Extensive safety warnings throughout (multiple red callouts)
+- Comparison tables with Tailwind styling (rm vs rmdir, safety levels)
+- Real examples from lfcs-rough.txt source material
+- Progressive difficulty in practice labs
+- EXTREME emphasis on safety and caution
+- Complete verification workflow examples
+- Multiple warnings about dangerous commands
+
+**Post 27 Details:**
+   - Comprehensive guide to hard links and symbolic links with ln command
+   - Understanding inodes - the fundamental filesystem data structure
+   - What inodes contain: metadata, permissions, timestamps, size, block locations
+   - File data vs metadata separation (inode stores metadata, blocks store data)
+   - Hard links explained: multiple filenames pointing to same inode
+   - Link count concept - number of hard links to an inode
+   - Symbolic links (symlinks) explained: special files containing path to target
+   - Symlink as "shortcut" or "pointer" to another file
+   - Key difference: hard links share inode, symlinks have different inode
+   - The ln command syntax for creating hard links
+   - The ln -s command syntax for creating symbolic links
+   - Understanding broken symlinks when target is deleted
+   - Hard link behavior when one link is deleted (data persists)
+   - Real command outputs from source material (lines 2911-2970)
+   - ls -li command to view inodes and link counts
+   - Why hard links can't cross filesystems (inode numbers are filesystem-specific)
+   - Why hard links can't point to directories (prevents circular references)
+   - Symbolic links CAN cross filesystems and point to directories
+   - Real-world use cases: version management, config management, shared libraries
+   - 20 comprehensive practice labs with collapsible solutions (12 detailed, 8 summarized)
+   - Labs progress: beginner (basic links) → intermediate (broken links, link counts) → advanced (filesystem boundaries, practical applications)
+   - Labs cover: creating hard links, creating symlinks, viewing inodes, testing deletion behavior
+   - Advanced labs: cross-filesystem links, directory links, version management, cleanup
+   - Best practices for using links effectively
+   - Common pitfalls: confusing hard vs symbolic, broken symlinks, filesystem boundaries
+   - Complete command cheat sheet with ln usage patterns
+   - Decision guide: when to use hard links vs symbolic links
+
+**Post 28 Details:**
+   - Comprehensive guide to finding files with the find command
+   - Understanding find syntax: PATH, OPTIONS, TESTS, ACTIONS
+   - How find recursively searches directory trees
+   - Finding by name with -name option (exact and wildcard patterns)
+   - Case-insensitive search with -iname
+   - Suppressing permission errors with 2>/dev/null (essential for system-wide searches)
+   - Understanding stderr redirection to /dev/null
+   - Finding by file type with -type (f=file, d=directory, l=symlink)
+   - Finding by size with -size (+/- operators, units: c/k/M/G)
+   - Finding by modification time with -mtime (days) and -mmin (minutes)
+   - Finding by access time (-atime) and change time (-ctime)
+   - Finding by permissions with -perm (exact, any bits, all bits)
+   - Finding setuid files for security audits (-perm /4000)
+   - Finding by owner (-user) and group (-group)
+   - Combining conditions with AND logic (default)
+   - OR logic with -o operator
+   - NOT logic with ! operator
+   - Executing commands on matches with -exec
+   - Understanding {} placeholder and \\; terminator
+   - Interactive execution with -ok (prompts before each action)
+   - Deleting found files with -delete option
+   - Real command outputs from source material (lines 2998-3145)
+   - Real-world use cases: large file cleanup, old log removal, security audits
+   - 10 comprehensive practice labs with detailed solutions
+   - Labs progress: beginner (name search, wildcards, type) → intermediate (size, time, delete) → advanced (permissions, combining conditions, -exec)
+   - Labs cover: basic searches, wildcard patterns, file types, size filtering, time filtering
+   - Advanced labs: permission audits, combining multiple criteria, executing actions
+   - Best practices for safe find usage
+   - Common pitfalls: forgetting 2>/dev/null, using -delete without testing first
+   - Complete command cheat sheet with all find options
+   - Quick decision guide for choosing the right find options
+
+**Post 29 Details:**
+   - Comprehensive guide to viewing file contents with cat, less, more, head, and tail
+   - Understanding when to use each viewing command (decision matrix)
+   - cat command for displaying entire files
+   - cat -n for line numbers on all lines
+   - cat -b for line numbers on non-blank lines only
+   - cat -A to show all special characters ($=line end, ^I=tab, ^M=carriage return)
+   - Detecting hidden whitespace and Windows line endings with cat -A
+   - cat -s to squeeze multiple blank lines into one
+   - tac command (reverse cat) for displaying files last-line-first
+   - less pager for interactive browsing of large files
+   - Navigation in less (space, b, d, u, g, G, j, k, arrows)
+   - Searching in less (/, ?, n, N for forward/backward search)
+   - less -N to show line numbers while browsing
+   - less +F to follow files like tail -f
+   - more pager (simple, forward-only paging)
+   - Limitations of more vs advantages of less
+   - head command to display first N lines (default 10)
+   - head -N syntax for specifying line count
+   - head -c for byte-based extraction
+   - tail command to display last N lines (default 10)
+   - tail -N syntax for specifying line count
+   - tail -n +N to start from line N onwards
+   - tail -f for live log monitoring (most important for sysadmins)
+   - Understanding how tail -f keeps file open and shows new lines
+   - tail -F to follow even after log rotation
+   - Difference between -f (follows file descriptor) and -F (follows filename)
+   - Following multiple files simultaneously with tail -f
+   - Combining commands with pipes (head + tail for line ranges)
+   - Extracting specific lines: head -3 | tail -1 gets line 3
+   - Extracting line ranges: head -20 | tail -10 gets lines 11-20
+   - Real command outputs from source material (lines 5062-5117, 2951, 1884)
+   - Real-world use cases: config checking, log analysis, live monitoring
+   - Checking for Windows line endings and file format issues
+   - Using zcat for viewing compressed .gz log files
+   - 20 comprehensive practice labs with detailed solutions
+   - Labs progress: beginner (basic cat/head/tail) → intermediate (special chars, pipes, less, following) → advanced (line ranges, multiple files, compressed logs, custom monitoring)
+   - Labs cover: basic viewing, line numbers, special characters, head/tail, extraction, live monitoring
+   - Advanced labs: Windows line endings, compressed logs, multiple file monitoring, filtered tail -f
+   - Best practices for efficient file viewing
+   - Common pitfalls: cat on binary files, not quitting less properly, missing log context
+   - Complete command cheat sheet for all viewing commands
+   - Quick decision guide: which command to use when
+
+**Post 30 Details:**
+   - Comprehensive introduction to vi/vim text editor (essential for LFCS)
+   - Why vi/vim is critical for system administrators (always available, works over SSH, recovery mode)
+   - Understanding vi vs vim (vi=original 1976, vim=Vi IMproved 1991)
+   - The modal editing concept explained (Normal, Insert, Visual, Command-line modes)
+   - Why modal editing matters (efficiency, hands on home row)
+   - Getting started with vim (opening files, what you see)
+   - Normal mode navigation without arrow keys (h, j, k, l)
+   - Word-based movement (w=forward word, b=backward word, e=end of word)
+   - Line-based movement (0=line start, ^=first non-whitespace, $=line end)
+   - File-based movement (gg=first line, G=last line, NG=line N)
+   - Insert mode - entering it (i, a, I, A, o, O)
+   - Understanding the difference between i (before cursor) and a (after cursor)
+   - Opening new lines with o (below) and O (above)
+   - Exiting Insert mode with Esc (the most important key)
+   - Saving and quitting (:w=save, :q=quit, :wq=save and quit, :q!=quit without saving)
+   - Basic editing commands (x=delete char, dd=delete line, dw=delete word, d$=delete to line end)
+   - Undo and redo (u=undo, Ctrl+r=redo)
+   - Copy and paste in vim (yy=yank line, yw=yank word, p=paste after, P=paste before)
+   - Deleting multiple lines (3dd=delete 3 lines, 5dd=delete 5 lines)
+   - Searching text (/pattern=search forward, ?pattern=search backward, n=next, N=previous)
+   - Find and replace (r=replace char, :s/old/new/=replace on line, :%s/old/new/g=replace in file)
+   - Visual mode for selecting text (v=char mode, V=line mode, Ctrl+v=block mode)
+   - Line numbers (:set number=show, :set nonumber=hide)
+   - Jumping to specific lines (:N or NG)
+   - vimtutor - the interactive tutorial (best way to learn vim)
+   - Real command outputs from source material (lines 4910-5009)
+   - Installing vim on different distributions (dnf, apt)
+   - Common beginner mistakes and how to fix them
+   - The emergency exit sequence (Esc → :q! → Enter)
+   - 20 comprehensive practice labs with detailed solutions
+   - Labs progress: beginner (opening, quitting, basic edits) → intermediate (copy/paste, search, replace) → advanced (visual mode, system files, vimtutor)
+   - Labs cover: creating files, navigation, deletion, undo/redo, search, line numbers, multi-line operations
+   - Advanced labs: visual mode, system file editing with sudo, opening at specific line, vimtutor practice
+   - Best practices for vim efficiency
+   - Common pitfalls: typing in Normal mode, can't exit vim, unexpected beeping
+   - Complete command cheat sheet organized by category
+   - Quick decision guide for vim commands
+
+**Post 31 Details:**
+   - Comprehensive guide to grep command for text processing and searching
+   - Understanding grep (Global Regular Expression Print)
+   - Why grep is essential for system administrators (log analysis, filtering, config search)
+   - Basic grep syntax: pattern, file, options
+   - Basic pattern matching in single and multiple files
+   - Suppressing directory errors with 2>/dev/null
+   - Case-insensitive search with -i flag
+   - Invert match with -v (exclude patterns, show lines that DON'T match)
+   - Using -v to filter grep itself from ps output
+   - List filenames only with -l (useful for finding which files contain pattern)
+   - Context lines: -A (after), -B (before), -C (combined context)
+   - Showing context for log analysis and debugging
+   - Recursive search with -r (skip symlinks) and -R (follow symlinks)
+   - Count matches with -c instead of displaying lines
+   - Show line numbers with -n for editing references
+   - Using grep with pipes for filtering command output
+   - Real command outputs from source material (lines 5121-5448)
+   - Common grep options summary table
+   - Real-world use cases: log errors, config search, process checking, network troubleshooting
+   - Combining grep with other commands (find, cat, sort, wc, tail)
+   - Advanced patterns: whole word match -w, extended regex -E
+   - Pattern anchors: ^ (line start), $ (line end)
+   - Matching empty lines with ^$
+   - OR operations with -E and | (pipe in pattern)
+   - 20 comprehensive practice labs with detailed solutions
+   - Labs progress: beginner (basic search, case-insensitive, count) → intermediate (context, recursive, filtering) → advanced (regex, monitoring, complex pipelines)
+   - Labs cover: basic searches, line numbers, context lines, recursive search, piping, excluding patterns
+   - Advanced labs: whole word matching, anchored patterns, extended regex, live monitoring, complex filtering chains
+   - Best practices for efficient grep usage
+   - Common pitfalls: case sensitivity, grep matching itself, forgetting escapes, directory errors
+   - Complete command cheat sheet organized by use case
+   - Quick decision guide for choosing grep options
+
+**Status:** File operations, file viewing, text editors, and text processing (grep) complete! Posts 21-31 done. Ready for Post 32 (cut, sort, uniq).
+
+**Next Session Actions:**
+1. Write Post 32: Text Processing with cut, sort, and uniq
+2. Continue with remaining Phase 1 posts (Posts 32-52)
+
+---
 
 ### Session 12 - 2025-12-08
 **Accomplishments:**
@@ -317,9 +724,20 @@
 - ✅ **Post 18**: Understanding /usr Directory Deep Dive - COMPLETE
 - ✅ **Post 19**: Understanding /var and /etc Explained - COMPLETE
 - ✅ **Post 20**: Understanding Write Permissions and Access Control - COMPLETE
-- ⏳ **Post 21**: Using Wildcards for Efficient File Management - NEXT TO WRITE
-- 📊 **Progress**: 20 of 52 posts (38.5%)
-- 📝 **Words Written**: ~153,768
+- ✅ **Post 21**: Using Wildcards for Efficient File Management - COMPLETE
+- ✅ **Post 22**: Copying Files with cp Command - COMPLETE
+- ✅ **Post 23**: Creating and Managing Directories with mkdir - COMPLETE
+- ✅ **Post 24**: Understanding Absolute vs Relative Paths - COMPLETE
+- ✅ **Post 25**: Moving and Renaming with mv Command - COMPLETE
+- ✅ **Post 26**: Removing Files with rm and rmdir - COMPLETE
+- ✅ **Post 27**: Hard Links and Symbolic Links - COMPLETE
+- ✅ **Post 28**: Finding Files with find Command - COMPLETE
+- ✅ **Post 29**: Viewing Files (cat/less/more/head/tail) - COMPLETE!
+- ✅ **Post 30**: Introduction to Text Editors (vi/vim basics) - COMPLETE!
+- ✅ **Post 31**: Text Processing with grep Command - COMPLETE!
+- ⏳ **Post 32**: Text Processing with cut, sort, uniq - NEXT TO WRITE
+- 📊 **Progress**: 31 of 52 posts (59.6%)
+- 📝 **Words Written**: ~275,568
 
 **Immediate Next Steps:**
 1. ✅ Post 14 rendering issue FIXED (recreated from scratch in Session 7)
@@ -329,8 +747,19 @@
 5. ✅ Post 18: Understanding /usr Directory Deep Dive COMPLETE
 6. ✅ Post 19: Understanding /var and /etc Explained COMPLETE
 7. ✅ Post 20: Understanding Write Permissions and Access Control COMPLETE
-8. Write Post 21: Using Wildcards for Efficient File Management
-9. Then proceed with more file operations and links section (Posts 22+)
+8. ✅ Post 21: Using Wildcards for Efficient File Management COMPLETE
+9. ✅ Post 22: Copying Files with cp Command COMPLETE
+10. ✅ Post 23: Creating and Managing Directories with mkdir COMPLETE
+11. ✅ Post 24: Understanding Absolute vs Relative Paths COMPLETE
+12. ✅ Post 25: Moving and Renaming with mv Command COMPLETE
+13. ✅ Post 26: Removing Files with rm and rmdir COMPLETE
+14. ✅ Post 27: Understanding Hard Links and Symbolic Links with ln COMPLETE
+15. ✅ Post 28: Finding Files with find Command COMPLETE
+16. ✅ Post 29: Viewing File Contents with cat/less/more/head/tail COMPLETE
+17. ✅ Post 30: Introduction to Text Editors (vi/vim basics) COMPLETE
+18. ✅ Post 31: Text Processing with grep Command COMPLETE
+19. Write Post 32: Text Processing with cut, sort, and uniq
+20. Then proceed with remaining Phase 1 posts (Posts 32-52)
 
 ---
 
@@ -674,9 +1103,18 @@ The posts MUST follow the exact order of topics in lfcs-rough.txt:
 - [x] Post 18: Understanding /usr Directory Deep Dive (COMPLETED)
 - [x] Post 19: Understanding /var and /etc Explained (COMPLETED)
 - [x] Post 20: Understanding Write Permissions and Access Control (COMPLETED)
-- [ ] Post 21: Using Wildcards for Efficient File Management
-- [ ] Posts 22-29: File Operations & Links
-- [ ] Posts 30-41: Text Editors & Processing
+- [x] Post 21: Using Wildcards for Efficient File Management (COMPLETED)
+- [x] Post 22: Copying Files with cp Command (COMPLETED)
+- [x] Post 23: Creating and Managing Directories with mkdir (COMPLETED)
+- [x] Post 24: Understanding Absolute vs Relative Paths (COMPLETED)
+- [x] Post 25: Moving and Renaming with mv Command (COMPLETED)
+- [x] Post 26: Removing Files with rm and rmdir (COMPLETED)
+- [x] Post 27: Understanding Hard Links and Symbolic Links (COMPLETED)
+- [x] Post 28: Finding Files with find Command (COMPLETED)
+- [x] Post 29: Viewing File Contents with cat/less/more/head/tail (COMPLETED)
+- [x] Post 30: Introduction to Text Editors - vi/vim Basics (COMPLETED)
+- [x] Post 31: Text Processing with grep Command (COMPLETED)
+- [ ] Posts 32-41: Advanced Text Processing & More
 - [ ] Posts 42-52: SSH, Shell, I/O, Variables, Config
 
 ### Post 2: Understanding Groups (wheel and sudo)
@@ -1039,9 +1477,215 @@ The posts MUST follow the exact order of topics in lfcs-rough.txt:
   - Complete command cheat sheet for testing and managing permissions
   - Title updated to match series format: "LFCS Phase 1 Part 20: Understanding Write Permissions and Access Control"
 
+### Post 21: Using Wildcards for Efficient File Management
+- **File**: `2025-12-08_lfcs-phase1-part-21-wildcards-file-management.mdx`
+- **Status**: ✅ COMPLETED - Ready for review
+- **Word Count**: ~11,800 words
+- **Content Includes**:
+  - Complete guide to Linux wildcards and glob patterns
+  - Understanding shell expansion vs command execution
+  - The asterisk (*) wildcard - zero or more characters
+  - Detailed examples: `*.txt`, `file*`, `*log*`, `*backup*.tar.gz`
+  - The question mark (?) wildcard - exactly one character
+  - Examples: `file?.txt`, `?????.txt`, `log?*`
+  - Character ranges [...] - specific character sets
+  - Examples: `[abc]*`, `[0-9]*`, `[a-z]*`, `[a-zA-Z]*`
+  - Range patterns: `[a-m]*`, `file[1-5].txt`, `[a-e]*`
+  - Negation patterns: `[!abc]*`, `[!0-9]*`, `[!.]*`
+  - Combining wildcards: `file[0-9]*.txt`, `*[0-9][0-9].log`
+  - Real command outputs from /etc directory (from source material)
+  - Hidden files and dotfiles behavior (`.*` pattern)
+  - Why `*` doesn't match dotfiles by default
+  - Brace expansion for bulk operations: `{1..100}`, `{a..z}`
+  - Escaping wildcards: `\*`, `'*.txt'`, literal characters
+  - Wildcards with common commands: ls, rm, cp, mv, cat, grep
+  - Real-world use cases: log cleanup, backups, bulk operations
+  - Visual wildcard expansion flow diagram
+  - Comprehensive pattern matching reference table
+  - When wildcards don't match (error handling)
+  - Special cases and edge cases
+  - **20 comprehensive practice labs** with collapsible solutions
+  - Progressive difficulty: beginner → intermediate → advanced
+  - Labs cover: file creation, pattern testing, safe deletion workflows
+  - Hidden file labs, negation patterns, complex date patterns
+  - Safety labs: testing before deletion, escaping wildcards
+  - Real-world cleanup script lab
+  - Best practices: Test → Verify → Execute workflow
+  - Common pitfalls: dangerous `rm *`, hidden files, case sensitivity
+  - Safety warnings throughout (especially with rm command)
+  - Complete command cheat sheet for all wildcard patterns
+  - Quick reference table for common tasks
+
+### Post 22: Copying Files with cp Command
+- **File**: `2025-12-08_lfcs-phase1-part-22-copying-files-cp-command.mdx`
+- **Status**: ✅ COMPLETED - Ready for review
+- **Word Count**: ~11,000 words
+- **Content Includes**:
+  - Complete guide to cp command for file and directory copying
+  - Understanding cp syntax: source and destination arguments
+  - The three cp scenarios: file to file, file to dir, multiple to dir
+  - Basic file copying with real command outputs
+  - Permission requirements for copying (read source, write dest)
+  - Copying to new filename in one command
+  - The trailing slash importance (directory vs file confusion)
+  - Recursive copying with -r flag (required for directories)
+  - Interactive mode with -i for safe copying (prevents overwrites)
+  - Verbose mode with -v to see operation feedback
+  - Preserving attributes with -p (timestamps, permissions, ownership)
+  - Archive mode with -a for complete directory backups
+  - Copying multiple files to destination directory
+  - Using wildcards with cp for bulk operations
+  - The hidden files challenge and multiple solutions
+  - Why wildcards don't match dotfiles by default
+  - Solution patterns: `.[!.]*` for hidden files
+  - Using tar as recommended solution for complete copies
+  - Common cp options reference table
+  - Real-world use cases: config backups, daily backups, migrations
+  - **20 comprehensive practice labs** with collapsible solutions
+  - Labs cover: basic copying, permissions, recursion, preservation
+  - Intermediate labs: interactive mode, verbose output, wildcards
+  - Advanced labs: hidden files, update mode, combining options
+  - Real-world labs: backup workflows, timestamped backups
+  - Best practices for safe copying and backups
+  - Common pitfalls: forgetting -r, silent overwrites, lost timestamps
+  - Complete command cheat sheet with backup patterns
+  - Backup workflow best practices with real examples
+
+### Post 23: Creating and Managing Directories with mkdir
+- **File**: `2025-12-08_lfcs-phase1-part-23-mkdir-directories.mdx`
+- **Status**: ✅ COMPLETED - Ready for review
+- **Word Count**: ~10,000 words
+- **Content Includes**:
+  - Complete guide to mkdir command for directory creation
+  - Understanding directories vs files (type indicators, purposes, permissions)
+  - Basic mkdir syntax and directory permission defaults (755)
+  - Permission denied errors and write permission requirements
+  - The parent directory problem (cannot create nested without parents)
+  - Using -p flag to create parent directories automatically
+  - Verbose mode with -v for operation confirmation
+  - Creating multiple directories at once (space-separated list)
+  - Brace expansion for efficient creation: `{dir1,dir2,dir3}`
+  - Setting specific permissions with -m flag (700, 750, 755, etc.)
+  - Directory naming best practices (avoid spaces, special chars)
+  - Professional naming conventions (date-based, semantic, version-based)
+  - Real-world directory structures: web apps, backups, multi-environment
+  - Understanding rmdir for removing empty directories only
+  - rmdir with -p flag for removing parent directories
+  - Difference between rmdir and rm -r (empty vs non-empty)
+  - Real command outputs from source material
+  - **20 comprehensive practice labs** with collapsible solutions
+  - Labs cover: basic creation, permission errors, nested structures
+  - Intermediate labs: brace expansion, permissions, project structures
+  - Advanced labs: dated backups, multi-environment setups, complete projects
+  - Best practices for directory organization and naming
+  - Common pitfalls: spaces in names, forgetting -p, wrong permissions
+  - Complete command cheat sheet with real-world workflows
+  - Workflow examples: dated backups, environment configs, project init
+
+### Post 24: Understanding Absolute vs Relative Paths
+- **File**: `2025-12-08_lfcs-phase1-part-24-absolute-relative-paths.mdx`
+- **Status**: ✅ COMPLETED - Ready for review
+- **Word Count**: ~10,000 words
+- **Content Includes**:
+  - Complete guide to Linux path concepts
+  - Understanding absolute paths (start with /)
+  - Absolute path examples: /etc/passwd, /home/centos9/documents
+  - Understanding relative paths (no leading /, context-dependent)
+  - Relative path examples: documents/file.txt, ../parent, ../../grandparent
+  - How Linux resolves paths based on pwd (current working directory)
+  - The dot (.) explained - current directory
+  - The double dot (..) explained - parent directory
+  - The tilde (~) explained - home directory shortcut
+  - cd - for toggling between previous and current directory
+  - Path resolution process step by step with examples
+  - When to use absolute vs relative paths (automation vs interactive)
+  - Real command outputs from source material (lines 2764-2843 of lfcs-rough.txt)
+  - Practical examples: cp passwd .., ls .., cd ../.., pwd combinations
+  - **20 comprehensive practice labs** with collapsible solutions
+  - Labs 1-7: Basic path types and symbols (beginner)
+  - Labs 8-13: File operations with paths (intermediate)
+  - Labs 14-20: Complex navigation and scripting (advanced)
+  - Path decision flowchart (absolute vs relative)
+  - Best practices for path usage in scripts and interactive work
+  - Common pitfalls: wrong assumptions, missing /, spaces in paths, cd without verification
+  - Complete command cheat sheet with all path examples
+  - Quick reference table for path symbols
+
+### Post 25: Moving and Renaming with mv Command
+- **File**: `2025-12-08_lfcs-phase1-part-25-moving-renaming-mv-command.mdx`
+- **Status**: ✅ COMPLETED - Ready for review
+- **Word Count**: ~11,500 words
+- **Content Includes**:
+  - Complete guide to mv command for moving and renaming
+  - Understanding mv vs cp (move vs copy fundamentals)
+  - Basic mv syntax and three main scenarios
+  - Scenario 1: Renaming files in same directory (mv old new)
+  - Scenario 2: Moving files between directories (mv file dir/)
+  - Scenario 3: Moving directories without -r flag
+  - Why mv is instant on same filesystem (metadata only)
+  - Why mv is slow across filesystems (becomes copy+delete)
+  - Moving multiple files with wildcards
+  - Essential mv options: -i, -v, -n, -u explained
+  - Interactive mode (-i) for preventing accidental overwrites
+  - Verbose mode (-v) for audit trails and debugging
+  - No clobber mode (-n) for safe scripts
+  - Update mode (-u) for syncing only newer files
+  - Combining options for maximum safety
+  - Permission requirements explained (write on both dirs)
+  - mv vs cp comparison grid (side-by-side)
+  - Real command outputs from source material (lines 2787-2910)
+  - Real-world use cases: organizing downloads, archiving logs, renaming configs
+  - Common mv patterns: safe rename, bulk organization, timestamp-based
+  - **20 comprehensive practice labs** with collapsible solutions
+  - Labs 1-7: Basic renaming and moving (beginner)
+  - Labs 8-13: Options, wildcards, permissions (intermediate)
+  - Labs 14-20: Loops, conditional moves, complete reorganization (advanced)
+  - Safe mv workflow: test → verify → execute
+  - Best practices for moving and renaming files safely
+  - Common pitfalls: overwrites, nonexistent destinations, permission errors, system files
+  - Complete command cheat sheet with real-world patterns
+  - mv vs cp decision guide flowchart
+
+### Post 26: Removing Files and Directories with rm and rmdir
+- **File**: `2025-12-08_lfcs-phase1-part-26-removing-files-rm-rmdir.mdx`
+- **Status**: ✅ COMPLETED - Ready for review
+- **Word Count**: ~13,000 words
+- **Content Includes**:
+  - Comprehensive guide to rm and rmdir for file deletion
+  - Understanding why rm is the most dangerous command in Linux
+  - No Recycle Bin or Trash - permanent deletion explained
+  - Basic rm syntax for single and multiple files
+  - Essential rm options: -i, -f, -r, -v with detailed explanations
+  - Interactive mode (-i) as safest deletion approach
+  - Force mode (-f) dangers and appropriate use cases
+  - Recursive mode (-r) for directory deletion
+  - Verbose mode (-v) for confirmation and audit trails
+  - Options comparison table with safety levels
+  - The rmdir command for safe empty directory removal
+  - rmdir vs rm -r detailed comparison (side-by-side grid)
+  - rmdir -p for removing nested empty directory chains
+  - Real command outputs from source material (lines 2594-2840)
+  - The most dangerous commands: sudo rm -rf /, rm -rf /*
+  - System destroyer warnings with termination letter quote
+  - --preserve-root protection mechanism explained
+  - Dangerous wildcard patterns: space typos, empty variables, dotfile matches
+  - Safe deletion workflow: three-step safety process
+  - Safe deletion checklist (8 verification points)
+  - Recovery considerations (harsh truth: no recovery)
+  - Safer alternatives: trash directories, trash-cli, archiving
+  - Real-world use cases: log cleanup, temp files, old backups, build artifacts
+  - **20 comprehensive practice labs** with collapsible solutions
+  - Labs 1-7: Basic deletion and safety (beginner)
+  - Labs 8-12: Wildcards, rmdir, force mode (intermediate)
+  - Labs 13-20: Conditional deletion, audit trails, trash system, recovery simulation (advanced)
+  - Best practices table: DO vs DON'T format
+  - Common pitfalls with code examples (7 dangerous patterns)
+  - Complete command cheat sheet with safe patterns
+  - Safety-focused golden rules and final warnings
+
 ### Statistics
-- **Posts Completed**: 20 / 52 (38.5%)
-- **Words Written**: ~153,768
+- **Posts Completed**: 26 / 52 (50.0%) 🎉 **HALFWAY MILESTONE!**
+- **Words Written**: ~221,068
 - **Estimated Total Words**: 150,000-260,000
 - **Estimated Time**: Many hours of focused work
 
