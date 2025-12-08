@@ -1,13 +1,54 @@
 # LFCS Phase 1 Blog Series - Project State Document
 
-**Last Updated**: 2025-12-07
-**Status**: Posts 1-19 Completed - Filesystem Hierarchy Deep Dives Complete!
-**Session**: Session 11 - Completed Posts 18 and 19 (Filesystem Deep Dives)
-**Next Steps**: Continue with Post 20 (Write Permissions and Access Control)
+**Last Updated**: 2025-12-08
+**Status**: Posts 1-20 Completed - Write Permissions Complete!
+**Session**: Session 12 - Completed Post 20 (Write Permissions and Access Control)
+**Next Steps**: Continue with Post 21 (Using Wildcards for Efficient File Management)
 
 ---
 
 ## 📝 Session Summary (Latest)
+
+### Session 12 - 2025-12-08
+**Accomplishments:**
+1. ✅ Verified Post 20 was already complete (~10,500 words)
+   - Comprehensive guide to write permissions and file access control
+   - Where regular users CAN write: /home/username, /tmp, /var/tmp
+   - Where regular users CANNOT write: /root, /etc, /var/log, /boot, /usr/bin
+   - Using touch command to test write access
+   - Understanding "Permission denied" errors in detail
+   - Permission hierarchy and check order
+   - Why access control matters (security, stability, multi-user systems)
+   - Practical examples and real-world use cases
+   - Quick reference table for write permission zones
+   - 20 comprehensive practice labs with collapsible solutions
+   - Labs cover: home directory, /tmp testing, protected directories, sudo usage
+   - Advanced labs: permission troubleshooting, safe system file modification
+   - Best practices for file access control
+   - Common pitfalls to avoid (sudo misuse, /tmp data loss, etc.)
+   - Complete command cheat sheet
+
+2. ✅ Fixed Post 20 title to match series format
+   - Changed from: "Understanding Write Permissions and File Access in Linux"
+   - Changed to: "LFCS Phase 1 Part 20: Understanding Write Permissions and Access Control"
+   - Now consistent with Posts 16-19 format
+
+**Content Quality:**
+- Post 20 follows proven MDX structure
+- All syntax verified (no dangerous patterns)
+- Exactly 20 labs with collapsible solutions
+- Comprehensive tables and visual diagrams
+- Systematic approach to testing file access
+- Real-world troubleshooting scenarios
+- Complete workflow examples
+
+**Status:** Write permissions fundamentals complete! Ready to move to Post 21 (Wildcards).
+
+**Next Session Actions:**
+1. Write Post 21: Using Wildcards for Efficient File Management
+2. Continue with file operations section (Posts 22+)
+
+---
 
 ### Session 11 - 2025-12-07
 **Accomplishments:**
@@ -275,9 +316,10 @@
 - ✅ **Post 17**: Understanding Linux Filesystem Hierarchy Part 1: Overview - COMPLETE
 - ✅ **Post 18**: Understanding /usr Directory Deep Dive - COMPLETE
 - ✅ **Post 19**: Understanding /var and /etc Explained - COMPLETE
-- ⏳ **Post 20**: Write Permissions and Access Control - NEXT TO WRITE
-- 📊 **Progress**: 19 of 52 posts (36.5%)
-- 📝 **Words Written**: ~143,268
+- ✅ **Post 20**: Understanding Write Permissions and Access Control - COMPLETE
+- ⏳ **Post 21**: Using Wildcards for Efficient File Management - NEXT TO WRITE
+- 📊 **Progress**: 20 of 52 posts (38.5%)
+- 📝 **Words Written**: ~153,768
 
 **Immediate Next Steps:**
 1. ✅ Post 14 rendering issue FIXED (recreated from scratch in Session 7)
@@ -286,8 +328,9 @@
 4. ✅ Post 17: Understanding Linux Filesystem Hierarchy Part 1: Overview COMPLETE
 5. ✅ Post 18: Understanding /usr Directory Deep Dive COMPLETE
 6. ✅ Post 19: Understanding /var and /etc Explained COMPLETE
-7. Write Post 20: Understanding Write Permissions and Access Control
-8. Then proceed with file operations and links section (Posts 21+)
+7. ✅ Post 20: Understanding Write Permissions and Access Control COMPLETE
+8. Write Post 21: Using Wildcards for Efficient File Management
+9. Then proceed with more file operations and links section (Posts 22+)
 
 ---
 
@@ -630,8 +673,9 @@ The posts MUST follow the exact order of topics in lfcs-rough.txt:
 - [x] Post 17: Understanding Linux Filesystem Hierarchy Part 1: Overview (COMPLETED)
 - [x] Post 18: Understanding /usr Directory Deep Dive (COMPLETED)
 - [x] Post 19: Understanding /var and /etc Explained (COMPLETED)
-- [ ] Post 20: Write Permissions and Access Control
-- [ ] Posts 21-29: File Operations & Links
+- [x] Post 20: Understanding Write Permissions and Access Control (COMPLETED)
+- [ ] Post 21: Using Wildcards for Efficient File Management
+- [ ] Posts 22-29: File Operations & Links
 - [ ] Posts 30-41: Text Editors & Processing
 - [ ] Posts 42-52: SSH, Shell, I/O, Variables, Config
 
@@ -965,9 +1009,39 @@ The posts MUST follow the exact order of topics in lfcs-rough.txt:
   - Common pitfalls and safety warnings
   - Complete command cheat sheet
 
+### Post 20: Understanding Write Permissions and Access Control
+- **File**: `2025-12-07_lfcs-phase1-part-20-write-permissions-access.mdx`
+- **Status**: ✅ COMPLETED - Ready for review
+- **Word Count**: ~10,500 words
+- **Content Includes**:
+  - Complete guide to Linux file access control and multi-user security model
+  - Where regular users CAN write files: /home/username, /tmp, /var/tmp
+  - Your home directory as personal workspace with full control
+  - /tmp directory for temporary files (cleared on reboot)
+  - /var/tmp vs /tmp differences (persistence across reboots)
+  - Where regular users CANNOT write: /root, /etc, /var/log, /boot, /usr/bin
+  - Why system directories are protected (security and stability)
+  - Using touch command to test write access anywhere on the system
+  - Understanding "Permission denied" errors in detail
+  - Anatomy of permission errors and how to diagnose them
+  - Permission hierarchy and check order (owner → group → others)
+  - Why access control matters: security, stability, multi-user systems, LFCS exam
+  - Practical examples: temporary directories, testing scripts, debugging applications
+  - Safe system file modification workflow
+  - Quick reference table for write permission zones
+  - **20 comprehensive practice labs** with collapsible solutions only
+  - Labs cover: home directory exploration, /tmp testing, protected directory testing
+  - Intermediate labs: sudo usage, permission vs file not found errors, exit codes
+  - Advanced labs: write access testing tools, permission troubleshooting, safe editing
+  - Real-world scenarios: application permission problems, ownership issues, multi-user conflicts
+  - Best practices for file access control (least privilege principle)
+  - Common pitfalls to avoid (sudo misuse, /tmp data loss, no backups, etc.)
+  - Complete command cheat sheet for testing and managing permissions
+  - Title updated to match series format: "LFCS Phase 1 Part 20: Understanding Write Permissions and Access Control"
+
 ### Statistics
-- **Posts Completed**: 19 / 52 (36.5%)
-- **Words Written**: ~143,268
+- **Posts Completed**: 20 / 52 (38.5%)
+- **Words Written**: ~153,768
 - **Estimated Total Words**: 150,000-260,000
 - **Estimated Time**: Many hours of focused work
 

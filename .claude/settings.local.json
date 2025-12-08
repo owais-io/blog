@@ -14,7 +14,8 @@
       "Bash(echo:*)",
       "Bash(pgrep:*)",
       "Bash(ss:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(ls:*)"
     ],
     "deny": [],
     "ask": []
