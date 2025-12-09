@@ -1,42 +1,44 @@
-Generating static pages (0/134) ...
-   Generating static pages (15/134) 
-[Error: [next-mdx-remote] error compiling MDX:
-Expected the closing tag `</code>` either after the end of `emphasis` (97:84) or another opening tag after the start of `emphasis` (95:83)
-More information: https://mdxjs.com/docs/troubleshooting-mdx] {
-  digest: '2892874317'
-}
-[Error: [next-mdx-remote] error compiling MDX:
-Expected the closing tag `</code>` either after the end of `emphasis` (97:84) or another opening tag after the start of `emphasis` (95:83)
-More information: https://mdxjs.com/docs/troubleshooting-mdx] {
-  digest: '2892874317'
-}
-[Error: [next-mdx-remote] error compiling MDX:
-Expected the closing tag `</code>` either after the end of `emphasis` (97:84) or another opening tag after the start of `emphasis` (95:83)
-More information: https://mdxjs.com/docs/troubleshooting-mdx] {
-  digest: '2892874317'
-}
-Error occurred prerendering page "/blog/2025-12-08_lfcs-phase1-part-21-wildcards-file-management". Read more: https://nextjs.org/docs/messages/prerender-error
-[Error: [next-mdx-remote] error compiling MDX:
-Expected the closing tag `</code>` either after the end of `emphasis` (97:84) or another opening tag after the start of `emphasis` (95:83)
-More information: https://mdxjs.com/docs/troubleshooting-mdx] {
-  digest: '2892874317'
-}
-   Generating static pages (24/134) 
-   Generating static pages (31/134) 
-   Generating static pages (33/134) 
-   Generating static pages (44/134) 
-   Generating static pages (52/134) 
-   Generating static pages (61/134) 
-   Generating static pages (66/134) 
-   Generating static pages (76/134) 
-   Generating static pages (85/134) 
-   Generating static pages (95/134) 
-   Generating static pages (100/134) 
-   Generating static pages (109/134) 
-   Generating static pages (120/134) 
-   Generating static pages (130/134) 
- ✓ Generating static pages (134/134)
-> Export encountered errors on following paths:
-	/blog/[slug]/page: /blog/2025-12-08_lfcs-phase1-part-21-wildcards-file-management
-2025/12/08 20:28:09 Process exited with status 1
-Error: Process completed with exit code 1.
+Run npm ci
+npm error code EUSAGE
+npm error
+npm error `npm ci` can only install packages when your package.json and package-lock.json or npm-shrinkwrap.json are in sync. Please update your lock file with `npm install` before continuing.
+npm error
+npm error Invalid: lock file's eslint@8.57.1 does not satisfy eslint@9.39.1
+npm error Missing: @eslint/config-array@0.21.1 from lock file
+npm error Missing: @eslint/config-helpers@0.4.2 from lock file
+npm error Missing: @eslint/core@0.17.0 from lock file
+npm error Invalid: lock file's @eslint/eslintrc@2.1.4 does not satisfy @eslint/eslintrc@3.3.3
+npm error Invalid: lock file's @eslint/js@8.57.1 does not satisfy @eslint/js@9.39.1
+npm error Missing: @eslint/plugin-kit@0.4.1 from lock file
+npm error Missing: @humanfs/node@0.16.7 from lock file
+npm error Missing: @humanwhocodes/retry@0.4.3 from lock file
+npm error Invalid: lock file's eslint-scope@7.2.2 does not satisfy eslint-scope@8.4.0
+npm error Missing: eslint-visitor-keys@4.2.1 from lock file
+npm error Invalid: lock file's espree@9.6.1 does not satisfy espree@10.4.0
+npm error Invalid: lock file's file-entry-cache@6.0.1 does not satisfy file-entry-cache@8.0.0
+npm error Missing: @eslint/object-schema@2.1.7 from lock file
+npm error Missing: @types/json-schema@7.0.15 from lock file
+npm error Invalid: lock file's globals@13.24.0 does not satisfy globals@14.0.0
+npm error Missing: @humanfs/core@0.19.1 from lock file
+npm error Missing: eslint-visitor-keys@4.2.1 from lock file
+npm error Invalid: lock file's flat-cache@3.2.0 does not satisfy flat-cache@4.0.1
+npm error
+npm error Clean install a project
+npm error
+npm error Usage:
+npm error npm ci
+npm error
+npm error Options:
+npm error [--install-strategy <hoisted|nested|shallow|linked>] [--legacy-bundling]
+npm error [--global-style] [--omit <dev|optional|peer> [--omit <dev|optional|peer> ...]]
+npm error [--include <prod|dev|optional|peer> [--include <prod|dev|optional|peer> ...]]
+npm error [--strict-peer-deps] [--foreground-scripts] [--ignore-scripts] [--no-audit]
+npm error [--no-bin-links] [--no-fund] [--dry-run]
+npm error [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
+npm error [-ws|--workspaces] [--include-workspace-root] [--install-links]
+npm error
+npm error aliases: clean-install, ic, install-clean, isntall-clean
+npm error
+npm error Run "npm help ci" for more info
+npm error A complete log of this run can be found in: /home/runner/.npm/_logs/2025-12-09T13_01_32_274Z-debug-0.log
+Error: Process completed with exit code 1
