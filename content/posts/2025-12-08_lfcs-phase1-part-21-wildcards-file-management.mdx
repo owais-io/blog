@@ -103,15 +103,15 @@ Linux shells support three primary wildcard characters:
   </thead>
   <tbody>
     <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
-      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>*</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>{`*`}</code></td>
       <td className="border border-gray-300 dark:border-gray-700 px-4 py-3">Zero or more characters</td>
-      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>*.txt</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>{`*.txt`}</code></td>
       <td className="border border-gray-300 dark:border-gray-700 px-4 py-3">file.txt, notes.txt, a.txt</td>
     </tr>
     <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
-      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>?</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>{`?`}</code></td>
       <td className="border border-gray-300 dark:border-gray-700 px-4 py-3">Exactly one character</td>
-      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>file?.txt</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>{`file?.txt`}</code></td>
       <td className="border border-gray-300 dark:border-gray-700 px-4 py-3">file1.txt, filea.txt (NOT file10.txt)</td>
     </tr>
     <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
@@ -325,27 +325,27 @@ This matches all files/directories starting with a, b, c, d, or e.
   </thead>
   <tbody>
     <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
-      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>[a-z]*</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>{`[a-z]*`}</code></td>
       <td className="border border-gray-300 dark:border-gray-700 px-4 py-3">Starts with lowercase letter</td>
       <td className="border border-gray-300 dark:border-gray-700 px-4 py-3">apple, zebra, file</td>
     </tr>
     <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
-      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>[A-Z]*</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>{`[A-Z]*`}</code></td>
       <td className="border border-gray-300 dark:border-gray-700 px-4 py-3">Starts with uppercase letter</td>
       <td className="border border-gray-300 dark:border-gray-700 px-4 py-3">Apple, ZEBRA, File</td>
     </tr>
     <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
-      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>[0-9]*</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>{`[0-9]*`}</code></td>
       <td className="border border-gray-300 dark:border-gray-700 px-4 py-3">Starts with a digit</td>
       <td className="border border-gray-300 dark:border-gray-700 px-4 py-3">1file, 2024, 99bottles</td>
     </tr>
     <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
-      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>[a-zA-Z]*</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>{`[a-zA-Z]*`}</code></td>
       <td className="border border-gray-300 dark:border-gray-700 px-4 py-3">Starts with any letter</td>
       <td className="border border-gray-300 dark:border-gray-700 px-4 py-3">file, File, ABC</td>
     </tr>
     <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
-      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>[a-z0-9]*</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>{`[a-z0-9]*`}</code></td>
       <td className="border border-gray-300 dark:border-gray-700 px-4 py-3">Starts with lowercase or digit</td>
       <td className="border border-gray-300 dark:border-gray-700 px-4 py-3">file1, 2test, abc</td>
     </tr>
@@ -780,63 +780,63 @@ tar xf archive.tar --wildcards "*.html"
   <tbody>
     <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
       <td className="border border-gray-300 dark:border-gray-700 px-4 py-3">All files with specific extension</td>
-      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>*.ext</code></td>
-      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>ls *.pdf</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>{`*.ext`}</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>{`ls *.pdf`}</code></td>
     </tr>
     <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
       <td className="border border-gray-300 dark:border-gray-700 px-4 py-3">Files starting with prefix</td>
-      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>prefix*</code></td>
-      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>ls error_*</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>{`prefix*`}</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>{`ls error_*`}</code></td>
     </tr>
     <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
       <td className="border border-gray-300 dark:border-gray-700 px-4 py-3">Files ending with suffix before extension</td>
-      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>*suffix.ext</code></td>
-      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>ls *_backup.tar.gz</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>{`*suffix.ext`}</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>{`ls *_backup.tar.gz`}</code></td>
     </tr>
     <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
       <td className="border border-gray-300 dark:border-gray-700 px-4 py-3">Files with single digit</td>
-      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>file?.ext</code></td>
-      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>ls file[0-9].txt</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>{`file?.ext`}</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>{`ls file[0-9].txt`}</code></td>
     </tr>
     <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
       <td className="border border-gray-300 dark:border-gray-700 px-4 py-3">Files with two digits</td>
-      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>file[0-9][0-9]</code></td>
-      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>ls file[0-9][0-9].log</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>{`file[0-9][0-9]`}</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>{`ls file[0-9][0-9].log`}</code></td>
     </tr>
     <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
       <td className="border border-gray-300 dark:border-gray-700 px-4 py-3">Files starting with specific letters</td>
-      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>[abc]*</code></td>
-      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>ls [abc]*</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>{`[abc]*`}</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>{`ls [abc]*`}</code></td>
     </tr>
     <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
       <td className="border border-gray-300 dark:border-gray-700 px-4 py-3">Files starting with letter range</td>
-      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>[a-m]*</code></td>
-      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>ls [a-m]*.txt</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>{`[a-m]*`}</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>{`ls [a-m]*.txt`}</code></td>
     </tr>
     <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
       <td className="border border-gray-300 dark:border-gray-700 px-4 py-3">Files NOT starting with letters</td>
-      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>[!a-z]*</code></td>
-      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>ls [!a-z]*</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>{`[!a-z]*`}</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>{`ls [!a-z]*`}</code></td>
     </tr>
     <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
       <td className="border border-gray-300 dark:border-gray-700 px-4 py-3">Hidden files (dotfiles)</td>
-      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>.*</code></td>
-      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>ls .*</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>{`.*`}</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>{`ls .*`}</code></td>
     </tr>
     <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
       <td className="border border-gray-300 dark:border-gray-700 px-4 py-3">All files except hidden</td>
-      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>[!.]*</code></td>
-      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>ls [!.]*</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>{`[!.]*`}</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>{`ls [!.]*`}</code></td>
     </tr>
     <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
       <td className="border border-gray-300 dark:border-gray-700 px-4 py-3">Logs from specific year-month</td>
-      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>*YYYY-MM*.log</code></td>
-      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>ls *2024-01*.log</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>{`*YYYY-MM*.log`}</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>{`ls *2024-01*.log`}</code></td>
     </tr>
     <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
       <td className="border border-gray-300 dark:border-gray-700 px-4 py-3">Multiple extensions</td>
-      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>*.ext1 *.ext2</code></td>
-      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>ls *.jpg *.png</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>{`*.ext1 *.ext2`}</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-3"><code>{`ls *.jpg *.png`}</code></td>
     </tr>
   </tbody>
 </table>
@@ -1495,10 +1495,10 @@ ls testfile*.txt
     <ul className="space-y-2">
       <li><strong>Test with ls first</strong>: Always verify wildcard matches with <code>ls</code> before using destructive commands like <code>rm</code></li>
       <li><strong>Use quotes when needed</strong>: Quote patterns containing spaces or special characters</li>
-      <li><strong>Be specific</strong>: Use <code>*.txt</code> instead of <code>*</code> when possible</li>
-      <li><strong>Use character ranges</strong>: <code>[0-9]</code> is clearer than <code>?</code> for digits</li>
+      <li><strong>Be specific</strong>: Use <code>{`*.txt`}</code> instead of <code>{`*`}</code> when possible</li>
+      <li><strong>Use character ranges</strong>: <code>{`[0-9]`}</code> is clearer than <code>{`?`}</code> for digits</li>
       <li><strong>Understand expansion</strong>: Remember the shell expands wildcards, not the command</li>
-      <li><strong>Use -i with rm</strong>: <code>rm -i *.txt</code> prompts before each deletion</li>
+      <li><strong>Use -i with rm</strong>: <code>{`rm -i *.txt`}</code> prompts before each deletion</li>
       <li><strong>Check current directory</strong>: Always know where you are with <code>pwd</code> before using wildcards</li>
       <li><strong>Practice in safe directory</strong>: Test patterns in a practice directory first</li>
     </ul>
@@ -1508,11 +1508,11 @@ ls testfile*.txt
     <h3 className="text-red-600 dark:text-red-400 font-bold mb-3">❌ DON'T</h3>
     <ul className="space-y-2">
       <li><strong>Never use rm *</strong> in important directories without verification</li>
-      <li><strong>Don't use wildcards in filenames</strong>: Avoid naming files <code>file*.txt</code></li>
+      <li><strong>Don't use wildcards in filenames</strong>: Avoid naming files <code>{`file*.txt`}</code></li>
       <li><strong>Don't assume no matches</strong>: Check if pattern matched anything</li>
-      <li><strong>Don't forget hidden files</strong>: <code>*</code> doesn't match dotfiles</li>
+      <li><strong>Don't forget hidden files</strong>: <code>{`*`}</code> doesn't match dotfiles</li>
       <li><strong>Don't mix up * and ?</strong>: They behave very differently</li>
-      <li><strong>Don't use wildcards with sudo carelessly</strong>: <code>sudo rm *</code> in wrong directory = disaster</li>
+      <li><strong>Don't use wildcards with sudo carelessly</strong>: <code>{`sudo rm *`}</code> in wrong directory = disaster</li>
       <li><strong>Don't rely on memory</strong>: Always verify current directory and matches</li>
       <li><strong>Don't skip the safety check</strong>: One mistake with <code>rm</code> can't be undone</li>
     </ul>

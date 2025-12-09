@@ -2,20 +2,12 @@ import { Metadata } from 'next'
 import { getAllPosts, getTagCounts, getCategoryCounts } from '../lib/blog'
 import TagsPageClient from '../components/TagsPageClient'
 
-interface TagsPageProps {
-  searchParams: {
-    page?: string
-    tags?: string
-    categories?: string
-  }
-}
-
 export const metadata: Metadata = {
   title: 'Tags',
   description: 'Browse posts by tags - Find articles on specific topics and technologies.',
 }
 
-export default function TagsPage({ searchParams }: TagsPageProps) {
+export default function TagsPage() {
   // Fetch all posts once - let client handle filtering
   const allPosts = getAllPosts().map(post => ({
     slug: post.slug,
@@ -38,7 +30,6 @@ export default function TagsPage({ searchParams }: TagsPageProps) {
       allPosts={allPosts}
       tagCounts={tagCounts}
       categoryCounts={categoryCounts}
-      searchParams={searchParams}
     />
   )
 }

@@ -1,48 +1,62 @@
-name: Deploy to EC2
+name: Deploy Blog to S3 + CloudFront
 
+# Trigger: Run on every push to main branch
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
 
+# Workflow will run these jobs
 jobs:
   deploy:
+    # Use Ubuntu Linux runner (GitHub-hosted)
     runs-on: ubuntu-latest
 
+    # Steps to execute
     steps:
-      - name: Deploy to EC2
-        uses: appleboy/ssh-action@master
+      # Step 1: Checkout the code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Step 2: Setup Node.js environment
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          command_timeout: 20m
-          script: |
-            set -e  # Exit on any error
-            cd ~/blog
+          node-version: '18'
+          cache: 'npm'
 
-            # Force sync with remote repository (prevents divergence issues)
-            echo "Fetching latest changes from origin..."
-            git fetch origin
-            git reset --hard origin/main
-            git clean -fd
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: npm ci
 
-            # Clear Next.js cache for fresh build
-            echo "Clearing Next.js cache..."
-            rm -rf .next
+      # Step 4: Build static site
+      - name: Build Next.js site
+        run: npm run build
 
-            # Install dependencies and build
-            echo "Installing dependencies..."
-            export NODE_OPTIONS="--max-old-space-size=1536"
-            npm install
+      # Step 5: Configure AWS credentials
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
 
-            echo "Building Next.js application..."
-            npm run build
+      # Step 6: Upload to S3
+      - name: Sync files to S3
+        run: |
+          aws s3 sync out/ s3://owais.io/ --delete --no-progress
 
-            # Restart or start PM2 app
-            echo "Restarting PM2 application..."
-            pm2 restart blog || pm2 start npm --name "blog" -- start
-            pm2 save
+      # Step 7: Invalidate CloudFront cache
+      - name: Invalidate CloudFront cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "/*"
 
-            echo "Deployment completed successfully!"
-            pm2 list
+      # Step 8: Deployment summary
+      - name: Print deployment summary
+        run: |
+          echo "✅ Deployment completed successfully!"
+          echo "📦 Static files uploaded to S3"
+          echo "🔄 CloudFront cache invalidated"
+          echo "🌐 Site: https://owais.io"
+          echo "⏳ Changes will be visible in 1-2 minutes"

@@ -1,25 +1,42 @@
-Al Nafi International College offers various UK's Eduqual affiliated diplomas globally that's changing careers worldwide. These diplomas are
-
-Available online in 17+ languages
-Includes free student visa guidance for Master's programs in Computer Science fields across the UK, USA, Canada, and more
-Comes with job placement support and a 90-day success plan once you land a role
-Offers a 1-year internship experience letter while you study—all with no hidden costs
-It's not just a diploma—it's a career accelerator.
-They offer diplomas in AI, DevOps, SysOps, Cyber Security, Blockchain, DevSysOps, DevSecOps, AIOps.
-
-Start your journey today with a 7-day free trial
-
-What is it
-
-Al Nafi International College offers online courses, certificates and diplomas in emerging technology fields (cloud, DevOps, SysOps, cyber-security, AI etc). 
-
-They provide “job-ready skills” and practical training aligned with industry requirements. 
-
-Key features & offerings
-
-They provide “UK-accredited/endorsed diplomas” through awarding bodies such as Pearson and EduQual. 
-
-Courses cover emerging tech: cloud cyber-security, DevOps & SysOps, artificial intelligence, blockchain, offensive security. 
-
-Additional support: Job placement assistance, student visa and immigration help, resume/interview prep. 
-
+Generating static pages (0/134) ...
+   Generating static pages (15/134) 
+[Error: [next-mdx-remote] error compiling MDX:
+Expected the closing tag `</code>` either after the end of `emphasis` (97:84) or another opening tag after the start of `emphasis` (95:83)
+More information: https://mdxjs.com/docs/troubleshooting-mdx] {
+  digest: '2892874317'
+}
+[Error: [next-mdx-remote] error compiling MDX:
+Expected the closing tag `</code>` either after the end of `emphasis` (97:84) or another opening tag after the start of `emphasis` (95:83)
+More information: https://mdxjs.com/docs/troubleshooting-mdx] {
+  digest: '2892874317'
+}
+[Error: [next-mdx-remote] error compiling MDX:
+Expected the closing tag `</code>` either after the end of `emphasis` (97:84) or another opening tag after the start of `emphasis` (95:83)
+More information: https://mdxjs.com/docs/troubleshooting-mdx] {
+  digest: '2892874317'
+}
+Error occurred prerendering page "/blog/2025-12-08_lfcs-phase1-part-21-wildcards-file-management". Read more: https://nextjs.org/docs/messages/prerender-error
+[Error: [next-mdx-remote] error compiling MDX:
+Expected the closing tag `</code>` either after the end of `emphasis` (97:84) or another opening tag after the start of `emphasis` (95:83)
+More information: https://mdxjs.com/docs/troubleshooting-mdx] {
+  digest: '2892874317'
+}
+   Generating static pages (24/134) 
+   Generating static pages (31/134) 
+   Generating static pages (33/134) 
+   Generating static pages (44/134) 
+   Generating static pages (52/134) 
+   Generating static pages (61/134) 
+   Generating static pages (66/134) 
+   Generating static pages (76/134) 
+   Generating static pages (85/134) 
+   Generating static pages (95/134) 
+   Generating static pages (100/134) 
+   Generating static pages (109/134) 
+   Generating static pages (120/134) 
+   Generating static pages (130/134) 
+ ✓ Generating static pages (134/134)
+> Export encountered errors on following paths:
+	/blog/[slug]/page: /blog/2025-12-08_lfcs-phase1-part-21-wildcards-file-management
+2025/12/08 20:28:09 Process exited with status 1
+Error: Process completed with exit code 1.

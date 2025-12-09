@@ -15,7 +15,11 @@
       "Bash(pgrep:*)",
       "Bash(ss:*)",
       "Bash(grep:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push)",
+      "Bash(npm run dev:*)"
     ],
     "deny": [],
     "ask": []
