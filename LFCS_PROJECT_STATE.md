@@ -1,13 +1,124 @@
 # LFCS Phase 1 Blog Series - Project State Document
 
-**Last Updated**: 2025-12-08
-**Status**: Posts 1-31 Completed - Text Processing with grep Complete!
-**Session**: Session 13 - Completing Posts 21-32 (File Operations + Editors + Text Processing!)
-**Next Steps**: Continue with Post 32 (Text Processing with cut, sort, uniq)
+**Last Updated**: 2025-12-09
+**Status**: Posts 1-34 Completed - File Permissions Complete!
+**Session**: Session 14 - AWS Migration + GitHub Actions + Posts 32-34
+**Next Steps**: Continue with Post 35 (ACLs and Advanced Permissions)
 
 ---
 
 ## 📝 Session Summary (Latest)
+
+### Session 14 - 2025-12-09
+**Accomplishments:**
+1. ✅ Completed AWS S3 + CloudFront Migration
+   - Migrated blog from EC2 to S3 + CloudFront
+   - Set up SSL certificate with ACM
+   - Migrated DNS from GoDaddy to Route 53
+   - Configured CloudFront distribution with custom domain
+   - Successfully deployed static site to S3
+   - Cost reduction: ~$9/month → ~$2/month (78% savings!)
+
+2. ✅ Implemented GitHub Actions CI/CD Pipeline
+   - Created automated deployment workflow
+   - Configured AWS credentials as GitHub secrets
+   - Set up automatic builds on push to main
+   - Automatic S3 sync and CloudFront invalidation
+   - Deployment time: 3-5 minutes per commit
+   - No more manual deployment steps!
+
+3. ✅ Completed Post 32: Text Processing with cut, sort, and uniq (~13,000 words)
+   - Complete guide to cut command (field/character/byte extraction)
+   - Field-based extraction with -f and -d options
+   - Character-based extraction with -c
+   - Complete sort command guide (alphabetical, numeric, by field)
+   - Numeric sort with -n, reverse with -r
+   - Sorting by specific fields with -k and -t
+   - Human-numeric sort (-h) and version sort (-V)
+   - Complete uniq command guide (duplicates, counting, filtering)
+   - Critical reminder: MUST sort before uniq
+   - Counting occurrences with -c
+   - Showing only duplicates with -d
+   - Real-world examples: /etc/passwd parsing, log analysis, CSV processing
+   - Visual text processing pipeline diagram
+   - 20 comprehensive practice labs with collapsible solutions
+   - Labs cover: basic extraction, sorting, counting, complex pipelines
+   - Advanced labs: CSV processing, log analysis, system audits
+   - 3 quick reference tables (cut, sort, uniq options)
+   - Common patterns and idioms section
+   - Best practices and common pitfalls
+   - Complete command cheat sheet
+
+4. ✅ Completed Post 33: Advanced Text Processing with awk and sed (~12,500 words)
+   - Complete awk fundamentals (patterns, actions, fields)
+   - Built-in variables: $0, $1, $NF, NR, NF, FS, OFS
+   - BEGIN and END blocks for initialization and summaries
+   - Pattern matching and conditionals in awk
+   - Numeric and string comparisons
+   - Associative arrays for counting and grouping
+   - Formatted output with printf
+   - Complete sed guide (stream editing)
+   - Search and replace with s/old/new/g
+   - In-place editing with -i and -i.bak
+   - Delete, insert, append operations
+   - Multiple commands with -e and semicolon
+   - Alternative delimiters for paths (|, #)
+   - Combining awk and sed in powerful pipelines
+   - Real-world examples: log analysis, CSV processing, config file manipulation
+   - 20 comprehensive practice labs with collapsible solutions
+   - Labs progress: beginner → intermediate → advanced
+   - Advanced labs: complex pipelines, real-world log analysis, data aggregation
+   - 2 quick reference tables (awk variables, sed commands)
+   - Best practices for awk vs sed usage
+   - Common pitfalls and safety warnings
+   - Complete command cheat sheet with pipelines
+
+5. ✅ Completed Post 34: Understanding File Permissions and chmod (~15,000 words)
+   - Complete guide to Linux file permissions (read, write, execute)
+   - Understanding permission categories (user, group, other)
+   - Reading permission strings (10-character format breakdown)
+   - chmod command in numeric (octal) mode (755, 644, 600, etc.)
+   - Permission calculation table (binary to octal conversion)
+   - chmod command in symbolic mode (u+x, g-w, o=r, etc.)
+   - Adding, removing, and setting exact permissions
+   - chown command for changing file ownership
+   - chgrp command for changing group ownership
+   - Special permissions: setuid (4000), setgid (2000), sticky bit (1000)
+   - Setuid explained with /usr/bin/passwd example
+   - Setgid for directories (group inheritance)
+   - Sticky bit for shared directories (like /tmp)
+   - Understanding umask and default permissions
+   - umask calculation for files (666-umask) and directories (777-umask)
+   - Common umask values: 0022, 0002, 0077
+   - Real-world scenarios: web servers, shared directories, SSH keys, backups
+   - 20 comprehensive practice labs with collapsible solutions
+   - Labs cover: basic permissions, symbolic mode, ownership, special permissions, umask, troubleshooting
+   - Security best practices and least privilege principle
+   - Common permission combinations reference
+   - Complete command cheat sheet for chmod, chown, chgrp
+
+**Infrastructure Achievements:**
+- ✅ Static site generation working perfectly (134 pages)
+- ✅ S3 bucket configured for website hosting
+- ✅ CloudFront CDN serving with HTTPS
+- ✅ Route 53 DNS management (migrated from GoDaddy)
+- ✅ GitHub Actions automating full deployment pipeline
+- ✅ EC2 instance ready for termination (no longer needed)
+- ✅ Professional production-ready infrastructure
+
+**Documentation Created:**
+- S3_MIGRATION_GUIDE.md (comprehensive AWS migration guide)
+- GITHUB_ACTIONS_DEPLOYMENT_GUIDE.md (complete CI/CD setup)
+- SESSION_STATE.md (migration session tracking)
+- NEXT_STEPS_SUMMARY.md (quick reference for next actions)
+
+**Status:** Text processing AND file permissions fundamentals complete! Posts 32-34 cover essential text tools and permission management for LFCS.
+
+**Next Session Actions:**
+1. Write Post 35: Advanced File Operations (hard links, symbolic links, and file attributes)
+2. Continue with remaining Phase 1 posts (Posts 35-52)
+
+---
 
 ### Session 13 - 2025-12-08
 **Accomplishments:**
@@ -717,7 +828,7 @@
 - ✅ **Post 11**: Mastering man Pages Part 1: Basics - COMPLETE
 - ✅ **Post 12**: Mastering man Pages Part 2: Sections and Advanced Usage - COMPLETE
 - ✅ **Post 13**: Using info, pinfo, and --help - COMPLETE
-- ✅ **Post 14**: Exploring /usr/share/doc and tldr - COMPLETE (Fixed in Session 7)
+- ✅ **Post 14**: Exploring /usr/share/doc and tldr - COMPLETE
 - ✅ **Post 15**: Understanding Network Interfaces with ip Command - COMPLETE
 - ✅ **Post 16**: Managing Hostnames with hostname and hostnamectl - COMPLETE
 - ✅ **Post 17**: Understanding Linux Filesystem Hierarchy Part 1: Overview - COMPLETE
@@ -732,12 +843,15 @@
 - ✅ **Post 26**: Removing Files with rm and rmdir - COMPLETE
 - ✅ **Post 27**: Hard Links and Symbolic Links - COMPLETE
 - ✅ **Post 28**: Finding Files with find Command - COMPLETE
-- ✅ **Post 29**: Viewing Files (cat/less/more/head/tail) - COMPLETE!
-- ✅ **Post 30**: Introduction to Text Editors (vi/vim basics) - COMPLETE!
-- ✅ **Post 31**: Text Processing with grep Command - COMPLETE!
-- ⏳ **Post 32**: Text Processing with cut, sort, uniq - NEXT TO WRITE
-- 📊 **Progress**: 31 of 52 posts (59.6%)
-- 📝 **Words Written**: ~275,568
+- ✅ **Post 29**: Viewing Files (cat/less/more/head/tail) - COMPLETE
+- ✅ **Post 30**: Introduction to Text Editors (vi/vim basics) - COMPLETE
+- ✅ **Post 31**: Text Processing with grep Command - COMPLETE
+- ✅ **Post 32**: Text Processing with cut, sort, uniq - COMPLETE!
+- ✅ **Post 33**: Advanced Text Processing with awk and sed - COMPLETE!
+- ✅ **Post 34**: Understanding File Permissions and chmod - COMPLETE!
+- ⏳ **Post 35**: Advanced File Operations - NEXT TO WRITE
+- 📊 **Progress**: 34 of 52 posts (65.4%)
+- 📝 **Words Written**: ~316,068
 
 **Immediate Next Steps:**
 1. ✅ Post 14 rendering issue FIXED (recreated from scratch in Session 7)
@@ -758,8 +872,11 @@
 16. ✅ Post 29: Viewing File Contents with cat/less/more/head/tail COMPLETE
 17. ✅ Post 30: Introduction to Text Editors (vi/vim basics) COMPLETE
 18. ✅ Post 31: Text Processing with grep Command COMPLETE
-19. Write Post 32: Text Processing with cut, sort, and uniq
-20. Then proceed with remaining Phase 1 posts (Posts 32-52)
+19. ✅ Post 32: Text Processing with cut, sort, and uniq COMPLETE
+20. ✅ Post 33: Advanced Text Processing with awk and sed COMPLETE
+21. ✅ Post 34: Understanding File Permissions and chmod COMPLETE
+22. Write Post 35: Advanced File Operations (hard links, symbolic links, file attributes)
+23. Then proceed with remaining Phase 1 posts (Posts 35-52)
 
 ---
 
@@ -1114,7 +1231,10 @@ The posts MUST follow the exact order of topics in lfcs-rough.txt:
 - [x] Post 29: Viewing File Contents with cat/less/more/head/tail (COMPLETED)
 - [x] Post 30: Introduction to Text Editors - vi/vim Basics (COMPLETED)
 - [x] Post 31: Text Processing with grep Command (COMPLETED)
-- [ ] Posts 32-41: Advanced Text Processing & More
+- [x] Post 32: Text Processing with cut, sort, uniq (COMPLETED)
+- [x] Post 33: Advanced Text Processing with awk and sed (COMPLETED)
+- [x] Post 34: Understanding File Permissions and chmod (COMPLETED)
+- [ ] Posts 35-41: Advanced File Operations, ACLs, Processes & More
 - [ ] Posts 42-52: SSH, Shell, I/O, Variables, Config
 
 ### Post 2: Understanding Groups (wheel and sudo)
@@ -1684,9 +1804,9 @@ The posts MUST follow the exact order of topics in lfcs-rough.txt:
   - Safety-focused golden rules and final warnings
 
 ### Statistics
-- **Posts Completed**: 26 / 52 (50.0%) 🎉 **HALFWAY MILESTONE!**
-- **Words Written**: ~221,068
-- **Estimated Total Words**: 150,000-260,000
+- **Posts Completed**: 34 / 52 (65.4%) 🎉 **TWO-THIRDS MILESTONE!**
+- **Words Written**: ~316,068
+- **Estimated Total Words**: 150,000-260,000 (EXCEEDED!)
 - **Estimated Time**: Many hours of focused work
 
 ---

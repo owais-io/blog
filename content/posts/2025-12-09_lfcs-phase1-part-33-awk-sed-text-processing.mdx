@@ -1,0 +1,1807 @@
+---
+title: "LFCS Phase 1 Part 33: Advanced Text Processing with awk and sed"
+description: "Master awk and sed for powerful text manipulation. Learn pattern matching, field processing, stream editing, and in-place file modifications for advanced system administration tasks."
+date: "2025-12-24"
+tags: ["Linux", "LFCS", "awk", "sed", "text processing", "stream editor", "pattern matching", "system administration"]
+published: true
+author: "Owais"
+categories: ["Linux", "LFCS Certification"]
+series: "LFCS Certification - Phase 1"
+seriesOrder: 33
+---
+
+After mastering `cut`, `sort`, and `uniq` in the previous post, you're ready for the most powerful text processing tools in Linux: `awk` and `sed`. These are the Swiss Army knives of text manipulation - capable of complex pattern matching, field processing, conditional logic, and in-place editing. System administrators who master these tools can accomplish in one line what would take dozens of lines in other languages.
+
+<Callout type="info">
+🎯 **What You'll Learn**:
+- Master `awk` for field-based text processing
+- Understand awk patterns, actions, and built-in variables
+- Process structured data with awk (CSV, logs, system files)
+- Master `sed` for stream editing and text transformation
+- Perform search and replace operations with sed
+- Edit files in-place with sed -i
+- Combine awk and sed in powerful pipelines
+- Build real-world text processing workflows
+
+**Series**: LFCS Certification - Phase 1 (Post 33 of 52)
+
+**Prerequisites**: Posts 31 (grep) and 32 (cut, sort, uniq) recommended
+</Callout>
+
+---
+
+## Why awk and sed Matter for LFCS
+
+These tools are **essential** for Linux system administrators:
+
+**awk excels at:**
+- Processing structured data (columns/fields)
+- Performing calculations on data
+- Generating reports from log files
+- Filtering based on complex conditions
+- Reformatting output
+
+**sed excels at:**
+- Search and replace operations
+- In-place file editing
+- Text transformations
+- Removing or inserting lines
+- Stream processing
+
+**For LFCS exam**: You'll use these tools to manipulate configuration files, analyze logs, and process system data efficiently.
+
+---
+
+## Understanding awk
+
+`awk` is a powerful programming language designed for text processing. Named after its creators (Aho, Weinberger, Kernighan), awk operates on patterns and actions.
+
+### Basic awk Syntax
+
+```bash
+awk 'pattern { action }' file
+```
+
+**Components:**
+- **Pattern**: When to execute the action (optional)
+- **Action**: What to do with matching lines
+- **File**: Input file (or stdin via pipe)
+
+---
+
+## awk Fundamentals
+
+### Print Entire Line
+
+```bash
+# Print all lines (like cat)
+awk '{ print }' /etc/passwd
+
+# Or simply
+awk '{ print $0 }' /etc/passwd
+```
+
+**Variables:**
+- `$0` = entire line
+- `$1` = first field
+- `$2` = second field
+- `$NF` = last field
+- `NF` = number of fields
+- `NR` = current line number
+
+---
+
+### Field Separator
+
+By default, awk uses **whitespace** (spaces/tabs) as field separator.
+
+**Example with /etc/passwd (colon-delimited):**
+
+```bash
+# Wrong - uses whitespace separator
+awk '{ print $1 }' /etc/passwd
+# Output: root:x:0:0:root:/root:/bin/bash (entire line, no spaces)
+
+# Correct - specify colon separator
+awk -F: '{ print $1 }' /etc/passwd
+```
+
+**Output:**
+```
+root
+bin
+daemon
+adm
+lp
+```
+
+**Breakdown:**
+- `-F:` sets field separator to colon
+- `$1` extracts first field (username)
+
+---
+
+## Printing Specific Fields
+
+### Example: Extract Username and UID
+
+```bash
+awk -F: '{ print $1, $3 }' /etc/passwd | head -5
+```
+
+**Output:**
+```
+root 0
+bin 1
+daemon 2
+adm 3
+lp 4
+```
+
+**Note:** Space between `$1` and `$3` in print creates space-separated output.
+
+---
+
+### Custom Output Formatting
+
+Add custom text and formatting:
+
+```bash
+awk -F: '{ print "User:", $1, "UID:", $3 }' /etc/passwd | head -3
+```
+
+**Output:**
+```
+User: root UID: 0
+User: bin UID: 1
+User: daemon UID: 2
+```
+
+---
+
+### Change Output Separator
+
+Use comma in print for custom separator:
+
+```bash
+# Default: space-separated
+awk -F: '{ print $1, $3 }' /etc/passwd | head -2
+# Output: root 0
+
+# Custom separator (set OFS - Output Field Separator)
+awk -F: 'BEGIN {OFS=":"} { print $1, $3 }' /etc/passwd | head -2
+# Output: root:0
+```
+
+**Or concatenate strings directly:**
+```bash
+awk -F: '{ print $1 ":" $3 }' /etc/passwd | head -2
+# Output: root:0
+```
+
+---
+
+## Pattern Matching in awk
+
+Execute actions only when pattern matches:
+
+### Match Specific Text
+
+```bash
+# Print lines containing "bash"
+awk '/bash/ { print }' /etc/passwd
+```
+
+**Output:**
+```
+root:x:0:0:root:/root:/bin/bash
+centos9:x:1000:1000::/home/centos9:/bin/bash
+```
+
+**Same as:**
+```bash
+awk '/bash/' /etc/passwd
+# When no action specified, default is { print }
+```
+
+---
+
+### Match Field Values
+
+Print only users with UID 0:
+
+```bash
+awk -F: '$3 == 0 { print $1 }' /etc/passwd
+```
+
+**Output:**
+```
+root
+```
+
+**Explanation:**
+- `$3 == 0` is the pattern (field 3 equals 0)
+- `{ print $1 }` is the action (print username)
+
+---
+
+### Numeric Comparisons
+
+```bash
+# Users with UID greater than 1000
+awk -F: '$3 > 1000 { print $1, $3 }' /etc/passwd
+
+# Users with UID between 100 and 999
+awk -F: '$3 >= 100 && $3 <= 999 { print $1, $3 }' /etc/passwd
+```
+
+**Operators:**
+- `==` equal
+- `!=` not equal
+- `>` greater than
+- `<` less than
+- `>=` greater than or equal
+- `<=` less than or equal
+- `&&` logical AND
+- `||` logical OR
+
+---
+
+### String Comparisons
+
+```bash
+# Users with shell /bin/bash
+awk -F: '$7 == "/bin/bash" { print $1 }' /etc/passwd
+
+# Users whose name starts with 'r'
+awk -F: '$1 ~ /^r/ { print $1 }' /etc/passwd
+
+# Users whose name does NOT start with 'r'
+awk -F: '$1 !~ /^r/ { print $1 }' /etc/passwd
+```
+
+**Pattern operators:**
+- `~` matches regex
+- `!~` does not match regex
+
+---
+
+## Built-in Variables
+
+### NR (Number of Records/Lines)
+
+```bash
+# Print line number before each line
+awk '{ print NR, $0 }' /etc/passwd | head -3
+```
+
+**Output:**
+```
+1 root:x:0:0:root:/root:/bin/bash
+2 bin:x:1:1:bin:/bin:/sbin/nologin
+3 daemon:x:2:2:daemon:/sbin:/sbin/nologin
+```
+
+---
+
+### NF (Number of Fields)
+
+```bash
+# Print number of fields in each line
+awk -F: '{ print NF, $0 }' /etc/passwd | head -3
+```
+
+**Output:**
+```
+7 root:x:0:0:root:/root:/bin/bash
+7 bin:x:1:1:bin:/bin:/sbin/nologin
+7 daemon:x:2:2:daemon:/sbin:/sbin/nologin
+```
+
+**Print last field (regardless of field count):**
+```bash
+awk -F: '{ print $NF }' /etc/passwd | head -3
+```
+
+**Output:**
+```
+/bin/bash
+/sbin/nologin
+/sbin/nologin
+```
+
+---
+
+### BEGIN and END Blocks
+
+Execute actions before/after processing:
+
+```bash
+awk 'BEGIN { print "Starting processing..." }
+     { count++ }
+     END { print "Processed", count, "lines" }' /etc/passwd
+```
+
+**Output:**
+```
+Starting processing...
+Processed 23 lines
+```
+
+**Use cases:**
+- `BEGIN`: Initialize variables, print headers
+- `END`: Print totals, summaries
+
+---
+
+## Practical awk Examples
+
+### Example 1: Count Users by Shell
+
+```bash
+awk -F: '{ shells[$7]++ }
+         END { for (shell in shells) print shell, shells[shell] }' /etc/passwd
+```
+
+**Output:**
+```
+/bin/bash 2
+/sbin/nologin 18
+/sbin/halt 1
+/sbin/shutdown 1
+/bin/sync 1
+```
+
+**Explanation:**
+- `shells[$7]++` creates an associative array counting shells
+- `END` block prints results
+
+---
+
+### Example 2: Sum of All UIDs
+
+```bash
+awk -F: '{ sum += $3 } END { print "Total UID sum:", sum }' /etc/passwd
+```
+
+**Output:**
+```
+Total UID sum: 1234
+```
+
+---
+
+### Example 3: Average UID
+
+```bash
+awk -F: '{ sum += $3; count++ }
+         END { print "Average UID:", sum/count }' /etc/passwd
+```
+
+---
+
+### Example 4: Find Highest UID
+
+```bash
+awk -F: 'BEGIN { max=0 }
+         $3 > max { max=$3; user=$1 }
+         END { print "Highest UID:", max, "User:", user }' /etc/passwd
+```
+
+**Output:**
+```
+Highest UID: 65534 User: nobody
+```
+
+---
+
+### Example 5: Format Output as Table
+
+```bash
+awk -F: 'BEGIN { printf "%-15s %-10s %-20s\n", "Username", "UID", "Shell" }
+         { printf "%-15s %-10s %-20s\n", $1, $3, $7 }' /etc/passwd | head -5
+```
+
+**Output:**
+```
+Username        UID        Shell
+root            0          /bin/bash
+bin             1          /sbin/nologin
+daemon          2          /sbin/nologin
+adm             3          /sbin/nologin
+```
+
+**`printf` formatting:**
+- `%-15s` = left-aligned string, 15 characters wide
+- `%-10s` = left-aligned string, 10 characters wide
+
+---
+
+## Understanding sed
+
+`sed` (Stream EDitor) processes text line by line, applying transformations based on patterns.
+
+### Basic sed Syntax
+
+```bash
+sed 'command' file
+```
+
+**Common commands:**
+- `s` - substitute (search and replace)
+- `d` - delete
+- `p` - print
+- `i` - insert before
+- `a` - append after
+- `c` - change (replace line)
+
+---
+
+## Search and Replace with sed
+
+The most common sed operation is substitution.
+
+### Basic Substitution
+
+```bash
+# Replace first occurrence on each line
+echo "hello world hello" | sed 's/hello/hi/'
+```
+
+**Output:**
+```
+hi world hello
+```
+
+**Notice:** Only first "hello" replaced.
+
+---
+
+### Global Substitution
+
+Replace **all** occurrences on each line:
+
+```bash
+echo "hello world hello" | sed 's/hello/hi/g'
+```
+
+**Output:**
+```
+hi world hi
+```
+
+**The `g` flag** means "global" (all occurrences).
+
+---
+
+### Replace in File
+
+```bash
+# Create test file
+cat << 'EOF' > test.txt
+Hello World
+Hello Linux
+Goodbye Windows
+EOF
+
+# Replace Hello with Hi
+sed 's/Hello/Hi/' test.txt
+```
+
+**Output:**
+```
+Hi World
+Hi Linux
+Goodbye Windows
+```
+
+**Original file unchanged** (sed outputs to stdout by default).
+
+---
+
+## In-Place Editing with -i
+
+Modify file directly:
+
+```bash
+# Edit file in-place
+sed -i 's/Hello/Hi/' test.txt
+
+# Verify change
+cat test.txt
+```
+
+**Output:**
+```
+Hi World
+Hi Linux
+Goodbye Windows
+```
+
+**File is now modified.**
+
+---
+
+### Backup Before In-Place Edit
+
+Create backup with extension:
+
+```bash
+# Create backup as test.txt.bak
+sed -i.bak 's/Hi/Hey/' test.txt
+
+# Verify backup exists
+ls test.txt*
+```
+
+**Output:**
+```
+test.txt  test.txt.bak
+```
+
+**test.txt.bak** contains original content.
+
+---
+
+## Advanced sed Patterns
+
+### Case-Insensitive Replace
+
+```bash
+echo "Hello HELLO hello" | sed 's/hello/hi/gi'
+```
+
+**Output:**
+```
+hi hi hi
+```
+
+**The `i` flag** makes search case-insensitive.
+
+---
+
+### Replace on Specific Lines
+
+```bash
+# Replace only on line 2
+sed '2s/Linux/Ubuntu/' test.txt
+
+# Replace from line 2 to end
+sed '2,$s/Linux/Ubuntu/' test.txt
+
+# Replace on lines 1-3
+sed '1,3s/Linux/Ubuntu/' test.txt
+```
+
+---
+
+### Delete Lines
+
+```bash
+# Delete line 2
+sed '2d' test.txt
+
+# Delete lines 1-3
+sed '1,3d' test.txt
+
+# Delete last line
+sed '$d' test.txt
+
+# Delete empty lines
+sed '/^$/d' test.txt
+
+# Delete lines containing "Windows"
+sed '/Windows/d' test.txt
+```
+
+---
+
+### Insert and Append Lines
+
+```bash
+# Insert before line 2
+sed '2i\This is inserted before line 2' test.txt
+
+# Append after line 2
+sed '2a\This is appended after line 2' test.txt
+
+# Insert before lines matching pattern
+sed '/Linux/i\--- Linux section ---' test.txt
+```
+
+---
+
+### Multiple Commands
+
+Use `-e` or semicolon:
+
+```bash
+# Method 1: Multiple -e flags
+sed -e 's/Hello/Hi/' -e 's/World/Linux/' test.txt
+
+# Method 2: Semicolon
+sed 's/Hello/Hi/; s/World/Linux/' test.txt
+```
+
+---
+
+## Using Delimiters in sed
+
+When search pattern contains `/`, use different delimiter:
+
+```bash
+# Replace /bin/bash with /bin/zsh
+# Hard to read with / delimiter
+sed 's/\/bin\/bash/\/bin\/zsh/' /etc/passwd
+
+# Easier with | delimiter
+sed 's|/bin/bash|/bin/zsh|' /etc/passwd
+
+# Or with # delimiter
+sed 's#/bin/bash#/bin/zsh#' /etc/passwd
+```
+
+**Any character after `s` becomes the delimiter.**
+
+---
+
+## Combining awk and sed
+
+Powerful text processing pipelines:
+
+### Example 1: Extract and Transform
+
+```bash
+# Extract username, convert to uppercase
+awk -F: '{ print $1 }' /etc/passwd | sed 's/.*/\U&/' | head -3
+```
+
+**Output:**
+```
+ROOT
+BIN
+DAEMON
+```
+
+**Note:** `\U&` converts matched text to uppercase (GNU sed).
+
+---
+
+### Example 2: Filter and Replace
+
+```bash
+# Get bash users, replace /bin/bash with /bin/zsh
+awk -F: '$7 ~ /bash/ { print }' /etc/passwd | sed 's|/bin/bash|/bin/zsh|'
+```
+
+---
+
+### Example 3: Complex Log Processing
+
+```bash
+# Extract error messages, remove timestamps, count unique errors
+grep ERROR /var/log/messages 2>/dev/null |
+  sed 's/^[^ ]* [^ ]* [^ ]* //' |
+  awk '{ count[$0]++ } END { for (msg in count) print count[msg], msg }' |
+  sort -rn | head -5
+```
+
+**This pipeline:**
+1. Extracts ERROR lines with grep
+2. Removes timestamp with sed
+3. Counts occurrences with awk
+4. Sorts by frequency
+5. Shows top 5
+
+---
+
+## Real-World Scenarios
+
+### Scenario 1: Parse Apache Access Log
+
+Extract IPs and count requests:
+
+```bash
+awk '{ print $1 }' /var/log/httpd/access_log | sort | uniq -c | sort -rn | head -10
+```
+
+**With custom formatting:**
+```bash
+awk '{ ips[$1]++ }
+     END { for (ip in ips) print ips[ip], ip }' /var/log/httpd/access_log |
+  sort -rn | head -10
+```
+
+---
+
+### Scenario 2: Process CSV File
+
+```bash
+# Sample CSV
+cat << 'EOF' > sales.csv
+Name,Sales,Region
+Alice,5000,North
+Bob,3000,South
+Charlie,7000,North
+David,4000,East
+EOF
+
+# Calculate total sales by region
+awk -F, 'NR > 1 { region[$3] += $2 }
+         END { for (r in region) print r, region[r] }' sales.csv
+```
+
+**Output:**
+```
+North 12000
+South 3000
+East 4000
+```
+
+---
+
+### Scenario 3: Clean Configuration File
+
+Remove comments and empty lines:
+
+```bash
+sed '/^#/d; /^$/d' /etc/ssh/sshd_config
+```
+
+**Or with awk:**
+```bash
+awk '!/^#/ && NF' /etc/ssh/sshd_config
+```
+
+---
+
+### Scenario 4: Modify Multiple Files
+
+Change all occurrences in multiple files:
+
+```bash
+# Backup and modify all .conf files
+for file in /etc/*.conf; do
+  sed -i.bak 's/old_value/new_value/g' "$file"
+done
+```
+
+---
+
+### Scenario 5: Extract Email Domains
+
+```bash
+# Sample emails
+cat << 'EOF' > emails.txt
+user1@example.com
+user2@gmail.com
+user3@example.com
+user4@yahoo.com
+EOF
+
+# Extract domains and count
+awk -F@ '{ domains[$2]++ }
+         END { for (d in domains) print domains[d], d }' emails.txt | sort -rn
+```
+
+**Output:**
+```
+2 example.com
+1 yahoo.com
+1 gmail.com
+```
+
+---
+
+## Quick Reference Tables
+
+### awk Built-in Variables
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Variable</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Meaning</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Example</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>$0</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Entire line</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>print $0</code></td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>$1, $2, $3...</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">First, second, third field</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>print $1</code></td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>$NF</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Last field</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>print $NF</code></td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>NF</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Number of fields</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>print NF</code></td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>NR</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Current line number</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>print NR</code></td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>FS</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Field separator (input)</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>FS=":"</code></td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>OFS</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Output field separator</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>OFS=","</code></td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>RS</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Record separator (line separator)</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>RS="\n"</code></td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>ORS</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Output record separator</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>ORS="\n"</code></td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+### sed Commands
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Command</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Purpose</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Example</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>s/old/new/</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Substitute (first occurrence)</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>sed 's/foo/bar/'</code></td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>s/old/new/g</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Global substitute (all occurrences)</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>sed 's/foo/bar/g'</code></td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>d</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Delete line</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>sed '2d'</code></td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>p</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Print line</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>sed -n '2p'</code></td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>i\text</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Insert before line</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>sed '2i\new line'</code></td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>a\text</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Append after line</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>sed '2a\new line'</code></td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>c\text</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Change (replace) line</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>sed '2c\replacement'</code></td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>-i</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">In-place edit</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>sed -i 's/a/b/' file</code></td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>-i.bak</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">In-place with backup</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>sed -i.bak 's/a/b/'</code></td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## 🧪 Practice Labs
+
+Let's apply what you've learned with comprehensive hands-on practice.
+
+### Lab 1: Basic awk Field Extraction (Beginner)
+**Task**: Extract usernames and home directories from /etc/passwd.
+
+<details>
+<summary>Show Solution</summary>
+
+```bash
+# Extract fields 1 and 6
+awk -F: '{ print $1, $6 }' /etc/passwd
+```
+
+**Expected output**:
+```
+root /root
+bin /bin
+daemon /sbin
+...
+```
+
+**Explanation**:
+- `-F:` sets field separator to colon
+- `$1` is username, `$6` is home directory
+- Space in print creates space-separated output
+
+</details>
+
+---
+
+### Lab 2: awk Pattern Matching (Beginner)
+**Task**: List all users with UID greater than 1000.
+
+<details>
+<summary>Show Solution</summary>
+
+```bash
+# Filter by UID > 1000
+awk -F: '$3 > 1000 { print $1, $3 }' /etc/passwd
+```
+
+**Expected output**:
+```
+nobody 65534
+```
+
+**Explanation**:
+- `$3 > 1000` is the pattern (condition)
+- Only lines where UID > 1000 are processed
+- Prints username and UID
+
+</details>
+
+---
+
+### Lab 3: awk with BEGIN Block (Beginner)
+**Task**: Print a header before the username list.
+
+<details>
+<summary>Show Solution</summary>
+
+```bash
+# Add header with BEGIN
+awk -F: 'BEGIN { print "=== System Users ===" }
+         { print $1 }' /etc/passwd | head -5
+```
+
+**Expected output**:
+```
+=== System Users ===
+root
+bin
+daemon
+adm
+```
+
+**Explanation**:
+- `BEGIN` block executes before processing any lines
+- Useful for headers, initialization
+
+</details>
+
+---
+
+### Lab 4: Count Lines with awk (Beginner)
+**Task**: Count total number of users in /etc/passwd using awk.
+
+<details>
+<summary>Show Solution</summary>
+
+```bash
+# Count lines with END block
+awk 'END { print NR }' /etc/passwd
+```
+
+**Expected output**:
+```
+23
+```
+
+**Explanation**:
+- `NR` holds current line number
+- In `END` block, NR contains total line count
+
+</details>
+
+---
+
+### Lab 5: Basic sed Substitution (Beginner)
+**Task**: Create a test file and replace "Hello" with "Hi".
+
+<details>
+<summary>Show Solution</summary>
+
+```bash
+# Create test file
+echo "Hello World" > test.txt
+
+# Replace Hello with Hi
+sed 's/Hello/Hi/' test.txt
+```
+
+**Expected output**:
+```
+Hi World
+```
+
+**Explanation**:
+- `s/old/new/` is substitution syntax
+- Only first occurrence per line is replaced
+
+</details>
+
+---
+
+### Lab 6: sed Global Replace (Beginner)
+**Task**: Replace all occurrences of "hello" in a line.
+
+<details>
+<summary>Show Solution</summary>
+
+```bash
+# Create test
+echo "hello world hello universe hello" > test.txt
+
+# Global replace
+sed 's/hello/hi/g' test.txt
+```
+
+**Expected output**:
+```
+hi world hi universe hi
+```
+
+**Explanation**:
+- `g` flag means "global" (all occurrences)
+- Without `g`, only first "hello" would be replaced
+
+</details>
+
+---
+
+### Lab 7: sed Delete Lines (Beginner)
+**Task**: Delete lines 2-4 from a file.
+
+<details>
+<summary>Show Solution</summary>
+
+```bash
+# Create numbered file
+seq 1 10 > numbers.txt
+
+# Delete lines 2-4
+sed '2,4d' numbers.txt
+```
+
+**Expected output**:
+```
+1
+5
+6
+7
+8
+9
+10
+```
+
+**Explanation**:
+- `2,4d` means delete lines 2 through 4
+- Original file unchanged (sed outputs to stdout)
+
+</details>
+
+---
+
+### Lab 8: awk Sum Calculation (Intermediate)
+**Task**: Calculate the sum of all UIDs in /etc/passwd.
+
+<details>
+<summary>Show Solution</summary>
+
+```bash
+# Sum field 3 (UID)
+awk -F: '{ sum += $3 } END { print "Total UID sum:", sum }' /etc/passwd
+```
+
+**Expected output**:
+```
+Total UID sum: 70234
+```
+
+**Explanation**:
+- `sum += $3` accumulates UID values
+- `END` block prints final sum
+
+</details>
+
+---
+
+### Lab 9: awk Average Calculation (Intermediate)
+**Task**: Calculate the average UID in /etc/passwd.
+
+<details>
+<summary>Show Solution</summary>
+
+```bash
+# Calculate average
+awk -F: '{ sum += $3; count++ }
+         END { print "Average UID:", sum/count }' /etc/passwd
+```
+
+**Expected output**:
+```
+Average UID: 3053.65
+```
+
+**Explanation**:
+- Accumulate sum and count
+- In END block, divide sum by count
+
+</details>
+
+---
+
+### Lab 10: sed In-Place Editing (Intermediate)
+**Task**: Replace "Linux" with "Ubuntu" in a file, editing it in-place.
+
+<details>
+<summary>Show Solution</summary>
+
+```bash
+# Create test file
+echo -e "Linux is great\nLinux is powerful" > distro.txt
+
+# In-place edit with backup
+sed -i.bak 's/Linux/Ubuntu/g' distro.txt
+
+# Verify
+cat distro.txt
+```
+
+**Expected output**:
+```
+Ubuntu is great
+Ubuntu is powerful
+```
+
+**Verification**:
+```bash
+# Original saved as distro.txt.bak
+cat distro.txt.bak
+```
+
+**Explanation**:
+- `-i.bak` edits in-place and creates backup
+- Original saved with .bak extension
+
+</details>
+
+---
+
+### Lab 11: awk Count by Group (Intermediate)
+**Task**: Count how many users have each shell.
+
+<details>
+<summary>Show Solution</summary>
+
+```bash
+# Count shells using associative array
+awk -F: '{ shells[$7]++ }
+         END { for (shell in shells)
+                 print shell, shells[shell] }' /etc/passwd | sort -t' ' -k2 -nr
+```
+
+**Expected output**:
+```
+/sbin/nologin 18
+/bin/bash 2
+/sbin/shutdown 1
+/sbin/halt 1
+/bin/sync 1
+```
+
+**Explanation**:
+- `shells[$7]++` creates associative array counting shells
+- `for (shell in shells)` iterates through array
+- Piped to sort for descending order
+
+</details>
+
+---
+
+### Lab 12: sed Multiple Commands (Intermediate)
+**Task**: Perform multiple substitutions in one sed command.
+
+<details>
+<summary>Show Solution</summary>
+
+```bash
+# Create test file
+cat << 'EOF' > test.txt
+I like apples
+I like bananas
+I like oranges
+EOF
+
+# Multiple substitutions
+sed -e 's/apples/pears/' -e 's/bananas/grapes/' -e 's/oranges/berries/' test.txt
+
+# Or with semicolon
+sed 's/apples/pears/; s/bananas/grapes/; s/oranges/berries/' test.txt
+```
+
+**Expected output**:
+```
+I like pears
+I like grapes
+I like berries
+```
+
+**Explanation**:
+- `-e` flag allows multiple commands
+- Or use semicolon to separate commands
+
+</details>
+
+---
+
+### Lab 13: awk Formatted Output (Intermediate)
+**Task**: Display users with formatted columns (username, UID, home).
+
+<details>
+<summary>Show Solution</summary>
+
+```bash
+# Formatted table output
+awk -F: 'BEGIN { printf "%-15s %-10s %-20s\n", "USERNAME", "UID", "HOME" }
+         { printf "%-15s %-10s %-20s\n", $1, $3, $6 }' /etc/passwd | head -10
+```
+
+**Expected output**:
+```
+USERNAME        UID        HOME
+root            0          /root
+bin             1          /bin
+daemon          2          /sbin
+...
+```
+
+**Explanation**:
+- `printf` allows formatted output
+- `%-15s` = left-aligned string, 15 chars wide
+- BEGIN block prints header
+
+</details>
+
+---
+
+### Lab 14: sed Delete Pattern (Advanced)
+**Task**: Remove all comment lines from /etc/ssh/sshd_config.
+
+<details>
+<summary>Show Solution</summary>
+
+```bash
+# Remove lines starting with #
+sed '/^#/d' /etc/ssh/sshd_config
+
+# Remove comments and empty lines
+sed '/^#/d; /^$/d' /etc/ssh/sshd_config
+```
+
+**Expected output**: Configuration without comments
+
+**Explanation**:
+- `/^#/d` deletes lines starting with #
+- `/^$/d` deletes empty lines
+- Semicolon separates commands
+
+</details>
+
+---
+
+### Lab 15: awk Find Maximum (Advanced)
+**Task**: Find the user with the highest UID.
+
+<details>
+<summary>Show Solution</summary>
+
+```bash
+# Find max UID and corresponding user
+awk -F: 'BEGIN { max=0 }
+         $3 > max { max=$3; user=$1 }
+         END { print "User:", user, "UID:", max }' /etc/passwd
+```
+
+**Expected output**:
+```
+User: nobody UID: 65534
+```
+
+**Explanation**:
+- Track maximum UID and corresponding username
+- Update when finding higher UID
+- Print results in END block
+
+</details>
+
+---
+
+### Lab 16: sed Replace with Delimiter (Advanced)
+**Task**: Replace /bin/bash with /bin/zsh in /etc/passwd (without modifying file).
+
+<details>
+<summary>Show Solution</summary>
+
+```bash
+# Use | as delimiter instead of /
+sed 's|/bin/bash|/bin/zsh|' /etc/passwd
+
+# Or with # delimiter
+sed 's#/bin/bash#/bin/zsh#' /etc/passwd
+```
+
+**Expected output**: Lines with /bin/bash replaced
+
+**Explanation**:
+- When pattern contains `/`, use different delimiter
+- `|` or `#` commonly used alternatives
+- First character after `s` becomes delimiter
+
+</details>
+
+---
+
+### Lab 17: awk Process CSV (Advanced)
+**Task**: Parse CSV file and calculate totals by category.
+
+<details>
+<summary>Show Solution</summary>
+
+```bash
+# Create sample CSV
+cat << 'EOF' > sales.csv
+Product,Sales,Category
+Widget,1000,Electronics
+Gadget,1500,Electronics
+Book,500,Media
+Magazine,300,Media
+Phone,2000,Electronics
+EOF
+
+# Calculate total sales by category
+awk -F, 'NR > 1 { category[$3] += $2 }
+         END { for (cat in category)
+                 printf "%s: $%d\n", cat, category[cat] }' sales.csv
+```
+
+**Expected output**:
+```
+Electronics: $4500
+Media: $800
+```
+
+**Explanation**:
+- `NR > 1` skips header line
+- Accumulate sales by category in associative array
+- Print formatted results with dollar sign
+
+</details>
+
+---
+
+### Lab 18: sed Insert Line (Advanced)
+**Task**: Insert a header line before the first line of a file.
+
+<details>
+<summary>Show Solution</summary>
+
+```bash
+# Create test file
+seq 1 5 > numbers.txt
+
+# Insert header before line 1
+sed '1i\=== Numbers List ===' numbers.txt
+
+# Or insert before all lines matching pattern
+echo -e "Section A\nSection B" > sections.txt
+sed '/Section/i\---' sections.txt
+```
+
+**Expected output**:
+```
+=== Numbers List ===
+1
+2
+3
+4
+5
+```
+
+**Explanation**:
+- `1i\text` inserts text before line 1
+- `/pattern/i\text` inserts before matching lines
+
+</details>
+
+---
+
+### Lab 19: Combine awk and sed (Advanced)
+**Task**: Extract bash users, convert usernames to uppercase, and format output.
+
+<details>
+<summary>Show Solution</summary>
+
+```bash
+# Pipeline combining awk and sed
+awk -F: '$7 ~ /bash/ { print $1 }' /etc/passwd |
+  tr '[:lower:]' '[:upper:]' |
+  sed 's/^/User: /' |
+  sed 's/$/ (Bash Shell)/'
+```
+
+**Expected output**:
+```
+User: ROOT (Bash Shell)
+User: CENTOS9 (Bash Shell)
+```
+
+**Explanation**:
+1. awk filters bash users, extracts username
+2. tr converts to uppercase
+3. First sed adds "User: " prefix
+4. Second sed adds " (Bash Shell)" suffix
+
+</details>
+
+---
+
+### Lab 20: Real-World Log Analysis (Advanced)
+**Task**: Analyze a web server access log to find top 5 IP addresses and their request counts.
+
+<details>
+<summary>Show Solution</summary>
+
+```bash
+# Create sample log
+cat << 'EOF' > access.log
+192.168.1.100 - - [09/Dec/2025:10:15:23] "GET /index.html" 200
+192.168.1.101 - - [09/Dec/2025:10:16:45] "GET /about.html" 200
+192.168.1.100 - - [09/Dec/2025:10:17:12] "GET /contact.html" 200
+192.168.1.102 - - [09/Dec/2025:10:18:33] "GET /index.html" 200
+192.168.1.100 - - [09/Dec/2025:10:19:21] "POST /form" 200
+192.168.1.103 - - [09/Dec/2025:10:20:44] "GET /about.html" 200
+192.168.1.100 - - [09/Dec/2025:10:21:08] "GET /services.html" 200
+EOF
+
+# Extract IPs and count with awk
+awk '{ ips[$1]++ }
+     END { for (ip in ips)
+             printf "%3d requests - %s\n", ips[ip], ip }' access.log |
+  sort -rn | head -5
+```
+
+**Expected output**:
+```
+  4 requests - 192.168.1.100
+  1 requests - 192.168.1.103
+  1 requests - 192.168.1.102
+  1 requests - 192.168.1.101
+```
+
+**Explanation**:
+- awk extracts IP (field 1) and counts occurrences
+- Formatted output with aligned numbers
+- Sorted numerically, descending, top 5 shown
+
+</details>
+
+---
+
+## 📚 Best Practices
+
+### 1. Use awk for Field Processing, sed for Line Processing
+
+```bash
+# Good: awk for field extraction
+awk -F: '{ print $1 }' /etc/passwd
+
+# Less efficient: sed for field extraction
+sed 's/:.*$//' /etc/passwd    # Works but awkward
+```
+
+---
+
+### 2. Always Test sed Commands Before -i
+
+```bash
+# Test first (output to stdout)
+sed 's/old/new/' file.txt
+
+# When satisfied, edit in-place with backup
+sed -i.bak 's/old/new/' file.txt
+```
+
+<Callout type="warning">
+**Never use `sed -i` without testing first!** You could corrupt important files.
+</Callout>
+
+---
+
+### 3. Use Different Delimiters for Paths
+
+```bash
+# Hard to read
+sed 's/\/usr\/local\/bin/\/opt\/bin/' file
+
+# Much clearer
+sed 's|/usr/local/bin|/opt/bin|' file
+```
+
+---
+
+### 4. Quote awk Scripts
+
+```bash
+# Single quotes prevent shell interpretation
+awk '{ print $1 }' file.txt
+
+# Double quotes allow variable expansion
+VAR="somevalue"
+awk "{ print \"$VAR\" }" file.txt
+```
+
+---
+
+### 5. Use BEGIN for Initialization
+
+```bash
+# Initialize variables, print headers
+awk 'BEGIN { count=0; print "Processing..." }
+     { count++ }
+     END { print "Processed", count, "lines" }' file
+```
+
+---
+
+### 6. Combine Tools Efficiently
+
+```bash
+# Less efficient: multiple file reads
+awk '{ print $1 }' file > temp
+sort temp
+uniq temp
+
+# More efficient: pipeline
+awk '{ print $1 }' file | sort | uniq
+```
+
+---
+
+## 🚨 Common Pitfalls to Avoid
+
+### Pitfall 1: Forgetting Field Separator in awk
+
+```bash
+# WRONG - uses default whitespace separator
+awk '{ print $1 }' /etc/passwd
+# Prints entire line (no spaces in lines)
+
+# CORRECT - specify colon separator
+awk -F: '{ print $1 }' /etc/passwd
+```
+
+---
+
+### Pitfall 2: sed -i Without Backup
+
+```bash
+# DANGEROUS - no way to recover
+sed -i 's/important/data/' critical_file.conf
+
+# SAFE - creates backup
+sed -i.bak 's/important/data/' critical_file.conf
+```
+
+---
+
+### Pitfall 3: Using sed for Field Extraction
+
+```bash
+# Awkward with sed
+sed 's/:.*$//' /etc/passwd    # Extract first field
+
+# Natural with awk or cut
+awk -F: '{ print $1 }' /etc/passwd
+cut -d: -f1 /etc/passwd
+```
+
+---
+
+### Pitfall 4: Forgetting Global Flag in sed
+
+```bash
+# Only replaces first occurrence
+sed 's/foo/bar/' file.txt
+
+# Replaces all occurrences
+sed 's/foo/bar/g' file.txt
+```
+
+---
+
+### Pitfall 5: awk String vs Number Comparison
+
+```bash
+# String comparison (alphabetical)
+awk '$3 > "100"' file.txt    # "99" > "100" is true!
+
+# Numeric comparison (correct)
+awk '$3 > 100' file.txt    # 99 > 100 is false
+```
+
+**Rule**: Unquoted values are treated as numbers; quoted values as strings.
+
+---
+
+## 📝 Command Cheat Sheet
+
+### awk Patterns
+
+```bash
+# Basic field extraction
+awk -F: '{ print $1 }' file
+awk -F: '{ print $1, $3 }' file
+awk -F: '{ print $NF }' file
+
+# Pattern matching
+awk '/pattern/' file
+awk '$3 > 100' file
+awk '$3 > 100 && $3 < 200' file
+awk '$1 ~ /^root/' file
+
+# BEGIN and END
+awk 'BEGIN { print "Start" } { print } END { print "Done" }' file
+
+# Counting and summing
+awk '{ count++ } END { print count }' file
+awk '{ sum += $1 } END { print sum }' file
+
+# Associative arrays
+awk '{ array[$1]++ } END { for (i in array) print i, array[i] }' file
+```
+
+---
+
+### sed Commands
+
+```bash
+# Substitution
+sed 's/old/new/' file
+sed 's/old/new/g' file
+sed 's/old/new/gi' file
+
+# Delete
+sed 'd' file                # Delete all
+sed '2d' file              # Delete line 2
+sed '2,5d' file            # Delete lines 2-5
+sed '/pattern/d' file      # Delete matching lines
+
+# Insert and append
+sed '2i\new text' file     # Insert before line 2
+sed '2a\new text' file     # Append after line 2
+
+# In-place editing
+sed -i 's/old/new/' file
+sed -i.bak 's/old/new/' file
+
+# Multiple commands
+sed -e 's/a/b/' -e 's/c/d/' file
+sed 's/a/b/; s/c/d/' file
+
+# Different delimiter
+sed 's|/path/old|/path/new|' file
+```
+
+---
+
+### Combined Pipelines
+
+```bash
+# Extract, process, analyze
+awk -F: '{ print $1 }' /etc/passwd | sort | uniq
+
+# Filter, transform, count
+grep ERROR logfile | sed 's/^.*ERROR: //' | sort | uniq -c
+
+# Complex processing
+awk '$3 > 1000' /etc/passwd | sed 's|/bin/bash|/bin/zsh|' | cut -d: -f1
+```
+
+---
+
+## 🎯 Key Takeaways
+
+<div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 p-6 rounded-lg border-l-4 border-green-500 my-8">
+
+**Essential Concepts:**
+
+1. **awk** is best for field-based processing
+   - Use `-F` to set field separator
+   - `$1, $2, $3...` for fields, `$0` for entire line
+   - `NR` for line number, `NF` for field count
+   - Associative arrays for counting and grouping
+
+2. **sed** is best for line-based transformations
+   - `s/old/new/g` for global substitution
+   - `-i` for in-place editing (always use `-i.bak` for safety)
+   - Use different delimiters for paths: `s|/path|/new|`
+
+3. **Combine tools for powerful pipelines**
+   - awk extracts and filters
+   - sed transforms
+   - sort/uniq aggregate
+
+4. **For LFCS exam**: Master these patterns
+   - Parsing /etc/passwd, /etc/group
+   - Log analysis and reporting
+   - Configuration file manipulation
+   - Data extraction and transformation
+
+5. **Safety first**
+   - Test sed commands before `-i`
+   - Always create backups with `-i.bak`
+   - Verify awk patterns on small sample first
+
+</div>
+
+---
+
+## 🚀 What's Next?
+
+Congratulations! You've mastered `awk` and `sed` - two of the most powerful text processing tools in Linux. Combined with grep, cut, sort, and uniq, you now have a complete toolkit for advanced text manipulation.
+
+**In the next post**, we'll explore file permissions in depth - understanding chmod, chown, umask, and special permissions (setuid, setgid, sticky bit). You'll learn how to secure files and manage access control effectively.
+
+**Coming Up**: Post 34 - Understanding File Permissions and chmod
+
+**Your Progress**: 33 of 52 posts complete (63.5%)! 🎉
+
+---
+
+<Callout type="success">
+🎉 **Outstanding work!** You now know how to:
+- Process structured data with awk
+- Perform complex field operations and calculations
+- Transform text streams with sed
+- Edit files in-place safely
+- Build powerful text processing pipelines
+- Analyze logs and system files efficiently
+- Master pattern matching and conditional processing
+
+These are advanced skills that separate novice Linux users from expert system administrators. You're well-prepared for LFCS text processing challenges!
+
+**Next**: Continue with Post 34 for comprehensive file permissions coverage!
+</Callout>
