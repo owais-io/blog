@@ -1,0 +1,2315 @@
+---
+title: "LFCS Phase 1 Part 32: Text Processing with cut, sort, and uniq"
+description: "Master essential text processing commands for extracting fields, sorting data, and removing duplicates. Learn cut for column extraction, sort for organizing data, and uniq for duplicate management in Linux."
+date: "2025-12-09"
+tags: ["Linux", "LFCS", "cut", "sort", "uniq", "text processing", "system administration", "pipes", "data extraction"]
+published: true
+author: "Owais"
+categories: ["Linux", "LFCS Certification"]
+series: "LFCS Certification - Phase 1"
+seriesOrder: 32
+---
+
+Text processing is at the heart of Linux system administration. Whether you're analyzing log files, parsing configuration files, or extracting specific data from command outputs, you need powerful tools to manipulate text efficiently. In this comprehensive guide, we'll master three essential commands that work beautifully together: `cut`, `sort`, and `uniq`.
+
+<Callout type="info">
+🎯 **What You'll Learn**:
+- Extract specific columns and fields with `cut`
+- Parse delimited data (CSV, TSV, colon-separated files)
+- Sort text alphabetically and numerically with `sort`
+- Remove duplicate lines efficiently with `uniq`
+- Combine all three commands in powerful pipelines
+- Analyze real-world files like /etc/passwd and system logs
+- Build practical text processing workflows
+- Master field extraction and data cleaning techniques
+
+**Series**: LFCS Certification - Phase 1 (Post 32 of 52)
+
+**Prerequisite**: Post 31 (grep command) recommended
+</Callout>
+
+---
+
+## Why These Commands Matter for LFCS
+
+As a Linux system administrator, you'll constantly work with structured text:
+
+- **Extracting data**: Get usernames from /etc/passwd, IP addresses from logs
+- **Analyzing logs**: Find most common errors, count occurrences
+- **Processing CSV files**: Extract specific columns from reports
+- **Cleaning data**: Remove duplicates from lists
+- **System auditing**: Sort users by UID, find duplicate processes
+
+The commands `cut`, `sort`, and `uniq` form a powerful trio that you'll use daily. They're **essential for the LFCS exam** and real-world system administration.
+
+---
+
+## Understanding Text Processing Pipelines
+
+Before diving into individual commands, let's understand how they work together:
+
+<div className="my-8 p-6 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg border-2 border-blue-200 dark:border-blue-700">
+  <div className="text-center mb-6">
+    <h3 className="text-xl font-bold text-blue-900 dark:text-blue-100">Text Processing Pipeline</h3>
+    <p className="text-sm text-gray-600 dark:text-gray-300 mt-2">How cut, sort, and uniq work together</p>
+  </div>
+
+  <div className="flex flex-col items-center space-y-4">
+    <div className="bg-white dark:bg-gray-800 px-8 py-4 rounded-lg shadow-md border-2 border-blue-300 dark:border-blue-600 w-full max-w-md text-center">
+      <div className="font-bold text-lg text-blue-700 dark:text-blue-300">Input File</div>
+      <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">Raw, unstructured data</div>
+    </div>
+
+    <div className="text-3xl text-blue-500">↓</div>
+
+    <div className="bg-green-100 dark:bg-green-900/30 px-8 py-4 rounded-lg shadow-md border-2 border-green-400 dark:border-green-600 w-full max-w-md text-center">
+      <div className="font-bold text-lg text-green-700 dark:text-green-300">cut</div>
+      <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">Extract specific fields/columns</div>
+    </div>
+
+    <div className="text-3xl text-blue-500">↓</div>
+
+    <div className="bg-yellow-100 dark:bg-yellow-900/30 px-8 py-4 rounded-lg shadow-md border-2 border-yellow-400 dark:border-yellow-600 w-full max-w-md text-center">
+      <div className="font-bold text-lg text-yellow-700 dark:text-yellow-300">sort</div>
+      <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">Organize data in order</div>
+    </div>
+
+    <div className="text-3xl text-blue-500">↓</div>
+
+    <div className="bg-purple-100 dark:bg-purple-900/30 px-8 py-4 rounded-lg shadow-md border-2 border-purple-400 dark:border-purple-600 w-full max-w-md text-center">
+      <div className="font-bold text-lg text-purple-700 dark:text-purple-300">uniq</div>
+      <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">Remove duplicates</div>
+    </div>
+
+    <div className="text-3xl text-blue-500">↓</div>
+
+    <div className="bg-blue-100 dark:bg-blue-900/30 px-8 py-4 rounded-lg shadow-md border-2 border-blue-400 dark:border-blue-600 w-full max-w-md text-center">
+      <div className="font-bold text-lg text-blue-700 dark:text-blue-300">Clean Output</div>
+      <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">Processed, analyzed data</div>
+    </div>
+  </div>
+</div>
+
+**Example pipeline:**
+```bash
+cut -d: -f1 /etc/passwd | sort | uniq
+```
+
+This extracts usernames, sorts them alphabetically, and removes any duplicates.
+
+---
+
+## The cut Command: Extracting Fields
+
+The `cut` command extracts specific portions of each line from a file or input stream.
+
+### Basic cut Syntax
+
+```bash
+cut OPTIONS FILE
+```
+
+**Common options:**
+- `-f` - Select fields (columns)
+- `-d` - Specify field delimiter
+- `-c` - Select characters
+- `-b` - Select bytes
+
+---
+
+## Extracting Fields with -f and -d
+
+The most common use of `cut` is extracting specific fields from delimited data.
+
+### Understanding Delimiters
+
+A **delimiter** is a character that separates fields:
+- **Colon (`:`)** - Used in /etc/passwd, /etc/group
+- **Tab** - Default delimiter for cut
+- **Comma (`,`)** - Used in CSV files
+- **Space** - Common in many files
+- **Pipe (`|`)** - Sometimes used in data files
+
+### Example: Extracting from /etc/passwd
+
+The /etc/passwd file uses colons (`:`) as delimiters:
+
+```bash
+head -3 /etc/passwd
+```
+
+**Output:**
+```
+root:x:0:0:root:/root:/bin/bash
+bin:x:1:1:bin:/bin:/sbin/nologin
+daemon:x:2:2:daemon:/sbin:/sbin/nologin
+```
+
+**Field structure:**
+1. Username
+2. Password placeholder (x)
+3. UID (User ID)
+4. GID (Group ID)
+5. GECOS (Full name/description)
+6. Home directory
+7. Shell
+
+---
+
+### Extract First Field (Usernames)
+
+```bash
+cut -d: -f1 /etc/passwd | head -5
+```
+
+**Breakdown:**
+- `cut` - The command
+- `-d:` - Use colon as delimiter
+- `-f1` - Select field 1 (first column)
+- `/etc/passwd` - Input file
+- `| head -5` - Show only first 5 lines
+
+**Output:**
+```
+root
+bin
+daemon
+adm
+lp
+```
+
+**What happened:**
+- cut read each line
+- Split line on `:` delimiter
+- Extracted field 1 (username)
+- Printed only that field
+
+---
+
+### Extract Multiple Fields
+
+You can extract multiple fields using commas:
+
+```bash
+cut -d: -f1,3,6 /etc/passwd | head -5
+```
+
+**Output:**
+```
+root:0:/root
+bin:1:/bin
+daemon:2:/sbin
+adm:3:/var/adm
+lp:4:/var/spool/lpd
+```
+
+**This extracts:**
+- Field 1: Username
+- Field 3: UID
+- Field 6: Home directory
+
+---
+
+### Extract Field Ranges
+
+Use hyphens to specify ranges:
+
+```bash
+cut -d: -f1-3 /etc/passwd | head -3
+```
+
+**Output:**
+```
+root:x:0
+bin:x:1
+daemon:x:2
+```
+
+**This extracts fields 1 through 3** (username, password placeholder, UID).
+
+**More range examples:**
+```bash
+cut -d: -f1-3,6 /etc/passwd     # Fields 1-3 and 6
+cut -d: -f3- /etc/passwd         # Field 3 to end of line
+cut -d: -f-4 /etc/passwd         # Fields 1 through 4
+```
+
+---
+
+### Extract Last Field
+
+To get the last field (shell):
+
+```bash
+cut -d: -f7 /etc/passwd | head -5
+```
+
+**Output:**
+```
+/bin/bash
+/sbin/nologin
+/sbin/nologin
+/sbin/nologin
+/sbin/nologin
+```
+
+---
+
+## Character-Based Extraction with -c
+
+Sometimes you need to extract specific character positions rather than fields.
+
+### Extract Specific Characters
+
+```bash
+echo "Hello World" | cut -c1-5
+```
+
+**Output:**
+```
+Hello
+```
+
+**This extracts characters 1 through 5.**
+
+---
+
+### Character Position Examples
+
+```bash
+# First character
+echo "Linux" | cut -c1
+# Output: L
+
+# Last 3 characters (positions 3-5)
+echo "Linux" | cut -c3-5
+# Output: nux
+
+# Characters 1, 3, and 5
+echo "Linux" | cut -c1,3,5
+# Output: Lnx
+
+# From character 3 to end
+echo "Linux" | cut -c3-
+# Output: nux
+```
+
+---
+
+### Real-World Example: Extract Date from ls Output
+
+```bash
+ls -l /etc/passwd
+```
+
+**Output:**
+```
+-rw-r--r--. 1 root root 2584 Nov 15 10:23 /etc/passwd
+```
+
+**Extract just the date portion (characters 42-53):**
+
+```bash
+ls -l /etc/passwd | cut -c42-53
+```
+
+**Output:**
+```
+Nov 15 10:23
+```
+
+---
+
+## Byte-Based Extraction with -b
+
+For files with multi-byte characters (UTF-8), use `-b`:
+
+```bash
+cut -b1-10 filename.txt
+```
+
+**Difference from -c:**
+- `-c` counts **characters** (may be multi-byte in UTF-8)
+- `-b` counts **bytes** (always single byte)
+
+For ASCII text, `-c` and `-b` are identical. For international characters, they differ.
+
+---
+
+## The sort Command: Organizing Data
+
+The `sort` command sorts lines of text alphabetically or numerically.
+
+### Basic sort Syntax
+
+```bash
+sort OPTIONS FILE
+```
+
+**Common options:**
+- `-n` - Numeric sort (treats numbers correctly)
+- `-r` - Reverse order
+- `-k` - Sort by specific field
+- `-t` - Specify field delimiter
+- `-u` - Unique (remove duplicates while sorting)
+- `-h` - Human-numeric sort (1K, 2M, 3G)
+- `-V` - Version sort (handles version numbers correctly)
+
+---
+
+## Alphabetical Sorting (Default)
+
+By default, sort arranges lines alphabetically:
+
+```bash
+cat << EOF > fruits.txt
+banana
+apple
+cherry
+date
+EOF
+
+sort fruits.txt
+```
+
+**Output:**
+```
+apple
+banana
+cherry
+date
+```
+
+**Sorted alphabetically (A-Z).**
+
+---
+
+### Case-Sensitive Sorting
+
+Uppercase letters come before lowercase in ASCII:
+
+```bash
+cat << EOF > mixed.txt
+Zebra
+apple
+Banana
+EOF
+
+sort mixed.txt
+```
+
+**Output:**
+```
+Banana
+Zebra
+apple
+```
+
+**Why?** In ASCII, uppercase A-Z (65-90) comes before lowercase a-z (97-122).
+
+**Case-insensitive sort:**
+```bash
+sort -f mixed.txt    # -f = fold case (ignore case)
+```
+
+**Output:**
+```
+apple
+Banana
+Zebra
+```
+
+---
+
+## Numeric Sorting with -n
+
+**Problem:** Alphabetical sort treats numbers as text:
+
+```bash
+cat << EOF > numbers.txt
+100
+2
+30
+1
+EOF
+
+sort numbers.txt
+```
+
+**Output (WRONG):**
+```
+1
+100
+2
+30
+```
+
+**Why wrong?** Alphabetically, "100" starts with "1", so it comes before "2".
+
+---
+
+### Solution: Numeric Sort
+
+```bash
+sort -n numbers.txt
+```
+
+**Output (CORRECT):**
+```
+1
+2
+30
+100
+```
+
+**Now sorted numerically!**
+
+---
+
+## Reverse Sorting with -r
+
+Reverse the sort order:
+
+```bash
+sort -r fruits.txt
+```
+
+**Output:**
+```
+date
+cherry
+banana
+apple
+```
+
+**Combine with numeric:**
+```bash
+sort -nr numbers.txt
+```
+
+**Output:**
+```
+100
+30
+2
+1
+```
+
+**Sorted numerically in reverse (largest first).**
+
+---
+
+## Sorting by Specific Field with -k
+
+You can sort based on a specific column/field.
+
+### Example: Sort /etc/passwd by UID
+
+```bash
+sort -t: -k3 -n /etc/passwd | head -5
+```
+
+**Breakdown:**
+- `sort` - The command
+- `-t:` - Use colon as field delimiter
+- `-k3` - Sort by field 3 (UID)
+- `-n` - Numeric sort
+- `/etc/passwd` - Input file
+
+**Output:**
+```
+root:x:0:0:root:/root:/bin/bash
+bin:x:1:1:bin:/bin:/sbin/nologin
+daemon:x:2:2:daemon:/sbin:/sbin/nologin
+adm:x:3:4:adm:/var/adm:/sbin/nologin
+lp:x:4:7:lp:/var/spool/lpd:/sbin/nologin
+```
+
+**Users sorted by UID (0, 1, 2, 3, 4...).**
+
+---
+
+### Sort by Multiple Fields
+
+```bash
+# Sort by GID (field 4), then by UID (field 3)
+sort -t: -k4 -k3 -n /etc/passwd
+```
+
+**This sorts by field 4 first, then by field 3 for ties.**
+
+---
+
+### Sort by Last Field
+
+To sort by the last field (shell):
+
+```bash
+sort -t: -k7 /etc/passwd | head -5
+```
+
+**Output (sorted by shell path):**
+```
+root:x:0:0:root:/root:/bin/bash
+centos9:x:1000:1000::/home/centos9:/bin/bash
+bin:x:1:1:bin:/bin:/sbin/nologin
+daemon:x:2:2:daemon:/sbin:/sbin/nologin
+adm:x:3:4:adm:/var/adm:/sbin/nologin
+```
+
+---
+
+## Unique Sort with -u
+
+Remove duplicates while sorting:
+
+```bash
+cat << EOF > duplicates.txt
+apple
+banana
+apple
+cherry
+banana
+EOF
+
+sort -u duplicates.txt
+```
+
+**Output:**
+```
+apple
+banana
+cherry
+```
+
+**Duplicates removed, output sorted.**
+
+This is equivalent to `sort | uniq` but more efficient.
+
+---
+
+## Human-Numeric Sort with -h
+
+When sorting file sizes or numbers with suffixes:
+
+```bash
+cat << EOF > sizes.txt
+1K
+2M
+500K
+1G
+100M
+EOF
+
+sort -h sizes.txt
+```
+
+**Output:**
+```
+1K
+500K
+2M
+100M
+1G
+```
+
+**Correctly sorted by size (K < M < G).**
+
+Without `-h`, it would sort alphabetically (wrong).
+
+---
+
+## Version Sort with -V
+
+For version numbers:
+
+```bash
+cat << EOF > versions.txt
+version-1.10
+version-1.2
+version-1.1
+version-2.0
+EOF
+
+sort -V versions.txt
+```
+
+**Output:**
+```
+version-1.1
+version-1.2
+version-1.10
+version-2.0
+```
+
+**Correctly handles version numbering!**
+
+Without `-V`:
+```
+version-1.1
+version-1.10    # Wrong! 10 comes before 2 alphabetically
+version-1.2
+version-2.0
+```
+
+---
+
+## The uniq Command: Removing Duplicates
+
+The `uniq` command removes **consecutive duplicate lines**.
+
+<Callout type="warning">
+⚠️ **CRITICAL**: `uniq` only removes **consecutive** duplicates. You MUST sort first!
+
+**Wrong:**
+```bash
+uniq unsorted_file.txt    # Won't work correctly!
+```
+
+**Correct:**
+```bash
+sort unsorted_file.txt | uniq    # Sort first, then remove duplicates
+```
+</Callout>
+
+---
+
+## Basic uniq Usage
+
+```bash
+cat << EOF > repeated.txt
+apple
+apple
+banana
+cherry
+cherry
+cherry
+banana
+EOF
+
+uniq repeated.txt
+```
+
+**Output:**
+```
+apple
+banana
+cherry
+banana
+```
+
+**Notice:** The second "banana" is still there because it's not consecutive with the first.
+
+---
+
+### Proper Usage: Sort First
+
+```bash
+sort repeated.txt | uniq
+```
+
+**Output:**
+```
+apple
+banana
+cherry
+```
+
+**Now all duplicates are removed!**
+
+---
+
+## Counting Occurrences with -c
+
+Count how many times each line appears:
+
+```bash
+sort repeated.txt | uniq -c
+```
+
+**Output:**
+```
+      2 apple
+      2 banana
+      3 cherry
+```
+
+**Interpretation:**
+- apple appears 2 times
+- banana appears 2 times
+- cherry appears 3 times
+
+**The count is left-padded with spaces for alignment.**
+
+---
+
+### Sort by Count
+
+Find most common items:
+
+```bash
+sort repeated.txt | uniq -c | sort -nr
+```
+
+**Output:**
+```
+      3 cherry
+      2 banana
+      2 apple
+```
+
+**Pipeline breakdown:**
+1. `sort` - Sort the file
+2. `uniq -c` - Count occurrences
+3. `sort -nr` - Sort numerically, reverse (highest first)
+
+**This shows "cherry" is most common (3 occurrences).**
+
+---
+
+## Show Only Duplicates with -d
+
+Show only lines that appear more than once:
+
+```bash
+sort repeated.txt | uniq -d
+```
+
+**Output:**
+```
+apple
+banana
+cherry
+```
+
+**All three items appear multiple times.**
+
+---
+
+## Show Only Unique Lines with -u
+
+Show only lines that appear exactly once:
+
+```bash
+cat << EOF > mixed.txt
+apple
+banana
+apple
+cherry
+date
+EOF
+
+sort mixed.txt | uniq -u
+```
+
+**Output:**
+```
+banana
+cherry
+date
+```
+
+**Only items that appear once.**
+
+---
+
+## Case-Insensitive Comparison with -i
+
+Ignore case when comparing:
+
+```bash
+cat << EOF > case_test.txt
+Apple
+apple
+APPLE
+Banana
+EOF
+
+sort case_test.txt | uniq -i
+```
+
+**Output:**
+```
+Apple
+Banana
+```
+
+**All variations of "apple" treated as same (first occurrence kept).**
+
+---
+
+## Combining cut, sort, and uniq
+
+Now let's see the real power: combining all three commands.
+
+### Example 1: List All Unique Shells
+
+**Goal:** Get a unique list of all shells used on the system.
+
+```bash
+cut -d: -f7 /etc/passwd | sort | uniq
+```
+
+**Output:**
+```
+/bin/bash
+/bin/sync
+/sbin/halt
+/sbin/nologin
+/sbin/shutdown
+```
+
+**Pipeline breakdown:**
+1. `cut -d: -f7 /etc/passwd` - Extract shell (field 7)
+2. `sort` - Sort the shells
+3. `uniq` - Remove duplicates
+
+---
+
+### Example 2: Count Users Per Shell
+
+**Goal:** How many users use each shell?
+
+```bash
+cut -d: -f7 /etc/passwd | sort | uniq -c | sort -nr
+```
+
+**Output:**
+```
+     18 /sbin/nologin
+      2 /bin/bash
+      1 /sbin/shutdown
+      1 /sbin/halt
+      1 /bin/sync
+```
+
+**Interpretation:**
+- 18 users have /sbin/nologin (system accounts)
+- 2 users have /bin/bash (real users)
+- 1 user each for system special accounts
+
+---
+
+### Example 3: Find Duplicate UIDs
+
+**Goal:** Check if any UIDs are used by multiple users (security issue).
+
+```bash
+cut -d: -f3 /etc/passwd | sort -n | uniq -d
+```
+
+**Output:**
+```
+(empty if no duplicates)
+```
+
+**If you see output:** You have duplicate UIDs (security problem!).
+
+---
+
+### Example 4: Extract and Count Unique IP Addresses from Log
+
+Assuming a log file with IP addresses:
+
+```bash
+cat << EOF > access.log
+192.168.1.100 - GET /index.html
+192.168.1.101 - GET /about.html
+192.168.1.100 - GET /contact.html
+192.168.1.102 - GET /index.html
+192.168.1.100 - GET /services.html
+EOF
+
+cut -d' ' -f1 access.log | sort | uniq -c | sort -nr
+```
+
+**Output:**
+```
+      3 192.168.1.100
+      1 192.168.1.102
+      1 192.168.1.101
+```
+
+**192.168.1.100 accessed the site 3 times.**
+
+---
+
+### Example 5: List Home Directory Types
+
+**Goal:** What types of home directories exist?
+
+```bash
+cut -d: -f6 /etc/passwd | cut -d/ -f2 | sort | uniq -c
+```
+
+**Output:**
+```
+      1 bin
+      1 boot
+     18 home
+      1 root
+      7 sbin
+      3 var
+```
+
+**Pipeline breakdown:**
+1. `cut -d: -f6 /etc/passwd` - Extract home directory
+2. `cut -d/ -f2` - Get first directory after /
+3. `sort | uniq -c` - Count unique directories
+
+---
+
+## Real-World Text Processing Scenarios
+
+### Scenario 1: Find Most Common Error in Logs
+
+```bash
+# Extract ERROR lines, get error type, count occurrences
+grep ERROR /var/log/messages | cut -d' ' -f5- | sort | uniq -c | sort -nr | head -10
+```
+
+**This shows top 10 most common errors.**
+
+---
+
+### Scenario 2: List All Users with Bash Shell
+
+```bash
+grep '/bin/bash$' /etc/passwd | cut -d: -f1 | sort
+```
+
+**Output:**
+```
+centos9
+root
+```
+
+---
+
+### Scenario 3: Parse CSV File
+
+Given a CSV file:
+```
+Name,Age,City
+Alice,30,NYC
+Bob,25,LA
+Charlie,30,NYC
+```
+
+**Extract city column and count:**
+```bash
+cut -d, -f3 data.csv | tail -n +2 | sort | uniq -c
+```
+
+**Output:**
+```
+      1 LA
+      2 NYC
+```
+
+**Pipeline:**
+- `cut -d, -f3` - Extract city (field 3)
+- `tail -n +2` - Skip header line
+- `sort | uniq -c` - Count cities
+
+---
+
+### Scenario 4: Find Users with Same Home Directory
+
+```bash
+cut -d: -f6 /etc/passwd | sort | uniq -d
+```
+
+**If output appears:** Multiple users share the same home directory.
+
+---
+
+### Scenario 5: Extract Domain from Email Addresses
+
+```bash
+cat << EOF > emails.txt
+user1@example.com
+user2@gmail.com
+user3@example.com
+user4@yahoo.com
+EOF
+
+cut -d@ -f2 emails.txt | sort | uniq -c | sort -nr
+```
+
+**Output:**
+```
+      2 example.com
+      1 yahoo.com
+      1 gmail.com
+```
+
+---
+
+## Advanced Techniques
+
+### Multiple Field Extraction
+
+Extract username and shell, create custom format:
+
+```bash
+cut -d: -f1,7 /etc/passwd | head -5
+```
+
+**Output:**
+```
+root:/bin/bash
+bin:/sbin/nologin
+daemon:/sbin/nologin
+adm:/sbin/nologin
+lp:/sbin/nologin
+```
+
+---
+
+### Using Different Output Delimiter
+
+By default, cut uses the same delimiter for output. To change it, use `tr`:
+
+```bash
+cut -d: -f1,7 /etc/passwd | tr ':' ' ' | head -3
+```
+
+**Output:**
+```
+root /bin/bash
+bin /sbin/nologin
+daemon /sbin/nologin
+```
+
+**Now space-separated instead of colon-separated.**
+
+---
+
+### Sorting by Multiple Criteria
+
+Sort by shell, then by username:
+
+```bash
+sort -t: -k7,7 -k1,1 /etc/passwd | head -5
+```
+
+**This sorts:**
+1. Primary: Field 7 (shell)
+2. Secondary: Field 1 (username) for ties
+
+---
+
+### Case-Insensitive Sort and Unique
+
+```bash
+cat << EOF > names.txt
+Alice
+bob
+ALICE
+Charlie
+Bob
+EOF
+
+sort -f names.txt | uniq -i
+```
+
+**Output:**
+```
+Alice
+bob
+Charlie
+```
+
+**All case variations of "Alice" and "bob" removed.**
+
+---
+
+## Common Patterns and Idioms
+
+### Pattern 1: Count Unique Items
+
+```bash
+command | sort | uniq | wc -l
+```
+
+**Counts number of unique items.**
+
+---
+
+### Pattern 2: Most Frequent Items
+
+```bash
+command | sort | uniq -c | sort -nr | head -10
+```
+
+**Shows top 10 most frequent items.**
+
+---
+
+### Pattern 3: Find Duplicates Only
+
+```bash
+command | sort | uniq -d
+```
+
+**Shows only items that appear more than once.**
+
+---
+
+### Pattern 4: Extract Field from Delimited File
+
+```bash
+cut -d'DELIMITER' -fN filename | sort | uniq
+```
+
+**Replace DELIMITER and N with your values.**
+
+---
+
+### Pattern 5: Remove Blank Lines
+
+```bash
+sort file.txt | uniq | grep -v '^$'
+```
+
+**Removes empty lines from sorted, unique output.**
+
+---
+
+## Quick Reference Tables
+
+### cut Options
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Option</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Purpose</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Example</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>-f N</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Select field N</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>cut -d: -f1</code></td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>-d DELIM</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Set delimiter</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>cut -d, -f2</code></td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>-c N-M</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Select characters N to M</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>cut -c1-5</code></td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>-b N-M</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Select bytes N to M</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>cut -b1-10</code></td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>-f1,3,5</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Select multiple fields</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>cut -d: -f1,3,5</code></td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>-f1-3</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Select field range</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>cut -d: -f1-3</code></td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+### sort Options
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Option</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Purpose</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Example</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>-n</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Numeric sort</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>sort -n numbers.txt</code></td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>-r</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Reverse order</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>sort -r file.txt</code></td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>-k N</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Sort by field N</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>sort -t: -k3 -n</code></td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>-t DELIM</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Set field delimiter</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>sort -t: -k3</code></td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>-u</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Unique (remove duplicates)</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>sort -u file.txt</code></td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>-f</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Ignore case</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>sort -f file.txt</code></td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>-h</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Human-numeric sort</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>sort -h sizes.txt</code></td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>-V</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Version sort</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>sort -V versions.txt</code></td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+### uniq Options
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead>
+    <tr className="bg-gray-50 dark:bg-gray-800">
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Option</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Purpose</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Example</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>-c</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Count occurrences</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>uniq -c</code></td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>-d</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Show only duplicates</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>uniq -d</code></td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>-u</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Show only unique lines</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>uniq -u</code></td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>-i</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Ignore case</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>uniq -i</code></td>
+    </tr>
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>-f N</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Skip first N fields</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>uniq -f 2</code></td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## 🧪 Practice Labs
+
+Let's apply what you've learned with comprehensive hands-on practice.
+
+### Lab 1: Basic Field Extraction (Beginner)
+**Task**: Extract all usernames from /etc/passwd and display them in alphabetical order.
+
+<details>
+<summary>Show Solution</summary>
+
+```bash
+# Extract usernames (field 1) and sort
+cut -d: -f1 /etc/passwd | sort
+```
+
+**Expected output**: Alphabetically sorted list of all usernames.
+
+**Explanation**:
+- `cut -d: -f1` extracts first field (username)
+- `sort` arranges alphabetically
+
+</details>
+
+---
+
+### Lab 2: Multiple Field Extraction (Beginner)
+**Task**: Display username, UID, and home directory for all users. Format: username:uid:home
+
+<details>
+<summary>Show Solution</summary>
+
+```bash
+# Extract fields 1, 3, and 6
+cut -d: -f1,3,6 /etc/passwd
+```
+
+**Expected output**:
+```
+root:0:/root
+bin:1:/bin
+daemon:2:/sbin
+...
+```
+
+**Explanation**:
+- `-f1,3,6` extracts username (1), UID (3), and home (6)
+- Fields separated by colon (original delimiter preserved)
+
+</details>
+
+---
+
+### Lab 3: Character Extraction (Beginner)
+**Task**: Extract the first 3 characters from each username in /etc/passwd.
+
+<details>
+<summary>Show Solution</summary>
+
+```bash
+# Extract usernames, then first 3 characters
+cut -d: -f1 /etc/passwd | cut -c1-3
+```
+
+**Expected output**:
+```
+roo
+bin
+dae
+adm
+...
+```
+
+**Explanation**:
+- First `cut` extracts username
+- Second `cut -c1-3` gets characters 1 through 3
+
+</details>
+
+---
+
+### Lab 4: Numeric Sort (Beginner)
+**Task**: List all UIDs from /etc/passwd sorted numerically.
+
+<details>
+<summary>Show Solution</summary>
+
+```bash
+# Extract UID field and sort numerically
+cut -d: -f3 /etc/passwd | sort -n
+```
+
+**Expected output**:
+```
+0
+1
+2
+3
+4
+...
+```
+
+**Explanation**:
+- `cut -d: -f3` extracts UID (field 3)
+- `sort -n` sorts numerically (not alphabetically)
+
+</details>
+
+---
+
+### Lab 5: Reverse Sort (Beginner)
+**Task**: Display all shells from /etc/passwd in reverse alphabetical order.
+
+<details>
+<summary>Show Solution</summary>
+
+```bash
+# Extract shells and sort in reverse
+cut -d: -f7 /etc/passwd | sort -r
+```
+
+**Expected output**:
+```
+/sbin/shutdown
+/sbin/nologin
+/sbin/nologin
+...
+/bin/bash
+/bin/bash
+```
+
+**Explanation**:
+- `cut -d: -f7` extracts shell (field 7)
+- `sort -r` sorts in reverse alphabetical order
+
+</details>
+
+---
+
+### Lab 6: Remove Duplicates (Beginner)
+**Task**: Get a list of unique shells used on the system.
+
+<details>
+<summary>Show Solution</summary>
+
+```bash
+# Extract shells, sort, remove duplicates
+cut -d: -f7 /etc/passwd | sort | uniq
+```
+
+**Expected output**:
+```
+/bin/bash
+/bin/sync
+/sbin/halt
+/sbin/nologin
+/sbin/shutdown
+```
+
+**Explanation**:
+- `sort` is required before `uniq` (uniq only removes consecutive duplicates)
+- Result is unique list of shells
+
+</details>
+
+---
+
+### Lab 7: Count Occurrences (Intermediate)
+**Task**: Count how many users use each shell.
+
+<details>
+<summary>Show Solution</summary>
+
+```bash
+# Extract shells, sort, count with uniq
+cut -d: -f7 /etc/passwd | sort | uniq -c
+```
+
+**Expected output**:
+```
+      2 /bin/bash
+      1 /bin/sync
+      1 /sbin/halt
+     18 /sbin/nologin
+      1 /sbin/shutdown
+```
+
+**Explanation**:
+- `uniq -c` adds count before each line
+- Shows how many users have each shell
+
+</details>
+
+---
+
+### Lab 8: Most Common Item (Intermediate)
+**Task**: Find which shell is used by the most users.
+
+<details>
+<summary>Show Solution</summary>
+
+```bash
+# Extract, sort, count, sort by count (descending)
+cut -d: -f7 /etc/passwd | sort | uniq -c | sort -nr | head -1
+```
+
+**Expected output**:
+```
+     18 /sbin/nologin
+```
+
+**Explanation**:
+- `uniq -c` counts occurrences
+- `sort -nr` sorts numerically, reverse (highest first)
+- `head -1` shows only top result
+- `/sbin/nologin` is most common (system accounts)
+
+</details>
+
+---
+
+### Lab 9: Sort by Field (Intermediate)
+**Task**: Display all users sorted by their UID (lowest to highest).
+
+<details>
+<summary>Show Solution</summary>
+
+```bash
+# Sort /etc/passwd by field 3 (UID) numerically
+sort -t: -k3 -n /etc/passwd
+```
+
+**Expected output**:
+```
+root:x:0:0:root:/root:/bin/bash
+bin:x:1:1:bin:/bin:/sbin/nologin
+daemon:x:2:2:daemon:/sbin:/sbin/nologin
+...
+```
+
+**Explanation**:
+- `-t:` sets delimiter to colon
+- `-k3` sorts by field 3 (UID)
+- `-n` numeric sort (0 < 1 < 2, not alphabetical)
+
+</details>
+
+---
+
+### Lab 10: Field Range Extraction (Intermediate)
+**Task**: Extract username, UID, GID, and home directory (fields 1, 3, 4, 6) from /etc/passwd.
+
+<details>
+<summary>Show Solution</summary>
+
+```bash
+# Extract multiple fields
+cut -d: -f1,3,4,6 /etc/passwd | head -5
+```
+
+**Expected output**:
+```
+root:0:0:/root
+bin:1:1:/bin
+daemon:2:2:/sbin
+adm:3:4:/var/adm
+lp:4:7:/var/spool/lpd
+```
+
+**Explanation**:
+- `-f1,3,4,6` extracts specified fields only
+- Output uses same delimiter (colon)
+
+</details>
+
+---
+
+### Lab 11: Find Duplicate UIDs (Intermediate)
+**Task**: Check if any UID is used by multiple users (security issue).
+
+<details>
+<summary>Show Solution</summary>
+
+```bash
+# Extract UIDs, sort, show only duplicates
+cut -d: -f3 /etc/passwd | sort -n | uniq -d
+```
+
+**Expected output**:
+```
+(empty if no duplicates - which is good!)
+```
+
+**Explanation**:
+- `cut -d: -f3` extracts UIDs
+- `sort -n` sorts numerically
+- `uniq -d` shows only duplicated values
+- Empty output = no duplicate UIDs (secure system)
+
+</details>
+
+---
+
+### Lab 12: Users with Specific Shell (Intermediate)
+**Task**: List usernames of all users who have /bin/bash as their shell.
+
+<details>
+<summary>Show Solution</summary>
+
+```bash
+# Method 1: Using grep and cut
+grep '/bin/bash$' /etc/passwd | cut -d: -f1
+
+# Method 2: Using awk (if you know it)
+awk -F: '$7 == "/bin/bash" {print $1}' /etc/passwd
+```
+
+**Expected output**:
+```
+root
+centos9
+```
+
+**Explanation (Method 1)**:
+- `grep '/bin/bash$'` finds lines ending with /bin/bash
+- `cut -d: -f1` extracts username from matching lines
+
+</details>
+
+---
+
+### Lab 13: Count Users by Home Directory Prefix (Advanced)
+**Task**: Count how many users have home directories under each top-level directory (/home, /root, /var, etc.).
+
+<details>
+<summary>Show Solution</summary>
+
+```bash
+# Extract home dir, get first directory, count
+cut -d: -f6 /etc/passwd | cut -d/ -f2 | sort | uniq -c | sort -nr
+```
+
+**Expected output**:
+```
+     18 home
+      7 sbin
+      3 var
+      1 root
+      1 boot
+      1 bin
+```
+
+**Explanation**:
+- First `cut -d: -f6` extracts home directory path
+- Second `cut -d/ -f2` extracts first directory after /
+- `sort | uniq -c` counts occurrences
+- `sort -nr` shows most common first
+
+</details>
+
+---
+
+### Lab 14: Extract and Process CSV Data (Advanced)
+**Task**: Create a CSV file with user data and extract specific columns.
+
+<details>
+<summary>Show Solution</summary>
+
+```bash
+# Create sample CSV file
+cat << 'EOF' > users.csv
+Name,Age,City,Department
+Alice,30,NYC,Engineering
+Bob,25,LA,Sales
+Charlie,30,NYC,Engineering
+David,35,Chicago,Marketing
+Alice,30,Boston,Sales
+EOF
+
+# Extract names and departments (fields 1 and 4)
+cut -d, -f1,4 users.csv
+
+# Count unique departments
+cut -d, -f4 users.csv | tail -n +2 | sort | uniq -c
+```
+
+**Expected output (extraction)**:
+```
+Name,Department
+Alice,Engineering
+Bob,Sales
+Charlie,Engineering
+David,Marketing
+Alice,Sales
+```
+
+**Expected output (count)**:
+```
+      2 Engineering
+      1 Marketing
+      2 Sales
+```
+
+**Explanation**:
+- `cut -d, -f1,4` extracts name and department (comma delimiter)
+- `tail -n +2` skips header line
+- `sort | uniq -c` counts unique departments
+
+</details>
+
+---
+
+### Lab 15: Find Users with Duplicate Home Directories (Advanced)
+**Task**: Identify if multiple users share the same home directory.
+
+<details>
+<summary>Show Solution</summary>
+
+```bash
+# Extract home directories, find duplicates
+cut -d: -f6 /etc/passwd | sort | uniq -d
+```
+
+**Expected output**:
+```
+(empty if no shared home directories)
+```
+
+**If output shows directories**: Multiple users share those directories (unusual, possible issue).
+
+**Explanation**:
+- `cut -d: -f6` extracts home directory
+- `sort | uniq -d` shows only duplicated directories
+
+</details>
+
+---
+
+### Lab 16: Extract Specific Character Positions (Advanced)
+**Task**: From the output of `ls -l`, extract only the permissions (characters 1-10).
+
+<details>
+<summary>Show Solution</summary>
+
+```bash
+# List files, extract permission string
+ls -l /etc | tail -n +2 | cut -c1-10
+```
+
+**Expected output**:
+```
+drwxr-xr-x
+drwxr-xr-x
+-rw-r--r--
+-rw-r--r--
+...
+```
+
+**Explanation**:
+- `ls -l /etc` long listing
+- `tail -n +2` skip "total" line
+- `cut -c1-10` extract first 10 characters (permissions)
+
+</details>
+
+---
+
+### Lab 17: Sort by Multiple Fields (Advanced)
+**Task**: Sort /etc/passwd first by shell (field 7), then by username (field 1) within each shell group.
+
+<details>
+<summary>Show Solution</summary>
+
+```bash
+# Sort by shell (primary), then username (secondary)
+sort -t: -k7,7 -k1,1 /etc/passwd | head -10
+```
+
+**Expected output**:
+```
+centos9:x:1000:1000::/home/centos9:/bin/bash
+root:x:0:0:root:/root:/bin/bash
+sync:x:5:0:sync:/sbin:/bin/sync
+halt:x:7:0:halt:/sbin:/sbin/halt
+...
+```
+
+**Explanation**:
+- `-k7,7` primary sort by field 7 (shell)
+- `-k1,1` secondary sort by field 1 (username)
+- Users with same shell are alphabetically sorted
+
+</details>
+
+---
+
+### Lab 18: Version Number Sorting (Advanced)
+**Task**: Create a list of version numbers and sort them correctly.
+
+<details>
+<summary>Show Solution</summary>
+
+```bash
+# Create version list
+cat << 'EOF' > versions.txt
+app-1.10.0
+app-1.2.0
+app-1.9.5
+app-2.0.0
+app-1.1.0
+EOF
+
+# Sort with version sort
+sort -V versions.txt
+```
+
+**Expected output**:
+```
+app-1.1.0
+app-1.2.0
+app-1.9.5
+app-1.10.0
+app-2.0.0
+```
+
+**Explanation**:
+- `sort -V` handles version numbers correctly
+- Without `-V`, "1.10.0" would come before "1.2.0" (alphabetically)
+- `-V` understands semantic versioning
+
+</details>
+
+---
+
+### Lab 19: Complex Pipeline - Log Analysis (Advanced)
+**Task**: Analyze a log file to find the 5 most frequent error messages.
+
+<details>
+<summary>Show Solution</summary>
+
+```bash
+# Create sample log file
+cat << 'EOF' > server.log
+2025-12-09 10:15:23 INFO Server started
+2025-12-09 10:15:45 ERROR Connection timeout
+2025-12-09 10:16:12 ERROR Connection timeout
+2025-12-09 10:17:33 WARNING Low memory
+2025-12-09 10:18:21 ERROR Database unavailable
+2025-12-09 10:19:15 ERROR Connection timeout
+2025-12-09 10:20:44 ERROR Database unavailable
+2025-12-09 10:21:08 INFO Request completed
+EOF
+
+# Extract errors, count, show top 5
+grep ERROR server.log | cut -d' ' -f4- | sort | uniq -c | sort -nr | head -5
+```
+
+**Expected output**:
+```
+      3 Connection timeout
+      2 Database unavailable
+```
+
+**Explanation**:
+- `grep ERROR` filters error lines only
+- `cut -d' ' -f4-` extracts message (from field 4 to end)
+- `sort | uniq -c` counts occurrences
+- `sort -nr` sorts by count (highest first)
+- `head -5` shows top 5
+
+</details>
+
+---
+
+### Lab 20: Real-World System Audit (Advanced)
+**Task**: Create a comprehensive report showing: number of users, shells used, UID ranges, and potential security issues.
+
+<details>
+<summary>Show Solution</summary>
+
+```bash
+# Complete system user audit script
+echo "=== System User Audit Report ==="
+echo ""
+
+echo "Total Users:"
+wc -l /etc/passwd
+
+echo ""
+echo "Shell Distribution:"
+cut -d: -f7 /etc/passwd | sort | uniq -c | sort -nr
+
+echo ""
+echo "UID Range:"
+echo "Lowest UID: $(cut -d: -f3 /etc/passwd | sort -n | head -1)"
+echo "Highest UID: $(cut -d: -f3 /etc/passwd | sort -n | tail -1)"
+
+echo ""
+echo "Users with Bash Shell:"
+grep '/bin/bash$' /etc/passwd | cut -d: -f1 | sort
+
+echo ""
+echo "Checking for Duplicate UIDs:"
+DUPES=$(cut -d: -f3 /etc/passwd | sort -n | uniq -d)
+if [ -z "$DUPES" ]; then
+    echo "No duplicate UIDs found (GOOD)"
+else
+    echo "WARNING: Duplicate UIDs found: $DUPES"
+fi
+
+echo ""
+echo "Top 5 Home Directory Locations:"
+cut -d: -f6 /etc/passwd | cut -d/ -f2 | sort | uniq -c | sort -nr | head -5
+```
+
+**Expected output**: A comprehensive formatted report with all system user statistics.
+
+**Explanation**: This combines all techniques learned:
+- Field extraction with `cut`
+- Sorting with `sort` (numeric and alphabetical)
+- Duplicate detection with `uniq`
+- Counting and analysis
+- Conditional logic for security checks
+
+</details>
+
+---
+
+## 📚 Best Practices
+
+### 1. Always Sort Before uniq
+
+<Callout type="warning">
+**Golden Rule**: `uniq` only removes **consecutive** duplicates.
+
+**Wrong:**
+```bash
+uniq unsorted.txt    # Misses non-consecutive duplicates!
+```
+
+**Correct:**
+```bash
+sort unsorted.txt | uniq    # Always sort first
+```
+</Callout>
+
+---
+
+### 2. Use Numeric Sort for Numbers
+
+```bash
+# Wrong (alphabetical)
+sort numbers.txt    # 1, 10, 100, 2, 20...
+
+# Correct (numeric)
+sort -n numbers.txt    # 1, 2, 10, 20, 100...
+```
+
+---
+
+### 3. Specify Delimiters Explicitly
+
+```bash
+# Assume colon-delimited file
+cut -d: -f1 data.txt    # Explicit, clear
+cut -f1 data.txt        # Uses tab (default), might fail
+```
+
+---
+
+### 4. Combine Commands in Efficient Pipelines
+
+```bash
+# Less efficient (multiple reads)
+cut -d: -f1 /etc/passwd > users.txt
+sort users.txt > sorted_users.txt
+uniq sorted_users.txt
+
+# More efficient (single pipeline)
+cut -d: -f1 /etc/passwd | sort | uniq
+```
+
+---
+
+### 5. Use sort -u Instead of sort | uniq
+
+```bash
+# Good
+sort file.txt | uniq
+
+# Better (more efficient)
+sort -u file.txt
+```
+
+Both produce same result, but `sort -u` is faster.
+
+---
+
+### 6. Test on Small Sample First
+
+```bash
+# Test on first 10 lines
+head -10 largefile.txt | cut -d, -f3 | sort | uniq
+
+# When satisfied, run on full file
+cut -d, -f3 largefile.txt | sort | uniq
+```
+
+---
+
+### 7. Save Intermediate Results for Complex Pipelines
+
+```bash
+# For complex multi-step analysis
+cut -d: -f1,3 /etc/passwd > users_uids.txt
+sort -t: -k2 -n users_uids.txt > sorted_by_uid.txt
+# Now analyze sorted_by_uid.txt
+```
+
+---
+
+### 8. Handle Missing Delimiters
+
+If a line doesn't contain the delimiter, `cut` prints the entire line:
+
+```bash
+# To suppress lines without delimiter
+cut -d: -f1 -s /etc/passwd    # -s = only delimited lines
+```
+
+---
+
+## 🚨 Common Pitfalls to Avoid
+
+### Pitfall 1: Forgetting to Sort Before uniq
+
+```bash
+# WRONG - uniq won't catch all duplicates
+cat file.txt | uniq
+
+# CORRECT
+cat file.txt | sort | uniq
+```
+
+**Why**: `uniq` only removes **consecutive** duplicates.
+
+---
+
+### Pitfall 2: Alphabetical Sort on Numbers
+
+```bash
+# WRONG - treats numbers as text
+sort numbers.txt
+# Output: 1, 10, 100, 2, 20, 3...
+
+# CORRECT - numeric sort
+sort -n numbers.txt
+# Output: 1, 2, 3, 10, 20, 100...
+```
+
+---
+
+### Pitfall 3: Wrong Field Delimiter
+
+```bash
+# File is colon-delimited, but using default (tab)
+cut -f1 /etc/passwd    # WRONG - no tabs in file
+
+# Specify delimiter
+cut -d: -f1 /etc/passwd    # CORRECT
+```
+
+---
+
+### Pitfall 4: Extracting Non-Existent Fields
+
+```bash
+# /etc/passwd has 7 fields
+cut -d: -f10 /etc/passwd    # Field 10 doesn't exist, returns empty
+```
+
+**Always know your data structure first!**
+
+---
+
+### Pitfall 5: Case Sensitivity Issues
+
+```bash
+# Data has mixed case
+sort names.txt | uniq
+# "Alice", "alice", "ALICE" all treated as different
+
+# Case-insensitive
+sort -f names.txt | uniq -i
+```
+
+---
+
+### Pitfall 6: Not Handling Header Lines
+
+```bash
+# CSV with header
+cut -d, -f2 data.csv | sort | uniq
+# Includes header in results!
+
+# Skip header
+cut -d, -f2 data.csv | tail -n +2 | sort | uniq
+```
+
+---
+
+### Pitfall 7: Inefficient Multiple Passes
+
+```bash
+# Inefficient - reads file 3 times
+sort file.txt > temp1
+uniq temp1 > temp2
+wc -l temp2
+
+# Efficient - single pipeline
+sort file.txt | uniq | wc -l
+```
+
+---
+
+## 📝 Command Cheat Sheet
+
+### cut Command Patterns
+
+```bash
+# Extract single field
+cut -d: -f1 file.txt
+
+# Extract multiple fields
+cut -d: -f1,3,5 file.txt
+
+# Extract field range
+cut -d: -f1-3 file.txt
+
+# Extract from field N to end
+cut -d: -f5- file.txt
+
+# Extract characters
+cut -c1-10 file.txt
+
+# Extract bytes
+cut -b1-20 file.txt
+
+# Suppress lines without delimiter
+cut -d: -f1 -s file.txt
+```
+
+---
+
+### sort Command Patterns
+
+```bash
+# Basic sort
+sort file.txt
+
+# Numeric sort
+sort -n numbers.txt
+
+# Reverse sort
+sort -r file.txt
+
+# Unique sort
+sort -u file.txt
+
+# Sort by field
+sort -t: -k3 -n file.txt
+
+# Multiple field sort
+sort -t: -k2,2 -k1,1 file.txt
+
+# Case-insensitive
+sort -f file.txt
+
+# Human-readable numbers
+sort -h sizes.txt
+
+# Version numbers
+sort -V versions.txt
+```
+
+---
+
+### uniq Command Patterns
+
+```bash
+# Remove duplicates (must sort first!)
+sort file.txt | uniq
+
+# Count occurrences
+sort file.txt | uniq -c
+
+# Show only duplicates
+sort file.txt | uniq -d
+
+# Show only unique (non-repeated)
+sort file.txt | uniq -u
+
+# Case-insensitive
+sort file.txt | uniq -i
+```
+
+---
+
+### Common Pipelines
+
+```bash
+# Extract, sort, unique
+cut -d: -f1 /etc/passwd | sort | uniq
+
+# Count unique items
+command | sort | uniq | wc -l
+
+# Most frequent items
+command | sort | uniq -c | sort -nr | head -10
+
+# Extract field, sort numerically
+cut -d: -f3 file.txt | sort -n
+
+# Find duplicates only
+cut -d: -f1 file.txt | sort | uniq -d
+
+# Sort by specific field
+sort -t: -k3 -n /etc/passwd
+```
+
+---
+
+## 🎯 Key Takeaways
+
+<div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 p-6 rounded-lg border-l-4 border-green-500 my-8">
+
+**Essential Concepts:**
+
+1. **cut** extracts specific fields or characters from lines
+   - Use `-d` to specify delimiter, `-f` for fields, `-c` for characters
+
+2. **sort** organizes lines in order
+   - Use `-n` for numbers, `-r` for reverse, `-k` for specific fields
+
+3. **uniq** removes consecutive duplicate lines
+   - **Must sort first!** `uniq` only works on consecutive duplicates
+   - Use `-c` to count, `-d` for duplicates only
+
+4. **Pipelines are powerful**
+   - Combine commands: `cut | sort | uniq`
+   - Process data efficiently in single pass
+
+5. **Common pattern**
+   ```bash
+   cut -d: -fN file | sort | uniq -c | sort -nr
+   ```
+   - Extract field, count occurrences, show most frequent
+
+6. **For LFCS exam**: Master these combinations
+   - Analyzing /etc/passwd, /etc/group
+   - Processing log files
+   - Extracting and counting data
+
+</div>
+
+---
+
+## 🚀 What's Next?
+
+Congratulations! You've mastered three powerful text processing commands: `cut`, `sort`, and `uniq`. These are fundamental tools for system administration and LFCS exam success.
+
+**In the next post**, we'll explore even more advanced text processing with `awk` and `sed` - the Swiss Army knives of text manipulation. You'll learn pattern matching, field processing, and in-place editing.
+
+**Coming Up**: Post 33 - Advanced Text Processing with awk and sed
+
+**Your Progress**: 32 of 52 posts complete (61.5%)! You're past the halfway mark! 🎉
+
+---
+
+<Callout type="success">
+🎉 **Excellent work!** You now know how to:
+- Extract specific data with `cut`
+- Organize information with `sort`
+- Remove duplicates and count occurrences with `uniq`
+- Build powerful text processing pipelines
+- Analyze system files like /etc/passwd
+- Process structured data efficiently
+
+These skills are essential for LFCS certification and daily system administration. Keep practicing with the labs, and you'll master text processing in no time!
+
+**Next**: Continue with Post 33 for advanced text manipulation with awk and sed!
+</Callout>
