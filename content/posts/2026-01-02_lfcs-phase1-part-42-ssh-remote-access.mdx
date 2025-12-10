@@ -1,0 +1,1564 @@
+---
+title: "LFCS Part 42: Understanding SSH and Remote Server Access"
+description: "Master SSH for secure remote server access in Linux. Learn SSH vs Telnet, installing and configuring SSH/sshd, making remote connections, transferring files with scp, SSH key authentication, and essential remote administration techniques."
+date: 2026-01-02
+tags: ["Linux", "LFCS", "SSH", "remote access", "security", "sshd", "scp", "networking", "certification"]
+published: true
+author: "Owais"
+categories: ["Linux", "LFCS Certification"]
+series: "LFCS Certification - Phase 1"
+seriesOrder: 42
+---
+
+Welcome back to the **LFCS Certification - Phase 1** series! In our previous posts, we explored text processing tools including `grep` (Post 39), `awk` (Post 40), and `sed` (Post 41). Now we're shifting gears to learn about **SSH (Secure Shell)**—the standard protocol for securely accessing and managing remote Linux servers.
+
+As a system administrator, you'll rarely have physical access to all the servers you manage. SSH allows you to securely connect to remote systems, execute commands, transfer files, and perform administrative tasks—all while keeping your communications encrypted and secure.
+
+## What is SSH?
+
+**SSH** stands for **Secure Shell**. It's a cryptographic network protocol that provides a secure channel for communication over an unsecured network. SSH was developed in 1995 by Tatu Ylönen as a secure replacement for insecure protocols like Telnet and rsh (remote shell).
+
+### Key Features of SSH
+
+1. **Encryption**: All data transmitted (including passwords) is encrypted
+2. **Authentication**: Verifies the identity of both client and server
+3. **Integrity**: Ensures data hasn't been tampered with during transmission
+4. **Port Forwarding**: Can tunnel other protocols through the SSH connection
+5. **File Transfer**: Built-in secure file transfer capabilities
+
+### Why SSH Matters
+
+As a system administrator, SSH is your primary tool for:
+
+**Remote server management**:
+```bash
+ssh user@server.example.com
+```
+
+**Executing commands on remote systems**:
+```bash
+ssh user@server 'systemctl status nginx'
+```
+
+**Secure file transfers**:
+```bash
+scp file.txt user@server:/path/to/destination/
+```
+
+**Tunneling and port forwarding**:
+```bash
+ssh -L 8080:localhost:80 user@server
+```
+
+**Automated administration with scripts**:
+```bash
+for server in $(cat servers.txt); do
+  ssh $server 'df -h | grep "/dev/sda1"'
+done
+```
+
+SSH is installed by default on virtually every Linux distribution and is the de facto standard for remote system administration.
+
+---
+
+## SSH vs Telnet: Why Security Matters
+
+Before SSH, system administrators used **Telnet** for remote access. Understanding why Telnet is insecure helps you appreciate SSH's importance.
+
+### Telnet: The Insecure Protocol
+
+**Telnet** transmits everything in **plain text**, including:
+- Usernames
+- Passwords
+- All commands you type
+- All output from the server
+
+**Security risk**:
+Anyone with access to the network can use a packet sniffer (like Wireshark or tcpdump) to capture and read everything transmitted over Telnet.
+
+**Example of Telnet vulnerability**:
+```bash
+# Attacker on the same network runs:
+tcpdump -i eth0 -A 'port 23'
+
+# They can see:
+# Username: admin
+# Password: secretpass123
+# Commands: cat /etc/passwd
+```
+
+This is why **Telnet should never be used in production** environments.
+
+### SSH: The Secure Alternative
+
+**SSH** encrypts all traffic using strong cryptographic algorithms:
+
+**What SSH protects**:
+- **Authentication**: Password or key-based login is encrypted
+- **Session data**: All commands and output are encrypted
+- **Integrity**: Data cannot be modified in transit without detection
+
+**SSH uses**:
+- **Port 22** by default (Telnet uses port 23)
+- **Public-key cryptography** for authentication and encryption
+- **Strong ciphers** like AES, ChaCha20, and others
+
+**Result**: Even if someone captures SSH traffic, they see only encrypted gibberish.
+
+### Comparison Table
+
+| Feature | Telnet | SSH |
+|---------|--------|-----|
+| **Encryption** | None (plain text) | Strong encryption |
+| **Authentication** | Plain text password | Encrypted password or keys |
+| **Port** | 23 | 22 |
+| **Security** | Completely insecure | Secure |
+| **Use case** | Legacy systems, testing | Production servers, all remote access |
+| **Modern usage** | Deprecated | Standard |
+
+**Bottom line**: Always use SSH for remote access. Disable Telnet on all production systems.
+
+---
+
+## SSH Architecture: Client and Server
+
+SSH operates on a client-server model with two main components:
+
+### sshd: The SSH Server (Daemon)
+
+**sshd** (SSH daemon) is the server-side component that:
+- Listens on port 22 for incoming connections
+- Authenticates users attempting to connect
+- Provides shell access and executes commands
+- Manages encryption and decryption
+
+**Key files**:
+- `/etc/ssh/sshd_config` — Server configuration file
+- `/var/log/auth.log` or `/var/log/secure` — SSH authentication logs
+
+**Service management**:
+```bash
+systemctl status sshd     # Check if SSH server is running
+systemctl start sshd      # Start SSH server
+systemctl enable sshd     # Enable SSH server at boot
+```
+
+### ssh: The SSH Client
+
+**ssh** is the client-side command that:
+- Initiates connections to SSH servers
+- Authenticates the user
+- Provides an interactive shell or executes commands
+
+**Basic syntax**:
+```bash
+ssh [options] user@hostname [command]
+```
+
+**Client configuration**:
+- `~/.ssh/config` — Per-user SSH client settings
+- `~/.ssh/known_hosts` — List of known server fingerprints
+- `~/.ssh/id_rsa` and `~/.ssh/id_rsa.pub` — SSH key pair (if using key authentication)
+
+---
+
+## Installing SSH
+
+SSH is typically installed by default on most Linux distributions, but let's cover how to install it on both RedHat-based and Debian-based systems.
+
+### Installing SSH on CentOS/RHEL/Rocky Linux
+
+**Check if SSH is installed**:
+```bash
+rpm -qa | grep openssh
+```
+
+**If not installed, install both client and server**:
+```bash
+sudo dnf install openssh openssh-server openssh-clients
+```
+
+Or on older systems (RHEL/CentOS 7):
+```bash
+sudo yum install openssh openssh-server openssh-clients
+```
+
+**Verify installation**:
+```bash
+which ssh
+which sshd
+ssh -V
+```
+
+### Installing SSH on Ubuntu/Debian
+
+**Check if SSH is installed**:
+```bash
+dpkg -l | grep openssh
+```
+
+**Install SSH server and client**:
+```bash
+sudo apt update
+sudo apt install openssh-server openssh-client
+```
+
+**Verify installation**:
+```bash
+which ssh
+which sshd
+ssh -V
+```
+
+**Expected output**:
+```
+OpenSSH_8.9p1 Ubuntu-3ubuntu0.1, OpenSSL 3.0.2 15 Mar 2022
+```
+
+### Package Components
+
+When you install OpenSSH, you typically get:
+
+- **openssh-server**: The SSH daemon (sshd) and server configuration
+- **openssh-client**: The SSH client (ssh), scp, sftp, and related tools
+- **openssh-common**: Shared files used by both client and server
+
+---
+
+## Starting and Enabling the SSH Service
+
+Once SSH is installed, you need to ensure the SSH daemon is running and starts automatically at boot.
+
+### Starting sshd
+
+**On systems using systemd** (most modern distributions):
+
+```bash
+sudo systemctl start sshd
+```
+
+**Verify it's running**:
+```bash
+sudo systemctl status sshd
+```
+
+**Expected output**:
+```
+● sshd.service - OpenBSD Secure Shell server
+     Loaded: loaded (/lib/systemd/system/ssh.service; enabled; vendor preset: enabled)
+     Active: active (running) since Tue 2025-12-10 10:30:15 UTC; 2h 15min ago
+       Docs: man:sshd(8)
+             man:sshd_config(5)
+    Process: 1234 ExecStartPre=/usr/sbin/sshd -t (code=exited, status=0/SUCCESS)
+   Main PID: 1235 (sshd)
+      Tasks: 1 (limit: 4915)
+     Memory: 2.1M
+        CPU: 45ms
+     CGroup: /system.slice/sshd.service
+             └─1235 "sshd: /usr/sbin/sshd -D [listener] 0 of 10-100 startups"
+```
+
+**Key indicators**:
+- `Active: active (running)` means the service is running
+- `Loaded: ... enabled` means it will start at boot
+
+### Enabling sshd at Boot
+
+To ensure SSH starts automatically when the system boots:
+
+```bash
+sudo systemctl enable sshd
+```
+
+**Output**:
+```
+Created symlink /etc/systemd/system/multi-user.target.wants/sshd.service → /lib/systemd/system/ssh.service.
+```
+
+### Verifying SSH is Listening
+
+Check that sshd is listening on port 22:
+
+```bash
+sudo ss -tlnp | grep :22
+```
+
+**Output**:
+```
+LISTEN 0      128          0.0.0.0:22        0.0.0.0:*    users:(("sshd",pid=1235,fd=3))
+LISTEN 0      128             [::]:22           [::]:*    users:(("sshd",pid=1235,fd=4))
+```
+
+**What this shows**:
+- `0.0.0.0:22` — Listening on all IPv4 interfaces
+- `[::]:22` — Listening on all IPv6 interfaces
+- `sshd` process is handling connections
+
+Alternatively, use `netstat`:
+```bash
+sudo netstat -tlnp | grep :22
+```
+
+### Firewall Configuration
+
+If you're using a firewall, you need to allow SSH connections:
+
+**On systems using firewalld** (RHEL/CentOS):
+```bash
+sudo firewall-cmd --permanent --add-service=ssh
+sudo firewall-cmd --reload
+```
+
+**On systems using ufw** (Ubuntu):
+```bash
+sudo ufw allow ssh
+sudo ufw enable
+sudo ufw status
+```
+
+**On systems using iptables**:
+```bash
+sudo iptables -A INPUT -p tcp --dport 22 -j ACCEPT
+sudo iptables-save > /etc/iptables/rules.v4
+```
+
+---
+
+## Making SSH Connections
+
+Now that the SSH server is running, let's learn how to connect to remote systems.
+
+### Basic SSH Connection Syntax
+
+```bash
+ssh username@hostname
+```
+
+**Components**:
+- `username` — The user account you want to log in as
+- `hostname` — The remote server's hostname or IP address
+
+### Connecting by Hostname
+
+If DNS is configured and the hostname resolves:
+
+```bash
+ssh john@webserver.example.com
+```
+
+**First-time connection prompt**:
+```
+The authenticity of host 'webserver.example.com (192.168.1.100)' can't be established.
+ED25519 key fingerprint is SHA256:AbCdEfGhIjKlMnOpQrStUvWxYz1234567890.
+This key is not known by any other names
+Are you sure you want to continue connecting (yes/no/[fingerprint])?
+```
+
+**What this means**:
+- SSH has never connected to this server before
+- It's showing the server's **host key fingerprint** for verification
+- Type `yes` to accept and continue
+
+**After accepting**:
+- The host key is saved to `~/.ssh/known_hosts`
+- You won't see this prompt again for this server (unless the key changes)
+
+**Then you'll be prompted for the password**:
+```
+john@webserver.example.com's password:
+```
+
+**After successful authentication**:
+```
+Welcome to Ubuntu 22.04.1 LTS (GNU/Linux 5.15.0-56-generic x86_64)
+
+Last login: Tue Dec 10 08:30:15 2025 from 192.168.1.50
+john@webserver:~$
+```
+
+### Connecting by IP Address
+
+If you know the server's IP address:
+
+```bash
+ssh john@192.168.1.100
+```
+
+This works the same way as connecting by hostname.
+
+### Connecting to localhost
+
+You can SSH to your own machine for testing:
+
+```bash
+ssh localhost
+# or
+ssh 127.0.0.1
+# or
+ssh $(whoami)@localhost
+```
+
+### Specifying a Different Port
+
+If the SSH server is running on a non-standard port:
+
+```bash
+ssh -p 2222 john@server.example.com
+```
+
+The `-p` option specifies the port number.
+
+### Running Commands Without an Interactive Shell
+
+Execute a command on the remote server and exit immediately:
+
+```bash
+ssh john@server.example.com 'uname -a'
+```
+
+**Output** (displayed locally):
+```
+Linux webserver 5.15.0-56-generic #62-Ubuntu SMP x86_64 GNU/Linux
+```
+
+**Multiple commands**:
+```bash
+ssh john@server.example.com 'cd /var/log && ls -lh syslog'
+```
+
+**Running commands with sudo**:
+```bash
+ssh john@server.example.com 'sudo systemctl status nginx'
+```
+
+### SSH with Verbose Output
+
+For troubleshooting connection issues, use verbose mode:
+
+```bash
+ssh -v john@server.example.com
+```
+
+**More verbosity**:
+```bash
+ssh -vv john@server.example.com   # Level 2
+ssh -vvv john@server.example.com  # Level 3 (maximum)
+```
+
+This shows detailed information about the connection process, authentication attempts, and any errors.
+
+---
+
+## Transferring Files with scp
+
+**scp** (Secure Copy Protocol) is a command-line tool for securely transferring files between systems using SSH.
+
+### Basic scp Syntax
+
+**Copy from local to remote**:
+```bash
+scp /local/file.txt user@remote:/remote/path/
+```
+
+**Copy from remote to local**:
+```bash
+scp user@remote:/remote/file.txt /local/path/
+```
+
+### Copying a File to Remote Server
+
+```bash
+scp document.txt john@192.168.1.100:/home/john/
+```
+
+**What happens**:
+1. scp uses SSH to authenticate (prompts for password if needed)
+2. File is encrypted and transferred
+3. File is saved to `/home/john/document.txt` on the remote server
+
+**Output**:
+```
+document.txt                    100%  1024KB   1.0MB/s   00:01
+```
+
+### Copying a File from Remote Server
+
+```bash
+scp john@192.168.1.100:/var/log/syslog ./syslog-backup
+```
+
+This downloads `/var/log/syslog` from the remote server and saves it as `./syslog-backup` locally.
+
+### Copying Directories Recursively
+
+Use the `-r` option to copy entire directories:
+
+```bash
+scp -r /local/directory/ john@server:/remote/path/
+```
+
+**Example**:
+```bash
+scp -r ~/website/ john@webserver:/var/www/html/
+```
+
+This copies the entire `website` directory and all its contents.
+
+### Preserving File Attributes
+
+The `-p` option preserves modification times, access times, and permissions:
+
+```bash
+scp -p file.txt john@server:/backups/
+```
+
+### Copying Between Two Remote Hosts
+
+You can copy files directly between two remote servers:
+
+```bash
+scp user1@server1:/path/file.txt user2@server2:/path/
+```
+
+The file is routed through your local machine.
+
+### Using Custom SSH Port with scp
+
+If the remote SSH server uses a non-standard port:
+
+```bash
+scp -P 2222 file.txt john@server:/path/
+```
+
+**Note**: scp uses uppercase `-P` (not lowercase `-p` like ssh).
+
+### Verbose Output
+
+Use `-v` for troubleshooting:
+
+```bash
+scp -v file.txt john@server:/path/
+```
+
+---
+
+## SSH Key-Based Authentication
+
+Password authentication is convenient but not ideal for automation or security. **SSH key-based authentication** is more secure and doesn't require typing passwords.
+
+### How SSH Key Authentication Works
+
+1. **Generate a key pair**: A private key (kept secret) and a public key (shared)
+2. **Copy public key to server**: The server stores your public key
+3. **Authentication**: When you connect, SSH uses cryptographic proof of your private key
+4. **No password needed**: Authentication happens automatically
+
+### Generating SSH Keys
+
+**Generate a new SSH key pair**:
+```bash
+ssh-keygen -t ed25519 -C "your_email@example.com"
+```
+
+**Output**:
+```
+Generating public/private ed25519 key pair.
+Enter file in which to save the key (/home/john/.ssh/id_ed25519):
+```
+
+**Press Enter** to accept the default location.
+
+**Passphrase prompt**:
+```
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+```
+
+**Passphrase options**:
+- **With passphrase**: More secure (password protects your private key)
+- **Without passphrase**: Convenient for automation (just press Enter)
+
+**Result**:
+```
+Your identification has been saved in /home/john/.ssh/id_ed25519
+Your public key has been saved in /home/john/.ssh/id_ed25519.pub
+The key fingerprint is:
+SHA256:AbCdEfGhIjKlMnOpQrStUvWxYz1234567890 your_email@example.com
+```
+
+**Files created**:
+- `~/.ssh/id_ed25519` — Private key (NEVER share this)
+- `~/.ssh/id_ed25519.pub` — Public key (safe to share)
+
+### Using RSA Keys (Alternative)
+
+If ed25519 isn't supported on older systems, use RSA:
+
+```bash
+ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
+```
+
+This creates `id_rsa` (private) and `id_rsa.pub` (public).
+
+### Copying Your Public Key to the Server
+
+**Method 1: Using ssh-copy-id** (easiest):
+
+```bash
+ssh-copy-id john@192.168.1.100
+```
+
+**What happens**:
+1. Prompts for password (one last time)
+2. Copies your public key to `~/.ssh/authorized_keys` on the remote server
+3. Sets correct permissions
+
+**Output**:
+```
+/usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s)
+/usr/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed
+john@192.168.1.100's password:
+
+Number of key(s) added: 1
+
+Now try logging into the machine with:   "ssh 'john@192.168.1.100'"
+and check to make sure that only the key(s) you wanted were added.
+```
+
+**Method 2: Manual copy** (if ssh-copy-id isn't available):
+
+```bash
+cat ~/.ssh/id_ed25519.pub | ssh john@192.168.1.100 'mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys && chmod 700 ~/.ssh'
+```
+
+### Testing Key-Based Authentication
+
+Now try connecting:
+
+```bash
+ssh john@192.168.1.100
+```
+
+**No password prompt!** You should be logged in automatically.
+
+**If you set a passphrase**, you'll be prompted for the passphrase (not the user's password):
+```
+Enter passphrase for key '/home/john/.ssh/id_ed25519':
+```
+
+### Benefits of SSH Key Authentication
+
+1. **More secure**: Private key is much harder to compromise than a password
+2. **Convenient**: No need to type passwords repeatedly
+3. **Automation-friendly**: Scripts can use SSH without passwords
+4. **Scalable**: One key can access multiple servers
+
+---
+
+## Basic SSH Configuration
+
+SSH behavior can be customized through configuration files.
+
+### Server Configuration: /etc/ssh/sshd_config
+
+**View the SSH server configuration**:
+```bash
+sudo cat /etc/ssh/sshd_config
+```
+
+**Common settings**:
+
+**Change the SSH port**:
+```
+Port 2222
+```
+
+**Disable root login** (security best practice):
+```
+PermitRootLogin no
+```
+
+**Disable password authentication** (require keys only):
+```
+PasswordAuthentication no
+```
+
+**Limit SSH access to specific users**:
+```
+AllowUsers john jane admin
+```
+
+**After making changes, restart sshd**:
+```bash
+sudo systemctl restart sshd
+```
+
+### Client Configuration: ~/.ssh/config
+
+Create a per-user SSH config file for convenience:
+
+```bash
+nano ~/.ssh/config
+```
+
+**Example configuration**:
+```
+Host webserver
+    HostName 192.168.1.100
+    User john
+    Port 22
+    IdentityFile ~/.ssh/id_ed25519
+
+Host database
+    HostName db.example.com
+    User dbadmin
+    Port 2222
+```
+
+**Now you can connect using the short name**:
+```bash
+ssh webserver
+# Equivalent to: ssh -i ~/.ssh/id_ed25519 john@192.168.1.100
+```
+
+**Set correct permissions**:
+```bash
+chmod 600 ~/.ssh/config
+```
+
+---
+
+## Practical Use Cases
+
+### Use Case 1: Remote Server Management
+
+**Check disk space on remote server**:
+```bash
+ssh admin@server 'df -h'
+```
+
+**Restart a service remotely**:
+```bash
+ssh admin@server 'sudo systemctl restart nginx'
+```
+
+### Use Case 2: Batch Operations Across Multiple Servers
+
+**Check uptime on multiple servers**:
+```bash
+for server in web1 web2 web3; do
+  echo "=== $server ==="
+  ssh $server 'uptime'
+done
+```
+
+### Use Case 3: Log Collection
+
+**Download logs from remote server**:
+```bash
+scp admin@server:/var/log/nginx/error.log ./logs/$(date +%Y%m%d)-error.log
+```
+
+### Use Case 4: Backup Files to Remote Server
+
+**Backup local database to remote server**:
+```bash
+mysqldump -u root -p database_name | ssh backup@backup-server 'cat > /backups/db_$(date +%Y%m%d).sql'
+```
+
+### Use Case 5: Emergency Access
+
+**SSH to a server that's having issues**:
+```bash
+ssh -vvv admin@troubled-server
+```
+
+The verbose output helps diagnose connection problems.
+
+---
+
+## Practice Labs
+
+Time to practice SSH! These labs progress from basic to advanced.
+
+### Lab 1: Check SSH Installation
+
+**Task**: Verify that SSH is installed on your system by checking for the `ssh` and `sshd` commands.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+which ssh
+which sshd
+ssh -V
+```
+
+**Expected output**:
+```
+/usr/bin/ssh
+/usr/sbin/sshd
+OpenSSH_8.9p1, OpenSSL 3.0.2 15 Mar 2022
+```
+
+If not installed, install openssh-server and openssh-client using your package manager.
+
+</details>
+
+---
+
+### Lab 2: Start and Enable SSH Service
+
+**Task**: Start the SSH daemon and enable it to start automatically at boot. Verify it's running.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+sudo systemctl start sshd
+sudo systemctl enable sshd
+sudo systemctl status sshd
+```
+
+**Expected output**:
+```
+● sshd.service - OpenBSD Secure Shell server
+     Loaded: loaded (/lib/systemd/system/ssh.service; enabled; vendor preset: enabled)
+     Active: active (running) since ...
+```
+
+Look for "active (running)" and "enabled" in the output.
+
+</details>
+
+---
+
+### Lab 3: Verify SSH is Listening
+
+**Task**: Check that sshd is listening on port 22.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+sudo ss -tlnp | grep :22
+# or
+sudo netstat -tlnp | grep :22
+```
+
+**Expected output**:
+```
+LISTEN 0      128          0.0.0.0:22        0.0.0.0:*    users:(("sshd",pid=1235,fd=3))
+```
+
+This confirms sshd is listening on port 22 for incoming connections.
+
+</details>
+
+---
+
+### Lab 4: SSH to localhost
+
+**Task**: Connect to your own machine via SSH using localhost.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+ssh localhost
+# or
+ssh $(whoami)@localhost
+```
+
+**You may see the host key verification prompt**:
+```
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+```
+
+**Then enter your password when prompted**.
+
+You should see a shell prompt indicating you're connected via SSH to your own machine.
+
+**To exit**:
+```bash
+exit
+```
+
+</details>
+
+---
+
+### Lab 5: Execute Remote Command
+
+**Task**: Use SSH to execute the `hostname` command on localhost without entering an interactive shell.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+ssh localhost 'hostname'
+```
+
+**Output**: The hostname is displayed, and you're returned to your original shell (no interactive SSH session).
+
+**Try with multiple commands**:
+```bash
+ssh localhost 'hostname && whoami && pwd'
+```
+
+</details>
+
+---
+
+### Lab 6: View SSH Configuration
+
+**Task**: View the SSH server configuration file and find the default port setting.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+sudo cat /etc/ssh/sshd_config | grep -i "^Port"
+# or if commented out:
+sudo cat /etc/ssh/sshd_config | grep -i "Port"
+```
+
+**You should see**:
+```
+#Port 22
+```
+
+The `#` means it's commented out, using the default port 22.
+
+</details>
+
+---
+
+### Lab 7: Create a Test File and Copy with scp
+
+**Task**: Create a file named `test.txt` with some content, then use scp to copy it to `/tmp/test-backup.txt` on localhost.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+echo "This is a test file" > test.txt
+scp test.txt localhost:/tmp/test-backup.txt
+```
+
+**Verify the copy**:
+```bash
+cat /tmp/test-backup.txt
+```
+
+**Output**:
+```
+This is a test file
+```
+
+</details>
+
+---
+
+### Lab 8: Copy a Directory with scp
+
+**Task**: Create a directory with a few files and use scp to copy it recursively to `/tmp/` on localhost.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+mkdir mydir
+echo "file1 content" > mydir/file1.txt
+echo "file2 content" > mydir/file2.txt
+scp -r mydir localhost:/tmp/
+```
+
+**Verify the copy**:
+```bash
+ls -l /tmp/mydir/
+cat /tmp/mydir/file1.txt
+```
+
+The entire directory structure should be copied.
+
+</details>
+
+---
+
+### Lab 9: Generate SSH Key Pair
+
+**Task**: Generate an SSH key pair using ed25519 algorithm with your email as a comment.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+ssh-keygen -t ed25519 -C "youremail@example.com"
+```
+
+**Press Enter** to accept default location (`~/.ssh/id_ed25519`).
+
+**For this lab, press Enter twice** to skip passphrase.
+
+**Verify the keys were created**:
+```bash
+ls -l ~/.ssh/id_ed25519*
+```
+
+**Output**:
+```
+-rw------- 1 user user  411 Dec 10 10:30 /home/user/.ssh/id_ed25519
+-rw-r--r-- 1 user user   99 Dec 10 10:30 /home/user/.ssh/id_ed25519.pub
+```
+
+**View your public key**:
+```bash
+cat ~/.ssh/id_ed25519.pub
+```
+
+</details>
+
+---
+
+### Lab 10: Copy SSH Public Key to localhost
+
+**Task**: Use `ssh-copy-id` to copy your public key to localhost for key-based authentication.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+ssh-copy-id localhost
+```
+
+**Enter your password when prompted**.
+
+**Output**:
+```
+Number of key(s) added: 1
+
+Now try logging into the machine with:   "ssh 'localhost'"
+```
+
+**Test key-based authentication**:
+```bash
+ssh localhost
+```
+
+You should be logged in without entering a password!
+
+</details>
+
+---
+
+### Lab 11: View Authorized Keys
+
+**Task**: View the contents of your `~/.ssh/authorized_keys` file to see the public key you just added.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+cat ~/.ssh/authorized_keys
+```
+
+**You should see your public key**, which looks like:
+```
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAbCdEfGhIjKlMnOpQrStUvWxYz youremail@example.com
+```
+
+This file contains all public keys authorized to log in as your user.
+
+</details>
+
+---
+
+### Lab 12: SSH with Verbose Output
+
+**Task**: Connect to localhost using maximum verbose output (-vvv) to see the connection details.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+ssh -vvv localhost
+```
+
+**You'll see detailed output** including:
+- SSH version negotiation
+- Key exchange algorithms
+- Authentication attempts
+- Cipher selection
+- Connection establishment
+
+**This is helpful for troubleshooting** connection issues.
+
+**Exit the SSH session**:
+```bash
+exit
+```
+
+</details>
+
+---
+
+### Lab 13: Create SSH Client Config
+
+**Task**: Create an SSH client configuration file (`~/.ssh/config`) with an alias for connecting to localhost as "local".
+
+<details>
+<summary>Solution</summary>
+
+```bash
+mkdir -p ~/.ssh
+nano ~/.ssh/config
+```
+
+**Add this content**:
+```
+Host local
+    HostName localhost
+    User your_username
+```
+
+**Replace `your_username` with your actual username** (use `whoami` to check).
+
+**Save and exit** (Ctrl+O, Enter, Ctrl+X in nano).
+
+**Set correct permissions**:
+```bash
+chmod 600 ~/.ssh/config
+```
+
+**Test the alias**:
+```bash
+ssh local
+```
+
+You should connect to localhost without specifying the full details!
+
+</details>
+
+---
+
+### Lab 14: Check SSH Connection Logs
+
+**Task**: View recent SSH authentication logs to see your connection attempts.
+
+<details>
+<summary>Solution</summary>
+
+**On Ubuntu/Debian**:
+```bash
+sudo tail -20 /var/log/auth.log | grep sshd
+```
+
+**On RHEL/CentOS**:
+```bash
+sudo tail -20 /var/log/secure | grep sshd
+```
+
+**You should see entries like**:
+```
+Dec 10 10:30:15 hostname sshd[12345]: Accepted publickey for john from 127.0.0.1 port 54321
+Dec 10 10:30:15 hostname sshd[12345]: pam_unix(sshd:session): session opened for user john
+```
+
+This shows successful SSH connections using public key authentication.
+
+</details>
+
+---
+
+### Lab 15: Find SSH Server Process
+
+**Task**: Find the running SSH daemon process and display its details.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+ps aux | grep sshd | grep -v grep
+# or
+pgrep -a sshd
+```
+
+**Expected output**:
+```
+1235 /usr/sbin/sshd -D
+```
+
+**For more details**:
+```bash
+sudo systemctl status sshd
+```
+
+</details>
+
+---
+
+### Lab 16: Copy File from Remote to Local
+
+**Task**: Create a file in `/tmp/remote-file.txt` with some content, then use scp to copy it from "localhost" (simulating a remote server) to your current directory as `local-copy.txt`.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+echo "Remote file content" > /tmp/remote-file.txt
+scp localhost:/tmp/remote-file.txt ./local-copy.txt
+cat local-copy.txt
+```
+
+**Output**:
+```
+Remote file content
+```
+
+</details>
+
+---
+
+### Lab 17: Preserve File Permissions with scp
+
+**Task**: Create a script file with execute permissions, then copy it to `/tmp/` using scp with the `-p` flag to preserve permissions.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+echo '#!/bin/bash' > script.sh
+echo 'echo "Hello from script"' >> script.sh
+chmod +x script.sh
+ls -l script.sh
+```
+
+**Before copying, check permissions**:
+```
+-rwxr-xr-x 1 user user ... script.sh
+```
+
+**Copy with preservation**:
+```bash
+scp -p script.sh localhost:/tmp/
+```
+
+**Check permissions on the copied file**:
+```bash
+ls -l /tmp/script.sh
+```
+
+**Permissions should be preserved**:
+```
+-rwxr-xr-x 1 user user ... /tmp/script.sh
+```
+
+</details>
+
+---
+
+### Lab 18: Disable Root Login (Safety Check Only)
+
+**Task**: View the SSH configuration to check if root login is permitted, but **do not disable it** (for safety on your own system).
+
+<details>
+<summary>Solution</summary>
+
+```bash
+sudo grep -i "PermitRootLogin" /etc/ssh/sshd_config
+```
+
+**You might see**:
+```
+#PermitRootLogin prohibit-password
+```
+
+**What this means**:
+- `#` = commented out (using default behavior)
+- `prohibit-password` = root can login with SSH keys, but not with password
+- `yes` = root can login with password (less secure)
+- `no` = root cannot login at all (most secure)
+
+**Best practice**: Set to `no` or `prohibit-password` in production environments.
+
+**Don't change this in the lab** unless you're sure you have other user accounts with sudo access!
+
+</details>
+
+---
+
+### Lab 19: Execute Multiple Commands Remotely
+
+**Task**: Use SSH to execute multiple commands on localhost in one connection: display the current directory, list files, and show disk usage.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+ssh localhost 'pwd && ls -lh && df -h /'
+```
+
+**Output shows**:
+1. Current working directory
+2. Files in that directory
+3. Disk usage for root filesystem
+
+All executed in a single SSH connection.
+
+</details>
+
+---
+
+### Lab 20: Create a Simple Remote Backup Script
+
+**Task**: Create a simple bash script that uses scp to backup a file from your current directory to `/tmp/backups/` on localhost with a timestamp.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+nano backup.sh
+```
+
+**Add this content**:
+```bash
+#!/bin/bash
+
+FILE_TO_BACKUP="$1"
+TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+BACKUP_DIR="/tmp/backups"
+
+# Create backup directory if it doesn't exist
+ssh localhost "mkdir -p $BACKUP_DIR"
+
+# Copy file with timestamp
+scp "$FILE_TO_BACKUP" "localhost:$BACKUP_DIR/${FILE_TO_BACKUP}.${TIMESTAMP}"
+
+echo "Backed up $FILE_TO_BACKUP to localhost:$BACKUP_DIR/"
+```
+
+**Save and make executable**:
+```bash
+chmod +x backup.sh
+```
+
+**Test it**:
+```bash
+echo "Important data" > important.txt
+./backup.sh important.txt
+```
+
+**Verify the backup**:
+```bash
+ls -lh /tmp/backups/
+cat /tmp/backups/important.txt.*
+```
+
+</details>
+
+---
+
+## Best Practices
+
+### 1. Always Use SSH, Never Telnet
+
+SSH encrypts all traffic. Telnet transmits in plain text and should never be used in production.
+
+### 2. Use Key-Based Authentication
+
+SSH keys are more secure than passwords and enable automation:
+
+```bash
+ssh-keygen -t ed25519
+ssh-copy-id user@server
+```
+
+### 3. Disable Root Login
+
+Edit `/etc/ssh/sshd_config`:
+```
+PermitRootLogin no
+```
+
+Require users to log in with their accounts and use `sudo` for admin tasks.
+
+### 4. Use Non-Standard Ports (Security Through Obscurity)
+
+Change the default port to reduce automated attack attempts:
+```
+Port 2222
+```
+
+**Note**: This isn't a substitute for proper security, but it reduces noise from bots.
+
+### 5. Limit SSH Access by User
+
+Only allow specific users to SSH:
+```
+AllowUsers john jane admin
+```
+
+### 6. Use Firewall Rules
+
+Limit SSH access to specific IP addresses:
+```bash
+sudo ufw allow from 192.168.1.0/24 to any port 22
+```
+
+### 7. Keep SSH Updated
+
+Regularly update OpenSSH to get security patches:
+```bash
+sudo apt update && sudo apt upgrade openssh-server
+```
+
+### 8. Use SSH Config for Convenience
+
+Create `~/.ssh/config` to simplify connections:
+```
+Host prod
+    HostName production.example.com
+    User admin
+    Port 2222
+    IdentityFile ~/.ssh/prod_key
+```
+
+Then just use: `ssh prod`
+
+### 9. Monitor SSH Logs
+
+Regularly check authentication logs for suspicious activity:
+```bash
+sudo tail -f /var/log/auth.log
+```
+
+### 10. Use fail2ban for Brute Force Protection
+
+Install fail2ban to automatically block repeated failed login attempts:
+```bash
+sudo apt install fail2ban
+```
+
+---
+
+## Common Pitfalls
+
+### 1. Firewall Blocking SSH
+
+**Symptom**: Connection timeout when trying to connect.
+
+**Fix**: Ensure firewall allows port 22:
+```bash
+sudo ufw allow ssh
+```
+
+### 2. SSH Service Not Running
+
+**Symptom**: Connection refused.
+
+**Fix**: Start the SSH service:
+```bash
+sudo systemctl start sshd
+```
+
+### 3. Wrong Permissions on SSH Keys
+
+**Symptom**: Key-based authentication fails with "permissions are too open" error.
+
+**Fix**: Set correct permissions:
+```bash
+chmod 700 ~/.ssh
+chmod 600 ~/.ssh/id_ed25519
+chmod 644 ~/.ssh/id_ed25519.pub
+chmod 600 ~/.ssh/authorized_keys
+```
+
+### 4. Host Key Verification Failed
+
+**Symptom**: "WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!"
+
+**Cause**: Server's host key changed (server was reinstalled or man-in-the-middle attack).
+
+**Fix** (if you know the change is legitimate):
+```bash
+ssh-keygen -R hostname
+```
+
+### 5. Using Wrong Username
+
+**Symptom**: Permission denied (publickey,password).
+
+**Fix**: Verify the correct username on the remote system.
+
+### 6. Forgetting to Copy Public Key
+
+**Symptom**: Key-based authentication doesn't work.
+
+**Fix**: Ensure your public key is in `~/.ssh/authorized_keys` on the server:
+```bash
+ssh-copy-id user@server
+```
+
+### 7. Confusing -p (ssh) with -P (scp)
+
+- `ssh -p 2222` (lowercase) for custom port
+- `scp -P 2222` (uppercase) for custom port
+
+---
+
+## SSH Command Cheat Sheet
+
+| Command | Description | Example |
+|---------|-------------|---------|
+| `ssh user@host` | Connect to remote server | `ssh john@192.168.1.100` |
+| `ssh -p PORT` | Connect on custom port | `ssh -p 2222 john@server` |
+| `ssh user@host 'cmd'` | Execute remote command | `ssh john@server 'uptime'` |
+| `ssh -v` | Verbose output (debugging) | `ssh -v john@server` |
+| `scp file user@host:/path` | Copy file to remote | `scp file.txt john@server:/tmp/` |
+| `scp user@host:/path file` | Copy file from remote | `scp john@server:/tmp/file.txt .` |
+| `scp -r dir user@host:/path` | Copy directory recursively | `scp -r mydir john@server:/tmp/` |
+| `scp -P PORT` | scp with custom port | `scp -P 2222 file.txt john@server:/tmp/` |
+| `ssh-keygen` | Generate SSH key pair | `ssh-keygen -t ed25519` |
+| `ssh-copy-id user@host` | Copy public key to server | `ssh-copy-id john@server` |
+| `systemctl status sshd` | Check SSH service status | `sudo systemctl status sshd` |
+| `systemctl start sshd` | Start SSH service | `sudo systemctl start sshd` |
+| `systemctl enable sshd` | Enable SSH at boot | `sudo systemctl enable sshd` |
+| `ss -tlnp \| grep :22` | Check if SSH is listening | `sudo ss -tlnp \| grep :22` |
+
+---
+
+## Key Takeaways
+
+1. **SSH is the standard** for secure remote access to Linux systems
+2. **Never use Telnet** in production—it's completely insecure (plain text)
+3. **sshd is the server** (daemon), **ssh is the client** for making connections
+4. **Install SSH** with `openssh-server` and `openssh-client` packages
+5. **Start and enable sshd** with systemctl to allow incoming connections
+6. **Connect with** `ssh username@hostname` or `ssh username@ip-address`
+7. **scp transfers files** securely over SSH with syntax similar to cp
+8. **SSH keys are more secure** than passwords and enable automation
+9. **Generate keys with** `ssh-keygen` and copy with `ssh-copy-id`
+10. **Configure SSH** via `/etc/ssh/sshd_config` (server) and `~/.ssh/config` (client)
+
+---
+
+## What's Next?
+
+You've mastered SSH for remote server access! In the next post, we'll explore **Accessing Linux from Windows with MobaXterm**—a powerful SSH client for Windows that combines terminal access, X11 forwarding, file transfer, and more in one convenient package.
+
+**Coming up**:
+- Installing and configuring MobaXterm
+- Creating and managing SSH sessions
+- Built-in SFTP file browser
+- X11 forwarding for GUI applications
+- Split-screen terminal sessions
+- MobaXterm vs other Windows SSH clients
+
+Keep practicing SSH, and see you in the next post!
+
+---
+
+**Previous Post**: [LFCS Part 41: Mastering sed Stream Editor](/blog/2026-01-01_lfcs-phase1-part-41-sed-stream-editor)
+
+**Next Post**: LFCS Part 43: Accessing Linux from Windows with MobaXterm *(Coming Soon)*

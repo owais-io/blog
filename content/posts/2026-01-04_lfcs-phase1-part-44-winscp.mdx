@@ -1,0 +1,2040 @@
+---
+title: "LFCS Part 44: File Transfer with WinSCP"
+description: "Master WinSCP for secure file transfers between Windows and Linux. Learn to install WinSCP, use Commander and Explorer interfaces, transfer files with drag-and-drop, synchronize directories, edit remote files, and automate transfers with scripting."
+date: 2026-01-04
+tags: ["Linux", "LFCS", "WinSCP", "SFTP", "SCP", "file transfer", "Windows", "remote access", "certification"]
+published: true
+author: "Owais"
+categories: ["Linux", "LFCS Certification"]
+series: "LFCS Certification - Phase 1"
+seriesOrder: 44
+---
+
+Welcome back to the **LFCS Certification - Phase 1** series! In our previous posts, we explored SSH remote access (Post 42) and MobaXterm for Windows (Post 43). Now we're going to learn about **WinSCP**—a dedicated Windows application specifically designed for secure file transfers between Windows and Linux systems.
+
+While MobaXterm combines terminal access with file transfer, WinSCP focuses exclusively on file management. It provides a powerful, graphical interface for SFTP and SCP transfers with features like directory synchronization, drag-and-drop operations, integrated text editing, and automation capabilities—making it an essential tool for Windows users who frequently transfer files to and from Linux servers.
+
+## What is WinSCP?
+
+**WinSCP** (Windows Secure Copy) is a free, open-source SFTP, SCP, and FTP client for Windows. It was developed by Martin Přikryl and has been the go-to file transfer tool for Windows administrators since 2000.
+
+### Key Features of WinSCP
+
+WinSCP stands out with these features:
+
+1. **Graphical File Management**: Windows Explorer-like interface for remote files
+2. **Multiple Interface Modes**: Commander (dual-pane) and Explorer (single-pane) views
+3. **Drag-and-Drop Support**: Easy file transfers between Windows and Linux
+4. **Directory Synchronization**: Keep local and remote directories in sync
+5. **Integrated Text Editor**: Edit remote files directly
+6. **Batch Operations**: Transfer multiple files and folders efficiently
+7. **Scripting and Automation**: Command-line interface for automated transfers
+8. **Session Management**: Save and organize connection profiles
+9. **Transfer Queue**: Monitor and manage ongoing transfers
+10. **File Comparison**: Compare local and remote files before syncing
+
+### Why WinSCP Matters for System Administrators
+
+As a system administrator, WinSCP provides:
+
+**Specialized file transfer**: Focused on managing files, not terminal access
+```
+Windows ←→ WinSCP ←→ Linux Server
+  ↓           ↓            ↓
+Drag &     Queue &      SFTP/SCP
+Drop       Monitor      Protocol
+```
+
+**Visual comparison**: See differences between local and remote files
+```
+Local Directory    |    Remote Directory
+file1.txt (old)    |    file1.txt (new)
+file2.txt (same)   |    file2.txt (same)
+file3.txt (only)   |    [missing]
+```
+
+**Synchronization**: Automated directory syncing
+```
+Keep Remote Directory Up-To-Date
+Local changes → Automatically sync → Remote server
+```
+
+**Batch automation**: Script file transfers for scheduled tasks
+```
+winscp.com /script=backup.txt
+→ Automated nightly backups
+```
+
+WinSCP is completely free, widely trusted, and integrates seamlessly with Windows workflows.
+
+---
+
+## Downloading and Installing WinSCP
+
+WinSCP is available for free download from the official website.
+
+### Downloading WinSCP
+
+**Step 1**: Visit the official website
+```
+https://winscp.net/
+```
+
+**Step 2**: Click the large "Download" button
+
+**Step 3**: Choose download type:
+- **Installation package** (recommended) - Traditional Windows installer
+- **Portable executable** - No installation required, runs from a folder
+
+**Download size**: Approximately 10-12 MB
+
+### Installation Steps
+
+**For Installation Package**:
+
+1. **Run the installer** (`WinSCP-5.x-Setup.exe`)
+
+2. **User Account Control**: Click "Yes" to allow
+
+3. **License Agreement**: Accept the GPL license (click "Accept")
+
+4. **Setup Type**: Choose your preference:
+   - **Typical installation** (recommended) - Standard features
+   - **Custom installation** - Choose components
+   - **Full installation** - All components including help files
+
+5. **User Interface Style**: Choose initial interface mode:
+   - **Commander** (recommended) - Dual-pane view (like Norton Commander)
+   - **Explorer** - Single-pane view (like Windows Explorer)
+
+   *You can change this later in preferences*
+
+6. **Installation location**:
+   - Default: `C:\Program Files (x86)\WinSCP\`
+   - Or choose custom location
+
+7. **Additional tasks**: Select options:
+   - Create desktop icon ✓
+   - Add to Start Menu ✓
+   - Add to Send To menu (optional)
+   - Add to context menu (optional)
+
+8. **Install**: Click "Install" to begin
+
+9. **Completion**: Click "Finish" to launch WinSCP
+
+**For Portable Version**:
+
+1. **Extract the ZIP file** to a folder of your choice
+
+2. **Run `WinSCP.exe`** directly
+
+3. **No installation required** - can run from USB drive
+
+### First Launch
+
+When you launch WinSCP for the first time:
+
+**Login dialog** appears immediately:
+- This is where you create and manage connections
+- You'll see a list of saved sessions (initially empty)
+- Multiple connection protocols available (SFTP, SCP, FTP, WebDAV)
+
+**Initial configuration** (if prompted):
+- Choose whether to check for updates automatically
+- Accept or customize default settings
+
+---
+
+## WinSCP Interface Modes
+
+WinSCP offers two interface modes to suit different preferences.
+
+### Commander Interface (Dual-Pane)
+
+**Layout**:
+```
+┌─────────────────┬─────────────────┐
+│  Local Files    │  Remote Files   │
+│  (Windows)      │  (Linux)        │
+│                 │                 │
+│  C:\Users\      │  /home/user/    │
+│  Documents      │  Documents      │
+│                 │                 │
+└─────────────────┴─────────────────┘
+      [Transfer Queue Below]
+```
+
+**Features**:
+- **Left pane**: Local Windows filesystem
+- **Right pane**: Remote Linux filesystem (when connected)
+- **Side-by-side comparison**: Easy visual file comparison
+- **Toolbar in middle**: Quick access to common operations
+- **Transfer queue at bottom**: Shows ongoing transfers
+
+**Best for**: Users familiar with Norton Commander, Total Commander, or similar dual-pane file managers
+
+### Explorer Interface (Single-Pane)
+
+**Layout**:
+```
+┌─────────────────────────────────┐
+│  Remote Files (Linux Server)    │
+│                                 │
+│  /home/user/                    │
+│  Documents                      │
+│  Downloads                      │
+│                                 │
+└─────────────────────────────────┘
+      [Transfer Queue Below]
+```
+
+**Features**:
+- **Single pane**: Shows remote files only
+- **Windows Explorer-like**: Familiar to Windows users
+- **Drag files from Windows**: Drop them into WinSCP to upload
+- **Simpler interface**: Less cluttered for basic operations
+
+**Best for**: Users who prefer Windows Explorer's look and feel
+
+### Switching Between Interfaces
+
+You can switch at any time:
+
+**Options → Preferences → Environment → Interface**
+
+Select:
+- **Commander interface**
+- **Explorer interface**
+
+Click **OK** and restart WinSCP for changes to take effect.
+
+---
+
+## Connecting to a Linux Server
+
+Let's create your first connection to a remote Linux server.
+
+### Creating a New Connection
+
+**Step 1: Open the Login Dialog**
+
+When you launch WinSCP, the login dialog appears automatically.
+
+If it's closed, click **Session → New Session** (or press Ctrl+N)
+
+**Step 2: Choose Protocol**
+
+In the "File protocol" dropdown:
+- **SFTP** (default, recommended) - Secure FTP over SSH
+- **SCP** - Secure Copy Protocol
+- **FTP** - Standard FTP (not encrypted, not recommended)
+- **WebDAV** - Web-based file transfer
+- **S3** - Amazon S3 storage
+
+**For Linux servers, use SFTP** (most compatible and secure)
+
+**Step 3: Enter Server Details**
+
+Fill in the connection details:
+
+**Host name**:
+```
+192.168.1.100
+```
+Or:
+```
+server.example.com
+```
+
+**Port number**:
+```
+22
+```
+(Default SSH/SFTP port)
+
+**User name**:
+```
+john
+```
+
+**Password**:
+```
+your_password
+```
+(Or leave blank if using SSH keys)
+
+**Step 4: Advanced Options (Optional)**
+
+Click **Advanced** button for additional settings:
+
+**SSH → Authentication**:
+- **Private key file**: Browse to your SSH private key (`.ppk` format)
+- **Allow agent forwarding**: For using SSH agent
+
+**SSH → Tunneling**:
+- Configure SSH tunnels if needed
+
+**Environment → Directories**:
+- **Remote directory**: Starting directory on server (default: home)
+- **Local directory**: Starting directory on Windows
+
+**Transfer → Endurance**:
+- **Enable transfer resume**: Resume interrupted transfers
+- **Preserve timestamp**: Keep original file modification times
+
+**Step 5: Save Session**
+
+Before connecting, save the session for future use:
+
+1. Click **Save** button
+2. Enter **Site name**: "Production Web Server" (or descriptive name)
+3. Optionally create a **Desktop icon**
+4. Click **OK**
+
+**Step 6: Connect**
+
+Click **Login** button to connect.
+
+### First Connection Experience
+
+**Host Key Verification**:
+
+On first connection, you'll see:
+```
+The server's host key was not found in the cache.
+You have no guarantee that the server is the computer you think it is.
+
+Server's host key fingerprint:
+ssh-ed25519 255 xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx
+
+If you trust this host, press "Yes".
+```
+
+**Options**:
+- **Yes** - Connect once, don't save the key
+- **No** - Abort connection
+- **Cancel** - Cancel connection
+- **Copy Key Fingerprint** - Copy for verification
+- **Save** (add to cache) - Trust this key permanently
+
+**Recommended**: Click **Yes** (or Add if you want to save the key)
+
+**After Successful Connection**:
+
+**Commander mode** shows:
+- **Left pane**: Your Windows files (e.g., `C:\Users\YourName\Documents`)
+- **Right pane**: Linux server files (e.g., `/home/john/`)
+- **Status bar**: Shows connection status and transfer info
+
+**Explorer mode** shows:
+- **Main window**: Linux server files
+- **Address bar**: Current remote path
+
+---
+
+## Transferring Files
+
+WinSCP makes file transfers intuitive with multiple methods.
+
+### Uploading Files to Linux Server
+
+**Method 1: Drag and Drop** (Easiest)
+
+**Commander interface**:
+- Select file(s) in left pane (Windows)
+- Drag them to the right pane (Linux)
+- Drop to upload
+
+**Explorer interface**:
+- Open Windows Explorer alongside WinSCP
+- Drag files from Windows Explorer
+- Drop into WinSCP window
+
+**Method 2: Copy and Paste**
+
+1. Select file(s) in local pane (Windows)
+2. Press **Ctrl+C** to copy
+3. Click in remote pane (Linux)
+4. Press **Ctrl+V** to paste (upload)
+
+**Method 3: Upload Button**
+
+1. Select file(s) in local pane
+2. Click **Upload** button (or press F5)
+3. Confirm destination path
+4. Click **OK**
+
+**Method 4: Context Menu**
+
+1. Right-click file(s) in local pane
+2. Select **Upload**
+3. Choose destination
+
+### Downloading Files from Linux Server
+
+**Method 1: Drag and Drop**
+
+**Commander interface**:
+- Select file(s) in right pane (Linux)
+- Drag them to the left pane (Windows)
+- Drop to download
+
+**Method 2: Download Button**
+
+1. Select file(s) in remote pane (Linux)
+2. Click **Download** button (or press F5)
+3. Confirm destination path
+4. Click **OK**
+
+**Method 3: Copy and Paste**
+
+1. Select file(s) in remote pane
+2. Press **Ctrl+C**
+3. Click in local pane
+4. Press **Ctrl+V** to paste (download)
+
+### Transfer Progress and Queue
+
+When transferring files, the **Transfer Queue** appears at the bottom:
+
+**Information shown**:
+- **File name**: Current file being transferred
+- **Progress bar**: Visual progress indicator
+- **Speed**: Transfer rate (KB/s, MB/s)
+- **Time remaining**: Estimated time to completion
+- **Queue**: Other pending transfers
+
+**Queue controls**:
+- **Pause**: Temporarily stop transfer
+- **Resume**: Continue paused transfer
+- **Abort**: Cancel transfer
+- **Show details**: View detailed transfer log
+
+### Transferring Directories
+
+**Upload entire directory**:
+1. Select folder in local pane
+2. Drag to remote pane (or press F5)
+3. WinSCP automatically transfers all contents recursively
+
+**Download entire directory**:
+1. Select folder in remote pane
+2. Drag to local pane (or press F5)
+3. All contents are downloaded
+
+**Confirmation dialog** shows:
+- Transfer mode (text/binary/automatic)
+- Number of files
+- Total size
+- Options to preserve timestamps, permissions
+
+---
+
+## Directory Synchronization
+
+One of WinSCP's most powerful features is automatic directory synchronization.
+
+### Opening the Synchronization Dialog
+
+**Commands → Synchronize** (or press Ctrl+S)
+
+The "Synchronize" dialog opens.
+
+### Synchronization Modes
+
+**Synchronize**:
+- Keeps two directories identical
+- Compares files by size and timestamp
+- Copies new/modified files in both directions
+
+**Keep remote directory up to date**:
+- Makes remote match local (one-way sync)
+- Monitors local directory for changes
+- Automatically uploads new/modified files
+- **Use case**: Continuous deployment of website files
+
+**Keep local directory up to date**:
+- Makes local match remote (one-way sync)
+- Monitors remote directory for changes
+- Automatically downloads new/modified files
+- **Use case**: Backup server files to local PC
+
+### Synchronization Options
+
+**Direction**:
+- **Both**: Synchronize both directions (most common)
+- **Local**: Only upload changes to server
+- **Remote**: Only download changes from server
+
+**Comparison criteria**:
+- **Modification time**: Compare file timestamps (default)
+- **Size**: Compare file sizes
+- **Either**: File differs if time OR size is different
+
+**Options**:
+- **Delete files**: Remove files that don't exist on the other side
+- **Existing files only**: Don't copy new files, only update existing ones
+- **Preview changes**: Show what will be changed before applying
+- **Synchronize selected files**: Only sync selected files/folders
+
+### Performing Synchronization
+
+**Step 1**: Set synchronization mode and options
+
+**Step 2**: Click **OK** (or **Preview changes** to see what will happen)
+
+**Step 3**: Review the preview:
+```
+Direction  File            Status
+→          file1.txt       Upload (local is newer)
+←          file2.txt       Download (remote is newer)
+×          file3.txt       Delete from remote
+=          file4.txt       Up to date
+```
+
+**Step 4**: Uncheck any files you don't want to sync
+
+**Step 5**: Click **OK** to execute synchronization
+
+**Result**: Directories are now synchronized
+
+### Keep Remote Directory Up to Date (Auto-Sync)
+
+This mode continuously monitors the local directory and uploads changes automatically.
+
+**Use case**: Web development - local changes instantly uploaded to server
+
+**How to use**:
+1. **Commands → Keep Remote Directory up to Date**
+2. Choose local and remote directories
+3. Set options (which files to sync, etc.)
+4. Click **Start**
+
+**WinSCP stays running** and monitors for changes:
+- Create new file locally → Automatically uploaded
+- Modify existing file → Automatically updated on server
+- Delete file locally → Automatically deleted on server (if enabled)
+
+**Status window** shows:
+- Monitoring status
+- Recent changes detected and uploaded
+- Transfer log
+
+**Stop monitoring**: Click **Stop** button
+
+---
+
+## Editing Remote Files
+
+WinSCP allows you to edit files on the remote server directly from Windows.
+
+### Opening Remote Files for Editing
+
+**Method 1: Double-click**
+
+- Double-click any text file in the remote pane
+- File opens in your default text editor (Notepad, Notepad++, etc.)
+
+**Method 2: Context menu**
+
+1. Right-click file
+2. Select **Edit** (or press F4)
+3. File opens in editor
+
+**Method 3: Specific editor**
+
+1. Right-click file
+2. **Edit → Edit with → [Choose Editor]**
+3. Opens with selected application
+
+### How Remote Editing Works
+
+**Behind the scenes**:
+1. **Download**: WinSCP downloads file to temporary location on Windows
+2. **Edit**: File opens in your text editor
+3. **Monitor**: WinSCP watches the temporary file for changes
+4. **Upload**: When you save, WinSCP automatically uploads the modified file back to server
+5. **Cleanup**: Temporary file is deleted when editor closes
+
+**Status indicator**:
+- **While editing**: File is marked as "being edited"
+- **After save**: Status shows "uploaded"
+
+### Configuring Text Editors
+
+**Options → Preferences → Editors**
+
+**Add or edit editors**:
+
+**Internal editor**:
+- WinSCP's built-in basic text editor
+- Good for quick edits
+
+**External editor**:
+- Notepad++ (recommended for Windows)
+- Sublime Text
+- Visual Studio Code
+- Vim/Emacs for Windows
+- Any text editor you prefer
+
+**Configure editor**:
+1. Click **Add** to add new editor
+2. **External editor**: Browse to executable (e.g., `notepad++.exe`)
+3. Set as **default editor** if desired
+4. Configure for specific file types (e.g., `.conf`, `.php`, `.py`)
+
+**Recommended**: Install Notepad++ and set it as default editor for better syntax highlighting and features.
+
+---
+
+## Session Management
+
+WinSCP makes it easy to save and organize multiple server connections.
+
+### Saving Sessions
+
+**When creating a connection**:
+1. Enter connection details
+2. Click **Save** button
+3. Enter **Site name**: Descriptive name for this connection
+4. Click **OK**
+
+**Session is saved** and appears in the session list for future use.
+
+### Organizing Sessions with Folders
+
+**Create folders** to organize connections:
+
+1. In login dialog, click **New Site** dropdown → **New Folder**
+2. Name the folder (e.g., "Production Servers", "Development")
+3. Click **OK**
+
+**Move sessions into folders**:
+- Drag and drop sessions onto folders
+- Or edit session and change **Folder** field
+
+**Example organization**:
+```
+📁 Production
+  ├─ Web Server 1
+  ├─ Web Server 2
+  └─ Database Server
+📁 Development
+  ├─ Dev Server
+  └─ Test Server
+📁 Personal
+  └─ Home Lab
+```
+
+### Editing Saved Sessions
+
+1. In login dialog, select saved session
+2. Click **Edit** button
+3. Modify connection settings
+4. Click **Save** to update
+
+### Duplicating Sessions
+
+**Copy an existing session**:
+1. Select session
+2. Click **Duplicate** button
+3. Modify name and settings as needed
+4. Click **Save**
+
+**Use case**: Create variations of similar servers (e.g., different ports or users)
+
+### Exporting and Importing Sessions
+
+**Export sessions** (backup):
+1. **Tools → Export/Backup Configuration**
+2. Choose what to export (sessions, settings, etc.)
+3. Select destination
+4. Save `.ini` file
+
+**Import sessions** (restore):
+1. **Tools → Import/Restore Configuration**
+2. Select the `.ini` file
+3. Choose what to import
+4. Sessions are restored
+
+---
+
+## File Operations
+
+WinSCP supports comprehensive file and directory operations.
+
+### Creating Directories
+
+**Remote server**:
+1. Navigate to parent directory
+2. Click **New → Directory** (or press F7)
+3. Enter directory name
+4. Set permissions (optional)
+5. Click **OK**
+
+### Renaming Files and Directories
+
+**Method 1**:
+1. Select file/directory
+2. Press **F2**
+3. Enter new name
+4. Press **Enter**
+
+**Method 2**:
+1. Right-click file/directory
+2. Select **Rename**
+3. Enter new name
+
+### Deleting Files and Directories
+
+**Select files** to delete
+
+**Press Delete key** or right-click → **Delete**
+
+**Confirmation dialog** appears:
+- Shows files to be deleted
+- Option to move to Recycle Bin (if available)
+- **Permanent deletion** on remote server
+
+Click **Delete** to confirm.
+
+**Caution**: Deleted remote files cannot be recovered from Windows Recycle Bin!
+
+### Changing Permissions (chmod)
+
+**Linux file permissions** can be modified:
+
+1. Right-click file/directory
+2. Select **Properties** (or press F9)
+3. **Permissions tab** shows:
+   - Owner, Group, Others permissions
+   - Read, Write, Execute checkboxes
+   - Octal notation (e.g., 644, 755)
+
+**Modify permissions**:
+- Check/uncheck boxes for Read, Write, Execute
+- Or type octal value directly (e.g., `755`)
+- **Recursive**: Apply to all files in directory
+
+Click **OK** to apply.
+
+### File Comparison
+
+**Compare local and remote files**:
+
+**Commands → Compare Directories**
+
+**Result**:
+- Files are color-coded:
+  - **Yellow**: Different (size or timestamp mismatch)
+  - **Green**: Unique to one side
+  - **White**: Identical
+
+**Actions**:
+- Synchronize to update differing files
+- Manually transfer specific files
+
+---
+
+## Transfer Settings
+
+Customize how WinSCP handles file transfers.
+
+### Transfer Mode
+
+**Options → Preferences → Transfer → Transfer Mode**
+
+**Automatic** (recommended):
+- WinSCP detects file type
+- Text files: Converts line endings (CRLF ↔ LF)
+- Binary files: Transfers as-is
+
+**Text**:
+- Forces text mode
+- Converts line endings
+- Use for scripts, configs, text files
+
+**Binary**:
+- No conversion
+- Use for images, executables, archives
+
+### File Masks
+
+**Specify which files to transfer**:
+
+**Commands → Synchronize → File mask**
+
+**Examples**:
+- `*.txt` - Only text files
+- `*.php; *.html` - PHP and HTML files
+- `*.*` - All files
+- `*.jpg; *.png` - Images only
+
+**Exclude patterns**:
+- `| *.bak` - Exclude backup files
+- `| .git/` - Exclude Git directory
+
+### Speed Limits
+
+**Limit transfer speed** to avoid saturating bandwidth:
+
+**Options → Preferences → Transfer → Connection**
+
+**Speed limit**:
+- Set maximum upload/download speed
+- Useful on shared networks
+- Measured in KB/s
+
+### Resume Support
+
+**Enable transfer resume** for large files:
+
+**Options → Preferences → Transfer → Endurance → Enable transfer resume/transfer to temporary filename**
+
+**Benefits**:
+- Resume interrupted transfers
+- Don't re-upload entire large files
+- Handles connection drops gracefully
+
+---
+
+## Scripting and Automation
+
+WinSCP provides a command-line interface for automated file transfers.
+
+### WinSCP Command-Line Tool
+
+**winscp.com** - Console version for scripting
+
+**Location**: Same directory as WinSCP.exe
+
+### Basic Script Syntax
+
+Create a text file (e.g., `backup.txt`) with commands:
+
+```
+open sftp://user:password@server.example.com
+cd /path/to/remote/directory
+lcd C:\local\directory
+get *.txt
+exit
+```
+
+**Run the script**:
+```cmd
+"C:\Program Files (x86)\WinSCP\winscp.com" /script=backup.txt
+```
+
+### Script Commands
+
+Common commands for scripts:
+
+**Connection**:
+- `open sftp://user@host` - Connect to server
+- `close` - Disconnect
+
+**Navigation**:
+- `cd /remote/path` - Change remote directory
+- `lcd C:\local\path` - Change local directory
+- `pwd` - Show current remote directory
+
+**Transfer**:
+- `get file.txt` - Download file
+- `put file.txt` - Upload file
+- `get *.txt` - Download all matching files
+- `put -delete *.log` - Upload and delete local files after
+
+**Synchronization**:
+- `synchronize remote C:\local /remote/path` - Sync directories
+
+**File operations**:
+- `rm file.txt` - Delete remote file
+- `mv old.txt new.txt` - Rename remote file
+- `mkdir newdir` - Create directory
+
+**Exit**:
+- `exit` - Close WinSCP
+
+### Example: Automated Backup Script
+
+**backup-to-server.txt**:
+```
+option batch abort
+option confirm off
+open sftp://backupuser@backup.example.com
+cd /backups/daily
+lcd C:\important-files
+put -delete *.*
+exit
+```
+
+**Schedule with Windows Task Scheduler**:
+```cmd
+winscp.com /script=backup-to-server.txt /log=backup.log
+```
+
+**Result**: Automated daily backups to remote server.
+
+### Using SSH Keys in Scripts
+
+**For key-based authentication**:
+
+```
+open sftp://user@host -privatekey="C:\path\to\key.ppk"
+```
+
+**Generate .ppk key**:
+- Use PuTTYgen (included with WinSCP)
+- Convert OpenSSH keys to .ppk format
+
+### Logging
+
+**Enable logging** for troubleshooting:
+
+```cmd
+winscp.com /script=backup.txt /log=transfer.log
+```
+
+**Log file** contains:
+- All commands executed
+- Server responses
+- Errors and warnings
+- Transfer statistics
+
+---
+
+## Best Practices
+
+### 1. Always Use SFTP Over SCP
+
+SFTP is more reliable and feature-rich than SCP.
+
+**Connection settings**: Choose "SFTP" as protocol.
+
+### 2. Save Sessions with Descriptive Names
+
+Use clear, descriptive session names:
+- ✓ "Production Web Server (192.168.1.100)"
+- ✗ "Server1"
+
+### 3. Use SSH Keys Instead of Passwords
+
+More secure and enables automation:
+
+1. Generate SSH key pair (use PuTTYgen)
+2. Copy public key to Linux server (`~/.ssh/authorized_keys`)
+3. In WinSCP session settings: Advanced → SSH → Authentication → Private key file
+
+### 4. Enable Transfer Resume
+
+For large files or unreliable connections:
+
+**Options → Preferences → Transfer → Endurance → Enable transfer resume**
+
+### 5. Preview Before Synchronizing
+
+Always preview synchronization changes:
+
+**Commands → Synchronize → Check "Preview changes"**
+
+Review what will be changed before committing.
+
+### 6. Use Keep Remote Directory Up to Date for Development
+
+Web developers: Enable auto-sync to instantly upload changes:
+
+**Commands → Keep Remote Directory up to Date**
+
+### 7. Configure External Text Editor
+
+Use a proper editor for better syntax highlighting:
+
+**Options → Preferences → Editors → Add → Browse to Notepad++**
+
+### 8. Backup Your Sessions
+
+Regularly export your saved sessions:
+
+**Tools → Export/Backup Configuration**
+
+### 9. Set File Masks for Selective Sync
+
+Don't sync everything - use masks to filter:
+```
+*.php; *.html; *.css; *.js
+```
+
+Exclude unnecessary files:
+```
+| *.bak; .git/; node_modules/
+```
+
+### 10. Use Commander Interface for Side-by-Side Comparison
+
+Commander mode makes it easy to compare local and remote files visually.
+
+---
+
+## Practice Labs
+
+Time to practice using WinSCP! These labs assume you have a Linux server to connect to.
+
+### Lab 1: Download and Install WinSCP
+
+**Task**: Download WinSCP and install it on your Windows machine with the Commander interface.
+
+<details>
+<summary>Solution</summary>
+
+1. **Visit**: https://winscp.net/
+2. **Click** "Download WinSCP"
+3. **Choose** "Installation package"
+4. **Run** the downloaded installer
+5. **Follow** installation wizard:
+   - Accept GPL license
+   - Choose "Typical installation"
+   - Select "Commander" interface
+   - Create desktop icon
+6. **Finish** installation
+7. **Launch** WinSCP
+
+**Verify installation**:
+- WinSCP login dialog should appear
+- Title bar shows "WinSCP"
+
+</details>
+
+---
+
+### Lab 2: Create and Save a Connection
+
+**Task**: Create a new SFTP connection to a Linux server and save it with a descriptive name.
+
+<details>
+<summary>Solution</summary>
+
+**In WinSCP login dialog**:
+
+1. **File protocol**: Ensure "SFTP" is selected
+2. **Host name**: Enter your server IP (e.g., `192.168.1.100` or `localhost`)
+3. **Port number**: `22`
+4. **User name**: Your Linux username
+5. **Password**: Your password (or leave blank if using keys)
+
+**Save the session**:
+1. Click **Save** button
+2. **Site name**: "Test Server - SFTP"
+3. Check "Create desktop shortcut" (optional)
+4. Click **OK**
+
+**Connect**:
+1. Click **Login**
+2. Accept host key if prompted (Yes)
+3. Enter password if needed
+
+**You should see**:
+- Left pane: Your Windows files
+- Right pane: Linux server files
+- Status bar: "Connected"
+
+</details>
+
+---
+
+### Lab 3: Upload a File to Linux Server
+
+**Task**: Create a text file on your Windows desktop, then upload it to your Linux home directory using drag-and-drop.
+
+<details>
+<summary>Solution</summary>
+
+**Create test file**:
+1. Right-click on Windows Desktop → New → Text Document
+2. Name it `upload-test.txt`
+3. Open it and type: "This file was uploaded via WinSCP"
+4. Save and close
+
+**In WinSCP**:
+
+**Left pane** (Windows):
+- Navigate to Desktop: `C:\Users\YourName\Desktop\`
+- You should see `upload-test.txt`
+
+**Right pane** (Linux):
+- Should show your home directory (e.g., `/home/john/`)
+
+**Upload**:
+- **Drag** `upload-test.txt` from left pane to right pane
+- **Drop** it in the right pane
+
+**Progress**:
+- Transfer queue appears at bottom
+- Shows upload progress
+- Completes quickly for small file
+
+**Verify**:
+- File should now appear in right pane (Linux side)
+- You can verify in a terminal: `ls -l upload-test.txt`
+
+</details>
+
+---
+
+### Lab 4: Download a File from Linux Server
+
+**Task**: Create a file on the Linux server using SSH/terminal, then download it to your Windows Downloads folder using WinSCP.
+
+<details>
+<summary>Solution</summary>
+
+**Create file on Linux** (use SSH terminal or MobaXterm):
+```bash
+echo "This file will be downloaded via WinSCP" > download-test.txt
+ls -l download-test.txt
+```
+
+**In WinSCP**:
+
+**Right pane** (Linux):
+- You should see `download-test.txt` in your home directory
+- If not, click refresh button
+
+**Left pane** (Windows):
+- Navigate to Downloads: `C:\Users\YourName\Downloads\`
+
+**Download**:
+- **Drag** `download-test.txt` from right pane to left pane
+- **Drop** in left pane
+
+**Verify**:
+- File appears in left pane
+- Check Windows Downloads folder
+- Open `download-test.txt` in Notepad to verify contents
+
+</details>
+
+---
+
+### Lab 5: Create a Remote Directory
+
+**Task**: Create a new folder called "winscp-test" on the Linux server using WinSCP.
+
+<details>
+<summary>Solution</summary>
+
+**In WinSCP right pane** (Linux side):
+
+**Method 1**:
+1. Click **New** button in toolbar → **Directory**
+2. Or press **F7**
+
+**Create directory dialog**:
+1. **Directory name**: `winscp-test`
+2. **Set permissions** (optional): Leave default or set to `755`
+3. Click **OK**
+
+**Result**:
+- New folder `winscp-test` appears in right pane
+- Icon shows it's a directory (folder icon)
+
+**Verify**:
+- Double-click to open it
+- It's empty (as expected)
+- Note the path in address bar: `/home/john/winscp-test/`
+
+**Or verify in terminal**:
+```bash
+ls -ld winscp-test
+```
+
+</details>
+
+---
+
+### Lab 6: Transfer Multiple Files
+
+**Task**: Create 3 text files on Windows, then upload all of them at once to the Linux server.
+
+<details>
+<summary>Solution</summary>
+
+**Create multiple files** on Windows Desktop:
+1. Create `file1.txt` with content "File 1"
+2. Create `file2.txt` with content "File 2"
+3. Create `file3.txt` with content "File 3"
+
+**In WinSCP left pane** (Windows):
+- Navigate to Desktop
+- You should see all three files
+
+**Select multiple files**:
+- Click on `file1.txt`
+- Hold **Ctrl** and click `file2.txt`
+- Hold **Ctrl** and click `file3.txt`
+- All three files are selected (highlighted)
+
+**Upload**:
+- **Drag** all selected files to right pane (Linux)
+- **Drop** them
+
+**Transfer queue**:
+- Shows all three files being transferred
+- Might be too fast to see for small files
+
+**Verify**:
+- All three files appear in right pane (Linux)
+- Check in terminal: `ls -l file*.txt`
+
+</details>
+
+---
+
+### Lab 7: Edit a Remote File
+
+**Task**: Use WinSCP to edit a file on the Linux server, modify its contents, save, and verify the changes.
+
+<details>
+<summary>Solution</summary>
+
+**In WinSCP right pane** (Linux):
+- Navigate to a text file (or create one: `test-edit.txt`)
+
+**Edit the file**:
+1. **Double-click** the file
+2. Or **Right-click → Edit** (or press F4)
+3. File opens in your default text editor (Notepad or configured editor)
+
+**Make changes**:
+- Add a new line: "This line was added via WinSCP editor"
+- Modify existing content
+
+**Save**:
+- In editor: **File → Save** (or Ctrl+S)
+- **Close the editor**
+
+**WinSCP behavior**:
+- Automatically uploads the modified file back to server
+- Transfer queue briefly shows the upload
+- Status bar shows "Uploaded"
+
+**Verify changes**:
+
+**Method 1** - Re-open in WinSCP:
+- Double-click the file again
+- Your changes should be there
+
+**Method 2** - Check in terminal:
+```bash
+cat test-edit.txt
+```
+Your added line should appear.
+
+</details>
+
+---
+
+### Lab 8: Change File Permissions
+
+**Task**: Create a script file on the Linux server and use WinSCP to make it executable (chmod 755).
+
+<details>
+<summary>Solution</summary>
+
+**Create a script file** on Linux:
+```bash
+echo '#!/bin/bash' > myscript.sh
+echo 'echo "Hello from script"' >> myscript.sh
+ls -l myscript.sh
+```
+
+**Initial permissions**:
+```
+-rw-r--r-- 1 user user ... myscript.sh
+```
+Not executable (no `x` permission).
+
+**In WinSCP right pane**:
+1. Find `myscript.sh`
+2. **Right-click → Properties** (or press F9)
+
+**Properties dialog opens**:
+
+**Permissions tab** shows:
+- Owner: Read, Write (checked)
+- Group: Read (checked)
+- Others: Read (checked)
+- Octal: `644`
+
+**Make executable**:
+- Check **Execute** for Owner, Group, Others
+- Or type in Octal field: `755`
+
+**Result**:
+- Owner: Read, Write, Execute ✓
+- Group: Read, Execute ✓
+- Others: Read, Execute ✓
+- Octal: `755`
+
+Click **OK**.
+
+**Verify**:
+- In WinSCP, file icon may change
+- In terminal:
+```bash
+ls -l myscript.sh
+```
+Output:
+```
+-rwxr-xr-x 1 user user ... myscript.sh
+```
+
+**Test execution**:
+```bash
+./myscript.sh
+```
+Output:
+```
+Hello from script
+```
+
+</details>
+
+---
+
+### Lab 9: Synchronize Directories
+
+**Task**: Create a local folder with some files, then synchronize it with a remote directory on the Linux server.
+
+<details>
+<summary>Solution</summary>
+
+**Create local folder** on Windows:
+1. Create folder: `C:\Users\YourName\Desktop\sync-test\`
+2. Inside it, create:
+   - `file1.txt` with content "File 1"
+   - `file2.txt` with content "File 2"
+   - `subfolder\file3.txt` with content "File 3"
+
+**In WinSCP**:
+
+**Left pane**: Navigate to `C:\Users\YourName\Desktop\sync-test\`
+
+**Right pane**: Create or navigate to a directory on Linux (e.g., `/home/john/sync-test/`)
+
+**Synchronize**:
+1. **Commands → Synchronize** (or press Ctrl+S)
+
+**Synchronize dialog**:
+- **Local directory**: Should show `C:\Users\YourName\Desktop\sync-test\`
+- **Remote directory**: Should show `/home/john/sync-test/`
+- **Direction**: Both (default)
+- Check **Preview changes**
+- Click **OK**
+
+**Preview window** shows:
+```
+Direction  File          Status
+→          file1.txt     Upload (new)
+→          file2.txt     Upload (new)
+→          subfolder/    Create directory
+→          file3.txt     Upload (new)
+```
+
+**Execute**:
+- Review the changes
+- Click **OK** to proceed
+
+**Result**:
+- All files are uploaded to Linux server
+- Directory structure is replicated
+- Status shows "Synchronized"
+
+**Verify**:
+- Check right pane - files should now be there
+- In terminal: `ls -lR sync-test/`
+
+</details>
+
+---
+
+### Lab 10: Keep Remote Directory Up to Date
+
+**Task**: Enable automatic synchronization so that any changes to a local folder are instantly uploaded to the server.
+
+<details>
+<summary>Solution</summary>
+
+**Setup**:
+
+**Left pane**: Navigate to local folder (e.g., `C:\Users\YourName\Desktop\auto-sync\`)
+
+**Right pane**: Navigate to corresponding remote folder (e.g., `/home/john/auto-sync/`)
+
+**Enable auto-sync**:
+1. **Commands → Keep Remote Directory up to Date**
+
+**Dialog opens**:
+- **Local directory**: Verify correct path
+- **Remote directory**: Verify correct path
+- **Options**:
+  - Update: Check (upload changes)
+  - Delete: Check if you want deletions to sync
+  - Subdirectories: Check (include subdirectories)
+- Click **Start**
+
+**Monitoring window** opens showing:
+- "Watching for changes..."
+- Empty log (no changes yet)
+
+**Test it**:
+
+**In Windows**:
+1. Create a new file in `C:\Users\YourName\Desktop\auto-sync\`
+2. Name it `new-file.txt`
+3. Add some content and save
+
+**WinSCP monitoring window**:
+- Detects the change immediately
+- Shows: "Uploading new-file.txt"
+- Transfer completes
+- Log shows successful upload
+
+**Verify**:
+- Check right pane in WinSCP - file should appear
+- In terminal: `ls -l auto-sync/new-file.txt`
+
+**Modify the file**:
+- Edit `new-file.txt` on Windows
+- Save changes
+- WinSCP automatically uploads the updated version
+
+**Stop monitoring**:
+- Click **Stop** button in monitoring window
+- Close the window
+
+**Use case**: Great for web development - saves changes in local editor, instantly uploads to server.
+
+</details>
+
+---
+
+### Lab 11: Rename a Remote File
+
+**Task**: Rename a file on the Linux server using WinSCP.
+
+<details>
+<summary>Solution</summary>
+
+**Create a test file** on Linux (if needed):
+```bash
+echo "Test content" > old-name.txt
+```
+
+**In WinSCP right pane**:
+1. Find `old-name.txt`
+2. **Select** the file
+3. Press **F2** (or right-click → Rename)
+
+**Rename dialog**:
+1. Enter new name: `new-name.txt`
+2. Click **OK**
+
+**Result**:
+- File is renamed
+- File now appears as `new-name.txt`
+
+**Verify in terminal**:
+```bash
+ls -l new-name.txt
+```
+
+</details>
+
+---
+
+### Lab 12: Delete Multiple Files
+
+**Task**: Create several test files on the Linux server, then delete them all at once using WinSCP.
+
+<details>
+<summary>Solution</summary>
+
+**Create test files** on Linux:
+```bash
+touch delete1.txt delete2.txt delete3.txt
+ls -l delete*.txt
+```
+
+**In WinSCP right pane**:
+
+**Select multiple files**:
+1. Click `delete1.txt`
+2. Hold **Ctrl** and click `delete2.txt`
+3. Hold **Ctrl** and click `delete3.txt`
+4. All three files selected
+
+**Delete**:
+- Press **Delete** key
+- Or right-click → Delete
+
+**Confirmation dialog**:
+```
+Do you want to permanently delete these 3 files?
+- delete1.txt
+- delete2.txt
+- delete3.txt
+```
+
+Click **Delete**.
+
+**Result**:
+- Files are removed from Linux server
+- They disappear from WinSCP right pane
+
+**Verify**:
+```bash
+ls -l delete*.txt
+```
+Should show "No such file or directory"
+
+**Warning**: Remote files cannot be recovered from Windows Recycle Bin!
+
+</details>
+
+---
+
+### Lab 13: Compare Local and Remote Directories
+
+**Task**: Create some files locally and remotely with differences, then use WinSCP to compare the directories.
+
+<details>
+<summary>Solution</summary>
+
+**Setup**:
+
+**Create local files** (Windows):
+```
+C:\Users\YourName\Desktop\compare-test\
+  ├─ file1.txt (content: "Local version")
+  ├─ file2.txt (content: "Same content")
+  └─ file3.txt (only exists locally)
+```
+
+**Create remote files** (Linux):
+```bash
+mkdir compare-test
+cd compare-test
+echo "Remote version" > file1.txt
+echo "Same content" > file2.txt
+echo "Remote only" > file4.txt
+```
+
+**In WinSCP**:
+
+**Left pane**: Navigate to `C:\Users\YourName\Desktop\compare-test\`
+
+**Right pane**: Navigate to `/home/john/compare-test/`
+
+**Compare**:
+1. **Commands → Compare Directories**
+
+**Result** (color-coded):
+- `file1.txt` - **Yellow** (different content or timestamp)
+- `file2.txt` - **White** or **Green** (identical or different timestamp but same size)
+- `file3.txt` - **Green** (only on local side)
+- `file4.txt` - **Green** (only on remote side)
+
+**Actions**:
+- Select differing files
+- Use synchronize to update them
+- Or manually transfer specific files
+
+**This helps identify** what needs to be synced.
+
+</details>
+
+---
+
+### Lab 14: Transfer a Large File and Monitor Progress
+
+**Task**: Create a large file (or use an existing one) and transfer it to the server while watching the transfer queue.
+
+<details>
+<summary>Solution</summary>
+
+**Create a large file** (Windows):
+
+**Method 1** - Download something large (ISO, video, etc.)
+
+**Method 2** - Create a dummy large file:
+```cmd
+fsutil file createnew C:\Users\YourName\Desktop\largefile.bin 104857600
+```
+This creates a 100 MB file.
+
+**In WinSCP**:
+
+**Left pane**: Navigate to Desktop, select `largefile.bin`
+
+**Right pane**: Navigate to target directory
+
+**Upload**:
+- Drag `largefile.bin` to right pane
+- Or select and press F5
+
+**Transfer queue** (bottom):
+- **File name**: largefile.bin
+- **Progress bar**: Shows percentage complete
+- **Speed**: Shows MB/s transfer rate
+- **Time remaining**: Estimated time
+
+**Watch it progress**:
+- Bar gradually fills
+- Speed may fluctuate
+- Time remaining counts down
+
+**During transfer**, you can:
+- **Pause**: Click pause button
+- **Abort**: Click abort button
+- **Continue working**: WinSCP allows you to navigate while transferring
+
+**After completion**:
+- File appears in right pane
+- Status shows "100% complete"
+- Transfer queue clears (or shows next file if multiple)
+
+</details>
+
+---
+
+### Lab 15: Configure Notepad++ as External Editor
+
+**Task**: Install Notepad++ (if not already installed) and configure WinSCP to use it as the default text editor.
+
+<details>
+<summary>Solution</summary>
+
+**Install Notepad++** (if needed):
+1. Download from https://notepad-plus-plus.org/
+2. Install with default settings
+
+**Configure WinSCP**:
+
+1. **Options → Preferences**
+2. **Editors** section (left sidebar)
+
+**Add Notepad++**:
+1. Click **Add** button
+
+**Editor preferences**:
+- **External editor**: Check this
+- **Editor**: Click **Browse**
+- Navigate to: `C:\Program Files\Notepad++\notepad++.exe`
+- Select it and click **Open**
+
+**Options**:
+- Check **Set as default editor**
+- **Editor displays unmodified binary files**: Leave unchecked
+
+Click **OK**.
+
+**Test it**:
+1. In WinSCP, double-click any text file on remote server
+2. Notepad++ should open (not Notepad)
+3. Syntax highlighting should work based on file extension
+
+**Benefits**:
+- Better syntax highlighting
+- Line numbers
+- Multiple files in tabs
+- Find/replace
+
+</details>
+
+---
+
+### Lab 16: Create an Organized Session Structure
+
+**Task**: Create folders for different server categories and organize your saved sessions.
+
+<details>
+<summary>Solution</summary>
+
+**In WinSCP login dialog**:
+
+**Create folders**:
+1. Click **New Site** dropdown → **New Folder**
+2. Name: "Production Servers"
+3. Click **OK**
+
+Repeat for:
+- "Development Servers"
+- "Testing Servers"
+- "Personal Projects"
+
+**Organize existing sessions**:
+1. Select your saved session(s)
+2. Click **Edit** button
+3. In **Folder** field, select appropriate folder from dropdown
+4. Click **Save**
+
+Or:
+- **Drag and drop** sessions onto folders
+
+**Create more sessions** in each folder:
+- Click on a folder to select it
+- Click **New Site** (creates session in that folder)
+- Enter connection details
+- Save with descriptive name
+
+**Result**:
+```
+📁 Production Servers
+  ├─ Web Server 1
+  └─ Database Server
+📁 Development Servers
+  ├─ Dev Server
+  └─ Test API Server
+📁 Testing Servers
+  └─ QA Server
+📁 Personal Projects
+  └─ Home Lab
+```
+
+**Benefits**:
+- Easy to find servers
+- Logical organization
+- Professional workflow
+
+</details>
+
+---
+
+### Lab 17: Export Sessions for Backup
+
+**Task**: Export your saved WinSCP sessions to a file for backup purposes.
+
+<details>
+<summary>Solution</summary>
+
+**In WinSCP**:
+
+1. **Tools → Export/Backup Configuration**
+
+**Export dialog**:
+- **Export all sites**: Check (to export all saved sessions)
+- **Export all stored passwords**: Optional (less secure but convenient)
+- **Export configuration**: Check (includes preferences)
+- **Export temporary folders**: Usually not needed
+
+**Choose location**:
+1. Click **Browse** next to "To file:"
+2. Navigate to safe location (e.g., Desktop or backup folder)
+3. Filename: `winscp-backup-2025-12-10.ini`
+4. Click **Save**
+
+**Export**:
+- Click **Export** button
+
+**Result**:
+- `.ini` file is created
+- Contains all session information
+- Can be used to restore on another computer
+
+**Store backup safely**:
+- Copy to USB drive
+- Upload to cloud storage
+- Keep multiple versions
+
+**To restore**:
+1. **Tools → Import/Restore Configuration**
+2. Select the `.ini` file
+3. Choose what to import
+4. Click **Import**
+
+</details>
+
+---
+
+### Lab 18: Use File Masks for Selective Transfer
+
+**Task**: Create a folder with various file types, then use synchronization with file masks to transfer only specific types.
+
+<details>
+<summary>Solution</summary>
+
+**Create test files** on Windows:
+```
+C:\Users\YourName\Desktop\mixed-files\
+  ├─ document.txt
+  ├─ image.jpg
+  ├─ script.php
+  ├─ backup.bak
+  ├─ data.csv
+  └─ readme.md
+```
+
+**In WinSCP**:
+
+**Left pane**: Navigate to `mixed-files\`
+
+**Right pane**: Create/navigate to target directory
+
+**Synchronize with masks**:
+1. **Commands → Synchronize**
+2. Select directories
+3. **File mask** field, enter: `*.txt; *.md; *.csv`
+   - This means: Only text files, markdown files, and CSV files
+4. **Preview changes**
+5. Click **OK**
+
+**Preview shows**:
+```
+→  document.txt  (Upload)
+→  readme.md     (Upload)
+→  data.csv      (Upload)
+```
+
+**Not included**:
+- `image.jpg` (not in mask)
+- `script.php` (not in mask)
+- `backup.bak` (not in mask)
+
+**Execute**:
+- Click **OK**
+- Only the files matching the mask are transferred
+
+**Use case**:
+- Only sync source code: `*.php; *.js; *.css`
+- Only sync documents: `*.doc; *.pdf; *.txt`
+- Exclude backups: `*.* | *.bak; *.tmp`
+
+</details>
+
+---
+
+### Lab 19: Set Transfer Speed Limit
+
+**Task**: Configure WinSCP to limit transfer speed to avoid saturating your network bandwidth.
+
+<details>
+<summary>Solution</summary>
+
+**Configure speed limit**:
+
+1. **Options → Preferences**
+2. **Transfer → Background** section (left sidebar)
+
+**Speed limit settings**:
+- **Enable speed limit**: Check
+- **Upload speed limit**: Enter value (e.g., `1024` for 1 MB/s)
+- **Download speed limit**: Enter value (e.g., `2048` for 2 MB/s)
+- Values are in **KB/s** (kilobytes per second)
+
+Click **OK**.
+
+**Test it**:
+1. Transfer a large file
+2. Watch the transfer speed in queue
+3. Speed should not exceed your set limit
+
+**Calculations**:
+- 1024 KB/s = 1 MB/s
+- 512 KB/s = 0.5 MB/s
+- 2048 KB/s = 2 MB/s
+
+**When to use**:
+- On shared networks (don't hog bandwidth)
+- During work hours (allow others to use network)
+- When using mobile/metered connections
+
+**Disable temporarily**:
+- Uncheck "Enable speed limit" for unrestricted transfer
+
+</details>
+
+---
+
+### Lab 20: Create a Simple Automation Script
+
+**Task**: Create a WinSCP script to automatically upload files from a local folder to a remote server.
+
+<details>
+<summary>Solution</summary>
+
+**Create script file** on Windows:
+
+1. Open Notepad
+2. Create file: `C:\Users\YourName\Desktop\auto-upload.txt`
+
+**Script content**:
+```
+option batch abort
+option confirm off
+open sftp://john:password@192.168.1.100
+cd /home/john/uploads
+lcd C:\Users\YourName\Desktop\upload-folder
+put *.txt
+close
+exit
+```
+
+**Replace**:
+- `john` - Your username
+- `password` - Your password (or use key)
+- `192.168.1.100` - Your server IP
+- Paths as appropriate
+
+**Save** and close Notepad.
+
+**Run the script**:
+
+Open Command Prompt:
+```cmd
+cd "C:\Program Files (x86)\WinSCP"
+winscp.com /script=C:\Users\YourName\Desktop\auto-upload.txt
+```
+
+**What happens**:
+1. Connects to server
+2. Changes to remote directory
+3. Changes to local directory
+4. Uploads all `.txt` files
+5. Closes connection
+6. Exits
+
+**Output**:
+- Shows connection progress
+- Lists uploaded files
+- Shows success/failure
+
+**Use with Task Scheduler**:
+- Schedule this to run daily/hourly
+- Automated backups
+- Automated deployments
+
+**With SSH key** (more secure):
+```
+open sftp://john@192.168.1.100 -privatekey="C:\path\to\key.ppk"
+```
+
+</details>
+
+---
+
+## Common Pitfalls
+
+### 1. Saving Passwords in Sessions
+
+**Issue**: Passwords stored in plain text in WinSCP configuration.
+
+**Better approach**:
+- Use SSH key authentication
+- Don't check "Save password"
+- Enter password each time (more secure)
+
+### 2. Not Previewing Synchronization
+
+**Issue**: Accidentally deleting or overwriting important files.
+
+**Fix**:
+- Always check "Preview changes" in Synchronize dialog
+- Review what will be changed before executing
+
+### 3. Transferring Binary Files in Text Mode
+
+**Issue**: Files get corrupted during transfer.
+
+**Fix**:
+- Use "Automatic" transfer mode (default)
+- Or explicitly set "Binary" mode for non-text files
+
+### 4. Forgetting to Close Editors
+
+**Issue**: Locked files on server, can't be edited elsewhere.
+
+**Fix**:
+- Close text editors when done editing
+- WinSCP releases the file lock
+
+### 5. Deleting Files Without Confirmation
+
+**Issue**: Accidentally deleting important remote files.
+
+**Prevention**:
+- Enable delete confirmation: Options → Preferences → Confirmations
+- Double-check before confirming deletion
+- Remote files can't be recovered from Recycle Bin!
+
+### 6. Using FTP Instead of SFTP
+
+**Issue**: Insecure, unencrypted transfers.
+
+**Fix**:
+- Always use SFTP protocol
+- Verify connection shows "SFTP" not "FTP"
+
+### 7. Incorrect .ppk Key Format
+
+**Issue**: OpenSSH keys don't work directly with WinSCP.
+
+**Fix**:
+- Use PuTTYgen (included with WinSCP) to convert
+- Load OpenSSH key → Save as .ppk format
+- Use .ppk file in WinSCP session settings
+
+---
+
+## WinSCP vs Other File Transfer Tools
+
+| Feature | WinSCP | FileZilla | MobaXterm SFTP | Windows Explorer |
+|---------|--------|-----------|----------------|------------------|
+| **SFTP Support** | ✅ | ✅ | ✅ | ❌ |
+| **Directory Sync** | ✅ Excellent | ✅ Basic | ❌ | ❌ |
+| **Dual-Pane View** | ✅ | ✅ | ✅ | ❌ |
+| **Scripting** | ✅ Powerful | ❌ Weak | ✅ | ❌ |
+| **Integrated Editor** | ✅ | ✅ | ✅ | N/A |
+| **SSH Keys** | ✅ .ppk | ✅ OpenSSH | ✅ | N/A |
+| **Cost** | ✅ Free | ✅ Free | ✅ Free | N/A |
+| **Platform** | Windows | Cross-platform | Windows | Windows |
+| **Terminal** | ❌ | ❌ | ✅ | N/A |
+
+**WinSCP advantages**: Best synchronization features, excellent scripting, Windows-optimized.
+
+---
+
+## Key Takeaways
+
+1. **WinSCP is a dedicated SFTP/SCP client** for Windows focused on file transfers
+2. **Two interface modes**: Commander (dual-pane) and Explorer (single-pane)
+3. **Always use SFTP protocol** for encrypted, secure transfers
+4. **Drag-and-drop support** makes transfers intuitive and fast
+5. **Directory synchronization** keeps local and remote directories in sync
+6. **Keep Remote Directory Up to Date** enables automatic, continuous syncing
+7. **Integrated text editor** allows editing remote files directly
+8. **File permissions** can be modified through the Properties dialog
+9. **Scripting with winscp.com** enables automation and scheduled transfers
+10. **Session management** organizes multiple server connections efficiently
+
+---
+
+## What's Next?
+
+You've mastered WinSCP for secure file transfers between Windows and Linux! In the next post, we'll explore **Linux Core Components**—understanding the kernel, glibc, shells, and systemd to grasp how Linux systems work at a fundamental level.
+
+**Coming up**:
+- The Linux kernel and its role
+- glibc (GNU C Library) explained
+- Understanding shells (bash, sh, zsh)
+- systemd - system and service manager
+- How components interact
+- Linux architecture layers
+
+Keep practicing with WinSCP, and see you in the next post!
+
+---
+
+**Previous Post**: [LFCS Part 43: Accessing Linux from Windows with MobaXterm](/blog/2026-01-03_lfcs-phase1-part-43-mobaxterm)
+
+**Next Post**: LFCS Part 45: Understanding Linux Core Components *(Coming Soon)*

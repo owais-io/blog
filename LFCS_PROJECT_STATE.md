@@ -1,19 +1,19 @@
 # LFCS Phase 1 Blog Series - Project State
 
 **Last Updated**: 2025-12-10
-**Status**: Posts 1-40 Completed (76.9% complete!)
-**Next Post**: Post 41
+**Status**: Posts 1-45 Completed (86.5% complete!)
+**Next Post**: Post 46
 
 ---
 
 ## 📊 Progress Overview
 
-- **Posts Completed**: 40 / 52 posts
-- **Words Written**: ~386,000
-- **Recent**: Posts 35-40 (ACLs, Regex Basics, Regex Advanced, tr, grep, awk)
+- **Posts Completed**: 45 / 52 posts
+- **Words Written**: ~456,000
+- **Recent**: Posts 35-45 (text processing, SSH tools, Linux core components)
 - **Infrastructure**: AWS S3 + CloudFront + GitHub Actions CI/CD
 
-### Completed Posts (1-40)
+### Completed Posts (1-45)
 
 **Posts 1-9**: Linux basics, users, sudo, navigation, passwd, touch
 **Posts 10-14**: Help systems (man, info, --help, tldr, /usr/share/doc)
@@ -28,12 +28,13 @@
 **Post 38**: Text transformation with tr command
 **Post 39**: grep pattern matching and text search
 **Post 40**: awk for text processing and data extraction
+**Post 41**: sed stream editor for text transformation
+**Post 42**: SSH and remote server access
+**Post 43**: MobaXterm for Windows remote access
+**Post 44**: WinSCP for secure file transfers
+**Post 45**: Linux core components (kernel, glibc, shells, systemd)
 
-### Remaining Posts (41-52)
-
-**Post 41**: sed stream editor (likely next)
-**Posts 42-44**: SSH and remote access (SSH, MobaXterm, WinSCP)
-**Posts 45**: Linux core components (kernel, glibc, shell, systemd)
+### Remaining Posts (46-52)
 **Posts 46-47**: I/O redirection and pipes
 **Posts 48-49**: History and command completion
 **Posts 50-52**: Variables, aliases, bash configuration
@@ -131,7 +132,116 @@
    - Changed practice labs to show only solutions as collapsible
    - Lab titles and tasks remain visible for easy scanning
 
-**Session Status**: Posts 35-40 completed (ACLs, Regex Basics, Regex Advanced, tr, grep, awk) - 6 posts in one session!
+9. ✅ **Post 41**: Mastering sed Stream Editor (~14,000 words)
+   - What is sed and its purpose as a stream editor
+   - Basic substitution with s/old/new/ syntax
+   - Global substitution with /g flag
+   - In-place editing with -i option and backups
+   - Multiple commands with -e option
+   - Deleting lines with d command
+   - Address ranges (line numbers, patterns, ranges)
+   - The p command and -n option for printing
+   - Regular expressions with sed (anchors, classes, quantifiers)
+   - Extended regex with -E flag
+   - Backreferences for pattern capture and reuse
+   - Insertion and appending with i and a commands
+   - Reading and writing files with r and w commands
+   - Real-world configuration file editing examples
+   - Log file processing and text transformation
+   - 20 comprehensive practice labs
+
+10. ✅ **Post 42**: Understanding SSH and Remote Server Access (~14,000 words)
+   - What is SSH and why it matters for remote administration
+   - SSH vs Telnet security comparison (encryption vs plain text)
+   - SSH architecture: sshd (server) vs ssh (client)
+   - Installing SSH on CentOS/RHEL and Ubuntu/Debian
+   - Starting and enabling the sshd service with systemctl
+   - Verifying SSH is listening on port 22
+   - Making SSH connections by hostname and IP address
+   - Executing commands remotely without interactive shell
+   - Transferring files securely with scp command
+   - Recursive directory copying with scp -r
+   - Generating SSH key pairs with ssh-keygen (ed25519 and RSA)
+   - Key-based authentication setup with ssh-copy-id
+   - Benefits of key-based vs password authentication
+   - SSH server configuration (/etc/ssh/sshd_config)
+   - SSH client configuration (~/.ssh/config)
+   - Firewall configuration for SSH access
+   - Best practices (disable root login, use keys, monitor logs)
+   - 20 comprehensive practice labs
+
+11. ✅ **Post 43**: Accessing Linux from Windows with MobaXterm (~14,000 words)
+   - What is MobaXterm and its key features
+   - MobaXterm Home vs Professional editions
+   - Downloading and installing MobaXterm (installer and portable)
+   - Interface overview (session sidebar, workspace, menu bar)
+   - Creating new SSH sessions step-by-step
+   - Host key verification and password authentication
+   - Built-in SFTP browser for visual file management
+   - Navigating remote filesystems with SFTP browser
+   - Downloading and uploading files (drag-and-drop)
+   - File operations (create, delete, rename, edit remotely)
+   - Managing and organizing saved sessions
+   - Session folders for better organization
+   - Tabbed terminal interface for multiple sessions
+   - Split screen mode (horizontal and vertical splits)
+   - Copy and paste functionality
+   - Terminal customization (fonts, colors, themes)
+   - X11 forwarding for Linux GUI applications
+   - Session recording and macros for automation
+   - Export/import sessions for backup
+   - Desktop shortcuts for quick access
+   - 20 comprehensive practice labs
+
+12. ✅ **Post 44**: File Transfer with WinSCP (~14,000 words)
+   - What is WinSCP and its focus on file transfers
+   - Downloading and installing WinSCP (installer and portable)
+   - WinSCP interface modes: Commander (dual-pane) vs Explorer (single-pane)
+   - Creating and saving SFTP/SCP connections
+   - Host key verification and authentication
+   - Uploading files to Linux server (drag-and-drop, copy-paste)
+   - Downloading files from Linux server
+   - Transfer progress monitoring and queue management
+   - Directory synchronization (bidirectional and one-way)
+   - Keep Remote Directory Up to Date (automatic syncing)
+   - Editing remote files with integrated or external editors
+   - Configuring external text editors (Notepad++)
+   - Session management and organization with folders
+   - File operations (create, rename, delete, permissions)
+   - Changing file permissions (chmod) through GUI
+   - Directory comparison and diff visualization
+   - Transfer settings (mode, masks, speed limits)
+   - Scripting and automation with winscp.com
+   - Automated backup scripts and task scheduling
+   - Export/import sessions for backup
+   - 20 comprehensive practice labs
+
+13. ✅ **Post 45**: Understanding Linux Core Components (~14,000 words)
+   - What are Linux core components and their roles
+   - Linux kernel: hardware management, process scheduling, memory management
+   - Kernel architecture: kernel space vs user space
+   - System calls as the interface between user and kernel
+   - Checking kernel version with uname command
+   - Kernel modules: loading, unloading, listing with lsmod
+   - Viewing kernel messages with dmesg
+   - glibc (GNU C Library): standard C library functions
+   - What glibc provides: system call wrappers, POSIX compliance, threading
+   - Checking glibc version with ldd command
+   - Library dependencies with ldd tool
+   - Shell fundamentals: command-line interpreter
+   - Common shells: bash, sh, zsh, dash, fish
+   - Bash features: history, tab completion, job control, aliases
+   - Shell configuration files (~/.bashrc, ~/.bash_profile, /etc/profile)
+   - systemd: init system and service manager (PID 1)
+   - systemd units: services, targets, mounts, timers, sockets
+   - Managing services with systemctl (start, stop, restart, enable, disable)
+   - Viewing logs with journalctl
+   - System targets and boot process
+   - Linux architecture layers diagram and component interaction
+   - Boot process overview: BIOS → bootloader → kernel → systemd → services
+   - 20 comprehensive practice labs
+
+**Session Status**: Posts 35-45 completed (text processing, SSH tools, Linux internals) - 11 posts in one session!
 
 ---
 
@@ -173,12 +283,12 @@
 ## 📋 Next Steps
 
 ### Immediate Action
-**Write Post 41: sed stream editor**
+**Write Post 46: Mastering I/O Redirection**
 
-Check LFCS_PHASE1_BREAKDOWN.md for Post 41 content outline.
+Check LFCS_PHASE1_BREAKDOWN.md for Post 46 content outline.
 
-### After Post 41
-Continue with Posts 42-52 following LFCS_PHASE1_BREAKDOWN.md
+### After Post 46
+Continue with Posts 47-52 following LFCS_PHASE1_BREAKDOWN.md
 
 ---
 

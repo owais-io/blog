@@ -1,0 +1,1617 @@
+---
+title: "LFCS Part 41: Mastering sed Stream Editor for Text Transformation"
+description: "Master the sed stream editor for powerful text manipulation in Linux. Learn sed substitution, in-place editing, line deletion, address ranges, regular expressions, and real-world text processing techniques for system administration."
+date: 2026-01-01
+tags: ["Linux", "LFCS", "sed", "text processing", "stream editor", "automation", "scripting", "certification"]
+published: true
+author: "Owais"
+categories: ["Linux", "LFCS Certification"]
+series: "LFCS Certification - Phase 1"
+seriesOrder: 41
+---
+
+Welcome back to the **LFCS Certification - Phase 1** series! In our previous posts, we explored regular expressions (Posts 36-37), text transformation with `tr` (Post 38), pattern matching with `grep` (Post 39), and data extraction with `awk` (Post 40). Now we're going to learn one of the most powerful text manipulation tools in Linux: **sed**.
+
+While `tr` transforms individual characters and `awk` processes fields, **sed** is a stream editor designed for filtering and transforming text. It excels at find-and-replace operations, line deletion, insertions, and complex text manipulations—making it essential for system administrators who need to automate configuration file changes, process logs, and perform bulk text transformations.
+
+## What is sed?
+
+**sed** stands for **Stream Editor**. It was developed in the 1970s at Bell Labs by Lee E. McMahon as one of the earliest Unix utilities for non-interactive text editing.
+
+sed reads input line by line (from files or stdin), applies transformation commands to each line, and outputs the result. Unlike interactive editors like `vi` or `nano`, sed processes text in a single pass, making it perfect for automation and scripting.
+
+### Why sed Matters
+
+As a system administrator, you'll use sed for:
+
+**Quick find-and-replace in configuration files**:
+```bash
+sed 's/old-server/new-server/g' config.conf
+```
+
+**Editing files in-place without opening an editor**:
+```bash
+sed -i 's/port=80/port=8080/' /etc/app.conf
+```
+
+**Deleting specific lines from files**:
+```bash
+sed '/^#/d' file.txt  # Remove all comment lines
+```
+
+**Extracting or filtering content from logs**:
+```bash
+sed -n '100,200p' /var/log/syslog  # Print lines 100-200
+```
+
+**Automating bulk changes across multiple files**:
+```bash
+for file in *.conf; do sed -i 's/DEBUG/INFO/' "$file"; done
+```
+
+sed is installed by default on virtually every Linux system and is a cornerstone tool for shell scripting. Let's dive into how to use it.
+
+---
+
+## Basic sed Syntax
+
+The basic syntax of sed is:
+
+```bash
+sed [OPTIONS] 'command' file
+```
+
+Or with a script file:
+
+```bash
+sed [OPTIONS] -f script.sed file
+```
+
+**Key components**:
+- **OPTIONS**: Flags like `-i` (in-place editing), `-n` (suppress output), `-e` (multiple commands)
+- **command**: The sed command to apply (like `s/old/new/` for substitution)
+- **file**: The input file to process (can also read from stdin via pipes)
+
+### How sed Works
+
+1. **Read** a line from input into the pattern space (buffer)
+2. **Apply** the sed command(s) to the pattern space
+3. **Print** the modified pattern space to stdout (unless suppressed)
+4. **Repeat** for the next line until end of file
+
+This line-by-line processing makes sed memory-efficient even with huge files.
+
+---
+
+## The Substitute Command: s///
+
+The most common sed command is **substitute**, which finds and replaces text using the format:
+
+```bash
+sed 's/pattern/replacement/' file
+```
+
+### Basic Substitution
+
+Let's create a sample file:
+
+```bash
+echo "The cat sat on the mat" > sample.txt
+```
+
+Replace the first occurrence of "cat" with "dog":
+
+```bash
+sed 's/cat/dog/' sample.txt
+```
+
+**Output**:
+```
+The dog sat on the mat
+```
+
+**What happened**:
+- `s` — substitute command
+- `cat` — pattern to search for
+- `dog` — replacement text
+- By default, only the **first occurrence** on each line is replaced
+
+**Important**: sed doesn't modify the original file—it prints the result to stdout. To save changes, use output redirection or the `-i` option.
+
+### Global Substitution: /g Flag
+
+To replace **all occurrences** on each line, add the `g` (global) flag:
+
+```bash
+echo "cat cat cat" > sample.txt
+sed 's/cat/dog/g' sample.txt
+```
+
+**Output**:
+```
+dog dog dog
+```
+
+Without the `g` flag, only the first "cat" would be replaced:
+
+```bash
+sed 's/cat/dog/' sample.txt
+# Output: dog cat cat
+```
+
+### Case-Insensitive Substitution: /I Flag
+
+Use the `I` flag for case-insensitive matching:
+
+```bash
+echo "Cat CAT cat" > sample.txt
+sed 's/cat/dog/gI' sample.txt
+```
+
+**Output**:
+```
+dog dog dog
+```
+
+**Flags can be combined**: `gI` means global + case-insensitive.
+
+### Substitution with Special Characters
+
+When your pattern or replacement contains special characters like `/`, you need to escape them or use a different delimiter.
+
+**Escaping forward slashes**:
+
+```bash
+echo "/var/log/syslog" > paths.txt
+sed 's/\/var\/log/\/tmp/' paths.txt
+```
+
+**Output**:
+```
+/tmp/syslog
+```
+
+**Using alternative delimiters** (much cleaner):
+
+```bash
+sed 's|/var/log|/tmp|' paths.txt
+# or
+sed 's#/var/log#/tmp#' paths.txt
+```
+
+You can use almost any character as the delimiter—just be consistent. Common alternatives: `|`, `#`, `:`, `@`.
+
+---
+
+## In-Place Editing: -i Option
+
+The `-i` option modifies files **in-place**, meaning sed saves changes directly to the original file instead of printing to stdout.
+
+### Basic In-Place Editing
+
+```bash
+echo "Hello World" > greeting.txt
+sed -i 's/World/Universe/' greeting.txt
+cat greeting.txt
+```
+
+**Output**:
+```
+Hello Universe
+```
+
+The original file has been changed permanently.
+
+### Creating a Backup with -i
+
+To keep a backup before modifying, provide an extension to `-i`:
+
+**Linux/macOS** (GNU sed vs BSD sed differ slightly):
+
+```bash
+# GNU sed (most Linux distros)
+sed -i.bak 's/old/new/' file.txt
+
+# BSD sed (macOS)
+sed -i .bak 's/old/new/' file.txt
+```
+
+This creates `file.txt.bak` with the original content before making changes to `file.txt`.
+
+**Best Practice**: Always use backups (`-i.bak`) when editing important configuration files, especially in production.
+
+---
+
+## Multiple Commands: -e Option
+
+Use `-e` to apply multiple sed commands in sequence:
+
+```bash
+echo "The cat sat on the mat" > sample.txt
+sed -e 's/cat/dog/' -e 's/mat/rug/' sample.txt
+```
+
+**Output**:
+```
+The dog sat on the rug
+```
+
+**Alternative syntax** using semicolons:
+
+```bash
+sed 's/cat/dog/; s/mat/rug/' sample.txt
+```
+
+Both methods are equivalent. Use `-e` for clarity when commands are complex.
+
+### Chaining Multiple Substitutions
+
+```bash
+echo "192.168.1.1" > ip.txt
+sed -e 's/192/10/' -e 's/168/0/' -e 's/1\.1/0.1/' ip.txt
+```
+
+**Output**:
+```
+10.0.0.1
+```
+
+Each `-e` command is applied in order.
+
+---
+
+## Deleting Lines: d Command
+
+The `d` command deletes lines matching a pattern or address.
+
+### Delete Lines Matching a Pattern
+
+```bash
+cat << EOF > data.txt
+apple
+banana
+cherry
+date
+EOF
+
+sed '/banana/d' data.txt
+```
+
+**Output**:
+```
+apple
+cherry
+date
+```
+
+The line containing "banana" was deleted.
+
+### Delete Comment Lines
+
+Remove all lines starting with `#`:
+
+```bash
+sed '/^#/d' /etc/ssh/sshd_config
+```
+
+This shows the SSH config without comments.
+
+### Delete Empty Lines
+
+```bash
+sed '/^$/d' file.txt
+```
+
+- `^$` matches lines with nothing between start (`^`) and end (`$`)—i.e., empty lines
+
+### Delete Lines by Number
+
+Delete line 3:
+
+```bash
+sed '3d' file.txt
+```
+
+Delete lines 2 through 4:
+
+```bash
+sed '2,4d' file.txt
+```
+
+Delete from line 5 to end of file:
+
+```bash
+sed '5,$d' file.txt
+```
+
+- `$` represents the last line
+
+---
+
+## Address Ranges
+
+sed allows you to specify which lines commands apply to using **addresses**.
+
+### Types of Addresses
+
+1. **Line number**: `5` (line 5)
+2. **Range**: `2,5` (lines 2 through 5)
+3. **Last line**: `$`
+4. **Pattern**: `/regex/` (lines matching regex)
+5. **Pattern range**: `/start/,/end/` (from start pattern to end pattern)
+
+### Examples
+
+**Substitute only on line 3**:
+
+```bash
+sed '3s/old/new/' file.txt
+```
+
+**Substitute on lines 2-5**:
+
+```bash
+sed '2,5s/old/new/' file.txt
+```
+
+**Delete lines 10 through 20**:
+
+```bash
+sed '10,20d' file.txt
+```
+
+**Print only lines 100-200** (suppress other output with `-n`):
+
+```bash
+sed -n '100,200p' file.txt
+```
+
+**Substitute from first occurrence of "START" to "END"**:
+
+```bash
+sed '/START/,/END/s/foo/bar/g' file.txt
+```
+
+---
+
+## The p Command and -n Option
+
+By default, sed prints every line. The `p` command explicitly prints lines, and `-n` suppresses automatic printing.
+
+### Print Specific Lines
+
+**Print line 5**:
+
+```bash
+sed -n '5p' file.txt
+```
+
+**Print lines 10-20**:
+
+```bash
+sed -n '10,20p' file.txt
+```
+
+**Print lines matching a pattern**:
+
+```bash
+sed -n '/error/p' /var/log/syslog
+```
+
+This is similar to `grep error /var/log/syslog`.
+
+### Combining Substitution with Print
+
+Show only lines that were changed:
+
+```bash
+sed -n 's/old/new/p' file.txt
+```
+
+Lines where "old" was replaced with "new" are printed; others are suppressed.
+
+---
+
+## Working with Regular Expressions
+
+sed fully supports regular expressions, making it incredibly powerful for pattern matching.
+
+### Anchors
+
+**Replace text only at the start of lines**:
+
+```bash
+sed 's/^Error/WARNING/' log.txt
+```
+
+**Replace text only at the end of lines**:
+
+```bash
+sed 's/failed$/FAILED/' log.txt
+```
+
+### Character Classes
+
+**Replace any digit with X**:
+
+```bash
+sed 's/[0-9]/X/g' file.txt
+```
+
+**Remove all whitespace**:
+
+```bash
+sed 's/[[:space:]]//g' file.txt
+```
+
+### Quantifiers
+
+**Remove one or more spaces**:
+
+```bash
+sed 's/ \+/ /g' file.txt
+```
+
+**Replace repeated characters**:
+
+```bash
+echo "hellooo" | sed 's/o\+/o/g'
+# Output: hello
+```
+
+### Extended Regular Expressions: -E or -r
+
+GNU sed supports extended regex with `-E` (or `-r` on older versions):
+
+```bash
+sed -E 's/(foo|bar)/baz/g' file.txt
+```
+
+This replaces "foo" or "bar" with "baz". In extended regex, you don't need to escape `(`, `)`, `|`, `+`, `?`.
+
+**Without -E** (basic regex), you'd need:
+
+```bash
+sed 's/\(foo\|bar\)/baz/g' file.txt
+```
+
+**Tip**: Use `-E` for cleaner regex patterns.
+
+### Backreferences
+
+Capture groups with `\(` and `\)`, then reference them with `\1`, `\2`, etc.
+
+**Swap two words**:
+
+```bash
+echo "John Doe" | sed 's/\(.*\) \(.*\)/\2 \1/'
+# Output: Doe John
+```
+
+**Explanation**:
+- `\(.*\)` — captures first word into `\1`
+- ` ` — matches the space
+- `\(.*\)` — captures second word into `\2`
+- Replacement `\2 \1` swaps them
+
+**Duplicate a word**:
+
+```bash
+echo "hello" | sed 's/\(.*\)/\1 \1/'
+# Output: hello hello
+```
+
+### Matching IP Addresses
+
+```bash
+sed -n '/[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}/p' file.txt
+```
+
+This prints lines containing IP-like patterns.
+
+**With extended regex** (`-E`), it's cleaner:
+
+```bash
+sed -nE '/[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/p' file.txt
+```
+
+---
+
+## Insertion and Appending: i and a Commands
+
+### Insert Text Before a Line
+
+**Insert "HEADER" before line 1**:
+
+```bash
+sed '1i\HEADER' file.txt
+```
+
+**Insert before lines matching a pattern**:
+
+```bash
+sed '/Section 2/i\--- New Section ---' file.txt
+```
+
+### Append Text After a Line
+
+**Append "FOOTER" after the last line**:
+
+```bash
+sed '$a\FOOTER' file.txt
+```
+
+**Append after lines matching a pattern**:
+
+```bash
+sed '/error/a\--- CHECK THIS ERROR ---' log.txt
+```
+
+---
+
+## Change Lines: c Command
+
+Replace entire lines matching a condition.
+
+**Replace line 5 with new text**:
+
+```bash
+sed '5c\This is the new line 5' file.txt
+```
+
+**Replace all lines containing "TODO"**:
+
+```bash
+sed '/TODO/c\DONE' file.txt
+```
+
+---
+
+## Reading and Writing Files: r and w Commands
+
+### Read File Contents: r
+
+Insert the contents of another file after a matching line.
+
+```bash
+echo "Insert footer here" > main.txt
+echo "Copyright 2025" > footer.txt
+
+sed '/Insert footer here/r footer.txt' main.txt
+```
+
+**Output**:
+```
+Insert footer here
+Copyright 2025
+```
+
+### Write Matching Lines to File: w
+
+Save lines matching a pattern to a separate file:
+
+```bash
+sed -n '/error/w errors.log' /var/log/syslog
+```
+
+This extracts all lines containing "error" into `errors.log`.
+
+---
+
+## Real-World Examples
+
+### Example 1: Update Configuration Files
+
+**Change the SSH port from 22 to 2222**:
+
+```bash
+sudo sed -i.bak 's/^#Port 22/Port 2222/' /etc/ssh/sshd_config
+```
+
+- Matches lines starting with `#Port 22`
+- Replaces with `Port 2222`
+- Creates backup as `/etc/ssh/sshd_config.bak`
+
+### Example 2: Remove All Comments and Empty Lines
+
+```bash
+sed -e '/^#/d' -e '/^$/d' /etc/nginx/nginx.conf
+```
+
+This outputs the nginx config without comments or blank lines.
+
+### Example 3: Extract Email Addresses from Logs
+
+```bash
+sed -n 's/.*\([a-zA-Z0-9._%+-]\+@[a-zA-Z0-9.-]\+\.[a-zA-Z]\{2,\}\).*/\1/p' mail.log
+```
+
+This extracts email addresses using regex capture groups.
+
+### Example 4: Add Line Numbers to a File
+
+```bash
+sed = file.txt | sed 'N;s/\n/ /'
+```
+
+**Explanation**:
+- `sed =` prints line numbers
+- `N` reads the next line into the pattern space
+- `s/\n/ /` replaces newline with space
+
+### Example 5: Convert DOS Line Endings to Unix
+
+Windows files use `\r\n` (CRLF), while Unix uses `\n` (LF).
+
+```bash
+sed -i 's/\r$//' dosfile.txt
+```
+
+This removes the carriage return (`\r`) at the end of each line.
+
+### Example 6: Bulk Rename in Multiple Files
+
+Change "oldname" to "newname" in all `.conf` files:
+
+```bash
+for file in *.conf; do
+  sed -i.bak 's/oldname/newname/g' "$file"
+done
+```
+
+Creates `.bak` backups before modification.
+
+### Example 7: Comment Out Lines Matching a Pattern
+
+Add `#` at the beginning of lines containing "debug":
+
+```bash
+sed -i '/debug/s/^/#/' config.conf
+```
+
+**Explanation**:
+- `/debug/` — address: lines containing "debug"
+- `s/^/#/` — substitute start of line with `#`
+
+### Example 8: Uncomment Lines
+
+Remove `#` from the beginning of lines:
+
+```bash
+sed -i 's/^#//' file.txt
+```
+
+**To uncomment only specific lines**:
+
+```bash
+sed -i '/Port 22/s/^#//' /etc/ssh/sshd_config
+```
+
+### Example 9: Replace Multiple Spaces with Single Space
+
+```bash
+sed 's/  \+/ /g' file.txt
+```
+
+Or with extended regex:
+
+```bash
+sed -E 's/ +/ /g' file.txt
+```
+
+### Example 10: Print Lines Between Two Patterns
+
+```bash
+sed -n '/START/,/END/p' file.txt
+```
+
+Prints everything from the line containing "START" to the line containing "END".
+
+---
+
+## Advanced Techniques
+
+### Hold Space and Pattern Space
+
+sed has two buffers:
+- **Pattern space**: The current line being processed
+- **Hold space**: A temporary storage buffer
+
+Commands like `h` (hold), `g` (get), and `x` (exchange) manipulate these buffers for advanced transformations.
+
+**Example: Print lines in reverse order**:
+
+```bash
+sed '1!G;h;$!d' file.txt
+```
+
+**This is complex**, but useful for advanced scripting.
+
+### Using sed with Pipes
+
+sed integrates seamlessly with other commands:
+
+**Extract and modify data**:
+
+```bash
+ps aux | sed -n '2,$p' | sed 's/  \+/ /g'
+```
+
+**Chain multiple sed commands**:
+
+```bash
+cat file.txt | sed 's/foo/bar/' | sed 's/old/new/' | sed '/^$/d'
+```
+
+### Conditional Substitution
+
+**Replace only if line contains "error"**:
+
+```bash
+sed '/error/s/old/new/' file.txt
+```
+
+**Replace only if line does NOT contain "skip"**:
+
+```bash
+sed '/skip/!s/old/new/' file.txt
+```
+
+The `!` negates the address.
+
+---
+
+## Common Use Cases for System Administrators
+
+### 1. Log File Processing
+
+**Filter and format logs**:
+
+```bash
+sed -n '/ERROR/p' /var/log/app.log | sed 's/^/[ERROR] /'
+```
+
+### 2. Configuration Management
+
+**Change database host across multiple files**:
+
+```bash
+find /etc/app -name "*.conf" -exec sed -i 's/db-old.example.com/db-new.example.com/g' {} \;
+```
+
+### 3. Automating Edits in Scripts
+
+```bash
+#!/bin/bash
+# Update all config files with new API endpoint
+for config in /etc/myapp/*.conf; do
+  sed -i.bak 's|api.example.com/v1|api.example.com/v2|g' "$config"
+done
+```
+
+### 4. Data Transformation
+
+**Convert CSV to pipe-delimited**:
+
+```bash
+sed 's/,/|/g' data.csv
+```
+
+### 5. Redacting Sensitive Information
+
+**Mask credit card numbers**:
+
+```bash
+sed -E 's/[0-9]{4}-[0-9]{4}-[0-9]{4}-[0-9]{4}/XXXX-XXXX-XXXX-XXXX/g' transaction.log
+```
+
+---
+
+## sed vs awk vs grep
+
+Understanding when to use each tool:
+
+| Tool | Best For | Example |
+|------|----------|---------|
+| **grep** | Finding lines matching patterns | `grep 'error' log.txt` |
+| **sed** | Find-and-replace, line deletion, text transformation | `sed 's/old/new/g' file.txt` |
+| **awk** | Field extraction, calculations, structured data processing | `awk '{print $1, $3}' file.txt` |
+
+**Combined power**:
+
+```bash
+grep 'error' log.txt | sed 's/ERROR/CRITICAL/' | awk '{print $1, $NF}'
+```
+
+---
+
+## Practice Labs
+
+Time to practice sed! These labs progress from basic to advanced.
+
+### Lab 1: Basic Substitution
+
+**Task**: Create a file `colors.txt` with the line "I like red and red is my favorite color". Use sed to replace the first occurrence of "red" with "blue".
+
+<details>
+<summary>Solution</summary>
+
+```bash
+echo "I like red and red is my favorite color" > colors.txt
+sed 's/red/blue/' colors.txt
+```
+
+**Output**:
+```
+I like blue and red is my favorite color
+```
+
+Only the first "red" is replaced.
+
+</details>
+
+---
+
+### Lab 2: Global Substitution
+
+**Task**: Using the same `colors.txt` file, replace ALL occurrences of "red" with "blue".
+
+<details>
+<summary>Solution</summary>
+
+```bash
+sed 's/red/blue/g' colors.txt
+```
+
+**Output**:
+```
+I like blue and blue is my favorite color
+```
+
+The `g` flag makes the substitution global (all occurrences on each line).
+
+</details>
+
+---
+
+### Lab 3: In-Place Editing with Backup
+
+**Task**: Create a file `server.conf` with the line "hostname=old-server.example.com". Use sed to change it to "hostname=new-server.example.com" and create a backup.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+echo "hostname=old-server.example.com" > server.conf
+sed -i.bak 's/old-server/new-server/' server.conf
+cat server.conf
+cat server.conf.bak
+```
+
+**Output**:
+```
+# server.conf:
+hostname=new-server.example.com
+
+# server.conf.bak:
+hostname=old-server.example.com
+```
+
+The backup preserves the original file.
+
+</details>
+
+---
+
+### Lab 4: Delete Lines Matching a Pattern
+
+**Task**: Create a file with 5 lines including one with "DELETE_ME". Use sed to remove that line.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+cat << EOF > sample.txt
+Line 1
+Line 2
+DELETE_ME
+Line 4
+Line 5
+EOF
+
+sed '/DELETE_ME/d' sample.txt
+```
+
+**Output**:
+```
+Line 1
+Line 2
+Line 4
+Line 5
+```
+
+The line containing "DELETE_ME" is gone.
+
+</details>
+
+---
+
+### Lab 5: Delete Empty Lines
+
+**Task**: Create a file with some empty lines and use sed to remove all empty lines.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+cat << EOF > gaps.txt
+First line
+
+Second line
+
+
+Third line
+EOF
+
+sed '/^$/d' gaps.txt
+```
+
+**Output**:
+```
+First line
+Second line
+Third line
+```
+
+All empty lines are removed.
+
+</details>
+
+---
+
+### Lab 6: Delete Comment Lines
+
+**Task**: Create a config file with comments (lines starting with `#`) and use sed to remove all comments.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+cat << EOF > app.conf
+# This is a comment
+setting1=value1
+# Another comment
+setting2=value2
+EOF
+
+sed '/^#/d' app.conf
+```
+
+**Output**:
+```
+setting1=value1
+setting2=value2
+```
+
+Comment lines are removed, leaving only settings.
+
+</details>
+
+---
+
+### Lab 7: Print Specific Lines
+
+**Task**: Create a file with 10 lines and use sed to print only lines 3-7.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+seq 1 10 > numbers.txt
+sed -n '3,7p' numbers.txt
+```
+
+**Output**:
+```
+3
+4
+5
+6
+7
+```
+
+The `-n` suppresses automatic printing, and `p` prints only the specified range.
+
+</details>
+
+---
+
+### Lab 8: Substitute with Alternative Delimiter
+
+**Task**: Create a file with a path "/var/log/syslog". Use sed to change it to "/tmp/syslog" using `|` as the delimiter.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+echo "/var/log/syslog" > paths.txt
+sed 's|/var/log|/tmp|' paths.txt
+```
+
+**Output**:
+```
+/tmp/syslog
+```
+
+Using `|` as delimiter avoids escaping forward slashes.
+
+</details>
+
+---
+
+### Lab 9: Multiple Substitutions
+
+**Task**: Create a file with "The cat sat on the mat". Use sed to replace "cat" with "dog" AND "mat" with "rug" in one command.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+echo "The cat sat on the mat" > sentence.txt
+sed -e 's/cat/dog/' -e 's/mat/rug/' sentence.txt
+```
+
+**Output**:
+```
+The dog sat on the rug
+```
+
+Multiple `-e` options allow chaining commands.
+
+</details>
+
+---
+
+### Lab 10: Case-Insensitive Substitution
+
+**Task**: Create a file with "ERROR Error error". Use sed to replace all variations with "WARNING" (case-insensitive).
+
+<details>
+<summary>Solution</summary>
+
+```bash
+echo "ERROR Error error" > messages.txt
+sed 's/error/WARNING/gI' messages.txt
+```
+
+**Output**:
+```
+WARNING WARNING WARNING
+```
+
+The `I` flag makes matching case-insensitive, `g` makes it global.
+
+</details>
+
+---
+
+### Lab 11: Add Text at Start of Line
+
+**Task**: Create a file with several lines and use sed to add ">> " at the beginning of each line.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+cat << EOF > lines.txt
+First line
+Second line
+Third line
+EOF
+
+sed 's/^/>> /' lines.txt
+```
+
+**Output**:
+```
+>> First line
+>> Second line
+>> Third line
+```
+
+`^` anchors to the start of each line.
+
+</details>
+
+---
+
+### Lab 12: Add Text at End of Line
+
+**Task**: Use sed to append " [DONE]" at the end of each line in a file.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+cat << EOF > tasks.txt
+Task 1
+Task 2
+Task 3
+EOF
+
+sed 's/$/ [DONE]/' tasks.txt
+```
+
+**Output**:
+```
+Task 1 [DONE]
+Task 2 [DONE]
+Task 3 [DONE]
+```
+
+`$` anchors to the end of each line.
+
+</details>
+
+---
+
+### Lab 13: Comment Out Specific Lines
+
+**Task**: Create a config file and use sed to comment out (add `#` at start) lines containing the word "debug".
+
+<details>
+<summary>Solution</summary>
+
+```bash
+cat << EOF > config.txt
+log_level=info
+debug_mode=on
+timeout=30
+debug_verbose=yes
+EOF
+
+sed '/debug/s/^/# /' config.txt
+```
+
+**Output**:
+```
+log_level=info
+# debug_mode=on
+timeout=30
+# debug_verbose=yes
+```
+
+Lines with "debug" are commented out.
+
+</details>
+
+---
+
+### Lab 14: Uncomment Lines
+
+**Task**: Create a file with commented lines (starting with `#`) and uncomment lines containing "enable".
+
+<details>
+<summary>Solution</summary>
+
+```bash
+cat << EOF > settings.txt
+# enable_feature1=yes
+# disable_feature2=no
+# enable_feature3=yes
+EOF
+
+sed '/enable/s/^# //' settings.txt
+```
+
+**Output**:
+```
+enable_feature1=yes
+# disable_feature2=no
+enable_feature3=yes
+```
+
+Only lines with "enable" are uncommented.
+
+</details>
+
+---
+
+### Lab 15: Delete Lines by Number
+
+**Task**: Create a file with 10 lines and delete lines 2, 5, and 8.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+seq 1 10 > nums.txt
+sed '2d;5d;8d' nums.txt
+```
+
+**Output**:
+```
+1
+3
+4
+6
+7
+9
+10
+```
+
+Multiple delete commands can be chained with semicolons.
+
+</details>
+
+---
+
+### Lab 16: Extract Email Addresses
+
+**Task**: Create a file with text containing email addresses. Use sed to extract only the email addresses.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+cat << EOF > contacts.txt
+Contact John at john@example.com for info.
+Email support: support@company.org
+Call or email sales@business.net
+EOF
+
+sed -n 's/.*\([a-zA-Z0-9._-]\+@[a-zA-Z0-9.-]\+\).*/\1/p' contacts.txt
+```
+
+**Output**:
+```
+john@example.com
+support@company.org
+sales@business.net
+```
+
+This uses capture groups and backreferences to extract email patterns.
+
+</details>
+
+---
+
+### Lab 17: Replace Multiple Spaces with Single Space
+
+**Task**: Create a file with irregular spacing and normalize it to single spaces.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+echo "This    has     irregular       spacing" > spacing.txt
+sed 's/  \+/ /g' spacing.txt
+```
+
+**Output**:
+```
+This has irregular spacing
+```
+
+`  \+` matches two or more spaces and replaces them with a single space.
+
+</details>
+
+---
+
+### Lab 18: Convert DOS to Unix Line Endings
+
+**Task**: Create a file with DOS line endings (`\r\n`) and convert to Unix (`\n`).
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create a DOS file (on Linux, simulated)
+printf "Line 1\r\nLine 2\r\nLine 3\r\n" > dosfile.txt
+
+# Convert to Unix
+sed -i 's/\r$//' dosfile.txt
+
+# Verify
+cat -A dosfile.txt
+```
+
+**Output**:
+```
+Line 1$
+Line 2$
+Line 3$
+```
+
+The `\r` (shown as `^M` in some editors) is removed.
+
+</details>
+
+---
+
+### Lab 19: Insert Text Before Matching Line
+
+**Task**: Create a file and insert "=== IMPORTANT ===" before any line containing "warning".
+
+<details>
+<summary>Solution</summary>
+
+```bash
+cat << EOF > alerts.txt
+info: system started
+warning: low memory
+info: task completed
+warning: disk space low
+EOF
+
+sed '/warning/i\=== IMPORTANT ===' alerts.txt
+```
+
+**Output**:
+```
+info: system started
+=== IMPORTANT ===
+warning: low memory
+info: task completed
+=== IMPORTANT ===
+warning: disk space low
+```
+
+The `i\` command inserts text before matching lines.
+
+</details>
+
+---
+
+### Lab 20: Append Text After Matching Line
+
+**Task**: Create a log file and append "--- Check this ---" after lines containing "error".
+
+<details>
+<summary>Solution</summary>
+
+```bash
+cat << EOF > system.log
+[INFO] Service started
+[ERROR] Connection failed
+[INFO] Retrying
+[ERROR] Authentication error
+EOF
+
+sed '/ERROR/a\--- Check this ---' system.log
+```
+
+**Output**:
+```
+[INFO] Service started
+[ERROR] Connection failed
+--- Check this ---
+[INFO] Retrying
+[ERROR] Authentication error
+--- Check this ---
+```
+
+The `a\` command appends text after matching lines.
+
+</details>
+
+---
+
+## Best Practices
+
+### 1. Always Test Without -i First
+
+Before using `-i` for in-place editing, run the command without it to verify the output:
+
+```bash
+# Test first
+sed 's/old/new/g' file.txt
+
+# If correct, then modify
+sed -i 's/old/new/g' file.txt
+```
+
+### 2. Use Backups with In-Place Editing
+
+Always create backups when modifying important files:
+
+```bash
+sed -i.bak 's/old/new/g' important.conf
+```
+
+### 3. Use Alternative Delimiters for Paths
+
+When working with paths, use `|` or `#` instead of `/`:
+
+```bash
+sed 's|/old/path|/new/path|g' file.txt
+```
+
+### 4. Quote Patterns and Commands
+
+Always quote sed commands to prevent shell interpretation:
+
+```bash
+sed 's/old/new/g' file.txt    # Good
+sed s/old/new/g file.txt      # Risky
+```
+
+### 5. Use -E for Extended Regex
+
+Extended regex is more readable and doesn't require escaping special characters:
+
+```bash
+sed -E 's/(foo|bar)/baz/g' file.txt
+```
+
+### 6. Combine sed with Other Tools
+
+sed works great in pipelines:
+
+```bash
+grep 'pattern' file.txt | sed 's/old/new/' | awk '{print $1}'
+```
+
+### 7. Document Complex sed Commands
+
+Add comments in scripts to explain what sed is doing:
+
+```bash
+# Remove all comments and empty lines from config
+sed -e '/^#/d' -e '/^$/d' /etc/myapp.conf
+```
+
+### 8. Use -n with p for Filtering
+
+When you only want matching lines, use `-n` with `p`:
+
+```bash
+sed -n '/pattern/p' file.txt   # Like grep
+```
+
+---
+
+## Common Pitfalls
+
+### 1. Forgetting the g Flag
+
+Without `g`, only the first match per line is replaced:
+
+```bash
+echo "foo foo foo" | sed 's/foo/bar/'
+# Output: bar foo foo
+```
+
+**Fix**: Add `g`:
+
+```bash
+echo "foo foo foo" | sed 's/foo/bar/g'
+# Output: bar bar bar
+```
+
+### 2. Not Escaping Special Characters
+
+Regex special characters like `.`, `*`, `[`, `]` need escaping if you want them literal:
+
+```bash
+# Wrong: . matches any character
+sed 's/192.168.1.1/10.0.0.1/' file.txt
+
+# Right: escape dots
+sed 's/192\.168\.1\.1/10.0.0.1/' file.txt
+```
+
+### 3. Using -i Without Testing
+
+Modifying files in-place without testing can cause data loss:
+
+```bash
+# Always test first
+sed 's/old/new/g' file.txt
+
+# Then use -i with backup
+sed -i.bak 's/old/new/g' file.txt
+```
+
+### 4. Overwriting Original File in Pipelines
+
+This doesn't work as expected:
+
+```bash
+sed 's/old/new/g' file.txt > file.txt  # File becomes empty!
+```
+
+**Fix**: Use `-i` or a temporary file:
+
+```bash
+sed -i 's/old/new/g' file.txt
+# or
+sed 's/old/new/g' file.txt > temp.txt && mv temp.txt file.txt
+```
+
+### 5. Confusing Addresses and Patterns
+
+```bash
+sed '5s/old/new/' file.txt    # Substitute on line 5
+sed '/5/s/old/new/' file.txt  # Substitute on lines containing "5"
+```
+
+Make sure you're using the right addressing method.
+
+### 6. Not Understanding Pattern Space
+
+sed processes one line at a time by default. Multi-line operations require special commands like `N`, `H`, `G`.
+
+### 7. Incorrect Delimiter Escaping
+
+If your pattern contains the delimiter, escape it or use a different delimiter:
+
+```bash
+# Confusing
+sed 's/\/path\/to\/file/\/new\/path/' file.txt
+
+# Better
+sed 's|/path/to/file|/new/path|' file.txt
+```
+
+---
+
+## sed Command Cheat Sheet
+
+| Command | Description | Example |
+|---------|-------------|---------|
+| `s/old/new/` | Substitute first occurrence | `sed 's/cat/dog/' file.txt` |
+| `s/old/new/g` | Substitute all occurrences | `sed 's/cat/dog/g' file.txt` |
+| `s/old/new/gI` | Substitute all (case-insensitive) | `sed 's/cat/dog/gI' file.txt` |
+| `-i` | Edit file in-place | `sed -i 's/old/new/' file.txt` |
+| `-i.bak` | Edit in-place with backup | `sed -i.bak 's/old/new/' file.txt` |
+| `-e` | Multiple commands | `sed -e 's/a/b/' -e 's/c/d/' file.txt` |
+| `-n` | Suppress automatic output | `sed -n '5p' file.txt` |
+| `-E` | Extended regex | `sed -E 's/(foo\|bar)/baz/' file.txt` |
+| `d` | Delete lines | `sed '/pattern/d' file.txt` |
+| `p` | Print lines | `sed -n '/pattern/p' file.txt` |
+| `i\` | Insert before line | `sed '3i\new line' file.txt` |
+| `a\` | Append after line | `sed '3a\new line' file.txt` |
+| `c\` | Change/replace line | `sed '3c\replacement' file.txt` |
+| `5` | Address: line 5 | `sed '5d' file.txt` |
+| `2,5` | Address: lines 2-5 | `sed '2,5d' file.txt` |
+| `$` | Address: last line | `sed '$d' file.txt` |
+| `/pattern/` | Address: matching lines | `sed '/error/d' file.txt` |
+| `/start/,/end/` | Address range by pattern | `sed '/START/,/END/d' file.txt` |
+
+---
+
+## Key Takeaways
+
+1. **sed is a stream editor** designed for non-interactive text transformation
+2. **Substitution** (`s/old/new/g`) is the most common operation
+3. **Use -i for in-place editing**, preferably with backups (`-i.bak`)
+4. **Addresses** control which lines commands apply to (line numbers, ranges, patterns)
+5. **Delete lines** with `d`, print specific lines with `-n` and `p`
+6. **Regular expressions** make sed incredibly powerful for pattern matching
+7. **Alternative delimiters** (`|`, `#`) make path substitutions cleaner
+8. **Extended regex** (`-E`) simplifies complex patterns
+9. **Always test** sed commands before using `-i` on important files
+10. **Combine sed with grep, awk, and pipes** for powerful text processing workflows
+
+---
+
+## What's Next?
+
+You've mastered sed for stream editing and text transformation! In the next post, we'll explore **SSH and Remote Server Access**—learning how to securely connect to remote Linux systems, transfer files, and manage servers over the network.
+
+**Coming up**:
+- Understanding SSH protocol and encryption
+- Connecting to remote servers with ssh
+- Key-based authentication
+- scp and sftp for file transfers
+- SSH configuration and best practices
+
+Keep practicing sed, and see you in the next post!
+
+---
+
+**Previous Post**: [LFCS Part 40: Introduction to awk for Text Processing](/blog/2025-12-10_lfcs-phase1-part-40-awk-text-processing)
+
+**Next Post**: LFCS Part 42: Understanding SSH and Remote Server Access *(Coming Soon)*
