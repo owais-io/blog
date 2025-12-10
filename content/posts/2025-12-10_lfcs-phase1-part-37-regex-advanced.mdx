@@ -1,0 +1,1827 @@
+---
+title: "LFCS Part 37: Regular Expressions Part 2 - Advanced Patterns"
+description: "Master advanced regex techniques with extended patterns, grouping, alternation, backreferences, and word boundaries. Learn to use regex with sed and awk for powerful text processing."
+date: "2025-12-28"
+tags: ["Linux", "LFCS", "regex", "regular expressions", "grep", "sed", "awk", "extended regex", "pattern matching", "text processing"]
+published: true
+author: "Owais"
+categories: ["Linux", "LFCS Certification"]
+series: "LFCS Certification - Phase 1"
+seriesOrder: 37
+---
+
+In our previous post, you learned the fundamentals of regular expressions: anchors, character classes, and basic quantifiers. Now it's time to level up with **advanced regex patterns** that will transform you into a pattern-matching expert.
+
+Advanced regex techniques enable you to handle complex real-world scenarios like validating email formats, parsing structured logs, extracting specific data patterns, and performing sophisticated text transformations.
+
+## What You'll Learn
+
+In this comprehensive guide, you'll master:
+
+- **Extended regex** with `grep -E` (no escaping needed!)
+- **Grouping** with parentheses for complex patterns
+- **Alternation** with `|` for OR logic
+- **Backreferences** for matching repeated patterns
+- **Word boundaries** (`\b`) for precise matching
+- **Precise quantifiers** `{n}`, `{n,}`, `{n,m}`
+- **Regex with sed** for powerful text substitution
+- **Regex with awk** for advanced text processing
+- **Performance optimization** tips
+- **20 advanced practice labs**
+
+---
+
+## Part 1: Extended Regular Expressions
+
+### Basic vs Extended Regex
+
+**Basic Regular Expressions (BRE)** require escaping special characters:
+```bash
+# Basic regex - need backslashes
+grep 'error\(1\|2\)' file.txt          # Escape ( ) |
+grep 'error[0-9]\+' file.txt            # Escape +
+grep 'colou\?r' file.txt                # Escape ?
+```
+
+**Extended Regular Expressions (ERE)** don't require escaping:
+```bash
+# Extended regex - no escaping needed!
+grep -E 'error(1|2)' file.txt          # Clean and readable
+grep -E 'error[0-9]+' file.txt          # No backslash
+grep -E 'colou?r' file.txt              # No backslash
+```
+
+### Using grep -E or egrep
+
+**Two ways to use extended regex:**
+```bash
+# Method 1: grep with -E flag
+grep -E 'pattern' file.txt
+
+# Method 2: egrep (same as grep -E)
+egrep 'pattern' file.txt
+```
+
+**Recommendation:** Use `grep -E` as it's more explicit and standard.
+
+**Example 1: Extended regex benefits**
+
+```bash
+# Create test file
+cat > errors.log << 'EOF'
+error1: Connection timeout
+error2: Database failure
+error3: Authentication failed
+warning: Low memory
+EOF
+
+# Basic regex (harder to read)
+grep 'error\(1\|2\|3\)' errors.log
+
+# Extended regex (much cleaner)
+grep -E 'error(1|2|3)' errors.log
+```
+
+**Output:**
+```
+error1: Connection timeout
+error2: Database failure
+error3: Authentication failed
+```
+
+---
+
+## Part 2: Grouping with Parentheses
+
+Parentheses `()` create **groups** that can be:
+- Treated as a single unit
+- Used with quantifiers
+- Referenced with backreferences
+- Combined with alternation
+
+### Basic Grouping
+
+**Example 2: Grouping for quantifiers**
+
+```bash
+# Create test file
+cat > repeat.txt << 'EOF'
+haha
+hahaha
+hahahaha
+hoho
+EOF
+
+# Match "ha" repeated 2 or more times
+grep -E '(ha){2,}' repeat.txt
+```
+
+**Output:**
+```
+haha
+hahaha
+hahahaha
+```
+
+**Explanation:**
+- `(ha)` - Group the pattern "ha"
+- `{2,}` - Match 2 or more repetitions of the group
+
+**Example 3: Grouping with alternation**
+
+```bash
+# Create log file
+cat > system.log << 'EOF'
+User john logged in
+User jane logged out
+Admin root logged in
+Guest visitor logged out
+EOF
+
+# Match users who logged in or out
+grep -E '(logged in|logged out)' system.log
+```
+
+**Output:**
+```
+User john logged in
+User jane logged out
+Admin root logged in
+Guest visitor logged out
+```
+
+### Nested Groups
+
+You can nest groups for complex patterns:
+
+**Example 4: Nested grouping**
+
+```bash
+# Match repeated word patterns
+echo -e "blah blah\ntest test test" | grep -E '(\w+)( \1)+'
+```
+
+---
+
+## Part 3: Alternation with Pipe (|)
+
+The pipe `|` works like logical OR - matches **either** pattern.
+
+### Simple Alternation
+
+**Example 5: Multiple error types**
+
+```bash
+# Create log with different error levels
+cat > app.log << 'EOF'
+ERROR: Database connection failed
+WARNING: Cache miss
+CRITICAL: System failure
+INFO: Application started
+FATAL: Cannot recover
+DEBUG: Processing request
+EOF
+
+# Match ERROR, CRITICAL, or FATAL
+grep -E 'ERROR|CRITICAL|FATAL' app.log
+```
+
+**Output:**
+```
+ERROR: Database connection failed
+CRITICAL: System failure
+FATAL: Cannot recover
+```
+
+**Example 6: File extensions**
+
+```bash
+# List image files
+ls | grep -E '\.(jpg|png|gif|bmp)$'
+
+# Match specific file types
+find . -type f | grep -E '\.(conf|cfg|ini)$'
+```
+
+### Alternation with Groups
+
+Combine alternation and grouping:
+
+**Example 7: Complex patterns**
+
+```bash
+# Match http or https URLs
+grep -E 'https?://[a-zA-Z0-9.-]+' urls.txt
+
+# Match different date formats
+grep -E '([0-9]{4}-[0-9]{2}-[0-9]{2}|[0-9]{2}/[0-9]{2}/[0-9]{4})' dates.txt
+```
+
+**Example 8: Log level variations**
+
+```bash
+# Match various error indicators
+grep -E '(error|fail(ed|ure)?|crash|exception)' logfile.txt
+
+# This matches:
+# error, failed, failure, crash, exception
+```
+
+---
+
+## Part 4: Precise Quantifiers
+
+Beyond `*`, `+`, and `?`, you can specify **exact repetitions**.
+
+### Quantifier Syntax
+
+- `{n}` - Exactly n times
+- `{n,}` - n or more times
+- `{n,m}` - Between n and m times
+
+### Exact Repetitions
+
+**Example 9: Phone number patterns**
+
+```bash
+# Create contact list
+cat > contacts.txt << 'EOF'
+555-1234
+555-12-3456
+(555) 123-4567
+5551234567
+123-456
+EOF
+
+# Match XXX-XXXX format (exactly 3 digits, dash, exactly 4 digits)
+grep -E '^[0-9]{3}-[0-9]{4}$' contacts.txt
+
+# Match 10-digit phone numbers
+grep -E '^[0-9]{10}$' contacts.txt
+```
+
+**Output:**
+```
+555-1234
+
+5551234567
+```
+
+**Example 10: ZIP codes**
+
+```bash
+# Match 5-digit ZIP codes
+grep -E '^[0-9]{5}$' zipcodes.txt
+
+# Match ZIP+4 format (12345-6789)
+grep -E '^[0-9]{5}-[0-9]{4}$' zipcodes.txt
+```
+
+### Range Repetitions
+
+**Example 11: Password validation**
+
+```bash
+# Create password list
+cat > passwords.txt << 'EOF'
+short
+password123
+VeryLongPasswordThatExceedsMaximum
+GoodPass1
+EOF
+
+# Match passwords 8-16 characters
+grep -E '^.{8,16}$' passwords.txt
+
+# Match passwords with 2-4 digits
+grep -E '[0-9]{2,4}' passwords.txt
+```
+
+**Output:**
+```
+password123
+GoodPass1
+
+password123
+```
+
+---
+
+## Part 5: Word Boundaries
+
+Word boundaries `\b` match positions between word and non-word characters.
+
+### Understanding Word Boundaries
+
+**Word characters**: Letters, digits, underscore `[a-zA-Z0-9_]`
+**Non-word characters**: Spaces, punctuation, special chars
+
+**Example 12: Exact word matching**
+
+```bash
+# Create text file
+cat > text.txt << 'EOF'
+The cat sat on the mat
+I have a catalog
+The scatter plot shows data
+EOF
+
+# Without word boundary (matches partial words)
+grep 'cat' text.txt
+# Matches: cat, catalog, scatter
+
+# With word boundary (matches whole word only)
+grep -E '\bcat\b' text.txt
+# Matches: only "cat" as a complete word
+```
+
+**Output without boundary:**
+```
+The cat sat on the mat
+I have a catalog
+The scatter plot shows data
+```
+
+**Output with boundary:**
+```
+The cat sat on the mat
+```
+
+**Example 13: Variable names in code**
+
+```bash
+# Find variable assignments
+grep -E '\b[a-zA-Z_][a-zA-Z0-9_]*\b\s*=' script.sh
+
+# Find function calls
+grep -E '\b[a-zA-Z_][a-zA-Z0-9_]*\(' code.py
+```
+
+**Example 14: Avoiding partial matches**
+
+```bash
+# Create log
+cat > access.log << 'EOF'
+user authenticated
+authentication failed
+user deauthenticated
+EOF
+
+# Want "authenticated" but not "deauthenticated"
+grep -E '\bauthenticated\b' access.log
+```
+
+**Output:**
+```
+user authenticated
+authentication failed
+```
+
+---
+
+## Part 6: Backreferences
+
+Backreferences allow you to **match previously captured groups**.
+
+**Syntax:** `\1`, `\2`, `\3` ... refer to 1st, 2nd, 3rd captured group
+
+### Matching Repeated Words
+
+**Example 15: Find doubled words**
+
+```bash
+# Create text with errors
+cat > document.txt << 'EOF'
+This is a test test file
+The cat is sleeping
+I saw a a mistake here
+Everything looks looks good
+EOF
+
+# Find repeated words
+grep -E '\b([a-zA-Z]+) \1\b' document.txt
+```
+
+**Output:**
+```
+This is a test test file
+I saw a a mistake here
+Everything looks looks good
+```
+
+**Explanation:**
+- `\b([a-zA-Z]+)` - Capture a word (group 1)
+- ` ` - Followed by a space
+- `\1` - Match the same word again
+- `\b` - Word boundary
+
+**Example 16: Matching HTML tags**
+
+```bash
+# Find opening and closing tag pairs
+echo '<div>content</div>' | grep -E '<([a-z]+)>.*</\1>'
+
+# Matches: <div>...</div>, <span>...</span>
+# Doesn't match: <div>...</span> (mismatched tags)
+```
+
+### Multiple Backreferences
+
+**Example 17: Pattern repetition**
+
+```bash
+# Match patterns like: ABCABC, 123123
+echo -e "ABCABC\n123123\nABCDEF" | grep -E '^(.{3})\1$'
+```
+
+**Output:**
+```
+ABCABC
+123123
+```
+
+---
+
+## Part 7: Regex with sed
+
+`sed` is a powerful stream editor that uses regex for find-and-replace operations.
+
+### Basic sed Substitution
+
+**Syntax:**
+```bash
+sed 's/PATTERN/REPLACEMENT/' file
+sed 's/PATTERN/REPLACEMENT/g' file    # Global (all occurrences)
+sed 's/PATTERN/REPLACEMENT/gi' file   # Global + case-insensitive
+```
+
+**Example 18: Simple substitution**
+
+```bash
+# Create file
+echo "Hello World" > greeting.txt
+
+# Replace "World" with "Linux"
+sed 's/World/Linux/' greeting.txt
+
+# Original file unchanged unless using -i
+cat greeting.txt
+```
+
+**Output:**
+```
+Hello Linux
+Hello World
+```
+
+### Using Regex Patterns in sed
+
+**Example 19: Replace with patterns**
+
+```bash
+# Create log file
+cat > server.log << 'EOF'
+Error 404: Page not found
+Error 500: Internal server error
+Error 403: Forbidden
+Warning 200: OK
+EOF
+
+# Replace all error codes with [REDACTED]
+sed 's/Error [0-9]\+/Error [REDACTED]/' server.log
+```
+
+**Output:**
+```
+Error [REDACTED]: Page not found
+Error [REDACTED]: Internal server error
+Error [REDACTED]: Forbidden
+Warning 200: OK
+```
+
+**Example 20: Extract and rearrange**
+
+```bash
+# Create date file
+echo "2024-01-15" > date.txt
+
+# Convert YYYY-MM-DD to MM/DD/YYYY
+sed -E 's/([0-9]{4})-([0-9]{2})-([0-9]{2})/\2\/\3\/\1/' date.txt
+```
+
+**Output:**
+```
+01/15/2024
+```
+
+**Explanation:**
+- `([0-9]{4})` - Capture year (group 1)
+- `([0-9]{2})` - Capture month (group 2)
+- `([0-9]{2})` - Capture day (group 3)
+- `\2\/\3\/\1` - Rearrange as month/day/year
+
+### In-place Editing with sed
+
+**Example 21: Modify files in place**
+
+```bash
+# Create config file
+cat > app.conf << 'EOF'
+debug=true
+port=8080
+host=localhost
+EOF
+
+# Change debug to false (backup with .bak)
+sed -i.bak 's/debug=true/debug=false/' app.conf
+
+# Check result
+cat app.conf
+cat app.conf.bak
+```
+
+**Example 22: Remove comments**
+
+```bash
+# Remove lines starting with #
+sed '/^#/d' config.txt
+
+# Remove inline comments
+sed 's/#.*//' config.txt
+```
+
+---
+
+## Part 8: Regex with awk
+
+`awk` uses regex for pattern matching and field-based processing.
+
+### Pattern Matching in awk
+
+**Syntax:**
+```bash
+awk '/PATTERN/ { action }' file
+```
+
+**Example 23: Filter with regex**
+
+```bash
+# Create data file
+cat > users.txt << 'EOF'
+john:admin:1001
+jane:user:1002
+root:admin:0
+guest:user:1003
+EOF
+
+# Print lines where first field matches pattern
+awk -F: '/^[jJ]/ { print $1, $2 }' users.txt
+```
+
+**Output:**
+```
+john admin
+jane user
+```
+
+**Example 24: Field matching**
+
+```bash
+# Match regex in specific field
+awk -F: '$2 ~ /admin/ { print $1 }' users.txt
+```
+
+**Output:**
+```
+john
+root
+```
+
+**Explanation:**
+- `$2 ~ /admin/` - Second field matches "admin"
+- `{ print $1 }` - Print first field
+
+### Complex awk with Regex
+
+**Example 25: Log analysis**
+
+```bash
+# Create access log
+cat > access.log << 'EOF'
+192.168.1.10 - GET /index.html 200
+192.168.1.11 - POST /api/login 200
+10.0.0.5 - GET /admin 403
+192.168.1.10 - GET /data 404
+EOF
+
+# Count 4xx errors by IP
+awk '$5 ~ /^4/ { count[$1]++ } END { for (ip in count) print ip, count[ip] }' access.log
+```
+
+**Output:**
+```
+10.0.0.5 1
+192.168.1.10 1
+```
+
+**Example 26: Extract and transform**
+
+```bash
+# Extract email domains
+echo -e "user@example.com\nadmin@site.org" | awk -F@ '{ print $2 }'
+```
+
+**Output:**
+```
+example.com
+site.org
+```
+
+---
+
+## Part 9: Real-World Complex Patterns
+
+### Email Validation (Simple)
+
+**Example 27: Basic email pattern**
+
+```bash
+# Simple email pattern
+grep -E '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$' emails.txt
+
+# Explanation:
+# [a-zA-Z0-9._%+-]+ - Username part
+# @ - Literal @
+# [a-zA-Z0-9.-]+ - Domain name
+# \. - Literal dot
+# [a-zA-Z]{2,} - TLD (2+ letters)
+```
+
+### IP Address Validation
+
+**Example 28: IPv4 addresses**
+
+```bash
+# Simple IPv4 pattern (not perfect but practical)
+grep -E '^([0-9]{1,3}\.){3}[0-9]{1,3}$' ips.txt
+
+# More precise (validates range 0-255)
+grep -E '^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$' ips.txt
+```
+
+### URL Parsing
+
+**Example 29: Extract URL components**
+
+```bash
+# Create URLs
+cat > urls.txt << 'EOF'
+https://example.com/path/to/page
+http://site.org:8080/api/v1
+https://sub.domain.com/
+EOF
+
+# Extract protocol
+grep -oE '^https?://' urls.txt
+
+# Extract domain
+grep -oE '://[a-zA-Z0-9.-]+' urls.txt | sed 's/^:\/\///'
+
+# Extract path
+grep -oE '/[^:]*$' urls.txt
+```
+
+### Log Timestamp Extraction
+
+**Example 30: Parse Apache/Nginx logs**
+
+```bash
+# Sample log format
+cat > webserver.log << 'EOF'
+192.168.1.1 - - [15/Jan/2024:10:30:45 +0000] "GET /index.html HTTP/1.1" 200 1234
+10.0.0.5 - - [15/Jan/2024:10:31:12 +0000] "POST /api/login HTTP/1.1" 200 456
+EOF
+
+# Extract timestamps
+grep -oE '\[[^]]+\]' webserver.log
+
+# Extract IP, timestamp, and status code
+awk '{print $1, $4, $5, $9}' webserver.log
+```
+
+---
+
+## Part 10: Performance Considerations
+
+### Optimization Tips
+
+**1. Anchor patterns when possible**
+```bash
+# Slower (searches entire line)
+grep 'error' logfile.txt
+
+# Faster (stops at line start)
+grep '^error' logfile.txt
+```
+
+**2. Use fixed strings for exact matches**
+```bash
+# Regex engine
+grep 'exact.string' file.txt
+
+# Fixed string (faster)
+grep -F 'exact.string' file.txt
+# or: fgrep 'exact.string' file.txt
+```
+
+**3. Avoid greedy quantifiers on large files**
+```bash
+# Greedy (can be slow)
+grep '.*error.*' hugefile.log
+
+# More specific (faster)
+grep 'error' hugefile.log
+```
+
+**4. Use character classes instead of multiple alternations**
+```bash
+# Slower
+grep -E 'a|e|i|o|u' file.txt
+
+# Faster
+grep '[aeiou]' file.txt
+```
+
+**5. Profile and test patterns**
+```bash
+# Time your regex
+time grep -E 'complex(pattern|here)' largefile.log
+```
+
+---
+
+## Practice Labs
+
+Time to practice! Complete these 20 advanced labs.
+
+### Warm-up Labs (1-5): Extended Regex
+
+**Lab 1: Extended vs Basic Regex**
+
+**Task:** Create a file and use both basic and extended regex to match:
+- Lines with "error" followed by 1, 2, or 3
+- Lines with repeated words
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create test file
+cat > test.txt << 'EOF'
+error1 occurred
+error2 detected
+error4 found
+test test repeated
+EOF
+
+# Basic regex (requires escaping)
+grep 'error\(1\|2\|3\)' test.txt
+
+# Extended regex (cleaner)
+grep -E 'error(1|2|3)' test.txt
+
+# Repeated words (extended)
+grep -E '\b(\w+) \1\b' test.txt
+```
+
+**Expected outputs:**
+```
+error1 occurred
+error2 detected
+
+error1 occurred
+error2 detected
+
+test test repeated
+```
+</details>
+
+**Lab 2: Grouping Practice**
+
+**Task:** Use grouping to match:
+- "ha" repeated 2-4 times
+- Phone numbers in format (XXX) XXX-XXXX
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create test file
+cat > group.txt << 'EOF'
+ha
+haha
+hahaha
+hahahaha
+(555) 123-4567
+555-1234
+(800) 555-0199
+EOF
+
+# Match "ha" repeated 2-4 times
+grep -E '(ha){2,4}' group.txt
+
+# Match phone format (XXX) XXX-XXXX
+grep -E '^\([0-9]{3}\) [0-9]{3}-[0-9]{4}$' group.txt
+```
+
+**Expected outputs:**
+```
+haha
+hahaha
+hahahaha
+
+(555) 123-4567
+(800) 555-0199
+```
+</details>
+
+**Lab 3: Alternation Patterns**
+
+**Task:** Use alternation to find:
+- Lines with ERROR, WARNING, or CRITICAL
+- Files with extensions .txt, .log, or .conf
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create log file
+cat > app.log << 'EOF'
+INFO: Application started
+ERROR: Connection failed
+WARNING: Low memory
+CRITICAL: System failure
+DEBUG: Processing data
+EOF
+
+# Match error levels
+grep -E 'ERROR|WARNING|CRITICAL' app.log
+
+# Create file list
+echo -e "file.txt\ndata.log\napp.conf\nscript.sh" > files.txt
+
+# Match specific extensions
+grep -E '\.(txt|log|conf)$' files.txt
+```
+
+**Expected outputs:**
+```
+ERROR: Connection failed
+WARNING: Low memory
+CRITICAL: System failure
+
+file.txt
+data.log
+app.conf
+```
+</details>
+
+**Lab 4: Precise Quantifiers**
+
+**Task:** Use exact quantifiers to match:
+- Social Security Numbers (XXX-XX-XXXX)
+- Credit card-like patterns (XXXX-XXXX-XXXX-XXXX)
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create test data
+cat > sensitive.txt << 'EOF'
+123-45-6789
+456-78-901
+1234-5678-9012-3456
+5555-6666-7777-8888
+123-456-7890
+EOF
+
+# Match SSN format
+grep -E '^[0-9]{3}-[0-9]{2}-[0-9]{4}$' sensitive.txt
+
+# Match credit card format
+grep -E '^([0-9]{4}-){3}[0-9]{4}$' sensitive.txt
+```
+
+**Expected outputs:**
+```
+123-45-6789
+
+1234-5678-9012-3456
+5555-6666-7777-8888
+```
+</details>
+
+**Lab 5: Word Boundaries**
+
+**Task:** Use word boundaries to:
+- Find whole word "test" (not "testing" or "latest")
+- Match variable assignments (word = value)
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create text file
+cat > words.txt << 'EOF'
+This is a test
+We are testing
+The latest results
+test case passed
+EOF
+
+# Match whole word "test"
+grep -E '\btest\b' words.txt
+
+# Create script
+cat > vars.sh << 'EOF'
+name=john
+test_var=123
+result = success
+EOF
+
+# Match assignments
+grep -E '\b[a-zA-Z_][a-zA-Z0-9_]*\b\s*=' vars.sh
+```
+
+**Expected outputs:**
+```
+This is a test
+test case passed
+
+name=john
+test_var=123
+result = success
+```
+</details>
+
+### Core Labs (6-13): Advanced Patterns
+
+**Lab 6: Backreferences**
+
+**Task:** Use backreferences to find:
+- Repeated consecutive words
+- Repeated patterns (e.g., ABCABC)
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create document
+cat > doc.txt << 'EOF'
+This is is a test
+The cat is sleeping
+I saw a a mistake
+Pattern: ABCABC
+Another: 123123
+Different: ABCDEF
+EOF
+
+# Find repeated words
+grep -E '\b([a-zA-Z]+) \1\b' doc.txt
+
+# Find repeated 3-character patterns
+echo -e "ABCABC\n123123\nABCDEF\nXYZXYZ" | grep -E '^(.{3})\1$'
+```
+
+**Expected outputs:**
+```
+This is is a test
+I saw a a mistake
+
+ABCABC
+123123
+XYZXYZ
+```
+</details>
+
+**Lab 7: sed Substitution**
+
+**Task:** Use sed to:
+- Replace all error codes with [REDACTED]
+- Convert dates from YYYY-MM-DD to MM/DD/YYYY
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create log
+cat > errors.log << 'EOF'
+Error 404: Not found
+Error 500: Server error
+Error 403: Forbidden
+EOF
+
+# Redact error codes
+sed 's/Error [0-9]\+/Error [REDACTED]/' errors.log
+
+# Create dates file
+echo -e "2024-01-15\n2024-12-25" > dates.txt
+
+# Convert date format
+sed -E 's/([0-9]{4})-([0-9]{2})-([0-9]{2})/\2\/\3\/\1/' dates.txt
+```
+
+**Expected outputs:**
+```
+Error [REDACTED]: Not found
+Error [REDACTED]: Server error
+Error [REDACTED]: Forbidden
+
+01/15/2024
+12/25/2024
+```
+</details>
+
+**Lab 8: sed Pattern Extraction**
+
+**Task:** Use sed to:
+- Extract domain from email addresses
+- Remove comments from config files
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create email list
+cat > emails.txt << 'EOF'
+user@example.com
+admin@site.org
+test@domain.net
+EOF
+
+# Extract domains
+sed 's/.*@//' emails.txt
+
+# Create config with comments
+cat > config.ini << 'EOF'
+# This is a comment
+port=8080  # inline comment
+host=localhost
+# Another comment
+debug=true
+EOF
+
+# Remove comments
+sed 's/#.*//' config.ini | sed '/^$/d'
+```
+
+**Expected outputs:**
+```
+example.com
+site.org
+domain.net
+
+port=8080
+host=localhost
+debug=true
+```
+</details>
+
+**Lab 9: awk Pattern Matching**
+
+**Task:** Use awk to:
+- Filter lines matching a pattern
+- Count occurrences by pattern
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create access log
+cat > access.log << 'EOF'
+192.168.1.10 GET /index.html 200
+192.168.1.11 POST /api/login 200
+10.0.0.5 GET /admin 403
+192.168.1.10 GET /data 404
+192.168.1.12 GET /page 200
+EOF
+
+# Filter 4xx errors
+awk '$4 ~ /^4/ { print }' access.log
+
+# Count requests by IP
+awk '{ count[$1]++ } END { for (ip in count) print ip, count[ip] }' access.log
+```
+
+**Expected outputs:**
+```
+10.0.0.5 GET /admin 403
+192.168.1.10 GET /data 404
+
+192.168.1.10 2
+192.168.1.11 1
+10.0.0.5 1
+192.168.1.12 1
+```
+</details>
+
+**Lab 10: awk Field Extraction with Regex**
+
+**Task:** Use awk to:
+- Extract email domains
+- Parse log timestamps
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create email data
+echo -e "john@example.com\njane@site.org" > emails.txt
+
+# Extract domains
+awk -F@ '{ print $2 }' emails.txt
+
+# Create log with timestamps
+cat > timestamped.log << 'EOF'
+[2024-01-15 10:30:45] INFO: Started
+[2024-01-15 10:31:00] ERROR: Failed
+EOF
+
+# Extract timestamps
+awk -F'[][]' '{ print $2 }' timestamped.log
+```
+
+**Expected outputs:**
+```
+example.com
+site.org
+
+2024-01-15 10:30:45
+2024-01-15 10:31:00
+```
+</details>
+
+**Lab 11: Complex Email Validation**
+
+**Task:** Create regex pattern to validate:
+- Basic email format
+- Email with subdomains
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create email list
+cat > emails.txt << 'EOF'
+valid@example.com
+invalid@
+user@sub.domain.org
+@nouser.com
+test@site
+good.email@company.co.uk
+EOF
+
+# Basic email validation
+grep -E '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$' emails.txt
+
+# Allow subdomains
+grep -E '^[a-zA-Z0-9._%+-]+@([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$' emails.txt
+```
+
+**Expected outputs:**
+```
+valid@example.com
+user@sub.domain.org
+good.email@company.co.uk
+
+valid@example.com
+user@sub.domain.org
+good.email@company.co.uk
+```
+</details>
+
+**Lab 12: IP Address Extraction**
+
+**Task:** Extract IP addresses from:
+- Log files
+- Network configurations
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create network log
+cat > network.log << 'EOF'
+Connection from 192.168.1.100 to 10.0.0.50
+Server IP: 8.8.8.8
+Invalid IP: 999.999.999.999
+EOF
+
+# Extract all IP-like patterns
+grep -oE '([0-9]{1,3}\.){3}[0-9]{1,3}' network.log
+
+# Extract only valid IPs (0-255 range)
+grep -oE '((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)' network.log
+```
+
+**Expected outputs:**
+```
+192.168.1.100
+10.0.0.50
+8.8.8.8
+999.999.999.999
+
+192.168.1.100
+10.0.0.50
+8.8.8.8
+```
+</details>
+
+**Lab 13: URL Parsing**
+
+**Task:** Parse URLs to extract:
+- Protocol (http/https)
+- Domain name
+- Path
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create URL list
+cat > urls.txt << 'EOF'
+https://example.com/path/to/page
+http://site.org:8080/api/v1
+https://subdomain.domain.com/
+EOF
+
+# Extract protocol
+grep -oE '^https?://' urls.txt
+
+# Extract domain (with port if present)
+grep -oE '://[a-zA-Z0-9.:_-]+' urls.txt | sed 's/^:\/\///'
+
+# Extract full URL components
+sed -E 's|(https?)://([^/]+)(.*)|Protocol: \1\nDomain: \2\nPath: \3|' urls.txt
+```
+
+**Expected outputs:**
+```
+https://
+http://
+https://
+
+example.com
+site.org:8080
+subdomain.domain.com
+
+Protocol: https
+Domain: example.com
+Path: /path/to/page
+Protocol: http
+Domain: site.org:8080
+Path: /api/v1
+Protocol: https
+Domain: subdomain.domain.com
+Path: /
+```
+</details>
+
+### Advanced Labs (14-20): Real-World Scenarios
+
+**Lab 14: Apache/Nginx Log Analysis**
+
+**Task:** Parse web server logs to:
+- Extract IPs making more than 3 requests
+- Find all 404 errors with requesting IPs
+- Calculate response size statistics
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create access log
+cat > access.log << 'EOF'
+192.168.1.10 - - [15/Jan/2024:10:30:45] "GET /index.html HTTP/1.1" 200 1234
+192.168.1.10 - - [15/Jan/2024:10:31:00] "GET /page1 HTTP/1.1" 200 2345
+10.0.0.5 - - [15/Jan/2024:10:32:00] "GET /missing HTTP/1.1" 404 0
+192.168.1.10 - - [15/Jan/2024:10:33:00] "POST /api HTTP/1.1" 200 567
+192.168.1.11 - - [15/Jan/2024:10:34:00] "GET /data HTTP/1.1" 404 0
+192.168.1.10 - - [15/Jan/2024:10:35:00] "GET /test HTTP/1.1" 200 890
+EOF
+
+# IPs with more than 2 requests
+awk '{print $1}' access.log | sort | uniq -c | awk '$1 > 2 {print $2}'
+
+# 404 errors with IPs
+awk '$9 == "404" {print $1, $7}' access.log
+
+# Average response size (excluding 404s)
+awk '$9 != "404" {sum+=$10; count++} END {print "Average:", sum/count}' access.log
+```
+
+**Expected outputs:**
+```
+192.168.1.10
+
+10.0.0.5 /missing
+192.168.1.11 /data
+
+Average: 1259
+```
+</details>
+
+**Lab 15: Password Strength Validator**
+
+**Task:** Create regex to validate passwords must have:
+- 8-16 characters
+- At least one uppercase
+- At least one lowercase
+- At least one digit
+- At least one special character
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create password list
+cat > passwords.txt << 'EOF'
+weak
+Strong123!
+test
+P@ssw0rd
+Abc123
+VerySecure9!
+NoSpecialChar1
+alllowercase!
+ALLUPPERCASE1!
+EOF
+
+# Check length
+grep -E '^.{8,16}$' passwords.txt > temp1.txt
+
+# Check uppercase
+grep '[A-Z]' temp1.txt > temp2.txt
+
+# Check lowercase
+grep '[a-z]' temp2.txt > temp3.txt
+
+# Check digit
+grep '[0-9]' temp3.txt > temp4.txt
+
+# Check special character
+grep '[!@#$%^&*(),.?":{}|<>]' temp4.txt
+
+# Cleanup
+rm temp*.txt
+
+# Or as one-liner (less readable)
+grep -E '^.{8,16}$' passwords.txt | grep '[A-Z]' | grep '[a-z]' | grep '[0-9]' | grep '[!@#$%^&*(),.?":{}|<>]'
+```
+
+**Expected output:**
+```
+Strong123!
+P@ssw0rd
+VerySecure9!
+```
+</details>
+
+**Lab 16: CSV Data Extraction**
+
+**Task:** Parse CSV data to:
+- Extract specific columns
+- Filter rows by pattern
+- Transform data format
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create CSV file
+cat > data.csv << 'EOF'
+name,email,age,city
+John,john@example.com,30,NYC
+Jane,jane@site.org,25,LA
+Bob,bob@test.com,35,NYC
+Alice,alice@example.org,28,SF
+EOF
+
+# Extract emails
+awk -F, 'NR>1 {print $2}' data.csv
+
+# Filter by city (NYC)
+awk -F, '$4 == "NYC" {print $1, $2}' data.csv
+
+# Transform to "Name <email>"
+awk -F, 'NR>1 {print $1, "<" $2 ">"}' data.csv
+```
+
+**Expected outputs:**
+```
+john@example.com
+jane@site.org
+bob@test.com
+alice@example.org
+
+John john@example.com
+Bob bob@test.com
+
+John <john@example.com>
+Jane <jane@site.org>
+Bob <bob@test.com>
+Alice <alice@example.org>
+```
+</details>
+
+**Lab 17: System Log Security Audit**
+
+**Task:** Analyze auth logs for:
+- Failed SSH login attempts
+- Successful root logins
+- Repeated failures from same IP
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create auth log
+cat > auth.log << 'EOF'
+Jan 15 10:00:00 server sshd[1234]: Failed password for user from 203.0.113.5
+Jan 15 10:01:00 server sshd[1235]: Accepted password for admin from 192.168.1.10
+Jan 15 10:02:00 server sshd[1236]: Failed password for user from 203.0.113.5
+Jan 15 10:03:00 server sshd[1237]: Failed password for root from 203.0.113.6
+Jan 15 10:04:00 server sshd[1238]: Accepted password for root from 192.168.1.1
+Jan 15 10:05:00 server sshd[1239]: Failed password for user from 203.0.113.5
+EOF
+
+# Failed SSH attempts
+grep 'Failed password' auth.log
+
+# Successful root logins
+grep 'Accepted password for root' auth.log
+
+# Count repeated failures by IP
+grep 'Failed password' auth.log | grep -oE '([0-9]{1,3}\.){3}[0-9]{1,3}' | sort | uniq -c | sort -rn
+```
+
+**Expected outputs:**
+```
+Jan 15 10:00:00 server sshd[1234]: Failed password for user from 203.0.113.5
+Jan 15 10:02:00 server sshd[1236]: Failed password for user from 203.0.113.5
+Jan 15 10:03:00 server sshd[1237]: Failed password for root from 203.0.113.6
+Jan 15 10:05:00 server sshd[1239]: Failed password for user from 203.0.113.5
+
+Jan 15 10:04:00 server sshd[1238]: Accepted password for root from 192.168.1.1
+
+      3 203.0.113.5
+      1 203.0.113.6
+```
+</details>
+
+**Lab 18: Configuration File Validation**
+
+**Task:** Validate configuration files:
+- Check for valid port numbers (1-65535)
+- Validate boolean values
+- Find undefined variables
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create config file
+cat > app.conf << 'EOF'
+port=8080
+debug=true
+host=localhost
+max_connections=1000
+invalid_port=99999
+wrong_bool=yes
+empty_value=
+EOF
+
+# Valid port numbers (1-65535)
+grep -E 'port=[0-9]+' app.conf | grep -vE 'port=(0|[0-9]{6,}|6[6-9][0-9]{3}|65[6-9][0-9]{2}|655[4-9][0-9]|6553[6-9])'
+
+# Valid boolean values (true/false only)
+grep -E '(debug|enabled|flag)=' app.conf | grep -vE '=(true|false)$'
+
+# Empty or undefined values
+grep -E '=$' app.conf
+```
+
+**Expected outputs:**
+```
+port=8080
+
+wrong_bool=yes
+
+empty_value=
+```
+</details>
+
+**Lab 19: Database Query Log Parser**
+
+**Task:** Parse database logs to:
+- Extract slow queries (> 1 second)
+- Find queries with errors
+- Count queries by table
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create query log
+cat > queries.log << 'EOF'
+2024-01-15 10:00:00 Query: SELECT * FROM users WHERE id=1 (0.05s)
+2024-01-15 10:01:00 Query: SELECT * FROM orders WHERE date > '2024-01-01' (1.5s)
+2024-01-15 10:02:00 ERROR: Syntax error in query: SELECT * FROM products WHERE
+2024-01-15 10:03:00 Query: UPDATE users SET status='active' WHERE id=5 (0.02s)
+2024-01-15 10:04:00 Query: SELECT COUNT(*) FROM orders WHERE status='pending' (2.3s)
+EOF
+
+# Slow queries (> 1 second)
+grep -E 'Query:.*\([1-9][0-9]*\.[0-9]+s\)' queries.log
+
+# Queries with errors
+grep 'ERROR' queries.log
+
+# Extract table names
+grep -oE 'FROM [a-zA-Z_]+' queries.log | awk '{print $2}' | sort | uniq -c
+```
+
+**Expected outputs:**
+```
+2024-01-15 10:01:00 Query: SELECT * FROM orders WHERE date > '2024-01-01' (1.5s)
+2024-01-15 10:04:00 Query: SELECT COUNT(*) FROM orders WHERE status='pending' (2.3s)
+
+2024-01-15 10:02:00 ERROR: Syntax error in query: SELECT * FROM products WHERE
+
+      2 orders
+      1 products
+      2 users
+```
+</details>
+
+**Lab 20: Multi-Format Date Parser**
+
+**Task:** Parse and convert various date formats:
+- YYYY-MM-DD to MM/DD/YYYY
+- DD/MM/YYYY to YYYY-MM-DD
+- Extract dates from text
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create mixed date file
+cat > dates.txt << 'EOF'
+Meeting on 2024-01-15 at 10:00
+Event scheduled for 25/12/2024
+Report due: 2024-03-31
+Birthday: 04/07/1990
+ISO date: 2024-12-31
+EOF
+
+# Extract ISO dates (YYYY-MM-DD)
+grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}' dates.txt
+
+# Convert YYYY-MM-DD to MM/DD/YYYY
+sed -E 's/([0-9]{4})-([0-9]{2})-([0-9]{2})/\2\/\3\/\1/g' dates.txt
+
+# Convert DD/MM/YYYY to YYYY-MM-DD
+sed -E 's/([0-9]{2})\/([0-9]{2})\/([0-9]{4})/\3-\2-\1/g' dates.txt
+
+# Extract all dates (any format)
+grep -oE '([0-9]{4}-[0-9]{2}-[0-9]{2}|[0-9]{2}/[0-9]{2}/[0-9]{4})' dates.txt
+```
+
+**Expected outputs:**
+```
+2024-01-15
+2024-03-31
+2024-12-31
+
+Meeting on 01/15/2024 at 10:00
+Event scheduled for 25/12/2024
+Report due: 03/31/2024
+Birthday: 04/07/1990
+ISO date: 12/31/2024
+
+Meeting on 2024-01-15 at 10:00
+Event scheduled for 2024-12-25
+Report due: 2024-03-31
+Birthday: 1990-07-04
+ISO date: 2024-12-31
+
+2024-01-15
+25/12/2024
+2024-03-31
+04/07/1990
+2024-12-31
+```
+</details>
+
+---
+
+## Best Practices
+
+### 1. Use Extended Regex for Readability
+
+```bash
+# Less readable (basic regex)
+grep 'error\(404\|500\|503\)' file.txt
+
+# More readable (extended regex)
+grep -E 'error(404|500|503)' file.txt
+```
+
+### 2. Test Patterns Incrementally
+
+```bash
+# Step 1: Basic pattern
+grep -E '[0-9]+' file.txt
+
+# Step 2: Add specificity
+grep -E '[0-9]{3}' file.txt
+
+# Step 3: Add anchors
+grep -E '^[0-9]{3}$' file.txt
+```
+
+### 3. Use Word Boundaries to Avoid Partial Matches
+
+```bash
+# Matches partial words
+grep 'test' file.txt    # Matches: test, testing, latest, fastest
+
+# Exact word only
+grep -E '\btest\b' file.txt    # Matches: only "test"
+```
+
+### 4. Optimize for Performance
+
+```bash
+# Slower (complex regex)
+grep -E '.*error.*message.*' hugefile.log
+
+# Faster (simpler pattern)
+grep 'error' hugefile.log | grep 'message'
+```
+
+### 5. Document Complex Patterns
+
+```bash
+# Email validation pattern (explained)
+# [a-zA-Z0-9._%+-]+ - Username: letters, numbers, dots, underscores, percent, plus, hyphen
+# @ - Literal at sign
+# [a-zA-Z0-9.-]+ - Domain: letters, numbers, dots, hyphens
+# \.[a-zA-Z]{2,} - TLD: dot followed by 2+ letters
+grep -E '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$' emails.txt
+```
+
+---
+
+## Common Pitfalls
+
+### 1. Forgetting to Use Extended Regex
+
+```bash
+# Won't work (basic regex needs escaping)
+grep '(error|warning)' file.txt
+
+# Works (extended regex)
+grep -E '(error|warning)' file.txt
+```
+
+### 2. Greedy vs Non-Greedy Matching
+
+```bash
+# Greedy (matches as much as possible)
+echo '<tag>content</tag> <tag>more</tag>' | grep -oE '<.*>'
+# Matches: <tag>content</tag> <tag>more</tag> (entire string)
+
+# Solution: Be more specific
+echo '<tag>content</tag> <tag>more</tag>' | grep -oE '<[^>]+>'
+# Matches: <tag>, </tag>, <tag>, </tag>
+```
+
+### 3. Not Escaping Special Characters in Patterns
+
+```bash
+# Wrong (dot matches any character)
+grep 'file.txt' filelist.txt
+# Matches: file.txt, file-txt, fileXtxt
+
+# Right (escape the dot)
+grep 'file\.txt' filelist.txt
+# Matches: only file.txt
+```
+
+### 4. Backreference Numbering Confusion
+
+```bash
+# Groups are numbered left to right by opening parenthesis
+echo 'ABCABC' | grep -E '((.)(.))\1'
+# \1 refers to the entire first group, not the second
+```
+
+### 5. Forgetting Word Boundaries
+
+```bash
+# Matches partial words
+grep -E 'cat' text.txt    # Matches: cat, catalog, scatter
+
+# Better: exact word
+grep -E '\bcat\b' text.txt    # Matches: only "cat"
+```
+
+---
+
+## Quick Reference: Advanced Regex
+
+| Feature | Syntax | Example | Description |
+|---------|--------|---------|-------------|
+| Extended regex | `grep -E` | `grep -E 'a+b'` | No escaping needed |
+| Grouping | `()` | `(ab)+` | Group patterns |
+| Alternation | `\|` | `cat\|dog` | OR logic |
+| Backreference | `\1` `\2` | `([a-z])\1` | Match captured group |
+| Word boundary | `\b` | `\bword\b` | Word edges |
+| Exact count | `{n}` | `[0-9]{3}` | Exactly n times |
+| Min count | `{n,}` | `[0-9]{3,}` | n or more times |
+| Range count | `{n,m}` | `[0-9]{3,5}` | Between n and m |
+
+---
+
+## Quick Reference: grep Options
+
+| Option | Description | Example |
+|--------|-------------|---------|
+| `-E` | Extended regex | `grep -E 'a+b' file` |
+| `-P` | Perl regex | `grep -P '\d+' file` |
+| `-o` | Only matching | `grep -o '[0-9]+' file` |
+| `-v` | Invert match | `grep -v 'error' file` |
+| `-i` | Case insensitive | `grep -i 'ERROR' file` |
+| `-c` | Count matches | `grep -c 'error' file` |
+| `-n` | Line numbers | `grep -n 'error' file` |
+| `-A N` | N lines after | `grep -A 5 'error' file` |
+| `-B N` | N lines before | `grep -B 3 'error' file` |
+| `-C N` | N lines context | `grep -C 2 'error' file` |
+
+---
+
+## Key Takeaways
+
+1. **Extended regex** (`-E`) eliminates escaping for cleaner patterns
+
+2. **Grouping** `()` treats multiple characters as one unit
+
+3. **Alternation** `|` matches one pattern OR another
+
+4. **Backreferences** `\1`, `\2` match previously captured groups
+
+5. **Word boundaries** `\b` prevent partial word matches
+
+6. **Precise quantifiers** `{n,m}` specify exact repetition counts
+
+7. **sed** uses regex for powerful find-and-replace
+
+8. **awk** combines regex with field processing
+
+9. **Test incrementally** - build complex patterns step by step
+
+10. **Document complex patterns** for maintainability
+
+11. **Consider performance** - simpler patterns are often faster
+
+12. **Use the right tool** - grep for finding, sed for replacing, awk for processing
+
+---
+
+## What's Next?
+
+Congratulations! You've now mastered both basic and advanced regular expressions. In the next post, we'll explore **Text Transformation with tr**, where you'll learn:
+
+- Character-by-character translation
+- Case conversion (uppercase/lowercase)
+- Deleting specific characters
+- Squeezing repeated characters
+- Complement sets
+- Real-world text cleanup tasks
+
+The `tr` command is perfect for simple character transformations that don't require the complexity of regex!
+
+**Continue your LFCS journey:** [LFCS Part 38: Text Transformation with tr](/blog/lfcs-phase1-part-38-text-transformation-tr)
+
+---
+
+**Previous Post:** [LFCS Part 36: Regular Expressions Part 1 - Basics](/blog/lfcs-phase1-part-36-regex-basics)
+
+**Next Post:** [LFCS Part 38: Text Transformation with tr](/blog/lfcs-phase1-part-38-text-transformation-tr)
+
+---
+
+**Practice makes perfect!** Advanced regex patterns take time to master. Complete all 20 labs, experiment with your own patterns, and soon you'll be crafting complex regex like a seasoned system administrator.
+
+Happy pattern matching! 🚀

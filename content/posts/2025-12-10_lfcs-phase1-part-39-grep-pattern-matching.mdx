@@ -1,0 +1,1806 @@
+---
+title: "LFCS Part 39: Mastering grep for Pattern Matching and Text Search"
+description: "Master the grep command for powerful pattern matching and text searching in Linux. Learn grep options, recursive searches, context display, regular expressions, and real-world log parsing techniques for efficient system administration."
+date: 2025-12-30
+tags: ["Linux", "LFCS", "grep", "text processing", "pattern matching", "search", "logs", "certification"]
+published: true
+author: "Owais"
+categories: ["Linux", "LFCS Certification"]
+series: "LFCS Certification - Phase 1"
+seriesOrder: 39
+---
+
+Welcome back to the **LFCS Certification - Phase 1** series! In our previous posts, we explored regular expressions (Posts 36-37) and text transformation with the `tr` command (Post 38). Now it's time to master one of the most essential tools in a Linux administrator's toolkit: **grep** — the global regular expression print command.
+
+`grep` is your Swiss Army knife for searching text. Whether you're hunting for a specific error in thousands of log lines, finding configuration settings across multiple files, or extracting data from command output, `grep` is the tool that makes it all possible. It's fast, powerful, and absolutely essential for daily Linux work.
+
+## What is grep?
+
+The name **grep** comes from the `ed` text editor command `g/re/p`, which means:
+- **g** — Global (search entire file)
+- **re** — Regular expression (pattern to match)
+- **p** — Print (display matching lines)
+
+In simple terms, grep searches for text patterns in files or input and prints lines that match. It's like pressing Ctrl+F (Find) in a text editor, but far more powerful and scriptable.
+
+### Why grep Matters
+
+As a system administrator, you'll use grep constantly:
+
+**Log Analysis**: Search thousands of log lines for specific errors
+```bash
+grep "error" /var/log/syslog
+```
+
+**Configuration Search**: Find where a setting is configured
+```bash
+grep -r "Port 22" /etc/ssh/
+```
+
+**Process Filtering**: Find specific running processes
+```bash
+ps aux | grep nginx
+```
+
+**Data Extraction**: Pull specific data from files
+```bash
+grep "192.168.1" /var/log/apache2/access.log
+```
+
+grep is typically already installed on every Linux system because it's part of the GNU core utilities. Let's dive into how to use it effectively.
+
+---
+
+## Part 1: Basic grep Syntax
+
+The basic syntax of grep is:
+
+```bash
+grep [OPTIONS] PATTERN [FILE...]
+```
+
+- **PATTERN**: The text or regular expression to search for
+- **FILE**: One or more files to search (if omitted, grep reads from standard input)
+- **OPTIONS**: Flags that modify grep's behavior
+
+### Simple Example
+
+Let's create a test file to practice with:
+
+```bash
+cat > fruits.txt << 'EOF'
+apple
+banana
+cherry
+Apple Pie
+BANANA BREAD
+blueberry
+blackberry
+raspberry
+grape
+orange
+EOF
+```
+
+Now search for "apple":
+
+```bash
+grep "apple" fruits.txt
+```
+
+**Output**:
+```
+apple
+```
+
+Notice that only the lowercase "apple" was found. By default, **grep is case-sensitive**.
+
+---
+
+## Part 2: Essential grep Options
+
+Let's explore the most important grep options that you'll use daily.
+
+### 2.1: Case-Insensitive Search (-i)
+
+The `-i` option makes grep ignore case:
+
+```bash
+grep -i "apple" fruits.txt
+```
+
+**Output**:
+```
+apple
+Apple Pie
+```
+
+Now both lowercase "apple" and uppercase "Apple" in "Apple Pie" are found.
+
+**Why this matters**: When searching logs or configuration files, you often don't know the exact capitalization. Using `-i` ensures you don't miss matches.
+
+### 2.2: Count Matches (-c)
+
+The `-c` option counts how many lines match instead of showing them:
+
+```bash
+grep -c "berry" fruits.txt
+```
+
+**Output**:
+```
+3
+```
+
+Three lines contain "berry": blueberry, blackberry, and raspberry.
+
+### 2.3: Line Numbers (-n)
+
+The `-n` option shows line numbers where matches occur:
+
+```bash
+grep -n "berry" fruits.txt
+```
+
+**Output**:
+```
+6:blueberry
+7:blackberry
+8:raspberry
+```
+
+Each line is prefixed with its line number followed by a colon.
+
+**Why this matters**: When debugging configuration files or scripts, knowing the exact line number helps you quickly locate and fix issues.
+
+### 2.4: Invert Match (-v)
+
+The `-v` option inverts the match — it shows lines that **don't** match the pattern:
+
+```bash
+grep -v "berry" fruits.txt
+```
+
+**Output**:
+```
+apple
+banana
+cherry
+Apple Pie
+BANANA BREAD
+grape
+orange
+```
+
+All lines that don't contain "berry" are displayed.
+
+**Use case**: Filter out unwanted lines. For example, remove comments from a config file:
+```bash
+grep -v "^#" /etc/ssh/sshd_config
+```
+
+### 2.5: Whole Word Match (-w)
+
+The `-w` option matches whole words only:
+
+```bash
+# Without -w (matches partial words)
+grep "apple" fruits.txt
+```
+
+**Output**:
+```
+apple
+```
+
+Now with `-w`:
+
+```bash
+echo "pineapple" >> fruits.txt
+grep -w "apple" fruits.txt
+```
+
+**Output**:
+```
+apple
+```
+
+The word "pineapple" is not matched because we want exact word matches only.
+
+**Why this matters**: When searching for variable names or specific commands, you don't want partial matches. For example, searching for the command "cat" shouldn't match "concatenate".
+
+### 2.6: List Matching Files (-l)
+
+The `-l` option lists only filenames that contain matches, not the matching lines themselves:
+
+```bash
+# Create multiple test files
+echo "error: disk full" > log1.txt
+echo "warning: low memory" > log2.txt
+echo "error: network timeout" > log3.txt
+
+# Find which files contain "error"
+grep -l "error" log*.txt
+```
+
+**Output**:
+```
+log1.txt
+log3.txt
+```
+
+**Use case**: Quickly identify which configuration files contain a specific setting across a directory.
+
+### 2.7: List Non-Matching Files (-L)
+
+The `-L` option is the opposite of `-l` — it lists files that **don't** contain the pattern:
+
+```bash
+grep -L "error" log*.txt
+```
+
+**Output**:
+```
+log2.txt
+```
+
+---
+
+## Part 3: Context Display Options
+
+Often you need to see lines around your match for context. grep provides three options for this:
+
+### 3.1: After Context (-A)
+
+Show N lines **after** each match:
+
+```bash
+# Create a test file
+cat > messages.txt << 'EOF'
+Starting application
+Loading configuration
+Error: config file missing
+File: /etc/app/config.yaml
+Action: Using default settings
+Continuing startup
+Application ready
+EOF
+
+# Show 2 lines after "Error"
+grep -A 2 "Error" messages.txt
+```
+
+**Output**:
+```
+Error: config file missing
+File: /etc/app/config.yaml
+Action: Using default settings
+```
+
+The match line plus 2 lines after it are displayed.
+
+### 3.2: Before Context (-B)
+
+Show N lines **before** each match:
+
+```bash
+grep -B 2 "Error" messages.txt
+```
+
+**Output**:
+```
+Starting application
+Loading configuration
+Error: config file missing
+```
+
+The 2 lines before the match plus the match line itself.
+
+### 3.3: Context Around Match (-C)
+
+Show N lines **before and after** each match:
+
+```bash
+grep -C 1 "Error" messages.txt
+```
+
+**Output**:
+```
+Loading configuration
+Error: config file missing
+File: /etc/app/config.yaml
+```
+
+One line before, the match, and one line after.
+
+**Why context matters**: When troubleshooting errors in logs, you need to see what happened before and after the error to understand the root cause. Context lines are marked with `--` as separators when there are multiple matches.
+
+---
+
+## Part 4: Recursive Search (-r and -R)
+
+One of grep's most powerful features is searching through entire directory trees.
+
+### 4.1: Basic Recursive Search (-r)
+
+The `-r` option searches all files in a directory and its subdirectories:
+
+```bash
+# Search for "Port" in SSH configuration directory
+grep -r "Port" /etc/ssh/
+```
+
+**Example output**:
+```
+/etc/ssh/sshd_config:#Port 22
+/etc/ssh/sshd_config:# and ChallengeResponseAuthentication to support this.
+```
+
+**What happened**:
+- grep searched `/etc/ssh/` and all subdirectories
+- Found matches in `sshd_config`
+- Displayed the filename and matching line
+
+### 4.2: Recursive with Line Numbers
+
+Combine `-r` with `-n` for line numbers:
+
+```bash
+grep -rn "PermitRootLogin" /etc/ssh/
+```
+
+**Example output**:
+```
+/etc/ssh/sshd_config:32:PermitRootLogin yes
+```
+
+Now you know exactly which file and which line contains the setting.
+
+### 4.3: Case-Insensitive Recursive Search
+
+Combine multiple options:
+
+```bash
+grep -rin "password" /etc/ssh/
+```
+
+This searches recursively (`-r`), case-insensitive (`-i`), with line numbers (`-n`).
+
+**Why recursive search matters**: System configurations are often spread across many files in a directory. Recursive search lets you find all occurrences without knowing exactly which file contains what you're looking for.
+
+---
+
+## Part 5: Working with Multiple Files
+
+grep can search multiple files at once and clearly show which file contains each match.
+
+### 5.1: Search Multiple Specific Files
+
+```bash
+# Create test files
+echo "Server running on port 80" > server1.log
+echo "Server running on port 443" > server2.log
+echo "Database port: 3306" > db.log
+
+# Search all at once
+grep "port" server1.log server2.log db.log
+```
+
+**Output**:
+```
+server1.log:Server running on port 80
+server2.log:Server running on port 443
+db.log:Database port: 3306
+```
+
+Each line is prefixed with the filename.
+
+### 5.2: Using Wildcards
+
+```bash
+grep "port" *.log
+```
+
+Searches all `.log` files in the current directory.
+
+### 5.3: Suppress Filenames (-h)
+
+If you don't want filenames in the output:
+
+```bash
+grep -h "port" *.log
+```
+
+**Output**:
+```
+Server running on port 80
+Server running on port 443
+Database port: 3306
+```
+
+---
+
+## Part 6: Using grep with Regular Expressions
+
+grep truly shines when combined with regular expressions. If you read Posts 36-37 on regex, this will feel familiar.
+
+### 6.1: Basic Regex Patterns
+
+**Match lines starting with a pattern** (^ anchor):
+
+```bash
+# Create test file
+cat > users.txt << 'EOF'
+admin:x:0:0:root:/root:/bin/bash
+john:x:1001:1001::/home/john:/bin/bash
+# This is a comment
+jane:x:1002:1002::/home/jane:/bin/bash
+# Another comment
+EOF
+
+# Find lines starting with #
+grep "^#" users.txt
+```
+
+**Output**:
+```
+# This is a comment
+# Another comment
+```
+
+**Match lines ending with a pattern** ($ anchor):
+
+```bash
+# Find lines ending with "bash"
+grep "bash$" users.txt
+```
+
+**Output**:
+```
+admin:x:0:0:root:/root:/bin/bash
+john:x:1001:1001::/home/john:/bin/bash
+jane:x:1002:1002::/home/jane:/bin/bash
+```
+
+### 6.2: Character Classes
+
+**Match any digit**:
+
+```bash
+# Find lines containing numbers
+grep "[0-9]" users.txt
+```
+
+This will match all non-comment lines since they contain user IDs.
+
+**Match uppercase letters**:
+
+```bash
+grep "[A-Z]" users.txt
+```
+
+**Match specific characters**:
+
+```bash
+# Find lines with : or /
+grep "[:/]" users.txt
+```
+
+### 6.3: Extended Regex with grep -E
+
+Use `-E` for extended regular expressions (no need to escape special characters):
+
+```bash
+# Match lines with "john" or "jane"
+grep -E "john|jane" users.txt
+```
+
+**Output**:
+```
+john:x:1001:1001::/home/john:/bin/bash
+jane:x:1002:1002::/home/jane:/bin/bash
+```
+
+The `|` means OR in extended regex.
+
+**Match multiple occurrences**:
+
+```bash
+# Find lines with one or more digits
+grep -E "[0-9]+" users.txt
+```
+
+---
+
+## Part 7: Practical grep with System Logs
+
+Let's apply grep to real-world system administration tasks.
+
+### 7.1: Searching System Logs
+
+**Find all error messages in syslog**:
+
+```bash
+sudo grep -i "error" /var/log/syslog
+```
+
+The `-i` ensures we catch "error", "Error", "ERROR", etc.
+
+**Find errors with context**:
+
+```bash
+sudo grep -i -C 3 "error" /var/log/syslog
+```
+
+Shows 3 lines before and after each error for context.
+
+### 7.2: Filtering by Date/Time
+
+**Find logs from a specific date**:
+
+```bash
+sudo grep "Dec 10" /var/log/syslog
+```
+
+**Combine with time**:
+
+```bash
+sudo grep "Dec 10 15:" /var/log/syslog
+```
+
+Finds all entries from December 10 at 3 PM hour.
+
+### 7.3: Finding Failed Login Attempts
+
+```bash
+sudo grep "Failed password" /var/log/auth.log
+```
+
+**With user details**:
+
+```bash
+sudo grep "Failed password" /var/log/auth.log | grep -i "user"
+```
+
+**Count failed attempts**:
+
+```bash
+sudo grep -c "Failed password" /var/log/auth.log
+```
+
+### 7.4: Excluding Unwanted Lines
+
+**Remove blank lines and comments**:
+
+```bash
+grep -v "^$\|^#" /etc/ssh/sshd_config
+```
+
+This shows only active configuration lines.
+
+Let me break down this pattern:
+- `^$` — matches empty lines (start ^ immediately followed by end $)
+- `\|` — OR operator (in basic regex, pipe needs escaping)
+- `^#` — matches lines starting with #
+
+**Alternative with extended regex**:
+
+```bash
+grep -Ev "^$|^#" /etc/ssh/sshd_config
+```
+
+In extended regex (`-E`), the pipe doesn't need escaping.
+
+---
+
+## Part 8: grep with Pipes
+
+grep is most powerful when combined with other commands via pipes.
+
+### 8.1: Filtering Command Output
+
+**Find specific processes**:
+
+```bash
+ps aux | grep nginx
+```
+
+Shows only processes related to nginx.
+
+**Find listening ports**:
+
+```bash
+ss -tulpn | grep LISTEN
+```
+
+Shows only listening sockets.
+
+### 8.2: Chaining Multiple grep Commands
+
+**Multiple filters**:
+
+```bash
+ps aux | grep python | grep -v grep
+```
+
+**What this does**:
+1. `ps aux` — list all processes
+2. `grep python` — show only Python processes
+3. `grep -v grep` — remove the grep command itself from results
+
+**Why remove grep?** When you run `ps aux | grep python`, the grep command itself appears in the process list! The second grep removes it.
+
+### 8.3: Extracting Specific Information
+
+**Get IP addresses from a log**:
+
+```bash
+cat /var/log/apache2/access.log | grep -Eo "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}" | head -10
+```
+
+**Breaking this down**:
+- `-E` — use extended regex
+- `-o` — show only the matched part, not the whole line
+- `[0-9]{1,3}` — 1 to 3 digits
+- `\.` — literal dot
+- Pattern matches IPv4 addresses
+- `head -10` — show first 10 results
+
+### 8.4: Sorting grep Results
+
+```bash
+# Find all usernames from /etc/passwd and sort them
+grep -v "^#" /etc/passwd | cut -d: -f1 | sort
+```
+
+**What happens**:
+1. Remove comment lines from /etc/passwd
+2. Extract first field (username) using cut
+3. Sort alphabetically
+
+---
+
+## Part 9: Advanced grep Options
+
+### 9.1: Match Only (-o)
+
+Show only the matched portion of lines, not the entire line:
+
+```bash
+# Create test file
+echo "The error code is 404 and status is ERROR" > status.txt
+
+# Find just the numbers
+grep -Eo "[0-9]+" status.txt
+```
+
+**Output**:
+```
+404
+```
+
+### 9.2: Max Count (-m)
+
+Stop reading after N matches:
+
+```bash
+# Show only first 5 errors
+grep -m 5 "error" /var/log/syslog
+```
+
+Useful for large files where you just want a sample.
+
+### 9.3: Quiet Mode (-q)
+
+Suppress output entirely, useful in scripts to test if a pattern exists:
+
+```bash
+if grep -q "error" logfile.txt; then
+    echo "Errors found in log!"
+else
+    echo "No errors found."
+fi
+```
+
+The `-q` option makes grep exit with:
+- Status 0 if match found
+- Status 1 if no match found
+
+### 9.4: Show Filename Only (-H vs -h)
+
+```bash
+# Force showing filename even with single file
+grep -H "pattern" file.txt
+
+# Suppress filename when searching multiple files
+grep -h "pattern" *.txt
+```
+
+### 9.5: Color Highlighting (--color)
+
+Make matches stand out visually:
+
+```bash
+grep --color=auto "error" /var/log/syslog
+```
+
+Matches are highlighted in color (usually red). Many systems have this aliased by default:
+
+```bash
+alias grep='grep --color=auto'
+```
+
+---
+
+## Part 10: grep Variants
+
+### 10.1: egrep (Extended grep)
+
+`egrep` is equivalent to `grep -E`:
+
+```bash
+egrep "error|warning|critical" /var/log/syslog
+```
+
+Same as:
+
+```bash
+grep -E "error|warning|critical" /var/log/syslog
+```
+
+### 10.2: fgrep (Fixed grep)
+
+`fgrep` is equivalent to `grep -F` and treats the pattern as a fixed string (no regex):
+
+```bash
+fgrep "." file.txt
+```
+
+This searches for a literal dot, not "any character" as it would in regex.
+
+**When to use fgrep**: When your search pattern contains many special regex characters and you want to search for them literally.
+
+### 10.3: zgrep (grep Compressed Files)
+
+Search compressed files without decompressing:
+
+```bash
+zgrep "error" /var/log/syslog.1.gz
+```
+
+Works with gzip-compressed files.
+
+---
+
+## Part 11: Common grep Pitfalls
+
+### Pitfall 1: Forgetting to Quote Patterns
+
+**Wrong**:
+```bash
+grep error message /var/log/syslog
+```
+
+grep interprets "message" as a filename!
+
+**Correct**:
+```bash
+grep "error message" /var/log/syslog
+```
+
+**Rule**: Always quote your search patterns, especially if they contain spaces.
+
+### Pitfall 2: grep Showing Itself in ps Output
+
+```bash
+ps aux | grep nginx
+```
+
+Shows the grep command itself in results!
+
+**Solution**:
+```bash
+ps aux | grep nginx | grep -v grep
+```
+
+Or use a clever trick:
+```bash
+ps aux | grep [n]ginx
+```
+
+The bracket prevents grep from matching itself.
+
+### Pitfall 3: Not Escaping Special Characters in Basic Regex
+
+In basic regex (without `-E`), you must escape special characters:
+
+**Wrong**:
+```bash
+grep "file.txt" file.txt  # Dot matches any character!
+```
+
+**Correct**:
+```bash
+grep "file\.txt" file.txt  # Escaped dot
+```
+
+Or use `-F` for literal matching:
+```bash
+grep -F "file.txt" file.txt
+```
+
+### Pitfall 4: Case Sensitivity
+
+Forgetting that grep is case-sensitive by default:
+
+```bash
+grep "Error" /var/log/syslog  # Misses "error" and "ERROR"
+```
+
+**Better**:
+```bash
+grep -i "Error" /var/log/syslog  # Catches all variations
+```
+
+### Pitfall 5: Large File Performance
+
+Searching huge log files can be slow:
+
+```bash
+# This might take a long time
+grep "pattern" /var/log/huge-log-file.log
+```
+
+**Optimization**:
+```bash
+# Stop after first 10 matches
+grep -m 10 "pattern" /var/log/huge-log-file.log
+
+# Search only recent entries
+tail -n 1000 /var/log/huge-log-file.log | grep "pattern"
+```
+
+---
+
+## Part 12: Real-World grep Examples
+
+### Example 1: Find Which Service Is Using a Port
+
+```bash
+sudo ss -tulpn | grep ":80 "
+```
+
+Shows what's listening on port 80.
+
+### Example 2: Find All Occurrences of an IP Address
+
+```bash
+grep -r "192.168.1.100" /var/log/
+```
+
+Searches all logs for a specific IP.
+
+### Example 3: Extract Email Addresses
+
+```bash
+grep -Eo "\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b" file.txt
+```
+
+Finds email addresses in a file.
+
+### Example 4: Monitor Logs in Real-Time
+
+```bash
+tail -f /var/log/syslog | grep --color=auto "error"
+```
+
+Watch logs and highlight errors as they appear.
+
+### Example 5: Count Unique IP Addresses in Access Log
+
+```bash
+grep -Eo "^[0-9.]+ " /var/log/apache2/access.log | sort | uniq | wc -l
+```
+
+**Breaking it down**:
+1. Extract IP addresses from start of each line
+2. Sort them
+3. Remove duplicates
+4. Count unique IPs
+
+### Example 6: Find Configuration Files Modified Today
+
+```bash
+find /etc -type f -mtime 0 -exec grep -l "pattern" {} \;
+```
+
+Combines `find` and `grep` to search recently modified files.
+
+### Example 7: Search for Non-ASCII Characters
+
+```bash
+grep --color='auto' -P -n "[\x80-\xFF]" file.txt
+```
+
+Finds lines with non-ASCII characters.
+
+---
+
+## Part 13: Practice Labs
+
+Now let's practice! These labs progress from basic to advanced scenarios.
+
+### Warm-up Labs (1-5): Basic Searches
+
+**Lab 1: Create a Test File and Search**
+
+**Task:** Create a file called `animals.txt` with 10 animal names (mix of uppercase and lowercase). Search for "cat" case-sensitively, then case-insensitively.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create test file
+cat > animals.txt << 'EOF'
+dog
+cat
+elephant
+CAT
+tiger
+Lion
+monkey
+Cat
+horse
+rabbit
+EOF
+
+# Case-sensitive search
+grep "cat" animals.txt
+
+# Case-insensitive search
+grep -i "cat" animals.txt
+```
+
+**Output of case-sensitive**:
+```
+cat
+```
+
+**Output of case-insensitive**:
+```
+cat
+CAT
+Cat
+```
+
+</details>
+
+---
+
+**Lab 2: Count Matches**
+
+**Task:** Using the animals.txt file, count how many lines contain the letter "a" (case-insensitive).
+
+<details>
+<summary>Solution</summary>
+
+```bash
+grep -ic "a" animals.txt
+```
+
+**Output**:
+```
+6
+```
+
+Lines containing 'a': cat, CAT, Cat, elephant, Lion (wait, no 'a'), actually: cat, CAT, Cat, elephant, horse, rabbit = 6 lines
+
+</details>
+
+---
+
+**Lab 3: Show Line Numbers**
+
+**Task:** Search for lines containing "o" in animals.txt and display line numbers.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+grep -n "o" animals.txt
+```
+
+**Output**:
+```
+1:dog
+7:monkey
+9:horse
+```
+
+</details>
+
+---
+
+**Lab 4: Invert Match**
+
+**Task:** Show all lines from animals.txt that do NOT contain the letter "e".
+
+<details>
+<summary>Solution</summary>
+
+```bash
+grep -v "e" animals.txt
+```
+
+**Output**:
+```
+dog
+cat
+CAT
+Lion
+Cat
+```
+
+</details>
+
+---
+
+**Lab 5: Whole Word Match**
+
+**Task:** Create a file with "cat", "category", "concatenate". Search for the whole word "cat" only.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create test file
+cat > words.txt << 'EOF'
+cat
+category
+concatenate
+catch
+cat-like
+EOF
+
+# Whole word match
+grep -w "cat" words.txt
+```
+
+**Output**:
+```
+cat
+```
+
+The other lines contain "cat" as part of larger words, so they're not matched.
+
+</details>
+
+---
+
+### Core Practice Labs (6-13): Intermediate Skills
+
+**Lab 6: Context Display**
+
+**Task:** Create a log file with 10 lines. Include an "ERROR" on line 5. Use grep to show the error with 2 lines before and after.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create log file
+cat > app.log << 'EOF'
+[INFO] Application starting
+[INFO] Loading configuration
+[INFO] Connecting to database
+[INFO] Database connection established
+[ERROR] Failed to load plugin: auth-module
+[INFO] Falling back to basic auth
+[INFO] Starting web server
+[INFO] Server listening on port 8080
+[INFO] Application ready
+[INFO] Accepting connections
+EOF
+
+# Show error with context
+grep -C 2 "ERROR" app.log
+```
+
+**Output**:
+```
+[INFO] Connecting to database
+[INFO] Database connection established
+[ERROR] Failed to load plugin: auth-module
+[INFO] Falling back to basic auth
+[INFO] Starting web server
+```
+
+</details>
+
+---
+
+**Lab 7: Recursive Search**
+
+**Task:** Create a directory structure with config files at different levels. Search recursively for "port" in all files.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create directory structure
+mkdir -p myapp/config/server
+mkdir -p myapp/config/database
+
+# Create config files
+echo "server_port=8080" > myapp/config/server/web.conf
+echo "db_port=5432" > myapp/config/database/db.conf
+echo "admin_port=9090" > myapp/config/admin.conf
+
+# Recursive search
+grep -r "port" myapp/
+```
+
+**Output**:
+```
+myapp/config/server/web.conf:server_port=8080
+myapp/config/database/db.conf:db_port=5432
+myapp/config/admin.conf:admin_port=9090
+```
+
+</details>
+
+---
+
+**Lab 8: List Matching Files**
+
+**Task:** Using the structure from Lab 7, list only the filenames that contain "port" (not the matching lines).
+
+<details>
+<summary>Solution</summary>
+
+```bash
+grep -rl "port" myapp/
+```
+
+**Output**:
+```
+myapp/config/server/web.conf
+myapp/config/database/db.conf
+myapp/config/admin.conf
+```
+
+</details>
+
+---
+
+**Lab 9: Multiple File Search**
+
+**Task:** Create three log files (access.log, error.log, debug.log). Search for "404" in all of them at once.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create log files
+echo "GET /page 200" > access.log
+echo "GET /missing 404" >> access.log
+echo "Critical: disk full" > error.log
+echo "Warning: 404 handler called" > debug.log
+
+# Search all at once
+grep "404" access.log error.log debug.log
+```
+
+**Output**:
+```
+access.log:GET /missing 404
+debug.log:Warning: 404 handler called
+```
+
+</details>
+
+---
+
+**Lab 10: Use grep with Pipes to Filter Processes**
+
+**Task:** List all running processes and filter to show only those containing "bash".
+
+<details>
+<summary>Solution</summary>
+
+```bash
+ps aux | grep bash | grep -v grep
+```
+
+**Alternative clever solution**:
+```bash
+ps aux | grep [b]ash
+```
+
+The bracket trick prevents grep from matching itself.
+
+</details>
+
+---
+
+**Lab 11: Find Lines Starting with Pattern**
+
+**Task:** Create a file with 5 lines starting with "#" (comments) and 5 regular lines. Extract only the comment lines.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create file
+cat > script.sh << 'EOF'
+#!/bin/bash
+# This is a comment
+echo "Hello"
+# Another comment
+name="World"
+# Third comment
+echo "Name: $name"
+# Configuration section
+# End of comments
+EOF
+
+# Extract comments
+grep "^#" script.sh
+```
+
+**Output**:
+```
+#!/bin/bash
+# This is a comment
+# Another comment
+# Third comment
+# Configuration section
+# End of comments
+```
+
+</details>
+
+---
+
+**Lab 12: Find Lines Ending with Pattern**
+
+**Task:** Using /etc/passwd, find all lines ending with "/bin/bash".
+
+<details>
+<summary>Solution</summary>
+
+```bash
+grep "/bin/bash$" /etc/passwd
+```
+
+This shows all users with bash as their login shell.
+
+</details>
+
+---
+
+**Lab 13: Extended Regex with Alternation**
+
+**Task:** Create a log file with "ERROR", "WARNING", and "INFO" messages. Use extended regex to find only ERROR and WARNING lines.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create log
+cat > system.log << 'EOF'
+INFO: System started
+ERROR: Configuration missing
+WARNING: Low disk space
+INFO: Service started
+ERROR: Connection failed
+WARNING: High memory usage
+INFO: Request completed
+EOF
+
+# Search with alternation
+grep -E "ERROR|WARNING" system.log
+```
+
+**Output**:
+```
+ERROR: Configuration missing
+WARNING: Low disk space
+ERROR: Connection failed
+WARNING: High memory usage
+```
+
+</details>
+
+---
+
+### Advanced Labs (14-20): Complex Scenarios
+
+**Lab 14: Extract IP Addresses from Log**
+
+**Task:** Create an Apache access log with IP addresses. Extract all unique IP addresses and count them.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create access log
+cat > access.log << 'EOF'
+192.168.1.10 - - [10/Dec/2025:10:15:23] "GET /index.html 200"
+192.168.1.15 - - [10/Dec/2025:10:16:45] "GET /about.html 200"
+192.168.1.10 - - [10/Dec/2025:10:17:12] "GET /contact.html 200"
+10.0.0.5 - - [10/Dec/2025:10:18:33] "GET /admin 403"
+192.168.1.15 - - [10/Dec/2025:10:19:01] "GET /images/logo.png 200"
+EOF
+
+# Extract IPs
+grep -Eo "^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+" access.log | sort | uniq
+
+# Count unique IPs
+grep -Eo "^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+" access.log | sort | uniq | wc -l
+```
+
+**Output**:
+```
+10.0.0.5
+192.168.1.10
+192.168.1.15
+```
+
+**Count**: 3
+
+</details>
+
+---
+
+**Lab 15: Find Failed SSH Login Attempts**
+
+**Task:** Create a mock auth.log with failed login attempts. Find all failed attempts and count them.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create mock auth log
+cat > auth.log << 'EOF'
+Dec 10 10:15:23 server sshd[1234]: Accepted publickey for alice
+Dec 10 10:16:45 server sshd[1235]: Failed password for root from 192.168.1.100
+Dec 10 10:17:12 server sshd[1236]: Failed password for admin from 192.168.1.100
+Dec 10 10:18:33 server sshd[1237]: Accepted password for bob
+Dec 10 10:19:01 server sshd[1238]: Failed password for root from 192.168.1.101
+EOF
+
+# Find failed attempts
+grep "Failed password" auth.log
+
+# Count them
+grep -c "Failed password" auth.log
+```
+
+**Output**:
+```
+Dec 10 10:16:45 server sshd[1235]: Failed password for root from 192.168.1.100
+Dec 10 10:17:12 server sshd[1236]: Failed password for admin from 192.168.1.100
+Dec 10 10:19:01 server sshd[1238]: Failed password for root from 192.168.1.101
+```
+
+**Count**: 3
+
+</details>
+
+---
+
+**Lab 16: Remove Comments and Blank Lines from Config**
+
+**Task:** Create a config file with comments (#) and blank lines. Display only active configuration lines.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create config file
+cat > app.conf << 'EOF'
+# Application Configuration
+# Server settings
+
+server_port=8080
+server_host=localhost
+
+# Database settings
+db_host=localhost
+db_port=5432
+
+# End of configuration
+EOF
+
+# Remove comments and blank lines
+grep -Ev "^#|^$" app.conf
+```
+
+**Output**:
+```
+server_port=8080
+server_host=localhost
+db_host=localhost
+db_port=5432
+```
+
+**Explanation**:
+- `-E` — extended regex
+- `-v` — invert (exclude)
+- `^#` — lines starting with #
+- `|` — OR
+- `^$` — blank lines (start immediately followed by end)
+
+</details>
+
+---
+
+**Lab 17: Search with Multiple Criteria**
+
+**Task:** Create a user database file. Find users whose username starts with "a" AND whose home directory is "/home".
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create user database
+cat > users.txt << 'EOF'
+alice:1001:/home/alice:/bin/bash
+bob:1002:/home/bob:/bin/bash
+admin:1003:/root:/bin/bash
+andrew:1004:/home/andrew:/bin/bash
+charlie:1005:/home/charlie:/bin/bash
+EOF
+
+# Find users starting with 'a' with home in /home
+grep "^a" users.txt | grep "/home"
+```
+
+**Output**:
+```
+alice:1001:/home/alice:/bin/bash
+andrew:1004:/home/andrew:/bin/bash
+```
+
+The admin user is excluded because their home is /root, not /home.
+
+</details>
+
+---
+
+**Lab 18: Find Files Modified in Last 24 Hours Containing Pattern**
+
+**Task:** Use find and grep together to search for "TODO" in files modified today.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create test files (some old, some new)
+echo "TODO: implement feature" > new_file.txt
+touch -d "2 days ago" old_file.txt
+echo "TODO: fix bug" > another_new.txt
+
+# Find files modified in last day and search for TODO
+find . -type f -mtime 0 -exec grep -l "TODO" {} \;
+```
+
+**Output**:
+```
+./new_file.txt
+./another_new.txt
+```
+
+**Explanation**:
+- `find . -type f -mtime 0` — files modified in last 24 hours
+- `-exec grep -l "TODO" {} \;` — run grep on each file, show only filenames with matches
+
+</details>
+
+---
+
+**Lab 19: Monitor Log File in Real-Time**
+
+**Task:** Start a real-time monitor of a log file that highlights "ERROR" entries as they appear.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create a log file
+touch monitor.log
+
+# In one terminal, monitor for errors
+tail -f monitor.log | grep --color=auto "ERROR"
+
+# In another terminal, add log entries
+echo "[INFO] Application started" >> monitor.log
+echo "[ERROR] Database connection failed" >> monitor.log
+echo "[INFO] Retrying connection" >> monitor.log
+echo "[ERROR] Maximum retries exceeded" >> monitor.log
+```
+
+As you add entries with "ERROR", they'll appear highlighted in the monitoring terminal.
+
+**Note**: Press Ctrl+C to stop the tail -f command.
+
+</details>
+
+---
+
+**Lab 20: Complex Pattern Extraction**
+
+**Task:** Create a log with email addresses, phone numbers, and IP addresses. Extract only the email addresses.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create mixed data log
+cat > data.log << 'EOF'
+User alice@example.com logged in from 192.168.1.10
+Contact: bob@company.org, phone: 555-1234
+Email charlie@test.net sent from IP 10.0.0.5
+Call 555-5678 for support, or email support@example.com
+EOF
+
+# Extract email addresses
+grep -Eo "\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b" data.log
+```
+
+**Output**:
+```
+alice@example.com
+bob@company.org
+charlie@test.net
+support@example.com
+```
+
+**Explanation**:
+- `-E` — extended regex
+- `-o` — show only matched part
+- `\b` — word boundary
+- `[A-Za-z0-9._%+-]+` — username part
+- `@` — literal @
+- `[A-Za-z0-9.-]+` — domain name
+- `\.` — literal dot
+- `[A-Za-z]{2,}` — TLD (2+ letters)
+
+</details>
+
+---
+
+## Best Practices
+
+### 1. Always Quote Your Patterns
+
+```bash
+# Good
+grep "search term" file.txt
+
+# Bad
+grep search term file.txt  # 'term' treated as filename
+```
+
+### 2. Use -i for Case-Insensitive Searches
+
+Unless you specifically need case sensitivity, use `-i` to avoid missing matches:
+
+```bash
+grep -i "error" /var/log/syslog
+```
+
+### 3. Combine Options for Efficiency
+
+```bash
+# Instead of multiple greps
+grep -r "pattern" /etc/ | grep -v "comment"
+
+# Better
+grep -rv "comment" /etc/ | grep "pattern"
+```
+
+### 4. Use Context Options When Debugging
+
+```bash
+# See what happened around the error
+grep -C 5 "ERROR" /var/log/app.log
+```
+
+### 5. Store Complex Patterns in Variables
+
+```bash
+EMAIL_PATTERN="\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b"
+grep -Eo "$EMAIL_PATTERN" file.txt
+```
+
+### 6. Use -q in Scripts
+
+```bash
+if grep -q "error" logfile; then
+    alert_admin
+fi
+```
+
+No output, just exit status.
+
+### 7. Color Output for Manual Inspection
+
+```bash
+alias grep='grep --color=auto'
+```
+
+Add to ~/.bashrc for permanent highlighting.
+
+---
+
+## Common Pitfalls to Avoid
+
+### 1. **Not Escaping Special Characters**
+
+Remember that `.` `*` `[` `]` `^` `$` are special in regex:
+
+```bash
+# Wrong - dot matches any character
+grep "file.txt" files.log
+
+# Right - escaped dot
+grep "file\.txt" files.log
+
+# Or use -F for fixed string
+grep -F "file.txt" files.log
+```
+
+### 2. **Forgetting -r for Directory Search**
+
+```bash
+# This won't work (grep expects files, not directory)
+grep "pattern" /etc/
+
+# Correct
+grep -r "pattern" /etc/
+```
+
+### 3. **grep in ps Showing Itself**
+
+```bash
+# Problem
+ps aux | grep nginx  # Shows the grep command too
+
+# Solution 1
+ps aux | grep nginx | grep -v grep
+
+# Solution 2 (clever)
+ps aux | grep [n]ginx
+```
+
+### 4. **Not Using Quotes with Wildcards**
+
+```bash
+# Shell expands * before grep sees it
+grep test* file.txt  # Wrong!
+
+# Correct
+grep "test*" file.txt
+```
+
+### 5. **Ignoring Exit Status**
+
+grep returns different exit codes:
+- 0: Match found
+- 1: No match
+- 2: Error occurred
+
+Use this in scripts:
+
+```bash
+if grep -q "pattern" file.txt; then
+    echo "Found"
+else
+    echo "Not found or error"
+fi
+```
+
+---
+
+## Quick Reference
+
+### Essential Options
+
+| Option | Description |
+|--------|-------------|
+| `-i` | Case-insensitive search |
+| `-v` | Invert match (show non-matching lines) |
+| `-n` | Show line numbers |
+| `-c` | Count matching lines |
+| `-l` | List filenames with matches |
+| `-L` | List filenames without matches |
+| `-w` | Match whole words only |
+| `-x` | Match whole lines only |
+| `-r` | Recursive directory search |
+| `-h` | Suppress filename in output |
+| `-H` | Show filename in output |
+
+### Context Options
+
+| Option | Description |
+|--------|-------------|
+| `-A N` | Show N lines after match |
+| `-B N` | Show N lines before match |
+| `-C N` | Show N lines before and after match |
+
+### Regex Options
+
+| Option | Description |
+|--------|-------------|
+| `-E` | Extended regex (egrep) |
+| `-F` | Fixed string (fgrep) |
+| `-P` | Perl-compatible regex |
+
+### Output Control
+
+| Option | Description |
+|--------|-------------|
+| `-o` | Show only matched part |
+| `-q` | Quiet mode (no output, status only) |
+| `-m N` | Stop after N matches |
+| `--color=auto` | Highlight matches |
+
+### Common Patterns
+
+```bash
+# Lines starting with pattern
+grep "^pattern"
+
+# Lines ending with pattern
+grep "pattern$"
+
+# Lines with digits
+grep "[0-9]"
+
+# Lines with letters
+grep "[a-zA-Z]"
+
+# Empty lines
+grep "^$"
+
+# Non-empty lines
+grep -v "^$"
+```
+
+---
+
+## Key Takeaways
+
+1. **grep is essential** — Master it for daily Linux work
+2. **Quote your patterns** — Especially with spaces or special characters
+3. **Use -i liberally** — Unless case matters
+4. **Context is crucial** — Use -A, -B, -C when debugging
+5. **Recursive search** — Use -r for searching directories
+6. **Combine with pipes** — grep + other commands = powerful workflows
+7. **Know basic regex** — Makes grep 10x more powerful
+8. **Exit status matters** — Use in scripts for logic
+9. **Performance** — Use -m to limit results on large files
+10. **Color output** — Makes matches easier to spot
+
+---
+
+## What's Next?
+
+Congratulations! You've mastered grep, one of the most important tools in Linux. You can now:
+- Search files for any pattern
+- Parse logs efficiently
+- Extract specific data from command output
+- Combine grep with pipes for complex workflows
+- Use regular expressions for advanced pattern matching
+
+In the next posts, we'll continue with more text processing tools and then move on to **SSH and remote server access** (Posts 42-44), where you'll learn how to connect to remote Linux systems and transfer files securely.
+
+Keep practicing grep — you'll use it every single day as a Linux administrator!
+
+**Practice Challenge**: Try finding all failed login attempts in your system's /var/log/auth.log file with:
+```bash
+sudo grep "Failed" /var/log/auth.log | wc -l
+```
+
+How many failed attempts do you find? 🔍

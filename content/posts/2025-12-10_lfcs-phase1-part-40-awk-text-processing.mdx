@@ -1,0 +1,1838 @@
+---
+title: "LFCS Part 40: Introduction to awk for Text Processing and Data Extraction"
+description: "Master the awk command for powerful text processing and data extraction in Linux. Learn awk syntax, field manipulation, built-in variables, patterns and actions, calculations, and real-world system administration examples for efficient data analysis."
+date: 2025-12-31
+tags: ["Linux", "LFCS", "awk", "text processing", "data extraction", "scripting", "automation", "certification"]
+published: true
+author: "Owais"
+categories: ["Linux", "LFCS Certification"]
+series: "LFCS Certification - Phase 1"
+seriesOrder: 40
+---
+
+Welcome back to the **LFCS Certification - Phase 1** series! In our previous posts, we explored regular expressions (Posts 36-37), text transformation with `tr` (Post 38), and pattern matching with `grep` (Post 39). Now we're going to learn one of the most powerful text processing tools in Linux: **awk**.
+
+While `grep` searches for patterns and `tr` transforms characters, **awk** is a full-fledged programming language designed for text processing. It excels at extracting, manipulating, and reporting on structured data—making it invaluable for system administrators who need to parse logs, process configuration files, and analyze command output.
+
+## What is awk?
+
+**awk** is a pattern-scanning and text-processing language created in 1977 by Alfred Aho, Peter Weinberger, and Brian Kernighan at Bell Labs. The name comes from their initials: **A**ho, **W**einberger, **K**ernighan.
+
+awk reads input line by line, splits each line into fields (columns), and allows you to perform actions based on patterns. Think of it as a combination of:
+- **grep** — for pattern matching
+- **cut** — for extracting fields
+- **A programming language** — for calculations and logic
+
+### Why awk Matters
+
+As a system administrator, you'll use awk for:
+
+**Extract specific columns from output**:
+```bash
+ps aux | awk '{print $1, $11}'  # Show user and command
+```
+
+**Calculate totals and averages**:
+```bash
+df -h | awk '{sum+=$3} END {print sum}'  # Sum disk usage
+```
+
+**Parse log files**:
+```bash
+awk '/error/ {print $1, $2, $NF}' /var/log/syslog
+```
+
+**Process CSV data**:
+```bash
+awk -F',' '{print $2, $4}' data.csv  # Extract columns 2 and 4
+```
+
+awk is installed by default on virtually every Linux system. Let's dive into how to use it.
+
+---
+
+## Part 1: Basic awk Syntax
+
+The basic syntax of awk is:
+
+```bash
+awk 'pattern {action}' file
+```
+
+Or with input from a pipe:
+
+```bash
+command | awk 'pattern {action}'
+```
+
+- **pattern**: Condition to match (optional)
+- **action**: What to do when pattern matches
+- **file**: Input file (optional if using pipes)
+
+If you omit the pattern, the action applies to all lines. If you omit the action, awk prints matching lines (like grep).
+
+### Simple Example
+
+Let's create a test file:
+
+```bash
+cat > grades.txt << 'EOF'
+Alice 85 92 88
+Bob 78 85 90
+Charlie 92 88 95
+David 65 70 68
+Eve 88 90 92
+EOF
+```
+
+**Print the entire file**:
+
+```bash
+awk '{print}' grades.txt
+```
+
+Or simply:
+
+```bash
+awk '1' grades.txt
+```
+
+**Output**:
+```
+Alice 85 92 88
+Bob 78 85 90
+Charlie 92 88 95
+David 65 70 68
+Eve 88 90 92
+```
+
+The `1` is always true, so all lines are printed.
+
+---
+
+## Part 2: Working with Fields
+
+awk automatically splits each line into fields (columns) based on whitespace. You access fields using `$1`, `$2`, `$3`, etc.
+
+### Field Variables
+
+- `$0` — The entire line
+- `$1` — First field
+- `$2` — Second field
+- `$3` — Third field
+- `$NF` — Last field (Number of Fields)
+- `$(NF-1)` — Second-to-last field
+
+### Example: Extract Specific Fields
+
+**Print just the names (first field)**:
+
+```bash
+awk '{print $1}' grades.txt
+```
+
+**Output**:
+```
+Alice
+Bob
+Charlie
+David
+Eve
+```
+
+**Print name and first score**:
+
+```bash
+awk '{print $1, $2}' grades.txt
+```
+
+**Output**:
+```
+Alice 85
+Bob 78
+Charlie 92
+David 65
+Eve 88
+```
+
+Notice that fields are separated by a space in the output. awk uses a comma in `print` to separate fields with a space.
+
+**Print name and last score**:
+
+```bash
+awk '{print $1, $NF}' grades.txt
+```
+
+**Output**:
+```
+Alice 88
+Bob 90
+Charlie 95
+David 68
+Eve 92
+```
+
+`$NF` always refers to the last field, regardless of how many fields there are.
+
+### Print Without Commas
+
+If you don't use commas in `print`, fields are concatenated:
+
+```bash
+awk '{print $1 $2}' grades.txt
+```
+
+**Output**:
+```
+Alice85
+Bob78
+Charlie92
+David65
+Eve88
+```
+
+No space between name and number!
+
+---
+
+## Part 3: Built-in Variables
+
+awk has several useful built-in variables:
+
+### 3.1: NR (Number of Records)
+
+`NR` is the current line number:
+
+```bash
+awk '{print NR, $0}' grades.txt
+```
+
+**Output**:
+```
+1 Alice 85 92 88
+2 Bob 78 85 90
+3 Charlie 92 88 95
+4 David 65 70 68
+5 Eve 88 90 92
+```
+
+Each line is prefixed with its line number.
+
+### 3.2: NF (Number of Fields)
+
+`NF` is the number of fields in the current line:
+
+```bash
+awk '{print NF, $0}' grades.txt
+```
+
+**Output**:
+```
+4 Alice 85 92 88
+4 Bob 78 85 90
+4 Charlie 92 88 95
+4 David 65 70 68
+4 Eve 88 90 92
+```
+
+All lines have 4 fields (name + 3 scores).
+
+### 3.3: Combining NR and NF
+
+```bash
+awk '{print "Line", NR, "has", NF, "fields"}' grades.txt
+```
+
+**Output**:
+```
+Line 1 has 4 fields
+Line 2 has 4 fields
+Line 3 has 4 fields
+Line 4 has 4 fields
+Line 5 has 4 fields
+```
+
+### 3.4: FS (Field Separator)
+
+By default, awk uses whitespace as the field separator. You can change this with `-F` or by setting `FS`:
+
+**Using -F flag**:
+
+```bash
+# Create a colon-separated file
+cat > data.csv << 'EOF'
+Alice:85:92:88
+Bob:78:85:90
+EOF
+
+# Use colon as separator
+awk -F':' '{print $1, $2}' data.csv
+```
+
+**Output**:
+```
+Alice 85
+Bob 78
+```
+
+**Setting FS in BEGIN block**:
+
+```bash
+awk 'BEGIN {FS=":"} {print $1, $2}' data.csv
+```
+
+Same output.
+
+### 3.5: OFS (Output Field Separator)
+
+By default, awk separates output fields with a space. Change this with `OFS`:
+
+```bash
+awk 'BEGIN {OFS=","} {print $1, $2, $3}' grades.txt
+```
+
+**Output**:
+```
+Alice,85,92
+Bob,78,85
+Charlie,92,88
+David,65,70
+Eve,88,90
+```
+
+Now fields are comma-separated.
+
+---
+
+## Part 4: Patterns and Conditions
+
+You can filter which lines awk processes using patterns.
+
+### 4.1: Match Lines Containing Text
+
+Print lines containing "Alice":
+
+```bash
+awk '/Alice/ {print}' grades.txt
+```
+
+**Output**:
+```
+Alice 85 92 88
+```
+
+This is similar to `grep Alice grades.txt`.
+
+### 4.2: Comparison Operators
+
+Print students with first score > 80:
+
+```bash
+awk '$2 > 80 {print $1, $2}' grades.txt
+```
+
+**Output**:
+```
+Alice 85
+Charlie 92
+Eve 88
+```
+
+**Available operators**:
+- `==` — Equal to
+- `!=` — Not equal to
+- `>` — Greater than
+- `<` — Less than
+- `>=` — Greater than or equal
+- `<=` — Less than or equal
+
+### 4.3: Logical Operators
+
+**AND** (`&&`):
+
+```bash
+# Students with first score > 80 AND last score > 90
+awk '$2 > 80 && $NF > 90 {print $1}' grades.txt
+```
+
+**Output**:
+```
+Alice
+Eve
+```
+
+**OR** (`||`):
+
+```bash
+# Students with first score > 90 OR last score > 90
+awk '$2 > 90 || $NF > 90 {print $1}' grades.txt
+```
+
+**Output**:
+```
+Charlie
+Bob
+Charlie
+Eve
+```
+
+### 4.4: Match Specific Fields
+
+Print lines where name starts with "A":
+
+```bash
+awk '$1 ~ /^A/ {print}' grades.txt
+```
+
+**Output**:
+```
+Alice 85 92 88
+```
+
+The `~` operator means "matches regex".
+
+**Doesn't match** (`!~`):
+
+```bash
+# Names NOT starting with A
+awk '$1 !~ /^A/ {print $1}' grades.txt
+```
+
+**Output**:
+```
+Bob
+Charlie
+David
+Eve
+```
+
+---
+
+## Part 5: BEGIN and END Blocks
+
+awk has special blocks that execute before and after processing:
+
+### 5.1: BEGIN Block
+
+Executes once before reading any input:
+
+```bash
+awk 'BEGIN {print "Name Score"} {print $1, $2}' grades.txt
+```
+
+**Output**:
+```
+Name Score
+Alice 85
+Bob 78
+Charlie 92
+David 65
+Eve 88
+```
+
+The header is printed first.
+
+### 5.2: END Block
+
+Executes once after all input is processed:
+
+```bash
+awk '{print $1} END {print "Total:", NR, "students"}' grades.txt
+```
+
+**Output**:
+```
+Alice
+Bob
+Charlie
+David
+Eve
+Total: 5 students
+```
+
+### 5.3: Combining BEGIN and END
+
+```bash
+awk 'BEGIN {print "=== Student Report ==="}
+     {print $1, $2}
+     END {print "=== End of Report ==="}' grades.txt
+```
+
+**Output**:
+```
+=== Student Report ===
+Alice 85
+Bob 78
+Charlie 92
+David 65
+Eve 88
+=== End of Report ===
+```
+
+---
+
+## Part 6: Calculations and Arithmetic
+
+awk can perform calculations on your data.
+
+### 6.1: Calculate Average
+
+Average the three scores for each student:
+
+```bash
+awk '{avg = ($2 + $3 + $4) / 3; print $1, avg}' grades.txt
+```
+
+**Output**:
+```
+Alice 88.3333
+Bob 84.3333
+Charlie 91.6667
+David 67.6667
+Eve 90
+```
+
+### 6.2: Sum a Column
+
+Sum all first scores:
+
+```bash
+awk '{sum += $2} END {print "Total:", sum}' grades.txt
+```
+
+**Output**:
+```
+Total: 408
+```
+
+**Breaking it down**:
+- `sum += $2` — Add each student's first score to sum
+- `END {print "Total:", sum}` — After all lines, print the total
+
+### 6.3: Calculate Average of Column
+
+```bash
+awk '{sum += $2} END {print "Average:", sum/NR}' grades.txt
+```
+
+**Output**:
+```
+Average: 81.6
+```
+
+`NR` in the END block equals the total number of lines.
+
+### 6.4: Count Matches
+
+Count students with scores > 80:
+
+```bash
+awk '$2 > 80 {count++} END {print count, "students scored >80"}' grades.txt
+```
+
+**Output**:
+```
+3 students scored >80
+```
+
+### 6.5: Find Maximum
+
+```bash
+awk 'BEGIN {max=0} $2 > max {max=$2; name=$1} END {print name, max}' grades.txt
+```
+
+**Output**:
+```
+Charlie 92
+```
+
+**What happens**:
+- `BEGIN {max=0}` — Initialize max
+- `$2 > max` — If current score is greater than max
+- `{max=$2; name=$1}` — Update max and remember the name
+- `END {print name, max}` — Print the winner
+
+---
+
+## Part 7: Formatting Output
+
+### 7.1: printf for Formatted Output
+
+Use `printf` for precise formatting (like in C):
+
+```bash
+awk '{printf "%-10s %3d\n", $1, $2}' grades.txt
+```
+
+**Output**:
+```
+Alice       85
+Bob         78
+Charlie     92
+David       65
+Eve         88
+```
+
+**Format specifiers**:
+- `%-10s` — Left-aligned string, 10 characters wide
+- `%3d` — Integer, 3 digits wide
+- `\n` — Newline (printf doesn't auto-newline)
+
+### 7.2: Format Numbers
+
+```bash
+awk '{avg = ($2+$3+$4)/3; printf "%s: %.2f\n", $1, avg}' grades.txt
+```
+
+**Output**:
+```
+Alice: 88.33
+Bob: 84.33
+Charlie: 91.67
+David: 67.67
+Eve: 90.00
+```
+
+`%.2f` means floating-point with 2 decimal places.
+
+### 7.3: Create Tables
+
+```bash
+awk 'BEGIN {printf "%-10s %5s %5s %5s %7s\n", "Name", "S1", "S2", "S3", "Avg"}
+     {avg=($2+$3+$4)/3; printf "%-10s %5d %5d %5d %7.2f\n", $1, $2, $3, $4, avg}' grades.txt
+```
+
+**Output**:
+```
+Name           S1    S2    S3     Avg
+Alice          85    92    88   88.33
+Bob            78    85    90   84.33
+Charlie        92    88    95   91.67
+David          65    70    68   67.67
+Eve            88    90    92   90.00
+```
+
+---
+
+## Part 8: Working with /etc/passwd
+
+Let's apply awk to a real system file: `/etc/passwd`.
+
+The format of /etc/passwd is:
+```
+username:password:UID:GID:comment:home:shell
+```
+
+Fields are separated by colons (`:`).
+
+### 8.1: Extract Usernames
+
+```bash
+awk -F':' '{print $1}' /etc/passwd | head -5
+```
+
+**Example output**:
+```
+root
+daemon
+bin
+sys
+sync
+```
+
+### 8.2: Find Users with Bash Shell
+
+```bash
+awk -F':' '$7 == "/bin/bash" {print $1}' /etc/passwd
+```
+
+Shows users whose shell is `/bin/bash`.
+
+### 8.3: Extract UIDs Greater Than 1000
+
+Regular users typically have UID ≥ 1000:
+
+```bash
+awk -F':' '$3 >= 1000 {print $1, $3}' /etc/passwd
+```
+
+**Example output**:
+```
+alice 1001
+bob 1002
+charlie 1003
+```
+
+### 8.4: Count Shell Types
+
+```bash
+awk -F':' '{shells[$7]++} END {for (s in shells) print s, shells[s]}' /etc/passwd
+```
+
+**Example output**:
+```
+/bin/bash 5
+/usr/sbin/nologin 25
+/bin/sync 1
+/bin/false 3
+```
+
+This uses an **associative array** to count occurrences.
+
+### 8.5: Pretty Print User Info
+
+```bash
+awk -F':' '$3 >= 1000 {printf "User: %-15s UID: %5d Home: %s\n", $1, $3, $6}' /etc/passwd
+```
+
+**Example output**:
+```
+User: alice            UID:  1001 Home: /home/alice
+User: bob              UID:  1002 Home: /home/bob
+User: charlie          UID:  1003 Home: /home/charlie
+```
+
+---
+
+## Part 9: Real-World System Administration Examples
+
+### 9.1: Analyze Disk Usage
+
+Show directories using most space:
+
+```bash
+du -sh /var/* | awk '$1 ~ /G/ {print $2, $1}'
+```
+
+This shows only directories with gigabyte usage.
+
+**Better version with sort**:
+
+```bash
+du -sk /var/* | sort -rn | head -10 | awk '{printf "%5dMB %s\n", $1/1024, $2}'
+```
+
+Shows top 10 directories by size in MB.
+
+### 9.2: Process Analysis
+
+Find processes using most memory:
+
+```bash
+ps aux | awk 'NR>1 {print $4, $11}' | sort -rn | head -10
+```
+
+**Breaking it down**:
+- `NR>1` — Skip header line
+- `$4` — Memory percentage
+- `$11` — Command name
+- `sort -rn` — Sort numerically, reverse order
+
+### 9.3: Parse Apache Access Logs
+
+Extract IP addresses and count requests per IP:
+
+```bash
+awk '{ips[$1]++} END {for (ip in ips) print ip, ips[ip]}' /var/log/apache2/access.log | sort -k2 -rn | head
+```
+
+Shows IPs with most requests.
+
+### 9.4: Calculate Average Load from uptime
+
+```bash
+uptime | awk -F'load average:' '{print $2}' | awk -F',' '{avg=($1+$2+$3)/3; printf "Avg load: %.2f\n", avg}'
+```
+
+Calculates average of 1, 5, and 15-minute load averages.
+
+### 9.5: Monitor Network Connections
+
+```bash
+ss -tan | awk 'NR>1 {states[$1]++} END {for (s in states) print s, states[s]}'
+```
+
+Counts connection states (ESTABLISHED, TIME_WAIT, etc.).
+
+### 9.6: Parse CSV Files
+
+Create a sample CSV:
+
+```bash
+cat > sales.csv << 'EOF'
+Product,Quantity,Price
+Laptop,5,1200
+Mouse,20,25
+Keyboard,15,75
+Monitor,8,300
+EOF
+```
+
+Calculate total revenue:
+
+```bash
+awk -F',' 'NR>1 {total += $2 * $3} END {printf "Total Revenue: $%d\n", total}' sales.csv
+```
+
+**Output**:
+```
+Total Revenue: $10900
+```
+
+### 9.7: Find Large Files
+
+```bash
+find /var/log -type f -exec ls -lh {} \; | awk '$5 ~ /M|G/ {print $5, $9}'
+```
+
+Shows files with size in megabytes or gigabytes.
+
+### 9.8: Summarize Log Errors by Hour
+
+```bash
+awk '/error/ {hour=substr($3,1,2); hours[hour]++} END {for (h in hours) print h":00 -", hours[h], "errors"}' /var/log/syslog
+```
+
+Groups errors by hour of day.
+
+---
+
+## Part 10: Arrays in awk
+
+awk supports associative arrays (like Python dictionaries or Bash associative arrays).
+
+### 10.1: Basic Array Usage
+
+```bash
+awk 'BEGIN {
+    fruits["apple"] = 5
+    fruits["banana"] = 3
+    fruits["orange"] = 7
+
+    print "Apples:", fruits["apple"]
+    print "Bananas:", fruits["banana"]
+}'
+```
+
+**Output**:
+```
+Apples: 5
+Bananas: 3
+```
+
+### 10.2: Loop Through Array
+
+```bash
+awk 'BEGIN {
+    fruits["apple"] = 5
+    fruits["banana"] = 3
+    fruits["orange"] = 7
+
+    for (fruit in fruits) {
+        print fruit, fruits[fruit]
+    }
+}'
+```
+
+**Output**:
+```
+apple 5
+banana 3
+orange 7
+```
+
+### 10.3: Count Occurrences
+
+Count how many times each name appears:
+
+```bash
+cat > names.txt << 'EOF'
+Alice
+Bob
+Alice
+Charlie
+Bob
+Alice
+EOF
+
+awk '{count[$1]++} END {for (name in count) print name, count[name]}' names.txt
+```
+
+**Output**:
+```
+Alice 3
+Bob 2
+Charlie 1
+```
+
+### 10.4: Group Data
+
+Create a sales file:
+
+```bash
+cat > daily_sales.txt << 'EOF'
+Monday Laptop 1200
+Monday Mouse 25
+Tuesday Laptop 1200
+Tuesday Keyboard 75
+Monday Monitor 300
+Tuesday Mouse 25
+EOF
+```
+
+Sum sales by day:
+
+```bash
+awk '{sales[$1] += $3} END {for (day in sales) printf "%s: $%d\n", day, sales[day]}' daily_sales.txt
+```
+
+**Output**:
+```
+Monday: $1525
+Tuesday: $1300
+```
+
+---
+
+## Part 11: Multi-Line awk Programs
+
+For complex tasks, you can write awk as a script file.
+
+### 11.1: Using -f Flag
+
+Create an awk script:
+
+```bash
+cat > stats.awk << 'EOF'
+BEGIN {
+    print "=== Grade Statistics ==="
+}
+
+{
+    sum += $2
+    if ($2 > max) {
+        max = $2
+        top_student = $1
+    }
+    if (min == 0 || $2 < min) {
+        min = $2
+    }
+}
+
+END {
+    print "Total students:", NR
+    print "Average score:", sum/NR
+    print "Highest score:", max, "(" top_student ")"
+    print "Lowest score:", min
+}
+EOF
+
+# Run the script
+awk -f stats.awk grades.txt
+```
+
+**Output**:
+```
+=== Grade Statistics ===
+Total students: 5
+Average score: 81.6
+Highest score: 92 (Charlie)
+Lowest score: 65
+```
+
+### 11.2: Inline Multi-Line
+
+```bash
+awk '
+BEGIN { print "Processing..." }
+{
+    if ($2 > 85) {
+        print $1, "is excellent"
+    } else if ($2 > 75) {
+        print $1, "is good"
+    } else {
+        print $1, "needs improvement"
+    }
+}
+END { print "Done!" }
+' grades.txt
+```
+
+**Output**:
+```
+Processing...
+Alice is good
+Bob is good
+Charlie is excellent
+David needs improvement
+Eve is excellent
+Done!
+```
+
+---
+
+## Part 12: Practical awk One-Liners
+
+### Essential One-Liners
+
+**Print specific columns**:
+```bash
+awk '{print $1, $3}'
+```
+
+**Sum a column**:
+```bash
+awk '{sum+=$1} END {print sum}'
+```
+
+**Average a column**:
+```bash
+awk '{sum+=$1} END {print sum/NR}'
+```
+
+**Count lines**:
+```bash
+awk 'END {print NR}'
+```
+
+**Print lines longer than 80 characters**:
+```bash
+awk 'length > 80'
+```
+
+**Remove duplicate lines** (while maintaining order):
+```bash
+awk '!seen[$0]++'
+```
+
+**Print every 5th line**:
+```bash
+awk 'NR % 5 == 0'
+```
+
+**Print lines between patterns**:
+```bash
+awk '/START/,/END/'
+```
+
+**Replace field**:
+```bash
+awk '{$2="REDACTED"; print}'
+```
+
+**Add line numbers**:
+```bash
+awk '{print NR, $0}'
+```
+
+---
+
+## Part 13: Practice Labs
+
+Let's practice with comprehensive labs!
+
+### Warm-up Labs (1-5): Basic Operations
+
+**Lab 1: Create Test Data and Extract Fields**
+
+**Task:** Create a file with employee data (name, department, salary). Extract and print only names and salaries.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create employee file
+cat > employees.txt << 'EOF'
+Alice Engineering 95000
+Bob Marketing 75000
+Charlie Engineering 98000
+David HR 72000
+Eve Sales 85000
+Frank Engineering 102000
+EOF
+
+# Extract names and salaries
+awk '{print $1, $3}' employees.txt
+```
+
+**Output**:
+```
+Alice 95000
+Bob 75000
+Charlie 98000
+David 72000
+Eve 85000
+Frank 102000
+```
+
+</details>
+
+---
+
+**Lab 2: Print Line Numbers**
+
+**Task:** Using the employees.txt file, print each line with its line number.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+awk '{print NR, $0}' employees.txt
+```
+
+**Output**:
+```
+1 Alice Engineering 95000
+2 Bob Marketing 75000
+3 Charlie Engineering 98000
+4 David HR 72000
+5 Eve Sales 85000
+6 Frank Engineering 102000
+```
+
+</details>
+
+---
+
+**Lab 3: Filter Based on Condition**
+
+**Task:** Print employees with salary greater than 80000.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+awk '$3 > 80000 {print $1, $3}' employees.txt
+```
+
+**Output**:
+```
+Alice 95000
+Charlie 98000
+Eve 85000
+Frank 102000
+```
+
+</details>
+
+---
+
+**Lab 4: Count Number of Fields**
+
+**Task:** Print the number of fields in each line of employees.txt.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+awk '{print "Line", NR, "has", NF, "fields"}' employees.txt
+```
+
+**Output**:
+```
+Line 1 has 3 fields
+Line 2 has 3 fields
+Line 3 has 3 fields
+Line 4 has 3 fields
+Line 5 has 3 fields
+Line 6 has 3 fields
+```
+
+</details>
+
+---
+
+**Lab 5: Print Last Field**
+
+**Task:** Print the name (first field) and salary (last field) using `$NF`.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+awk '{print $1, $NF}' employees.txt
+```
+
+**Output**:
+```
+Alice 95000
+Bob 75000
+Charlie 98000
+David 72000
+Eve 85000
+Frank 102000
+```
+
+</details>
+
+---
+
+### Core Practice Labs (6-13): Intermediate Skills
+
+**Lab 6: Calculate Total Salaries**
+
+**Task:** Calculate the total of all salaries in employees.txt.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+awk '{sum += $3} END {print "Total salaries: $" sum}' employees.txt
+```
+
+**Output**:
+```
+Total salaries: $527000
+```
+
+</details>
+
+---
+
+**Lab 7: Calculate Average Salary**
+
+**Task:** Calculate the average salary.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+awk '{sum += $3} END {printf "Average salary: $%.2f\n", sum/NR}' employees.txt
+```
+
+**Output**:
+```
+Average salary: $87833.33
+```
+
+</details>
+
+---
+
+**Lab 8: Find Maximum and Minimum**
+
+**Task:** Find the employee with the highest salary and the one with the lowest.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+awk 'BEGIN {min=999999; max=0}
+     $3 > max {max=$3; max_name=$1}
+     $3 < min {min=$3; min_name=$1}
+     END {
+         print "Highest:", max_name, "$" max
+         print "Lowest:", min_name, "$" min
+     }' employees.txt
+```
+
+**Output**:
+```
+Highest: Frank $102000
+Lowest: David $72000
+```
+
+</details>
+
+---
+
+**Lab 9: Group by Department**
+
+**Task:** Count how many employees are in each department.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+awk '{dept[$2]++} END {for (d in dept) print d, dept[d], "employees"}' employees.txt
+```
+
+**Output**:
+```
+Engineering 3 employees
+Marketing 1 employees
+HR 1 employees
+Sales 1 employees
+```
+
+</details>
+
+---
+
+**Lab 10: Sum Salaries by Department**
+
+**Task:** Calculate total salaries for each department.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+awk '{dept_salary[$2] += $3}
+     END {
+         for (d in dept_salary) {
+             printf "%s: $%d\n", d, dept_salary[d]
+         }
+     }' employees.txt
+```
+
+**Output**:
+```
+Engineering: $295000
+Marketing: $75000
+HR: $72000
+Sales: $85000
+```
+
+</details>
+
+---
+
+**Lab 11: Format Output as Table**
+
+**Task:** Create a nicely formatted table with headers.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+awk 'BEGIN {printf "%-15s %-15s %10s\n", "Name", "Department", "Salary"; print "-------------------------------------------"}
+     {printf "%-15s %-15s $%9d\n", $1, $2, $3}' employees.txt
+```
+
+**Output**:
+```
+Name            Department           Salary
+-------------------------------------------
+Alice           Engineering      $    95000
+Bob             Marketing        $    75000
+Charlie         Engineering      $    98000
+David           HR               $    72000
+Eve             Sales            $    85000
+Frank           Engineering      $   102000
+```
+
+</details>
+
+---
+
+**Lab 12: Filter with Multiple Conditions**
+
+**Task:** Find Engineering employees with salary > 95000.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+awk '$2 == "Engineering" && $3 > 95000 {print $1, $3}' employees.txt
+```
+
+**Output**:
+```
+Charlie 98000
+Frank 102000
+```
+
+</details>
+
+---
+
+**Lab 13: Change Field Separator**
+
+**Task:** Create a colon-separated file and process it.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create colon-separated data
+cat > data.txt << 'EOF'
+Alice:30:Engineering
+Bob:25:Marketing
+Charlie:35:Engineering
+EOF
+
+# Process with custom separator
+awk -F':' '{print $1, "is", $2, "years old"}' data.txt
+```
+
+**Output**:
+```
+Alice is 30 years old
+Bob is 25 years old
+Charlie is 35 years old
+```
+
+</details>
+
+---
+
+### Advanced Labs (14-20): Complex Scenarios
+
+**Lab 14: Process /etc/passwd**
+
+**Task:** Extract all regular users (UID >= 1000) with their home directories and shells.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+awk -F':' '$3 >= 1000 && $3 < 65534 {printf "%-15s %-25s %s\n", $1, $6, $7}' /etc/passwd
+```
+
+This shows usernames, home directories, and shells for regular users (excluding nobody which has UID 65534).
+
+</details>
+
+---
+
+**Lab 15: Calculate Disk Usage Summary**
+
+**Task:** Use `df` output to calculate total used disk space.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+df -k | awk 'NR>1 {sum+=$3} END {printf "Total used: %.2f GB\n", sum/1024/1024}'
+```
+
+**Explanation**:
+- `NR>1` skips header
+- `$3` is the "Used" column in KB
+- Convert KB to GB by dividing by 1024 twice
+
+</details>
+
+---
+
+**Lab 16: Parse Log File by Time**
+
+**Task:** Create a mock syslog and count messages by hour.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create mock log
+cat > system.log << 'EOF'
+Dec 10 08:15:23 server app: Starting
+Dec 10 08:16:45 server app: Ready
+Dec 10 09:01:12 server app: Processing
+Dec 10 09:15:30 server app: Complete
+Dec 10 10:30:45 server app: Error occurred
+Dec 10 10:31:00 server app: Recovering
+EOF
+
+# Count by hour
+awk '{hour=substr($3,1,2); hours[hour]++}
+     END {for (h in hours) print h":00 -", hours[h], "messages"}' system.log
+```
+
+**Output**:
+```
+08:00 - 2 messages
+09:00 - 2 messages
+10:00 - 2 messages
+```
+
+</details>
+
+---
+
+**Lab 17: Remove Duplicates While Preserving Order**
+
+**Task:** Create a file with duplicate lines and remove them.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create file with duplicates
+cat > duplicates.txt << 'EOF'
+apple
+banana
+apple
+cherry
+banana
+date
+apple
+EOF
+
+# Remove duplicates
+awk '!seen[$0]++' duplicates.txt
+```
+
+**Output**:
+```
+apple
+banana
+cherry
+date
+```
+
+**How it works**: `!seen[$0]++` returns true the first time each line is seen (when seen[$0] is 0), then increments it.
+
+</details>
+
+---
+
+**Lab 18: Calculate Running Total**
+
+**Task:** Create sales data and show running total.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create sales data
+cat > sales.txt << 'EOF'
+Monday 1200
+Tuesday 850
+Wednesday 1500
+Thursday 920
+Friday 2100
+EOF
+
+# Show running total
+awk '{sum+=$2; printf "%s %5d (Total: %d)\n", $1, $2, sum}' sales.txt
+```
+
+**Output**:
+```
+Monday  1200 (Total: 1200)
+Tuesday  850 (Total: 2050)
+Wednesday  1500 (Total: 3550)
+Thursday  920 (Total: 4470)
+Friday  2100 (Total: 6570)
+```
+
+</details>
+
+---
+
+**Lab 19: Process CSV with Quoted Fields**
+
+**Task:** Handle CSV files with comma-separated values and quoted fields.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create CSV with quoted fields
+cat > products.csv << 'EOF'
+"Laptop",5,1200
+"Mouse, Wireless",20,25
+"Keyboard",15,75
+EOF
+
+# Process (basic approach)
+awk -F',' '{gsub(/"/, "", $1); print $1, "Qty:", $2, "Price:", $3}' products.csv
+```
+
+**Output**:
+```
+Laptop Qty: 5 Price: 1200
+Mouse, Wireless Qty: 20 Price: 25
+Keyboard Qty: 15 Price: 75
+```
+
+Note: This is basic; production CSV parsing needs more robust handling.
+
+</details>
+
+---
+
+**Lab 20: Generate Report from Multiple Metrics**
+
+**Task:** Create a comprehensive system report using ps output.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+ps aux | awk '
+BEGIN {
+    print "=== Process Analysis Report ==="
+    print ""
+}
+NR > 1 {
+    users[$1]++
+    mem[$1] += $4
+    cpu[$1] += $3
+}
+END {
+    print "Processes by user:"
+    for (u in users) {
+        printf "  %-15s %3d processes, CPU: %5.1f%%, MEM: %5.1f%%\n",
+               u, users[u], cpu[u], mem[u]
+    }
+    print ""
+    print "Total processes:", NR-1
+}'
+```
+
+This creates a summary showing process count, CPU, and memory usage per user.
+
+</details>
+
+---
+
+## Best Practices
+
+### 1. Quote Your awk Scripts
+
+```bash
+# Good
+awk '{print $1}' file.txt
+
+# Bad (works but can cause issues with shell expansion)
+awk {print $1} file.txt
+```
+
+### 2. Use BEGIN for Initialization
+
+```bash
+# Good
+awk 'BEGIN {sum=0} {sum+=$1} END {print sum}'
+
+# Works but less clear
+awk '{sum+=$1} END {print sum}'
+```
+
+### 3. Use Meaningful Variable Names
+
+```bash
+# Good
+awk '{total_sales += $3} END {print total_sales}'
+
+# Works but cryptic
+awk '{x+=$3} END {print x}'
+```
+
+### 4. Format Complex Scripts for Readability
+
+```bash
+# For complex logic, use multi-line format
+awk '
+    BEGIN { FS=":"; OFS="\t" }
+    $3 >= 1000 {
+        print $1, $6, $7
+    }
+' /etc/passwd
+```
+
+### 5. Test Patterns First
+
+```bash
+# Test your pattern matching before adding actions
+awk '$3 > 1000' file.txt  # See what matches
+
+# Then add the action
+awk '$3 > 1000 {print $1, $3}' file.txt
+```
+
+### 6. Use printf for Formatted Output
+
+```bash
+# Instead of print for numbers
+awk '{printf "%.2f\n", $1}'  # Controls decimal places
+```
+
+### 7. Specify Field Separator Explicitly
+
+```bash
+# Explicit is better than implicit
+awk -F':' '{print $1}' /etc/passwd
+
+# Even better with BEGIN
+awk 'BEGIN {FS=":"} {print $1}' /etc/passwd
+```
+
+---
+
+## Common Pitfalls to Avoid
+
+### 1. **Forgetting Field Separator for Non-Whitespace Data**
+
+```bash
+# Wrong for colon-separated data
+awk '{print $1}' /etc/passwd  # Prints entire line!
+
+# Correct
+awk -F':' '{print $1}' /etc/passwd
+```
+
+### 2. **Not Handling Empty Lines**
+
+```bash
+# Can cause division by zero
+awk '{avg = ($1+$2)/$3; print avg}' data.txt
+
+# Better
+awk '$3 != 0 {avg = ($1+$2)/$3; print avg}' data.txt
+```
+
+### 3. **Mixing print and printf**
+
+```bash
+# No newline with printf!
+awk '{printf $1}' file.txt  # All on one line
+
+# Correct
+awk '{printf "%s\n", $1}' file.txt
+```
+
+### 4. **Not Initializing Variables**
+
+```bash
+# May not work as expected
+awk '$1 > max {max=$1}' file.txt  # max is undefined initially
+
+# Better
+awk 'BEGIN {max=0} $1 > max {max=$1} END {print max}' file.txt
+```
+
+### 5. **Forgetting About NR in END Block**
+
+```bash
+# NR in END is total line count, not current line
+awk '{sum+=$1} END {print sum/NR}' file.txt  # Correct for average
+```
+
+### 6. **String vs Numeric Comparison**
+
+```bash
+# String comparison
+awk '$1 == "100"'  # Matches string "100"
+
+# Numeric comparison
+awk '$1 == 100'    # Matches number 100
+```
+
+---
+
+## Quick Reference
+
+### Basic Syntax
+
+```bash
+awk 'pattern {action}' file
+awk -F':' '{print $1}' file     # Custom field separator
+awk -f script.awk file           # Run awk script file
+```
+
+### Field Variables
+
+| Variable | Meaning |
+|----------|---------|
+| `$0` | Entire line |
+| `$1, $2, $3...` | First, second, third field |
+| `$NF` | Last field |
+| `$(NF-1)` | Second-to-last field |
+
+### Built-in Variables
+
+| Variable | Meaning |
+|----------|---------|
+| `NR` | Current record (line) number |
+| `NF` | Number of fields in current record |
+| `FS` | Input field separator (default: whitespace) |
+| `OFS` | Output field separator (default: space) |
+| `RS` | Record separator (default: newline) |
+| `ORS` | Output record separator (default: newline) |
+
+### Operators
+
+| Operator | Meaning |
+|----------|---------|
+| `==` | Equal |
+| `!=` | Not equal |
+| `<, >, <=, >=` | Comparison |
+| `~` | Matches regex |
+| `!~` | Doesn't match regex |
+| `&&` | Logical AND |
+| `||` | Logical OR |
+| `!` | Logical NOT |
+
+### Common Patterns
+
+```bash
+# All lines
+awk '{print}' file
+
+# Lines matching pattern
+awk '/pattern/ {print}' file
+
+# Lines NOT matching
+awk '!/pattern/ {print}' file
+
+# Specific field matches
+awk '$1 == "value"' file
+
+# Numeric comparison
+awk '$3 > 100' file
+
+# Multiple conditions
+awk '$1 == "A" && $2 > 50' file
+
+# Field matches regex
+awk '$1 ~ /^A/' file
+```
+
+### Common Actions
+
+```bash
+# Print fields
+awk '{print $1, $2}'
+
+# Print with formatting
+awk '{printf "%-10s %5d\n", $1, $2}'
+
+# Calculate sum
+awk '{sum += $1} END {print sum}'
+
+# Calculate average
+awk '{sum += $1} END {print sum/NR}'
+
+# Count matches
+awk '/pattern/ {count++} END {print count}'
+
+# Find max
+awk 'BEGIN{max=0} $1>max {max=$1} END {print max}'
+```
+
+---
+
+## Key Takeaways
+
+1. **awk is a programming language** — Not just a command-line tool
+2. **Fields are automatic** — awk splits lines into fields for you
+3. **Patterns filter lines** — Actions run only on matching lines
+4. **BEGIN and END are special** — Execute before and after main processing
+5. **Arrays are powerful** — Use associative arrays to aggregate data
+6. **Built-in variables** — NR, NF, FS, etc. provide essential info
+7. **printf for formatting** — Better control than print
+8. **Combine with pipes** — awk works great with other commands
+9. **Test incrementally** — Build complex awk scripts step by step
+10. **Script files for complexity** — Use `-f` for multi-line programs
+
+---
+
+## What's Next?
+
+Congratulations! You've learned awk, one of the most powerful text-processing tools in Linux. You can now:
+- Extract and manipulate fields from structured data
+- Perform calculations on columns
+- Aggregate and summarize data
+- Create formatted reports
+- Process system files like /etc/passwd
+- Analyze logs and command output
+
+In the next post, we'll explore **sed (stream editor)** for in-place text transformations and substitutions. Combined with grep and awk, sed completes the holy trinity of Linux text processing!
+
+**Practice Challenge**: Use awk to analyze your system's /etc/passwd file:
+```bash
+awk -F':' 'BEGIN {print "System User Summary"} $3<1000 {sys++} $3>=1000 {usr++} END {print "System users:", sys; print "Regular users:", usr}' /etc/passwd
+```
+
+How many system vs regular users do you have? 📊

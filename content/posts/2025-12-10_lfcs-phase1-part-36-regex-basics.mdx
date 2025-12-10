@@ -1,0 +1,1852 @@
+---
+title: "LFCS Part 36: Regular Expressions Part 1 - Basics"
+description: "Master the fundamentals of regular expressions (regex) with grep. Learn anchors, character classes, quantifiers, and pattern matching for powerful text searching and log analysis."
+date: "2025-12-27"
+tags: ["Linux", "LFCS", "regex", "regular expressions", "grep", "pattern matching", "text processing", "system administration"]
+published: true
+author: "Owais"
+categories: ["Linux", "LFCS Certification"]
+series: "LFCS Certification - Phase 1"
+seriesOrder: 36
+---
+
+We've already learned how to use `grep` for basic text searching in previous posts. But what if you need to search for patterns instead of exact text? What if you want to find all email addresses in a file, or all lines that start with "ERROR", or all phone numbers regardless of their format?
+
+This is where **regular expressions** (regex) become invaluable. Regular expressions are one of the most powerful tools in a system administrator's arsenal, enabling sophisticated pattern matching that goes far beyond simple text searches.
+
+## What You'll Learn
+
+In this comprehensive guide, you'll master:
+
+- **What regular expressions are** and why they're essential
+- **Basic regex syntax** with practical examples
+- **Anchors** (`^` and `$`) for matching positions
+- **The dot** (`.`) for matching any character
+- **Character classes** for matching specific sets of characters
+- **Quantifiers** (`*`, `+`, `?`) for repeated patterns
+- **Why single quotes matter** in regex
+- **Using `man 7 regex`** for reference
+- **Real-world log parsing** examples
+- **20 hands-on practice labs**
+
+---
+
+## Part 1: Understanding Regular Expressions
+
+### What Are Regular Expressions?
+
+A **regular expression** (often abbreviated as **regex** or **regexp**) is a sequence of characters that defines a search pattern. Think of it as a powerful find-and-replace on steroids.
+
+**Simple example:**
+```bash
+# Find exact text
+grep "error" logfile.txt
+
+# Find pattern: any line with "error" followed by a number
+grep "error[0-9]" logfile.txt
+```
+
+The second command uses a regex pattern `[0-9]` which means "any digit from 0 to 9".
+
+### Why Use Regular Expressions?
+
+Regular expressions solve problems that simple text search cannot:
+
+**Problem 1: Finding variations**
+```bash
+# You want to find: error, Error, ERROR
+# Without regex: need 3 separate searches
+grep "error" file.txt
+grep "Error" file.txt
+grep "ERROR" file.txt
+
+# With regex: one search
+grep -i "error" file.txt    # -i makes it case-insensitive
+```
+
+**Problem 2: Pattern matching**
+```bash
+# Find any IP address (simple version)
+grep "[0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+" file.txt
+
+# Find email addresses
+grep "[a-zA-Z0-9]\+@[a-zA-Z0-9]\+\.[a-z]\+" file.txt
+```
+
+**Problem 3: Positional matching**
+```bash
+# Find lines that START with "ERROR"
+grep "^ERROR" logfile.txt
+
+# Find lines that END with "failed"
+grep "failed$" logfile.txt
+```
+
+### Real-World Use Cases
+
+System administrators use regex daily for:
+- **Log analysis**: Finding specific error patterns
+- **Configuration validation**: Checking file formats
+- **Data extraction**: Pulling specific information from files
+- **Security auditing**: Finding suspicious patterns
+- **Automation**: Processing text in scripts
+- **Troubleshooting**: Quickly finding relevant log entries
+
+---
+
+## Part 2: Regex Basics with grep
+
+### The grep Command Review
+
+We'll use `grep` to learn regex because it's the most common tool for pattern matching.
+
+**Basic syntax:**
+```bash
+grep 'PATTERN' FILE
+```
+
+**Important:** Always use **single quotes** around regex patterns!
+
+### Why Single Quotes?
+
+Single quotes prevent the shell from interpreting special characters.
+
+**Example without quotes:**
+```bash
+# BAD: Shell interprets $
+grep error$ logfile.txt
+# The shell thinks $ is a variable!
+
+# GOOD: Single quotes protect the $
+grep 'error$' logfile.txt
+```
+
+**The rule:** Always use single quotes for regex patterns to avoid shell interpretation.
+
+---
+
+## Part 3: Anchors - Matching Positions
+
+Anchors match **positions** in the text, not actual characters.
+
+### The Caret (^) - Start of Line
+
+The `^` anchor matches the **beginning of a line**.
+
+**Example 1: Lines starting with "ERROR"**
+
+```bash
+# Create a test file
+cat > system.log << 'EOF'
+ERROR: Disk full
+WARNING: Low memory
+ERROR: Connection timeout
+System is running
+ERROR check failed
+EOF
+
+# Find lines starting with ERROR
+grep '^ERROR' system.log
+```
+
+**Output:**
+```
+ERROR: Disk full
+ERROR: Connection timeout
+```
+
+**Notice:**
+- `ERROR check failed` is NOT matched because ERROR isn't at the start
+- `^ERROR` means: "ERROR must be the first thing on the line"
+
+**Example 2: Finding commented lines**
+
+```bash
+# Find all comment lines in a config file
+grep '^#' /etc/ssh/sshd_config
+
+# Find all uncommented (active) lines
+grep -v '^#' /etc/ssh/sshd_config
+```
+
+### The Dollar Sign ($) - End of Line
+
+The `$` anchor matches the **end of a line**.
+
+**Example 3: Lines ending with "failed"**
+
+```bash
+# Create test file
+cat > results.log << 'EOF'
+Test 1: passed
+Test 2: failed
+Login failed
+Test 3: failed successfully
+System check: failed
+EOF
+
+# Find lines ending with "failed"
+grep 'failed$' results.log
+```
+
+**Output:**
+```
+Test 2: failed
+Login failed
+System check: failed
+```
+
+**Notice:**
+- `Test 3: failed successfully` is NOT matched because "failed" isn't at the end
+
+**Example 4: Finding empty lines**
+
+```bash
+# Match empty lines (start immediately followed by end)
+grep '^$' file.txt
+
+# Count empty lines
+grep -c '^$' file.txt
+```
+
+### Combining Anchors
+
+You can use both anchors together:
+
+**Example 5: Exact line match**
+
+```bash
+# Match lines that are EXACTLY "ERROR"
+grep '^ERROR$' logfile.txt
+
+# Match lines with only whitespace
+grep '^[[:space:]]*$' file.txt
+```
+
+---
+
+## Part 4: The Dot (.) - Match Any Character
+
+The dot `.` matches **any single character** (except newline).
+
+**Example 6: Three-letter words**
+
+```bash
+# Create test file
+cat > words.txt << 'EOF'
+cat
+bat
+cart
+at
+rat
+EOF
+
+# Find three-letter words
+grep '^...$' words.txt
+```
+
+**Output:**
+```
+cat
+bat
+rat
+```
+
+**Explanation:**
+- `^` - start of line
+- `.` - any character
+- `.` - any character
+- `.` - any character
+- `$` - end of line
+- Pattern matches exactly 3 characters
+
+**Example 7: Error codes**
+
+```bash
+# Find error messages with format: error.NNN (error + any char + 3 digits)
+grep 'error..[0-9][0-9][0-9]' logfile.txt
+
+# This matches:
+# error 401
+# error:500
+# error-404
+```
+
+**Example 8: Hidden files**
+
+```bash
+# List hidden files (start with dot)
+ls -a | grep '^\.'
+```
+
+---
+
+## Part 5: Character Classes - Match Specific Sets
+
+Character classes let you match **specific sets of characters**.
+
+### Basic Character Classes
+
+**Syntax:** `[characters]`
+
+**Example 9: Matching vowels**
+
+```bash
+# Create test file
+echo -e "apple\nbanana\ngrape\nkiwi" > fruits.txt
+
+# Find lines containing vowels
+grep '[aeiou]' fruits.txt
+# Matches all lines (they all have vowels)
+
+# Find lines starting with a vowel
+grep '^[aeiou]' fruits.txt
+```
+
+**Output:**
+```
+apple
+```
+
+### Character Ranges
+
+You can specify ranges using `-`:
+
+**Common ranges:**
+- `[a-z]` - lowercase letters
+- `[A-Z]` - uppercase letters
+- `[0-9]` - digits
+- `[a-zA-Z]` - all letters
+- `[a-zA-Z0-9]` - alphanumeric
+
+**Example 10: Finding lines with numbers**
+
+```bash
+# Create test file
+cat > mixed.txt << 'EOF'
+Line without numbers
+Line with 5 numbers
+Another line
+Has 123 in it
+EOF
+
+# Find lines containing digits
+grep '[0-9]' mixed.txt
+```
+
+**Output:**
+```
+Line with 5 numbers
+Has 123 in it
+```
+
+**Example 11: Case-insensitive matching with ranges**
+
+```bash
+# Find lines starting with uppercase letter
+grep '^[A-Z]' file.txt
+
+# Find lines starting with any letter (upper or lower)
+grep '^[a-zA-Z]' file.txt
+```
+
+### Negated Character Classes
+
+Use `^` inside brackets to **negate** (match everything EXCEPT):
+
+**Syntax:** `[^characters]`
+
+**Example 12: Non-digit characters**
+
+```bash
+# Find lines that DON'T start with a digit
+grep '^[^0-9]' file.txt
+
+# Find lines without vowels
+grep -v '[aeiou]' file.txt
+```
+
+**Example 13: Finding special characters**
+
+```bash
+# Find lines containing characters that are NOT alphanumeric
+grep '[^a-zA-Z0-9]' file.txt
+```
+
+**Important distinction:**
+- `^[0-9]` - Start of line followed by digit
+- `[^0-9]` - Any character that is NOT a digit
+
+---
+
+## Part 6: Quantifiers - Repeating Patterns
+
+Quantifiers specify **how many times** a pattern should repeat.
+
+### The Asterisk (*) - Zero or More
+
+The `*` matches **zero or more** of the preceding character.
+
+**Example 14: Optional characters**
+
+```bash
+# Create test file
+cat > patterns.txt << 'EOF'
+color
+colour
+colouur
+colr
+EOF
+
+# Match "colo" followed by zero or more "u" then "r"
+grep 'colou*r' patterns.txt
+```
+
+**Output:**
+```
+color       # zero u's
+colour      # one u
+colouur     # two u's
+colr        # zero u's? NO - doesn't match because 'o' is required
+```
+
+Wait, `colr` doesn't match because the pattern is `u*` (zero or more u's), but the 'o' before it is required.
+
+Let me correct:
+
+```bash
+# Match "col" followed by zero or more "o" then "r"
+grep 'colo*r' patterns.txt
+```
+
+**Output:**
+```
+color       # one o
+colr        # zero o's? NO
+```
+
+Actually, let me use a better example:
+
+**Example 14 (corrected): Matching repeated characters**
+
+```bash
+# Create test file
+cat > patterns.txt << 'EOF'
+er
+err
+errr
+error
+EOF
+
+# Match "er" followed by zero or more "r"
+grep 'err*' patterns.txt
+```
+
+**Output:**
+```
+er          # er + zero r's = er
+err         # er + one r = err
+errr        # er + two r's = errr
+error       # er + one r = err (matched in "error")
+```
+
+**Example 15: Matching spaces**
+
+```bash
+# Match lines with zero or more spaces before ERROR
+grep '^ *ERROR' logfile.txt
+# This matches:
+# ERROR
+#  ERROR
+#   ERROR
+```
+
+### The Plus (+) - One or More
+
+The `+` matches **one or more** of the preceding character.
+
+**Note:** In basic grep, you need to escape it: `\+`
+
+**Example 16: At least one digit**
+
+```bash
+# Find lines with at least one digit
+grep '[0-9]\+' file.txt
+
+# This matches:
+# error1
+# error123
+# 404
+# But NOT: error (no digits)
+```
+
+**Example 17: Multiple spaces**
+
+```bash
+# Find lines with multiple consecutive spaces
+grep ' \+' file.txt    # One or more spaces
+
+# Better: two or more spaces
+grep '  \+' file.txt   # Two spaces followed by zero or more
+```
+
+### The Question Mark (?) - Zero or One
+
+The `?` matches **zero or one** of the preceding character (makes it optional).
+
+**Note:** In basic grep, you need to escape it: `\?`
+
+**Example 18: Optional characters**
+
+```bash
+# Match "color" or "colour"
+grep 'colou\?r' file.txt
+
+# This matches:
+# color   (zero u)
+# colour  (one u)
+# But NOT: colouur (two u's)
+```
+
+**Example 19: Optional protocol**
+
+```bash
+# Match http or https
+grep 'https\?' urls.txt
+
+# Matches:
+# http://example.com
+# https://example.com
+```
+
+### Combining Quantifiers
+
+You can combine patterns:
+
+**Example 20: Complex patterns**
+
+```bash
+# Match error followed by optional space and digits
+grep 'error *[0-9]\+' logfile.txt
+
+# This matches:
+# error404
+# error 500
+# error  123
+```
+
+---
+
+## Part 7: Practical Examples
+
+### Example 21: Log Analysis
+
+**Finding specific errors in logs:**
+
+```bash
+# Create sample log
+cat > application.log << 'EOF'
+2024-01-15 ERROR: Connection timeout
+2024-01-15 INFO: Application started
+2024-01-16 WARNING: Low disk space
+2024-01-16 ERROR: Database connection failed
+2024-01-16 ERROR: Authentication failed
+2024-01-17 INFO: Backup completed
+EOF
+
+# Find all ERROR lines
+grep '^.*ERROR' application.log
+
+# Find errors on specific date
+grep '^2024-01-16.*ERROR' application.log
+
+# Find lines with ERROR or WARNING
+grep 'ERROR\|WARNING' application.log
+```
+
+### Example 22: IP Address Extraction (Simple)
+
+```bash
+# Find lines with simple IP pattern
+grep '[0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+' network.log
+
+# This matches patterns like:
+# 192.168.1.1
+# 10.0.0.255
+# 8.8.8.8
+```
+
+### Example 23: Email-like Patterns
+
+```bash
+# Simple email pattern
+grep '[a-zA-Z0-9]\+@[a-zA-Z0-9]\+\.[a-z]\+' file.txt
+
+# Matches:
+# user@example.com
+# admin@site.org
+# test@domain.co.uk (partially)
+```
+
+### Example 24: Configuration Files
+
+```bash
+# Find active (uncommented) configuration lines
+grep -v '^[[:space:]]*#' /etc/ssh/sshd_config | grep -v '^$'
+
+# Explanation:
+# grep -v '^[[:space:]]*#'  - Exclude comment lines
+# grep -v '^$'               - Exclude empty lines
+```
+
+### Example 25: Log Level Filtering
+
+```bash
+# Create log with different levels
+cat > app.log << 'EOF'
+[DEBUG] Initializing module
+[INFO] Application started
+[WARN] Cache miss
+[ERROR] Connection failed
+[FATAL] System crash
+EOF
+
+# Find all error-related entries (ERROR or FATAL)
+grep '\[ERROR\]\|\[FATAL\]' app.log
+
+# Find everything except DEBUG
+grep -v '\[DEBUG\]' app.log
+```
+
+---
+
+## Part 8: Understanding grep Options
+
+### Common grep Options for Regex
+
+**Important options:**
+- `-E` - Extended regex (don't need to escape `+`, `?`, `|`)
+- `-i` - Case insensitive
+- `-v` - Invert match (show non-matching lines)
+- `-c` - Count matches
+- `-n` - Show line numbers
+- `-o` - Show only the matched part
+- `-A N` - Show N lines after match
+- `-B N` - Show N lines before match
+- `-C N` - Show N lines of context
+
+**Example 26: Using -E for extended regex**
+
+```bash
+# Basic regex (need escaping)
+grep 'error[0-9]\+' file.txt
+
+# Extended regex (no escaping needed)
+grep -E 'error[0-9]+' file.txt
+
+# Multiple patterns with extended regex
+grep -E 'error|warning|fatal' file.txt
+```
+
+**Example 27: Using -o to extract matches**
+
+```bash
+# Extract only the IP addresses
+echo "Server 192.168.1.1 and 10.0.0.1" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+'
+```
+
+**Output:**
+```
+192.168.1.1
+10.0.0.1
+```
+
+---
+
+## Part 9: The man 7 regex Reference
+
+Linux has extensive regex documentation in section 7 of the manual.
+
+**View regex manual:**
+```bash
+man 7 regex
+```
+
+This manual page covers:
+- Complete regex syntax
+- Basic vs Extended regex differences
+- Character classes
+- Bracket expressions
+- Precedence rules
+
+**Quick lookup:**
+```bash
+# Search for specific topics
+man 7 regex | grep -A 5 "character classes"
+```
+
+**Alternative documentation:**
+```bash
+# grep specific regex help
+grep --help | less
+
+# Or info pages
+info grep
+```
+
+---
+
+## Part 10: Best Practices
+
+### 1. Always Use Single Quotes
+
+```bash
+# GOOD
+grep '^error' file.txt
+
+# BAD (shell may interpret special chars)
+grep "^error" file.txt
+grep ^error file.txt
+```
+
+### 2. Start Simple, Build Complex
+
+```bash
+# Step 1: Find "error"
+grep 'error' file.txt
+
+# Step 2: Add position (start of line)
+grep '^error' file.txt
+
+# Step 3: Add number pattern
+grep '^error[0-9]' file.txt
+
+# Step 4: Multiple digits
+grep '^error[0-9]\+' file.txt
+```
+
+### 3. Test Patterns Incrementally
+
+```bash
+# Create small test file first
+echo -e "error1\nerror\ntest error2" > test.txt
+
+# Test your pattern
+grep 'error[0-9]' test.txt
+
+# Refine pattern
+grep '^error[0-9]' test.txt
+```
+
+### 4. Use Extended Regex for Readability
+
+```bash
+# Basic regex (harder to read)
+grep 'error\(1\|2\|3\)' file.txt
+
+# Extended regex (clearer)
+grep -E 'error(1|2|3)' file.txt
+```
+
+### 5. Comment Complex Patterns
+
+```bash
+# Find lines with format: [LEVEL] timestamp message
+# Pattern: [WORD] DIGITS:DIGITS:DIGITS text
+grep '^\[[A-Z]\+\] [0-9]\+:[0-9]\+:[0-9]\+' log.txt
+```
+
+---
+
+## Practice Labs
+
+Time to practice! Complete these 20 hands-on labs to master regex basics.
+
+### Warm-up Labs (1-5): Basic Patterns
+
+**Lab 1: Using Anchors**
+
+**Task:** Create a file with various lines and use anchors to find:
+- Lines starting with "Error"
+- Lines ending with "failed"
+- Lines that are exactly "OK"
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create test file
+cat > test1.txt << 'EOF'
+Error: Connection timeout
+System Error occurred
+Test passed
+Test failed
+OK
+File check OK
+Error
+EOF
+
+# Lines starting with "Error"
+grep '^Error' test1.txt
+
+# Lines ending with "failed"
+grep 'failed$' test1.txt
+
+# Lines that are exactly "OK"
+grep '^OK$' test1.txt
+```
+
+**Expected outputs:**
+```
+Error: Connection timeout
+Error
+
+Test failed
+
+OK
+```
+</details>
+
+**Lab 2: The Dot Wildcard**
+
+**Task:** Create a file with 3-letter, 4-letter, and 5-letter words. Use the dot to find:
+- All 4-letter words
+- Words with exactly 5 characters
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create test file
+cat > words.txt << 'EOF'
+cat
+dog
+bird
+apple
+elephant
+fox
+EOF
+
+# Find 4-letter words
+grep '^....$' words.txt
+
+# Find 5-letter words
+grep '^.....$' words.txt
+```
+
+**Expected outputs:**
+```
+bird
+fox
+
+apple
+```
+</details>
+
+**Lab 3: Character Classes**
+
+**Task:** Use character classes to find:
+- Lines starting with a digit
+- Lines containing vowels
+- Lines without numbers
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create test file
+cat > mixed.txt << 'EOF'
+123 Main Street
+Apple
+5th Avenue
+Banana
+Test line
+99 bottles
+EOF
+
+# Lines starting with a digit
+grep '^[0-9]' mixed.txt
+
+# Lines containing vowels
+grep '[aeiouAEIOU]' mixed.txt
+
+# Lines without numbers
+grep -v '[0-9]' mixed.txt
+```
+
+**Expected outputs:**
+```
+123 Main Street
+5th Avenue
+99 bottles
+
+(all lines have vowels)
+
+Apple
+Banana
+Test line
+```
+</details>
+
+**Lab 4: Character Ranges**
+
+**Task:** Find:
+- Lines starting with uppercase letters
+- Lines with lowercase letters only
+- Lines with alphanumeric characters
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create test file
+cat > alpha.txt << 'EOF'
+ABC
+lowercase
+Mixed123
+UPPERCASE
+test
+456
+EOF
+
+# Lines starting with uppercase
+grep '^[A-Z]' alpha.txt
+
+# Lines with only lowercase letters
+grep '^[a-z]\+$' alpha.txt
+
+# Lines with alphanumeric
+grep '[a-zA-Z0-9]' alpha.txt
+```
+
+**Expected outputs:**
+```
+ABC
+Mixed123
+UPPERCASE
+
+lowercase
+test
+
+ABC
+lowercase
+Mixed123
+UPPERCASE
+test
+456
+```
+</details>
+
+**Lab 5: Negated Character Classes**
+
+**Task:** Find:
+- Lines that DON'T start with #
+- Lines without vowels
+- Lines with special characters (not alphanumeric)
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create test file
+cat > special.txt << 'EOF'
+# Comment line
+Normal line
+Test@example
+12345
+No vowels: xyz
+EOF
+
+# Lines not starting with #
+grep '^[^#]' special.txt
+
+# Lines without vowels (case-insensitive search)
+grep -vi '[aeiou]' special.txt
+
+# Lines with special characters
+grep '[^a-zA-Z0-9 ]' special.txt
+```
+
+**Expected outputs:**
+```
+Normal line
+Test@example
+12345
+No vowels: xyz
+
+No vowels: xyz
+
+Test@example
+No vowels: xyz
+```
+</details>
+
+### Core Labs (6-13): Quantifiers and Patterns
+
+**Lab 6: The Asterisk Quantifier**
+
+**Task:** Create patterns to match:
+- Lines with zero or more spaces before "Error"
+- "test" followed by zero or more digits
+- Lines with repeated characters
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create test file
+cat > quantifiers.txt << 'EOF'
+Error
+ Error
+  Error
+test
+test1
+test123
+success
+helllo world
+EOF
+
+# Zero or more spaces before Error
+grep '^ *Error' quantifiers.txt
+
+# "test" followed by zero or more digits
+grep 'test[0-9]*' quantifiers.txt
+
+# Find repeated 'l'
+grep 'll\+' quantifiers.txt
+```
+
+**Expected outputs:**
+```
+Error
+ Error
+  Error
+
+test
+test1
+test123
+
+helllo world
+```
+</details>
+
+**Lab 7: The Plus Quantifier**
+
+**Task:** Find:
+- Lines with one or more digits
+- Words with repeated letters
+- Multiple consecutive spaces
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create test file
+cat > plus.txt << 'EOF'
+No numbers here
+Has 5 numbers
+Multiple  spaces
+error123
+hello
+EOF
+
+# One or more digits
+grep '[0-9]\+' plus.txt
+
+# Repeated letters (two or more of same letter)
+grep '\([a-z]\)\1\+' plus.txt  # This is advanced, simpler version:
+grep 'll\|oo\|ee\|rr' plus.txt
+
+# Multiple consecutive spaces (2 or more)
+grep '  \+' plus.txt
+```
+
+**Expected outputs:**
+```
+Has 5 numbers
+error123
+
+hello
+
+Multiple  spaces
+```
+</details>
+
+**Lab 8: The Question Mark Quantifier**
+
+**Task:** Match:
+- "color" or "colour"
+- "http" or "https"
+- Optional hyphens in phone numbers
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create test file
+cat > optional.txt << 'EOF'
+color
+colour
+http://example.com
+https://secure.com
+555-1234
+5551234
+EOF
+
+# color or colour
+grep 'colou\?r' optional.txt
+
+# http or https
+grep 'https\?' optional.txt
+
+# Phone numbers with optional hyphen
+grep '555-\?[0-9]\+' optional.txt
+```
+
+**Expected outputs:**
+```
+color
+colour
+
+http://example.com
+https://secure.com
+
+555-1234
+5551234
+```
+</details>
+
+**Lab 9: Combining Patterns**
+
+**Task:** Create complex patterns for:
+- IP address-like patterns (simple version)
+- Email-like patterns
+- Log timestamps
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create test file
+cat > complex.txt << 'EOF'
+Server IP: 192.168.1.1
+Contact: admin@example.com
+[2024-01-15 10:30:45] INFO
+10.0.0.1 connected
+user@domain.org sent email
+EOF
+
+# IP address pattern
+grep '[0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+' complex.txt
+
+# Email pattern
+grep '[a-zA-Z0-9]\+@[a-zA-Z0-9]\+\.[a-z]\+' complex.txt
+
+# Timestamp pattern [YYYY-MM-DD HH:MM:SS]
+grep '\[[0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\} [0-9]\{2\}:[0-9]\{2\}:[0-9]\{2\}\]' complex.txt
+```
+
+**Expected outputs:**
+```
+Server IP: 192.168.1.1
+10.0.0.1 connected
+
+Contact: admin@example.com
+user@domain.org sent email
+
+[2024-01-15 10:30:45] INFO
+```
+</details>
+
+**Lab 10: Log Level Extraction**
+
+**Task:** From a log file, extract:
+- All ERROR messages
+- Lines with ERROR or WARNING
+- Everything except DEBUG messages
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create log file
+cat > app.log << 'EOF'
+[DEBUG] Starting application
+[INFO] Server listening on port 8080
+[WARN] Cache size exceeds limit
+[ERROR] Database connection failed
+[DEBUG] Loading configuration
+[ERROR] Authentication timeout
+[FATAL] System shutdown
+EOF
+
+# All ERROR messages
+grep '\[ERROR\]' app.log
+
+# ERROR or WARNING
+grep '\[ERROR\]\|\[WARN\]' app.log
+
+# Everything except DEBUG
+grep -v '\[DEBUG\]' app.log
+```
+
+**Expected outputs:**
+```
+[ERROR] Database connection failed
+[ERROR] Authentication timeout
+
+[WARN] Cache size exceeds limit
+[ERROR] Database connection failed
+[ERROR] Authentication timeout
+
+[INFO] Server listening on port 8080
+[WARN] Cache size exceeds limit
+[ERROR] Database connection failed
+[ERROR] Authentication timeout
+[FATAL] System shutdown
+```
+</details>
+
+**Lab 11: Configuration File Parsing**
+
+**Task:** Parse a config file to:
+- Find all active (non-commented) lines
+- Find lines with key=value format
+- Extract port numbers
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create config file
+cat > server.conf << 'EOF'
+# Server configuration
+port=8080
+# host=localhost
+host=0.0.0.0
+max_connections=100
+# debug=true
+timeout=30
+EOF
+
+# Active lines (not starting with #)
+grep -v '^#' server.conf | grep -v '^$'
+
+# Lines with key=value format
+grep '^[a-zA-Z_]\+=[0-9a-zA-Z.]\+' server.conf
+
+# Extract port numbers
+grep 'port=[0-9]\+' server.conf
+```
+
+**Expected outputs:**
+```
+port=8080
+host=0.0.0.0
+max_connections=100
+timeout=30
+
+port=8080
+host=0.0.0.0
+max_connections=100
+timeout=30
+
+port=8080
+```
+</details>
+
+**Lab 12: Finding Empty or Whitespace Lines**
+
+**Task:** Find:
+- Completely empty lines
+- Lines with only whitespace
+- Non-empty lines
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create file with various line types
+cat > whitespace.txt << 'EOF'
+Line 1
+
+Line 3
+
+Line 5
+
+Line 7
+EOF
+
+# Completely empty lines
+grep '^$' whitespace.txt
+
+# Lines with only whitespace (spaces or tabs)
+grep '^[[:space:]]\+$' whitespace.txt
+
+# Non-empty lines
+grep -v '^$' whitespace.txt
+```
+
+**Expected outputs:**
+```
+(empty line shown)
+
+(lines with spaces/tabs)
+
+Line 1
+Line 3
+
+Line 5
+
+Line 7
+```
+</details>
+
+**Lab 13: Case-Insensitive Patterns**
+
+**Task:** Find error messages regardless of case:
+- error, Error, ERROR, ErRoR
+- warning variations
+- failed variations
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create test file
+cat > case.txt << 'EOF'
+error occurred
+Error message
+ERROR: critical
+ErRoR found
+warning issued
+WARNING: check logs
+Failed attempt
+failed connection
+EOF
+
+# All error variations
+grep -i 'error' case.txt
+
+# All warning variations
+grep -i 'warning' case.txt
+
+# All failed variations
+grep -i 'failed' case.txt
+```
+
+**Expected outputs:**
+```
+error occurred
+Error message
+ERROR: critical
+ErRoR found
+
+warning issued
+WARNING: check logs
+
+Failed attempt
+failed connection
+```
+</details>
+
+### Advanced Labs (14-20): Real-World Scenarios
+
+**Lab 14: Apache/Nginx Log Analysis**
+
+**Task:** Parse web server logs to find:
+- All POST requests
+- 404 errors
+- Requests from specific IP patterns
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create sample web log
+cat > access.log << 'EOF'
+192.168.1.1 - - [15/Jan/2024:10:30:45] "GET /index.html HTTP/1.1" 200 1234
+10.0.0.5 - - [15/Jan/2024:10:31:12] "POST /api/login HTTP/1.1" 200 456
+192.168.1.2 - - [15/Jan/2024:10:32:01] "GET /missing HTTP/1.1" 404 0
+10.0.0.8 - - [15/Jan/2024:10:33:45] "POST /api/data HTTP/1.1" 201 789
+EOF
+
+# All POST requests
+grep '"POST' access.log
+
+# 404 errors
+grep ' 404 ' access.log
+
+# Requests from 192.168.x.x
+grep '^192\.168\.' access.log
+```
+
+**Expected outputs:**
+```
+10.0.0.5 - - [15/Jan/2024:10:31:12] "POST /api/login HTTP/1.1" 200 456
+10.0.0.8 - - [15/Jan/2024:10:33:45] "POST /api/data HTTP/1.1" 201 789
+
+192.168.1.2 - - [15/Jan/2024:10:32:01] "GET /missing HTTP/1.1" 404 0
+
+192.168.1.1 - - [15/Jan/2024:10:30:45] "GET /index.html HTTP/1.1" 200 1234
+192.168.1.2 - - [15/Jan/2024:10:32:01] "GET /missing HTTP/1.1" 404 0
+```
+</details>
+
+**Lab 15: System Log Filtering**
+
+**Task:** From system logs, find:
+- Failed SSH login attempts
+- Sudo command executions
+- Service start/stop events
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create sample system log
+cat > syslog.txt << 'EOF'
+Jan 15 10:30:00 server sshd[1234]: Failed password for user from 192.168.1.100
+Jan 15 10:31:00 server sudo: user : TTY=pts/0 ; PWD=/home/user ; COMMAND=/bin/ls
+Jan 15 10:32:00 server systemd[1]: Started nginx.service
+Jan 15 10:33:00 server sshd[1235]: Accepted password for admin from 10.0.0.1
+Jan 15 10:34:00 server sudo: admin : TTY=pts/1 ; COMMAND=/usr/bin/systemctl restart apache2
+Jan 15 10:35:00 server systemd[1]: Stopped mysql.service
+EOF
+
+# Failed SSH logins
+grep 'sshd.*Failed password' syslog.txt
+
+# Sudo executions
+grep 'sudo:.*COMMAND=' syslog.txt
+
+# Service start/stop
+grep 'systemd.*Started\|systemd.*Stopped' syslog.txt
+```
+
+**Expected outputs:**
+```
+Jan 15 10:30:00 server sshd[1234]: Failed password for user from 192.168.1.100
+
+Jan 15 10:31:00 server sudo: user : TTY=pts/0 ; PWD=/home/user ; COMMAND=/bin/ls
+Jan 15 10:34:00 server sudo: admin : TTY=pts/1 ; COMMAND=/usr/bin/systemctl restart apache2
+
+Jan 15 10:32:00 server systemd[1]: Started nginx.service
+Jan 15 10:35:00 server systemd[1]: Stopped mysql.service
+```
+</details>
+
+**Lab 16: Extracting Specific Data**
+
+**Task:** Use grep -o to extract only:
+- Email addresses from a file
+- IP addresses
+- URLs
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create sample data
+cat > data.txt << 'EOF'
+Contact us at support@example.com or admin@site.org
+Server IP is 192.168.1.1 and backup is 10.0.0.5
+Visit http://example.com or https://secure.site.com
+EOF
+
+# Extract email addresses
+grep -oE '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}' data.txt
+
+# Extract IP addresses
+grep -oE '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' data.txt
+
+# Extract URLs
+grep -oE 'https?://[a-zA-Z0-9./?=_-]+' data.txt
+```
+
+**Expected outputs:**
+```
+support@example.com
+admin@site.org
+
+192.168.1.1
+10.0.0.5
+
+http://example.com
+https://secure.site.com
+```
+</details>
+
+**Lab 17: Password Policy Validation**
+
+**Task:** Create patterns to check if passwords meet requirements:
+- At least 8 characters
+- Contains uppercase letter
+- Contains lowercase letter
+- Contains digit
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create test passwords
+cat > passwords.txt << 'EOF'
+weak
+Strong123
+test
+Password1
+abcdefgh
+ABC123XYZ
+lowercaseonly
+UPPERCASEONLY
+MixedCase9
+EOF
+
+# At least 8 characters
+grep '^.\{8,\}$' passwords.txt
+
+# Contains uppercase
+grep '[A-Z]' passwords.txt
+
+# Contains lowercase
+grep '[a-z]' passwords.txt
+
+# Contains digit
+grep '[0-9]' passwords.txt
+
+# Check all requirements (chaining)
+grep '^.\{8,\}$' passwords.txt | grep '[A-Z]' | grep '[a-z]' | grep '[0-9]'
+```
+
+**Expected outputs:**
+```
+Strong123
+Password1
+abcdefgh
+ABC123XYZ
+lowercaseonly
+UPPERCASEONLY
+MixedCase9
+
+Strong123
+Password1
+ABC123XYZ
+UPPERCASEONLY
+MixedCase9
+
+Strong123
+Password1
+abcdefgh
+lowercaseonly
+MixedCase9
+
+Strong123
+Password1
+ABC123XYZ
+MixedCase9
+
+Strong123
+Password1
+MixedCase9
+```
+</details>
+
+**Lab 18: Application Error Categorization**
+
+**Task:** Categorize application errors by severity:
+- Critical errors (CRITICAL, FATAL)
+- High priority (ERROR, EXCEPTION)
+- Medium priority (WARNING, WARN)
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create application log
+cat > application.log << 'EOF'
+2024-01-15 10:00:00 INFO Application started
+2024-01-15 10:01:00 WARNING Low memory
+2024-01-15 10:02:00 ERROR Database timeout
+2024-01-15 10:03:00 CRITICAL System failure
+2024-01-15 10:04:00 INFO Request processed
+2024-01-15 10:05:00 EXCEPTION Null pointer
+2024-01-15 10:06:00 FATAL Cannot recover
+2024-01-15 10:07:00 WARN Deprecated API used
+EOF
+
+# Critical errors
+grep 'CRITICAL\|FATAL' application.log
+
+# High priority
+grep 'ERROR\|EXCEPTION' application.log
+
+# Medium priority
+grep 'WARNING\|WARN' application.log | grep -v 'CRITICAL\|FATAL\|ERROR'
+```
+
+**Expected outputs:**
+```
+2024-01-15 10:03:00 CRITICAL System failure
+2024-01-15 10:06:00 FATAL Cannot recover
+
+2024-01-15 10:02:00 ERROR Database timeout
+2024-01-15 10:05:00 EXCEPTION Null pointer
+
+2024-01-15 10:01:00 WARNING Low memory
+2024-01-15 10:07:00 WARN Deprecated API used
+```
+</details>
+
+**Lab 19: Network Connection Analysis**
+
+**Task:** Parse netstat-like output to find:
+- ESTABLISHED connections
+- LISTENING ports
+- Connections from specific networks
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create sample network data
+cat > connections.txt << 'EOF'
+tcp    0    0 0.0.0.0:22    0.0.0.0:*    LISTEN
+tcp    0    0 192.168.1.1:22    192.168.1.100:54321    ESTABLISHED
+tcp    0    0 0.0.0.0:80    0.0.0.0:*    LISTEN
+tcp    0    0 192.168.1.1:80    10.0.0.5:43210    ESTABLISHED
+tcp    0    0 192.168.1.1:443    192.168.1.105:55555    ESTABLISHED
+EOF
+
+# ESTABLISHED connections
+grep 'ESTABLISHED' connections.txt
+
+# LISTENING ports
+grep 'LISTEN' connections.txt
+
+# Connections from 192.168.x.x network
+grep 'ESTABLISHED' connections.txt | grep '192\.168\.'
+```
+
+**Expected outputs:**
+```
+tcp    0    0 192.168.1.1:22    192.168.1.100:54321    ESTABLISHED
+tcp    0    0 192.168.1.1:80    10.0.0.5:43210    ESTABLISHED
+tcp    0    0 192.168.1.1:443    192.168.1.105:55555    ESTABLISHED
+
+tcp    0    0 0.0.0.0:22    0.0.0.0:*    LISTEN
+tcp    0    0 0.0.0.0:80    0.0.0.0:*    LISTEN
+
+tcp    0    0 192.168.1.1:22    192.168.1.100:54321    ESTABLISHED
+tcp    0    0 192.168.1.1:443    192.168.1.105:55555    ESTABLISHED
+```
+</details>
+
+**Lab 20: Security Audit Log Parsing**
+
+**Task:** Parse security audit logs to find:
+- Unauthorized access attempts
+- Privilege escalation events
+- Suspicious activity patterns
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create security audit log
+cat > security.log << 'EOF'
+2024-01-15 10:00:00 user1 LOGIN SUCCESS from 192.168.1.10
+2024-01-15 10:01:00 user2 LOGIN FAILED from 203.0.113.5
+2024-01-15 10:02:00 user2 LOGIN FAILED from 203.0.113.5
+2024-01-15 10:03:00 user2 LOGIN FAILED from 203.0.113.5
+2024-01-15 10:04:00 admin SUDO COMMAND=/usr/bin/passwd root
+2024-01-15 10:05:00 user3 ACCESS DENIED to /etc/shadow
+2024-01-15 10:06:00 user3 ACCESS DENIED to /root
+2024-01-15 10:07:00 unknown LOGIN ATTEMPT from 198.51.100.10
+EOF
+
+# Failed login attempts
+grep 'LOGIN FAILED' security.log
+
+# Repeated failures (3 or more from same IP)
+grep 'LOGIN FAILED' security.log | cut -d' ' -f6 | sort | uniq -c | grep -E '^ *[3-9]|^ *[0-9]{2,}'
+
+# Privilege escalation attempts
+grep 'SUDO\|ACCESS DENIED' security.log
+
+# Suspicious IPs (external, not 192.168.x.x or 10.x.x.x)
+grep 'from [0-9]' security.log | grep -v 'from 192\.168\.\|from 10\.'
+```
+
+**Expected outputs:**
+```
+2024-01-15 10:01:00 user2 LOGIN FAILED from 203.0.113.5
+2024-01-15 10:02:00 user2 LOGIN FAILED from 203.0.113.5
+2024-01-15 10:03:00 user2 LOGIN FAILED from 203.0.113.5
+
+      3 203.0.113.5
+
+2024-01-15 10:04:00 admin SUDO COMMAND=/usr/bin/passwd root
+2024-01-15 10:05:00 user3 ACCESS DENIED to /etc/shadow
+2024-01-15 10:06:00 user3 ACCESS DENIED to /root
+
+2024-01-15 10:01:00 user2 LOGIN FAILED from 203.0.113.5
+2024-01-15 10:02:00 user2 LOGIN FAILED from 203.0.113.5
+2024-01-15 10:03:00 user2 LOGIN FAILED from 203.0.113.5
+2024-01-15 10:07:00 unknown LOGIN ATTEMPT from 198.51.100.10
+```
+</details>
+
+---
+
+## Common Pitfalls
+
+### 1. Forgetting to Quote Patterns
+
+```bash
+# WRONG - shell interprets special chars
+grep ^ERROR file.txt
+
+# RIGHT - single quotes protect pattern
+grep '^ERROR' file.txt
+```
+
+### 2. Confusing * with .*
+
+```bash
+# WRONG - * means "zero or more of preceding char"
+grep 'error*' file.txt    # Matches: erro, error, errorrr
+
+# RIGHT - .* means "any characters"
+grep 'error.*' file.txt   # Matches: error123, error occurred, etc.
+```
+
+### 3. Not Escaping Special Characters in Basic Regex
+
+```bash
+# WRONG - + not escaped in basic regex
+grep 'error+' file.txt
+
+# RIGHT - escape in basic regex
+grep 'error\+' file.txt
+
+# OR use extended regex
+grep -E 'error+' file.txt
+```
+
+### 4. Anchor Confusion
+
+```bash
+# ^ inside brackets means negation
+grep '[^abc]' file.txt    # Match anything NOT a, b, or c
+
+# ^ outside means start of line
+grep '^abc' file.txt      # Match lines starting with abc
+```
+
+### 5. Case Sensitivity
+
+```bash
+# Only matches lowercase
+grep 'error' file.txt
+
+# Case-insensitive
+grep -i 'error' file.txt
+
+# Or use character classes
+grep '[Ee][Rr][Rr][Oo][Rr]' file.txt
+```
+
+---
+
+## Quick Reference: Basic Regex Syntax
+
+| Pattern | Meaning | Example | Matches |
+|---------|---------|---------|---------|
+| `^` | Start of line | `^Error` | Lines starting with "Error" |
+| `$` | End of line | `failed$` | Lines ending with "failed" |
+| `.` | Any single character | `e.r` | "ear", "err", "e3r" |
+| `[abc]` | Any of a, b, c | `[aeiou]` | Any vowel |
+| `[a-z]` | Range (lowercase) | `[0-9]` | Any digit |
+| `[^abc]` | NOT a, b, or c | `[^0-9]` | Any non-digit |
+| `*` | Zero or more | `a*` | "", "a", "aa", "aaa" |
+| `\+` | One or more | `a\+` | "a", "aa", "aaa" (not "") |
+| `\?` | Zero or one | `colou\?r` | "color" or "colour" |
+| `\|` | OR (alternation) | `cat\|dog` | "cat" or "dog" |
+
+---
+
+## Quick Reference: Common grep Options
+
+| Option | Description | Example |
+|--------|-------------|---------|
+| `-E` | Extended regex | `grep -E 'error\|warn' file.txt` |
+| `-i` | Case insensitive | `grep -i 'error' file.txt` |
+| `-v` | Invert match | `grep -v '^#' file.txt` |
+| `-c` | Count matches | `grep -c 'error' file.txt` |
+| `-n` | Show line numbers | `grep -n 'error' file.txt` |
+| `-o` | Show only match | `grep -o '[0-9]\+' file.txt` |
+| `-A N` | N lines after | `grep -A 5 'error' file.txt` |
+| `-B N` | N lines before | `grep -B 3 'error' file.txt` |
+| `-C N` | N lines context | `grep -C 2 'error' file.txt` |
+
+---
+
+## Key Takeaways
+
+1. **Regular expressions** are powerful pattern matching tools
+
+2. **Always use single quotes** around regex patterns
+
+3. **Anchors** (`^` and `$`) match positions, not characters
+
+4. **The dot** (`.`) matches any single character
+
+5. **Character classes** `[abc]` match specific characters or ranges
+
+6. **Negated classes** `[^abc]` match everything except specified characters
+
+7. **Quantifiers** control repetition:
+   - `*` = zero or more
+   - `\+` = one or more
+   - `\?` = zero or one
+
+8. **Start simple** and build complexity incrementally
+
+9. **Test patterns** on small files before using on production data
+
+10. **Use `man 7 regex`** for complete regex documentation
+
+11. **Extended regex** (`-E`) is more readable for complex patterns
+
+12. **Practice regularly** to internalize regex syntax
+
+---
+
+## What's Next?
+
+You've now mastered the fundamentals of regular expressions! In the next post, we'll dive into **Regular Expressions Part 2: Advanced Patterns**, where you'll learn:
+
+- Extended regex features (no escaping needed)
+- Grouping and backreferences
+- Alternation (OR logic) with `|`
+- Word boundaries (`\b`)
+- Lookahead and lookbehind assertions
+- More complex real-world patterns
+- Regex with sed and awk
+- Performance considerations
+
+Get ready to level up your pattern matching skills!
+
+**Continue your LFCS journey:** [LFCS Part 37: Regular Expressions Part 2 - Advanced](/blog/lfcs-phase1-part-37-regex-advanced)
+
+---
+
+**Previous Post:** [LFCS Part 35: Access Control Lists (ACLs) and File Attributes](/blog/lfcs-phase1-part-35-acls-file-attributes)
+
+**Next Post:** [LFCS Part 37: Regular Expressions Part 2 - Advanced](/blog/lfcs-phase1-part-37-regex-advanced)
+
+---
+
+**Practice makes perfect!** Regular expressions are like learning a new language - the more you use them, the more natural they become. Complete all 20 labs and experiment with your own patterns. Soon you'll be crafting complex regex patterns like a pro!
+
+Happy pattern matching! 🚀
