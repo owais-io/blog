@@ -1,0 +1,1169 @@
+---
+title: "LFCS Part 47: Using Pipes and the tee Command"
+description: "Master Linux pipes to chain commands together and learn how to use tee to split output streams for powerful data processing workflows"
+date: 2026-01-07
+topic: "LFCS Prep"
+series: "LFCS Certification Preparation - Phase 1"
+seriesOrder: 47
+tags: ["linux", "lfcs", "certification", "pipes", "tee", "pipelines", "command-chaining", "data-processing"]
+categories: ["Linux", "LFCS Certification"]
+---
+
+## Introduction
+
+In the previous post, you learned how to redirect input and output using `>`, `>>`, `<`, and other operators. But what if you want to take the output of one command and feed it directly into another command, without creating temporary files? That's where **pipes** come in.
+
+Pipes are one of the most powerful features of Linux and Unix-like systems. They allow you to connect commands together, creating data processing pipelines where the output of one command becomes the input of the next. This simple concept enables you to build sophisticated workflows from simple, single-purpose commands.
+
+In this comprehensive guide, you'll learn everything about pipes and the `tee` command. By the end, you'll be able to chain commands together, build complex data processing pipelines, and understand how to split output streams for logging and monitoring.
+
+## What is a Pipe?
+
+A **pipe** is a mechanism that connects the standard output (stdout) of one command directly to the standard input (stdin) of another command. It's represented by the vertical bar character: `|`
+
+**Syntax**:
+```bash
+command1 | command2
+```
+
+**What happens**:
+1. `command1` runs and produces output (stdout)
+2. Instead of displaying on the screen, that output is sent to `command2`
+3. `command2` reads it as input (stdin) and processes it
+4. `command2`'s output is displayed on the screen (unless piped again)
+
+**Simple example**:
+```bash
+ls | wc -l
+```
+
+This counts the number of files in the current directory:
+1. `ls` lists files → output goes to pipe
+2. `wc -l` counts lines from pipe → displays count
+
+## How Pipes Work Under the Hood
+
+When you use a pipe, the Linux kernel creates an in-memory buffer (the pipe) that connects the two processes:
+
+```
+┌──────────┐       ┌──────┐       ┌──────────┐
+│command1  │──────>│ PIPE │──────>│command2  │
+│ (stdout) │       │ (RAM)│       │ (stdin)  │
+└──────────┘       └──────┘       └──────────┘
+```
+
+**Key characteristics**:
+- **No intermediate files**: Data flows through memory, not disk
+- **Concurrent execution**: Both commands run at the same time
+- **Buffered**: The kernel manages a buffer between processes
+- **One-way**: Data flows left to right only
+- **Efficient**: Fast and doesn't consume disk space
+
+## Your First Pipes: Simple Examples
+
+### Example 1: Counting Files
+
+Count how many files are in a directory:
+```bash
+ls | wc -l
+27
+```
+
+**Explanation**:
+- `ls` produces a list of files (one per line)
+- `wc -l` counts the lines
+- Result: 27 files
+
+### Example 2: Viewing the First Few Lines
+
+Show the first 5 lines of the `/etc/passwd` file:
+```bash
+cat /etc/passwd | head -5
+root:x:0:0:root:/root:/bin/bash
+bin:x:1:1:bin:/bin:/sbin/nologin
+daemon:x:2:2:daemon:/sbin:/sbin/nologin
+adm:x:3:4:adm:/var/adm:/sbin/nologin
+lp:x:4:7:lp:/var/spool/lpd:/sbin/nologin
+```
+
+**Note**: While `head -5 /etc/passwd` would be more efficient, this demonstrates the concept.
+
+### Example 3: Finding Specific Processes
+
+Find all processes related to "ssh":
+```bash
+ps aux | grep ssh
+root      1220  0.0  0.1  14200  8804 ?  Ss  13:53  0:00 sshd: /usr/sbin/sshd -D
+centos9   3456  0.0  0.0  10020  6608 ?  S   20:37  0:00 /usr/bin/ssh-agent
+```
+
+**Explanation**:
+- `ps aux` lists all running processes
+- `grep ssh` filters only lines containing "ssh"
+- Result: Only SSH-related processes shown
+
+### Example 4: Sorting Output
+
+List files sorted by name:
+```bash
+ls | sort
+Desktop
+Documents
+Downloads
+Music
+Pictures
+```
+
+## Chaining Multiple Pipes
+
+You can chain as many commands as you need—the output of each becomes the input of the next.
+
+**Syntax**:
+```bash
+command1 | command2 | command3 | command4
+```
+
+### Example: Extract, Sort, and Count Unique Values
+
+Get a list of unique shells used on your system:
+
+```bash
+cat /etc/passwd | cut -d: -f7 | sort | uniq
+/bin/bash
+/bin/sync
+/sbin/halt
+/sbin/nologin
+/sbin/shutdown
+```
+
+**Step-by-step breakdown**:
+1. `cat /etc/passwd` - displays the password file
+2. `| cut -d: -f7` - extracts the 7th field (shell) from each line
+3. `| sort` - sorts the shells alphabetically
+4. `| uniq` - removes duplicate consecutive lines
+
+**Result**: A clean list of unique shells.
+
+### Example: Find Top Memory-Consuming Processes
+
+Show the top 5 processes using the most memory:
+
+```bash
+ps aux --sort=-%mem | head -6
+USER       PID %CPU %MEM    VSZ   RSS TTY   STAT START   TIME COMMAND
+root      1234  2.1  5.3 456789 87654 ?     Sl   10:15   1:23 /usr/bin/gnome-shell
+root      5678  0.5  3.2 234567 54321 ?     Sl   10:16   0:45 /usr/lib/firefox
+centos9   9012  0.3  2.1 123456 34567 ?     S    11:30   0:12 /usr/bin/code
+root      3456  0.1  1.5  98765 23456 ?     S    10:14   0:08 /usr/sbin/httpd
+```
+
+**Explanation**:
+1. `ps aux --sort=-%mem` - lists all processes sorted by memory usage (highest first)
+2. `| head -6` - shows only the first 6 lines (header + top 5)
+
+### Example: Count How Many Users Have bash as Their Shell
+
+```bash
+grep bash /etc/passwd | wc -l
+5
+```
+
+**Breakdown**:
+1. `grep bash /etc/passwd` - finds all lines containing "bash"
+2. `| wc -l` - counts how many lines
+
+## Common Pipe Patterns
+
+### Pattern 1: Filter and Count
+
+Find and count:
+```bash
+command | grep pattern | wc -l
+```
+
+Example:
+```bash
+# How many log entries contain "error"?
+cat /var/log/syslog | grep -i error | wc -l
+42
+```
+
+### Pattern 2: Extract and Sort
+
+Get specific data and sort it:
+```bash
+command | cut -d: -f1 | sort
+```
+
+Example:
+```bash
+# Get sorted list of usernames
+cut -d: -f1 /etc/passwd | sort
+adm
+bin
+centos9
+daemon
+lp
+root
+```
+
+### Pattern 3: Remove Duplicates
+
+Find unique values:
+```bash
+command | sort | uniq
+```
+
+Example:
+```bash
+# Get unique IP addresses from log file
+grep "Failed password" /var/log/secure | awk '{print $11}' | sort | uniq
+192.168.1.50
+203.0.113.45
+198.51.100.23
+```
+
+### Pattern 4: Count Occurrences
+
+Count how many times each value appears:
+```bash
+command | sort | uniq -c
+```
+
+Example:
+```bash
+# Count login attempts per IP
+grep "Failed password" /var/log/secure | awk '{print $11}' | sort | uniq -c | sort -rn
+     25 203.0.113.45
+     12 192.168.1.50
+      8 198.51.100.23
+```
+
+### Pattern 5: Head and Tail Together
+
+Get a specific line or range:
+```bash
+command | head -n | tail -m
+```
+
+Example:
+```bash
+# Get the 5th line of /etc/passwd
+head -5 /etc/passwd | tail -1
+lp:x:4:7:lp:/var/spool/lpd:/sbin/nologin
+```
+
+### Pattern 6: Search and Format
+
+Find and format results:
+```bash
+command | grep pattern | awk '{print $1, $3}'
+```
+
+Example:
+```bash
+# Show username and UID for all users
+cat /etc/passwd | awk -F: '{print $1, $3}'
+root 0
+bin 1
+daemon 2
+```
+
+## Introducing the tee Command
+
+Sometimes you want to see output on your screen **AND** save it to a file at the same time. That's exactly what `tee` does.
+
+**Analogy**: Think of a T-shaped pipe fitting in plumbing—water flows through but also splits off in another direction. The `tee` command works the same way with data.
+
+### What is tee?
+
+The `tee` command reads from standard input and writes to both:
+1. Standard output (so you can see it or pipe it further)
+2. One or more files (to save it)
+
+**Syntax**:
+```bash
+command | tee filename
+```
+
+**Diagram**:
+```
+command → tee → [screen display]
+           └──→ [file]
+```
+
+### Basic tee Example
+
+Display and save process list:
+```bash
+ps aux | tee processes.txt
+USER       PID %CPU %MEM    VSZ   RSS TTY   STAT START   TIME COMMAND
+root         1  0.0  0.2 174836 17404 ?     Ss   13:53   0:04 /usr/lib/systemd/systemd
+...
+(output displays on screen)
+```
+
+The output is shown on screen AND saved to `processes.txt`:
+```bash
+cat processes.txt
+USER       PID %CPU %MEM    VSZ   RSS TTY   STAT START   TIME COMMAND
+root         1  0.0  0.2 174836 17404 ?     Ss   13:53   0:04 /usr/lib/systemd/systemd
+...
+```
+
+### Why Use tee?
+
+**Without tee** (you have to choose):
+```bash
+# Either see output:
+command
+
+# Or save it:
+command > file.txt
+
+# Can't do both at once
+```
+
+**With tee** (you get both):
+```bash
+command | tee file.txt
+# Output displays AND gets saved
+```
+
+## Using tee with Further Pipes
+
+The real power of `tee` is that it passes data through to the next command in the pipeline.
+
+**Syntax**:
+```bash
+command1 | tee file.txt | command2
+```
+
+**Diagram**:
+```
+command1 → tee → command2 → [final output]
+            └──→ [file.txt]
+```
+
+### Example: Save and Continue Processing
+
+Save all processes to a file, but then filter for SSH:
+```bash
+ps aux | tee processes.txt | grep ssh
+root      1220  0.0  0.1  14200  8804 ?  Ss  13:53  0:00 sshd: /usr/sbin/sshd
+centos9   3456  0.0  0.0  10020  6608 ?  S   20:37  0:00 /usr/bin/ssh-agent
+```
+
+**What happened**:
+1. `ps aux` listed all processes
+2. `tee processes.txt` saved the full list to file AND passed it through
+3. `grep ssh` filtered the output to show only SSH processes
+4. Screen shows only SSH processes, but `processes.txt` has everything
+
+**Verify the file**:
+```bash
+wc -l processes.txt
+142 processes.txt
+```
+
+The file has all 142 processes, even though only 2 were displayed.
+
+## tee with Append: The -a Option
+
+By default, `tee` **overwrites** the file. To **append** instead, use `-a`:
+
+**Syntax**:
+```bash
+command | tee -a filename
+```
+
+### Example: Building a Log File
+
+```bash
+# First entry
+echo "$(date): System check started" | tee system.log
+Wed Dec 11 16:30:00 EST 2025: System check started
+
+# Add more entries (append mode)
+echo "$(date): Checking disk space" | tee -a system.log
+Wed Dec 11 16:30:15 EST 2025: Checking disk space
+
+df -h | tee -a system.log
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/sda1        50G   20G   28G  42% /
+
+# View complete log
+cat system.log
+Wed Dec 11 16:30:00 EST 2025: System check started
+Wed Dec 11 16:30:15 EST 2025: Checking disk space
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/sda1        50G   20G   28G  42% /
+```
+
+## tee with Multiple Files
+
+You can save to multiple files simultaneously:
+
+**Syntax**:
+```bash
+command | tee file1.txt file2.txt file3.txt
+```
+
+### Example: Save to Multiple Locations
+
+```bash
+ls -la | tee backup1.txt backup2.txt backup3.txt
+(output displays on screen)
+```
+
+All three files receive the same content:
+```bash
+ls -l backup*.txt
+-rw-r--r--. 1 user user 1234 Dec 11 16:35 backup1.txt
+-rw-r--r--. 1 user user 1234 Dec 11 16:35 backup2.txt
+-rw-r--r--. 1 user user 1234 Dec 11 16:35 backup3.txt
+```
+
+## Real-World Pipeline Examples
+
+### Example 1: Analyzing Log Files
+
+Find the top 10 IP addresses making failed login attempts:
+
+```bash
+grep "Failed password" /var/log/secure | \
+  awk '{print $11}' | \
+  sort | \
+  uniq -c | \
+  sort -rn | \
+  head -10
+     25 203.0.113.45
+     12 192.168.1.50
+      8 198.51.100.23
+      5 198.51.100.87
+      3 192.168.1.99
+```
+
+**Breakdown**:
+1. `grep "Failed password"` - find failed login attempts
+2. `awk '{print $11}'` - extract the IP address field
+3. `sort` - sort IP addresses
+4. `uniq -c` - count occurrences of each IP
+5. `sort -rn` - sort by count (highest first)
+6. `head -10` - show top 10
+
+### Example 2: Disk Usage Report
+
+Find the 10 largest directories in `/var`:
+
+```bash
+sudo du -sh /var/* 2>/dev/null | sort -rh | head -10
+2.4G	/var/lib
+856M	/var/cache
+421M	/var/log
+125M	/var/tmp
+89M	/var/spool
+45M	/var/www
+12M	/var/opt
+4.2M	/var/db
+1.2M	/var/empty
+856K	/var/run
+```
+
+**Breakdown**:
+1. `du -sh /var/*` - get size of each item in /var
+2. `2>/dev/null` - suppress permission errors
+3. `sort -rh` - sort by human-readable size (reverse order)
+4. `head -10` - show top 10
+
+### Example 3: User Account Audit
+
+List all users with bash shell, sorted by UID:
+
+```bash
+grep bash /etc/passwd | \
+  cut -d: -f1,3 | \
+  sort -t: -k2 -n | \
+  column -t -s:
+root      0
+user1     1000
+admin     1001
+centos9   1002
+```
+
+**Breakdown**:
+1. `grep bash /etc/passwd` - find users with bash shell
+2. `cut -d: -f1,3` - extract username and UID
+3. `sort -t: -k2 -n` - sort by UID (field 2, numeric)
+4. `column -t -s:` - format as aligned columns
+
+### Example 4: Network Connection Summary
+
+Count connections by state:
+
+```bash
+netstat -ant | \
+  grep -v "^Active" | \
+  grep -v "^Proto" | \
+  awk '{print $6}' | \
+  sort | \
+  uniq -c | \
+  sort -rn
+     42 ESTABLISHED
+     18 TIME_WAIT
+     12 LISTEN
+      5 CLOSE_WAIT
+      2 SYN_SENT
+```
+
+**Breakdown**:
+1. `netstat -ant` - show all TCP connections
+2. `grep -v` - remove header lines
+3. `awk '{print $6}'` - extract connection state
+4. `sort` - sort states
+5. `uniq -c` - count each state
+6. `sort -rn` - sort by count (highest first)
+
+### Example 5: Creating a System Report with tee
+
+Generate a report, display it, and save it:
+
+```bash
+{
+    echo "========================================="
+    echo "System Report - $(date)"
+    echo "========================================="
+    echo ""
+    echo "Hostname: $(hostname)"
+    echo "Kernel: $(uname -r)"
+    echo ""
+    echo "Memory Usage:"
+    free -h
+    echo ""
+    echo "Disk Usage:"
+    df -h | grep "^/dev"
+    echo ""
+    echo "Top 5 Processes by CPU:"
+    ps aux --sort=-%cpu | head -6
+} | tee system_report_$(date +%Y%m%d).txt
+```
+
+You'll see the full report on screen, and it's also saved with a timestamped filename.
+
+## Combining Pipes, Redirection, and tee
+
+You can combine all the techniques you've learned:
+
+### Example: Complex Data Processing
+
+```bash
+# Process log file, save intermediate results, and final output
+cat /var/log/syslog | \
+  grep -i error | \
+  tee all_errors.log | \
+  grep -i "critical" | \
+  tee critical_errors.log | \
+  wc -l
+```
+
+**What happens**:
+1. Read the syslog file
+2. Filter for "error" messages → save to `all_errors.log` and pass through
+3. Filter for "critical" errors → save to `critical_errors.log` and pass through
+4. Count critical errors and display
+
+You end up with:
+- `all_errors.log` - all errors
+- `critical_errors.log` - only critical errors
+- Screen display - count of critical errors
+
+### Example: Monitoring and Logging
+
+Monitor a log file and save new entries:
+
+```bash
+tail -f /var/log/messages | tee -a custom_monitor.log
+```
+
+**Explanation**:
+- `tail -f` continuously watches for new lines
+- New lines are displayed on screen
+- New lines are also appended to `custom_monitor.log`
+- Press Ctrl-C to stop
+
+## Best Practices for Pipes and tee
+
+### 1. Use Appropriate Commands in Pipelines
+
+**Avoid**: Useless use of `cat`
+```bash
+# Bad (unnecessary cat)
+cat /etc/passwd | grep root
+
+# Good (direct input)
+grep root /etc/passwd
+```
+
+However, `cat` is fine when reading multiple files or for clarity in complex pipelines.
+
+### 2. Consider Performance with Large Data
+
+Pipes are efficient, but consider the order of operations:
+
+**Less efficient**:
+```bash
+# Processes all data through multiple stages
+cat huge_file.txt | sort | grep pattern
+```
+
+**More efficient**:
+```bash
+# Filter first to reduce data volume
+grep pattern huge_file.txt | sort
+```
+
+### 3. Use tee for Important Operations
+
+When running critical commands, use `tee` to keep a record:
+
+```bash
+# Good practice for system changes
+sudo systemctl restart nginx | tee -a /var/log/admin_actions.log
+```
+
+### 4. Handle Errors in Pipelines
+
+Remember that pipes only connect stdout. Errors go to stderr and won't be piped unless redirected:
+
+```bash
+# Errors appear on screen, not in pipeline
+command1 | command2
+
+# Include errors in pipeline
+command1 2>&1 | command2
+```
+
+### 5. Break Long Pipelines with Backslash
+
+For readability, break long pipelines across lines:
+
+```bash
+cat /var/log/syslog | \
+  grep error | \
+  sort | \
+  uniq -c | \
+  sort -rn | \
+  head -20
+```
+
+### 6. Use tee -a for Log Files
+
+Always use `-a` when adding to existing logs:
+
+```bash
+# Good
+command | tee -a logfile.log
+
+# Dangerous (overwrites log)
+command | tee logfile.log
+```
+
+### 7. Check Exit Status After Pipelines
+
+By default, a pipeline returns the exit status of the **last command only**:
+
+```bash
+false | true
+echo $?
+0  # Shows success (from 'true'), even though 'false' failed
+```
+
+To catch failures, use `set -o pipefail` in scripts:
+
+```bash
+#!/bin/bash
+set -o pipefail
+
+false | true
+echo $?
+1  # Now shows failure from 'false'
+```
+
+## Common Pitfalls and How to Avoid Them
+
+### Pitfall 1: Forgetting to Redirect Errors
+
+**Problem**:
+```bash
+find / -name "*.conf" | grep important
+find: '/root': Permission denied
+find: '/etc/audit': Permission denied
+/etc/important.conf
+```
+
+Errors clutter the output but aren't being piped.
+
+**Solution**:
+```bash
+find / -name "*.conf" 2>/dev/null | grep important
+/etc/important.conf
+```
+
+### Pitfall 2: Pipe Order Matters
+
+**Problem**:
+```bash
+# Wrong: sort doesn't see all data
+grep pattern file.txt | head -10 | sort
+```
+
+This sorts only 10 lines, not all matches.
+
+**Solution**:
+```bash
+# Correct: sort all matches first, then show top 10
+grep pattern file.txt | sort | head -10
+```
+
+### Pitfall 3: Overwriting Files with tee
+
+**Problem**:
+```bash
+# Accidentally overwrites important log
+command | tee important.log
+```
+
+**Solution**:
+```bash
+# Use -a to append
+command | tee -a important.log
+```
+
+### Pitfall 4: Using grep Without Options
+
+**Problem**:
+```bash
+ps aux | grep http
+centos9  12345  0.0  0.0  221804  2700  pts/1  S+  21:35  0:00  grep --color=auto http
+```
+
+The grep process itself appears in results!
+
+**Solution**:
+```bash
+ps aux | grep http | grep -v grep
+# Or better:
+ps aux | grep [h]ttp
+```
+
+### Pitfall 5: Not Handling Whitespace in cut
+
+**Problem**:
+```bash
+# If fields are separated by spaces, cut with -d' ' may fail
+ls -l | cut -d' ' -f1
+```
+
+Multiple spaces cause issues.
+
+**Solution**:
+```bash
+# Use awk for whitespace-delimited data
+ls -l | awk '{print $1}'
+```
+
+### Pitfall 6: Piping to Shell Commands Improperly
+
+**Problem**:
+```bash
+# This doesn't work as intended
+echo "file.txt" | rm
+```
+
+`rm` doesn't read from stdin.
+
+**Solution**:
+```bash
+# Use xargs
+echo "file.txt" | xargs rm
+
+# Or command substitution
+rm $(echo "file.txt")
+```
+
+## Pipe vs Redirection: When to Use What
+
+| Goal | Use | Example |
+|------|-----|---------|
+| Save output to file | Redirection `>` | `ls > files.txt` |
+| Append to file | Redirection `>>` | `echo "log" >> log.txt` |
+| Send to another command | Pipe `\|` | `ls \| wc -l` |
+| Display AND save | tee | `ls \| tee files.txt` |
+| Chain multiple commands | Pipe `\|` | `cat file \| sort \| uniq` |
+| Discard output | Redirect to /dev/null | `command >/dev/null` |
+
+## Pipe and tee Command Cheat Sheet
+
+| Command/Pattern | Description | Example |
+|----------------|-------------|---------|
+| `cmd1 \| cmd2` | Pipe stdout of cmd1 to stdin of cmd2 | `ls \| wc -l` |
+| `cmd1 \| cmd2 \| cmd3` | Chain multiple commands | `cat file \| sort \| uniq` |
+| `cmd \| tee file` | Display and save to file | `ps aux \| tee procs.txt` |
+| `cmd \| tee -a file` | Display and append to file | `echo "log" \| tee -a log.txt` |
+| `cmd \| tee f1 f2` | Save to multiple files | `ls \| tee list1 list2` |
+| `cmd 2>&1 \| grep` | Pipe both stdout and stderr | `find / 2>&1 \| grep conf` |
+| `cmd \| head -n` | Show first n lines | `ps aux \| head -10` |
+| `cmd \| tail -n` | Show last n lines | `dmesg \| tail -20` |
+| `cmd \| grep pattern` | Filter by pattern | `ps aux \| grep ssh` |
+| `cmd \| wc -l` | Count lines | `cat file \| wc -l` |
+| `cmd \| sort` | Sort output | `cut -d: -f1 /etc/passwd \| sort` |
+| `cmd \| uniq` | Remove duplicate consecutive lines | `sort file \| uniq` |
+| `cmd \| sort \| uniq -c` | Count occurrences | `cat log \| sort \| uniq -c` |
+
+## Practice Labs
+
+Let's practice pipes and tee with hands-on exercises.
+
+### Lab 1: Basic Pipe
+**Task**: List all files in `/etc` and count how many there are.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+ls /etc | wc -l
+```
+
+</details>
+
+### Lab 2: Filtering with Pipes
+**Task**: Show all running processes and filter to show only those containing "systemd".
+
+<details>
+<summary>Solution</summary>
+
+```bash
+ps aux | grep systemd
+
+# Or to exclude the grep process itself:
+ps aux | grep [s]ystemd
+```
+
+</details>
+
+### Lab 3: Sorting Output
+**Task**: List all usernames from `/etc/passwd` in alphabetical order.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+cut -d: -f1 /etc/passwd | sort
+```
+
+</details>
+
+### Lab 4: Chaining Multiple Pipes
+**Task**: From `/etc/passwd`, extract the shell field (field 7), sort it, and remove duplicates.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+cut -d: -f7 /etc/passwd | sort | uniq
+```
+
+Or show it with counts:
+```bash
+cut -d: -f7 /etc/passwd | sort | uniq -c
+```
+
+</details>
+
+### Lab 5: Using head and tail
+**Task**: Display the 10th line of `/etc/passwd`.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+head -10 /etc/passwd | tail -1
+```
+
+</details>
+
+### Lab 6: Counting Occurrences
+**Task**: Count how many times each shell appears in `/etc/passwd`, sorted by frequency.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+cut -d: -f7 /etc/passwd | sort | uniq -c | sort -rn
+```
+
+**Explanation**:
+- Extract shell field
+- Sort shells
+- Count each unique shell
+- Sort by count (reverse numeric)
+
+</details>
+
+### Lab 7: Basic tee Usage
+**Task**: List all files in your home directory, display the output, and save it to `homedir_list.txt`.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+ls ~ | tee homedir_list.txt
+```
+
+</details>
+
+### Lab 8: tee with Append
+**Task**: Create a file `dates.txt` with today's date. Then append the current time to the same file (use separate commands).
+
+<details>
+<summary>Solution</summary>
+
+```bash
+date | tee dates.txt
+date +%T | tee -a dates.txt
+
+# Verify:
+cat dates.txt
+```
+
+</details>
+
+### Lab 9: tee in Pipeline
+**Task**: List all processes, save the full list to `all_processes.txt`, but only display processes containing "bash".
+
+<details>
+<summary>Solution</summary>
+
+```bash
+ps aux | tee all_processes.txt | grep bash
+```
+
+</details>
+
+### Lab 10: Multiple Files with tee
+**Task**: Get the current directory listing and save it to three files: `backup1.txt`, `backup2.txt`, and `backup3.txt`.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+ls -la | tee backup1.txt backup2.txt backup3.txt
+```
+
+</details>
+
+### Lab 11: Finding Specific Users
+**Task**: Find all users in `/etc/passwd` who have UID greater than 1000, and count them.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+awk -F: '$3 > 1000 {print $1}' /etc/passwd | wc -l
+
+# Or using grep and cut:
+cut -d: -f3 /etc/passwd | grep -E '^[0-9]{4,}$' | wc -l
+```
+
+</details>
+
+### Lab 12: Disk Usage Analysis
+**Task**: Find the 5 largest files in `/var/log` (suppress permission errors).
+
+<details>
+<summary>Solution</summary>
+
+```bash
+sudo du -ah /var/log 2>/dev/null | sort -rh | head -6 | tail -5
+
+# Or:
+sudo find /var/log -type f -exec du -h {} + 2>/dev/null | sort -rh | head -5
+```
+
+</details>
+
+### Lab 13: Log Analysis
+**Task**: If you have `/var/log/syslog` or `/var/log/messages`, count how many lines contain the word "error" (case insensitive).
+
+<details>
+<summary>Solution</summary>
+
+```bash
+grep -i error /var/log/syslog | wc -l
+
+# Or if using messages:
+sudo grep -i error /var/log/messages | wc -l
+```
+
+</details>
+
+### Lab 14: Network Connections
+**Task**: Show all established network connections (TCP), displaying only the local and foreign addresses.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+netstat -ant | grep ESTABLISHED | awk '{print $4, $5}'
+
+# Or using ss (more modern):
+ss -nt | grep ESTAB | awk '{print $4, $5}'
+```
+
+</details>
+
+### Lab 15: Process Memory Usage
+**Task**: Find the top 3 processes using the most memory, showing only the process name and memory percentage.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+ps aux --sort=-%mem | head -4 | tail -3 | awk '{print $11, $4}'
+
+# Or more readable:
+ps aux --sort=-%mem | awk 'NR>1 {print $11, $4}' | head -3
+```
+
+</details>
+
+### Lab 16: Creating a System Report
+**Task**: Create a report that shows hostname, kernel version, and uptime. Display it on screen and save to `sysinfo.txt`.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+{
+    echo "System Information Report"
+    echo "========================"
+    echo "Hostname: $(hostname)"
+    echo "Kernel: $(uname -r)"
+    echo "Uptime: $(uptime)"
+} | tee sysinfo.txt
+```
+
+</details>
+
+### Lab 17: Unique IP Addresses
+**Task**: If you have a log file with IP addresses, extract and list unique IPs. For practice, use `/etc/hosts` to extract IP addresses.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+awk '{print $1}' /etc/hosts | grep -E '^[0-9]' | sort | uniq
+```
+
+</details>
+
+### Lab 18: Combining Redirection and Pipes
+**Task**: List all files in `/etc`, save the full list to `etc_files.txt`, then count how many files have "conf" in the name.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+ls /etc | tee etc_files.txt | grep conf | wc -l
+```
+
+</details>
+
+### Lab 19: Advanced Pipeline
+**Task**: From `/var/log/secure` (or `/var/log/auth.log` on Ubuntu), find failed SSH login attempts and show the top 5 IP addresses attempting to connect.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# For CentOS/RHEL:
+sudo grep "Failed password" /var/log/secure | \
+  awk '{print $11}' | \
+  sort | \
+  uniq -c | \
+  sort -rn | \
+  head -5
+
+# For Ubuntu/Debian:
+sudo grep "Failed password" /var/log/auth.log | \
+  awk '{print $11}' | \
+  sort | \
+  uniq -c | \
+  sort -rn | \
+  head -5
+```
+
+</details>
+
+### Lab 20: Building a Monitoring Script
+**Task**: Create a one-liner that monitors system load, displays it, and appends it to `load_monitor.log` with a timestamp.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+echo "$(date): $(uptime)" | tee -a load_monitor.log
+```
+
+To run it continuously every 5 seconds (Ctrl-C to stop):
+```bash
+while true; do
+    echo "$(date): $(uptime)" | tee -a load_monitor.log
+    sleep 5
+done
+```
+
+</details>
+
+## Key Takeaways
+
+1. **Pipes Connect Commands**: The `|` operator sends stdout of one command to stdin of another
+
+2. **Chain Multiple Commands**: You can pipe as many commands together as needed
+
+3. **Efficient Processing**: Pipes work in memory without creating temporary files
+
+4. **Common Patterns**:
+   - Filter: `command | grep pattern`
+   - Count: `command | wc -l`
+   - Sort: `command | sort`
+   - Unique: `command | sort | uniq`
+   - Top N: `command | head -n`
+
+5. **tee Splits Output**: Use `tee` to display output AND save to file(s)
+
+6. **tee Options**:
+   - `tee file` - overwrite file
+   - `tee -a file` - append to file
+   - `tee f1 f2 f3` - save to multiple files
+
+7. **tee in Pipelines**: `tee` passes data through for further processing
+
+8. **Order Matters**: The sequence of piped commands affects the result
+
+9. **Error Handling**: Use `2>&1` to include stderr in pipes
+
+10. **Real-World Power**: Combine pipes with `grep`, `awk`, `sort`, `uniq`, and `wc` for powerful data analysis
+
+## What's Next?
+
+You now understand how to chain commands with pipes and split output with `tee`. These are fundamental skills for building efficient Linux workflows. In the next post, **Part 48: Working with Command History**, we'll learn how to:
+
+- Use the `history` command to view previous commands
+- Navigate and search command history efficiently
+- Execute previous commands quickly with shortcuts
+- Configure history size and behavior
+- Use `Ctrl-R` for reverse search
+- Leverage history for productivity and automation
+
+Command history is essential for working efficiently in the terminal—it saves time and helps you recall complex commands you've used before. See you in the next post!

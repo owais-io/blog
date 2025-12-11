@@ -1,0 +1,1462 @@
+---
+title: "LFCS Part 50: Understanding Shell Variables in Linux"
+description: "Master shell variables in bash to customize your environment, use system variables, and understand the difference between local and environment variables"
+date: 2026-01-10
+topic: "LFCS Prep"
+series: "LFCS Certification Preparation - Phase 1"
+seriesOrder: 50
+tags: ["linux", "lfcs", "certification", "variables", "bash", "environment", "PATH", "export"]
+categories: ["Linux", "LFCS Certification"]
+---
+
+## Introduction
+
+Variables are one of the most fundamental concepts in bash and Linux shell scripting. They allow you to store data, configure your environment, pass information between commands and scripts, and customize how your system behaves. Every time you open a terminal, dozens of variables are already set and working behind the scenes.
+
+Understanding variables is essential for effective system administration. You'll use them to configure your PATH, set environment options, write scripts, and troubleshoot system issues. Whether you're setting a simple value for later use or configuring complex application environments, variables are the foundation.
+
+In this comprehensive guide, you'll learn everything about shell variables in bash. By the end, you'll understand how to create and use variables, distinguish between local and environment variables, work with important system variables like PATH and HOME, and use variables effectively in your daily workflow.
+
+## What is a Variable?
+
+A **variable** is a named storage location that holds a value. Think of it like a labeled container where you can put data and retrieve it later by using the container's name.
+
+**In bash**:
+- The **name** is what you call the variable
+- The **value** is the data it contains
+- You **assign** a value to a variable using `=`
+- You **access** the value using `$` before the name
+
+**Simple example**:
+```bash
+# Create a variable
+NAME="John"
+
+# Use the variable
+echo $NAME
+John
+```
+
+## Creating Variables
+
+To create a variable in bash, use this syntax:
+
+**Syntax**:
+```bash
+VARIABLE_NAME=value
+```
+
+**Important rules**:
+1. **No spaces** around the `=` sign
+2. Variable names are **case-sensitive**
+3. By convention, use **UPPERCASE** for environment variables and **lowercase** for local variables
+4. Variable names can contain letters, numbers, and underscores
+5. Cannot start with a number
+
+### Basic Variable Assignment
+
+```bash
+# Correct:
+COLOR=red
+count=5
+user_name="Alice"
+MY_PATH=/usr/local/bin
+
+# Wrong (spaces cause errors):
+COLOR = red          # Error: spaces around =
+count= 5             # Error: space before value
+user_name = "Alice"  # Error: spaces around =
+```
+
+### Variable Naming Conventions
+
+**Valid variable names**:
+```bash
+name="test"
+NAME="test"
+name123="test"
+user_name="test"
+_private="test"
+MY_VAR="test"
+```
+
+**Invalid variable names**:
+```bash
+1name="test"        # Can't start with number
+user-name="test"    # Hyphens not allowed
+my var="test"       # Spaces not allowed
+```
+
+### Values with Spaces
+
+If your value contains spaces, enclose it in quotes:
+
+```bash
+# Without quotes (wrong):
+MESSAGE=Hello World      # Only assigns "Hello" to MESSAGE
+
+# With quotes (correct):
+MESSAGE="Hello World"
+echo $MESSAGE
+Hello World
+
+# Single quotes preserve literal strings:
+MESSAGE='Hello World'
+
+# Double quotes allow variable expansion:
+MESSAGE="Hello $USER"
+```
+
+## Reading Variables
+
+To access a variable's value, prefix its name with `$`.
+
+### Basic Variable Access
+
+```bash
+COLOR=blue
+echo $COLOR
+blue
+
+# Can use in commands:
+echo "My favorite color is $COLOR"
+My favorite color is blue
+```
+
+### Using Curly Braces
+
+Use `${VARIABLE_NAME}` for clarity or when needed:
+
+```bash
+# When concatenating with other text:
+PREFIX=test
+echo $PREFIXfile       # Looks for variable named "PREFIXfile" (doesn't exist)
+
+echo ${PREFIX}file     # Correct: uses PREFIX, then adds "file"
+testfile
+
+# For clarity:
+echo ${COLOR}          # Same as $COLOR, but more explicit
+blue
+```
+
+### Default Values
+
+You can provide default values if a variable is unset:
+
+```bash
+# If VAR is unset or empty, use "default"
+echo ${VAR:-default}
+default
+
+# Set VAR if it's unset
+VAR=${VAR:-hello}
+echo $VAR
+hello
+```
+
+## Local vs Environment Variables
+
+This is one of the most important concepts to understand.
+
+### Local Variables
+
+**Local variables** exist only in the current shell. They are **not** passed to child processes or scripts.
+
+**Example**:
+```bash
+# Create a local variable
+COLOR=red
+echo $COLOR
+red
+
+# Start a new bash shell (child process)
+bash
+
+# In the new shell, COLOR doesn't exist:
+echo $COLOR
+# (no output - variable not set)
+
+# Exit back to parent shell
+exit
+
+# COLOR still exists here:
+echo $COLOR
+red
+```
+
+**What happened**: The `COLOR` variable was created in the parent shell but wasn't exported, so the child shell couldn't see it.
+
+### Environment Variables
+
+**Environment variables** are exported to child processes. They're available to all programs and scripts launched from the current shell.
+
+**Example using export**:
+```bash
+# Create a local variable
+COLOR=red
+export COLOR
+
+# Or create and export in one step:
+export COLOR=green
+
+# Now start a new bash shell:
+bash
+
+# In the child shell, COLOR exists:
+echo $COLOR
+green
+
+exit
+```
+
+**What happened**: Using `export` made `COLOR` an environment variable, so it was passed to the child shell.
+
+### From the lfcs-rough.txt Example
+
+This demonstrates the difference perfectly:
+
+```bash
+# Create a local variable
+COLOR=red
+echo $COLOR
+red
+
+# Start a new shell
+bash
+echo $COLOR
+# (empty - not exported)
+
+exit
+
+# Export the variable
+export COLOR=green
+echo $COLOR
+green
+
+# Start a new shell
+bash
+echo $COLOR
+green
+# (now it works - it's exported)
+
+exit
+```
+
+## The export Command
+
+`export` makes a variable available to child processes.
+
+### Basic export Usage
+
+```bash
+# Method 1: Create then export
+COLOR=blue
+export COLOR
+
+# Method 2: Export while creating
+export COLOR=blue
+
+# Method 3: Export existing variable
+COLOR=blue
+export COLOR
+```
+
+### View Exported Variables
+
+```bash
+# See all exported variables
+export -p
+
+# Output shows:
+declare -x COLOR="blue"
+declare -x HOME="/home/centos9"
+declare -x PATH="/usr/local/bin:/usr/bin:/bin"
+...
+```
+
+The `-x` indicates the variable is exported (an environment variable).
+
+### When to Use export
+
+**Use `export` when**:
+- Setting configuration for programs/scripts
+- Defining system-wide settings
+- Creating variables that scripts need to access
+
+**Don't use `export` when**:
+- Variable is only needed in current shell
+- Working with temporary values
+- Variable contains sensitive data you don't want child processes to see
+
+## Important System Variables
+
+Linux provides many pre-configured environment variables that control system behavior.
+
+### PATH
+
+**PATH** defines where the shell looks for commands.
+
+**View PATH**:
+```bash
+echo $PATH
+/home/centos9/.nvm/versions/node/v20.19.4/bin:/home/centos9/.local/bin:/home/centos9/bin:/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin
+```
+
+The PATH is a colon-separated list of directories. When you type a command, bash searches these directories in order.
+
+**How PATH works**:
+```bash
+# When you type:
+ls
+
+# Bash searches:
+# 1. /home/centos9/.local/bin/ls (not found)
+# 2. /home/centos9/bin/ls (not found)
+# 3. /usr/local/bin/ls (not found)
+# 4. /usr/bin/ls (found! - executes this)
+```
+
+**Add to PATH**:
+```bash
+# Add a directory to the beginning of PATH:
+export PATH=/my/custom/bin:$PATH
+
+# Add to the end:
+export PATH=$PATH:/another/dir
+
+# Make it permanent by adding to ~/.bashrc:
+echo 'export PATH=$PATH:/my/scripts' >> ~/.bashrc
+```
+
+### HOME
+
+**HOME** contains your home directory path.
+
+```bash
+echo $HOME
+/home/centos9
+
+# Used by cd without arguments:
+cd          # Goes to $HOME
+pwd
+/home/centos9
+
+# Used in paths:
+ls $HOME/Documents
+```
+
+### USER
+
+**USER** contains your username.
+
+```bash
+echo $USER
+centos9
+
+# Often used in scripts:
+echo "Hello, $USER!"
+Hello, centos9!
+```
+
+### SHELL
+
+**SHELL** shows your default shell.
+
+```bash
+echo $SHELL
+/bin/bash
+```
+
+### PWD
+
+**PWD** contains your current working directory.
+
+```bash
+pwd
+/home/centos9/Documents
+
+echo $PWD
+/home/centos9/Documents
+
+# Changes when you navigate:
+cd /tmp
+echo $PWD
+/tmp
+```
+
+### OLDPWD
+
+**OLDPWD** contains your previous working directory.
+
+```bash
+cd /var/log
+cd /tmp
+
+# Go back to previous directory:
+cd $OLDPWD
+pwd
+/var/log
+
+# Shortcut: cd -
+cd -
+pwd
+/tmp
+```
+
+### HOSTNAME
+
+**HOSTNAME** contains your system's hostname.
+
+```bash
+echo $HOSTNAME
+vm1
+```
+
+### LANG
+
+**LANG** sets your system's language and locale.
+
+```bash
+echo $LANG
+en_US.UTF-8
+```
+
+### HISTSIZE and HISTFILESIZE
+
+Control command history (covered in Post 48):
+
+```bash
+echo $HISTSIZE
+1000
+
+echo $HISTFILESIZE
+1000
+```
+
+## Viewing All Variables
+
+### env Command
+
+`env` displays all environment variables:
+
+```bash
+env
+SHELL=/bin/bash
+HOSTNAME=vm1
+HISTSIZE=1000
+HOME=/home/centos9
+USER=centos9
+PATH=/usr/local/bin:/usr/bin:/bin
+PWD=/home/centos9
+LANG=en_US.UTF-8
+...
+```
+
+### printenv Command
+
+`printenv` does the same as `env`:
+
+```bash
+# Show all variables:
+printenv
+
+# Show specific variable:
+printenv HOME
+/home/centos9
+
+printenv PATH
+/usr/local/bin:/usr/bin:/bin
+```
+
+### set Command
+
+`set` shows **all** variables (both local and environment):
+
+```bash
+set | less
+# Shows hundreds of variables including bash internals
+```
+
+### Compare env and set
+
+```bash
+# Create a local variable:
+LOCAL_VAR=test
+
+# env won't show it:
+env | grep LOCAL_VAR
+# (no output)
+
+# set will show it:
+set | grep LOCAL_VAR
+LOCAL_VAR=test
+
+# Export it:
+export LOCAL_VAR
+
+# Now env shows it:
+env | grep LOCAL_VAR
+LOCAL_VAR=test
+```
+
+## Practical Variable Examples
+
+### Example 1: Using PATH to Run Custom Scripts
+
+From lfcs-rough.txt, this shows how to make your own commands available:
+
+```bash
+# Create a script:
+echo 'echo hello world' > hello.sh
+chmod +x hello.sh
+
+# Try to run it:
+hello.sh
+bash: hello.sh: command not found
+
+# Check PATH:
+echo $PATH
+/home/centos9/.local/bin:/home/centos9/bin:/usr/local/bin:/usr/bin:/usr/sbin
+
+# Notice /home/centos9/bin is in PATH!
+# Create that directory and move script there:
+mkdir -p ~/bin
+mv hello.sh ~/bin/
+
+# Now it works:
+hello.sh
+hello world
+```
+
+**Why it works**: `~/bin` is in your PATH, so bash finds and executes `hello.sh`.
+
+### Example 2: Configuration Variables
+
+```bash
+# Set database connection details:
+export DB_HOST=localhost
+export DB_PORT=5432
+export DB_USER=admin
+export DB_NAME=myapp
+
+# Scripts can now use these:
+psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME
+```
+
+### Example 3: Customizing Your Prompt
+
+```bash
+# The PS1 variable controls your prompt:
+echo $PS1
+[\t \u@\h \W]$
+
+# Customize it:
+export PS1="\u@\h:\w\$ "
+# New prompt shows: user@host:/full/path$
+```
+
+### Example 4: Setting Editor Preference
+
+```bash
+# Set default text editor:
+export EDITOR=vim
+
+# Many programs use this:
+crontab -e    # Opens in vim
+git commit    # Opens vim for commit message
+```
+
+### Example 5: Temporary Variable for Commands
+
+```bash
+# Set a variable for a single command:
+DEBUG=true ./my_script.sh
+
+# Or for multiple commands:
+export DEBUG=true
+./my_script.sh
+./another_script.sh
+```
+
+## Unsetting Variables
+
+Remove a variable with `unset`:
+
+```bash
+# Create a variable:
+COLOR=blue
+echo $COLOR
+blue
+
+# Remove it:
+unset COLOR
+echo $COLOR
+# (no output)
+
+# Works with exported variables too:
+export MYVAR=test
+unset MYVAR
+```
+
+## Variable Quoting Rules
+
+Understanding when to use quotes is important:
+
+### No Quotes
+
+```bash
+# Simple values without spaces:
+COUNT=5
+NAME=John
+PATH=/usr/bin
+```
+
+### Double Quotes
+
+Allow variable expansion and special characters:
+
+```bash
+# With spaces:
+MESSAGE="Hello World"
+
+# With variable expansion:
+GREETING="Hello, $USER!"
+echo $GREETING
+Hello, centos9!
+
+# With command substitution:
+TODAY="Today is $(date +%A)"
+echo $TODAY
+Today is Wednesday
+```
+
+### Single Quotes
+
+Preserve literal strings (no expansion):
+
+```bash
+# Literal dollar sign:
+MESSAGE='$USER will not expand'
+echo $MESSAGE
+$USER will not expand
+
+# Useful for literal strings:
+REGEX='[0-9]+'
+```
+
+## Command Substitution in Variables
+
+Store command output in variables:
+
+### Using $()
+
+```bash
+# Modern syntax:
+CURRENT_DATE=$(date +%Y-%m-%d)
+echo $CURRENT_DATE
+2025-12-11
+
+FILE_COUNT=$(ls | wc -l)
+echo "There are $FILE_COUNT files"
+There are 25 files
+
+KERNEL=$(uname -r)
+echo $KERNEL
+5.14.0-362.el9.x86_64
+```
+
+### Using Backticks
+
+Older syntax (still works but `$()` is preferred):
+
+```bash
+CURRENT_USER=`whoami`
+echo $CURRENT_USER
+centos9
+```
+
+## Special Variables
+
+Bash provides special read-only variables:
+
+### $?
+
+Exit status of last command:
+
+```bash
+ls /home
+# (command succeeds)
+
+echo $?
+0
+
+ls /nonexistent
+ls: cannot access '/nonexistent': No such file or directory
+
+echo $?
+2
+```
+
+- `0` means success
+- Non-zero means failure
+
+### $$
+
+Current shell's process ID:
+
+```bash
+echo $$
+12345
+
+# Useful for creating unique temporary files:
+TEMPFILE=/tmp/myapp_$$
+echo $TEMPFILE
+/tmp/myapp_12345
+```
+
+### $!
+
+Process ID of last background job:
+
+```bash
+sleep 100 &
+[1] 54321
+
+echo $!
+54321
+
+# Can use to manage background processes:
+kill $!
+```
+
+### $0
+
+Name of the script or shell:
+
+```bash
+echo $0
+bash
+
+# In a script named myscript.sh:
+# echo $0 would output: myscript.sh
+```
+
+### $1, $2, $3, ... $9
+
+Positional parameters (script arguments):
+
+```bash
+# In a script:
+echo "First argument: $1"
+echo "Second argument: $2"
+
+# When running: ./script.sh hello world
+# Output:
+# First argument: hello
+# Second argument: world
+```
+
+### $#
+
+Number of arguments:
+
+```bash
+# In a script:
+echo "You provided $# arguments"
+
+# When running: ./script.sh arg1 arg2 arg3
+# Output: You provided 3 arguments
+```
+
+### $@
+
+All arguments as separate words:
+
+```bash
+# In a script:
+for arg in "$@"; do
+    echo "Argument: $arg"
+done
+
+# When running: ./script.sh one two three
+# Output:
+# Argument: one
+# Argument: two
+# Argument: three
+```
+
+## Making Variables Permanent
+
+Variables set in your terminal are temporary. To make them permanent:
+
+### Add to ~/.bashrc
+
+For variables you want in every new terminal:
+
+```bash
+# Edit ~/.bashrc
+nano ~/.bashrc
+
+# Add at the end:
+export EDITOR=vim
+export VISUAL=vim
+export PATH=$PATH:~/scripts
+
+# Save and apply:
+source ~/.bashrc
+```
+
+### Add to ~/.bash_profile
+
+For variables in login shells:
+
+```bash
+# Edit ~/.bash_profile
+nano ~/.bash_profile
+
+# Add variables:
+export CUSTOM_VAR=value
+
+# Apply:
+source ~/.bash_profile
+```
+
+### System-Wide Variables
+
+For all users (requires root):
+
+```bash
+# Edit /etc/environment
+sudo nano /etc/environment
+
+# Add:
+JAVA_HOME=/usr/lib/jvm/java-11
+```
+
+Or create a file in `/etc/profile.d/`:
+
+```bash
+sudo nano /etc/profile.d/custom_vars.sh
+
+# Add:
+export APP_ENV=production
+export LOG_LEVEL=info
+```
+
+## Common Variable Patterns
+
+### Pattern 1: Check if Variable is Set
+
+```bash
+if [ -z "$MYVAR" ]; then
+    echo "MYVAR is not set"
+else
+    echo "MYVAR is set to: $MYVAR"
+fi
+```
+
+### Pattern 2: Use Default Value
+
+```bash
+# Use PORT if set, otherwise use 8080:
+PORT=${PORT:-8080}
+echo "Using port $PORT"
+```
+
+### Pattern 3: Build Paths
+
+```bash
+PROJECT_ROOT=/var/www/myapp
+LOGS_DIR=$PROJECT_ROOT/logs
+CONFIG_FILE=$PROJECT_ROOT/config/app.conf
+
+echo "Logs are in: $LOGS_DIR"
+```
+
+### Pattern 4: Loop Through Values
+
+```bash
+SERVERS="web1 web2 web3"
+
+for server in $SERVERS; do
+    echo "Connecting to $server..."
+    ssh $server "uptime"
+done
+```
+
+### Pattern 5: Create Timestamps
+
+```bash
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+BACKUP_FILE=backup_$TIMESTAMP.tar.gz
+echo "Creating $BACKUP_FILE"
+```
+
+## Best Practices for Variables
+
+### 1. Use Descriptive Names
+
+```bash
+# Good:
+MAX_CONNECTIONS=100
+DATABASE_HOST=localhost
+
+# Bad:
+MC=100
+DH=localhost
+```
+
+### 2. Use UPPERCASE for Exported Variables
+
+```bash
+# Environment variables:
+export DATABASE_URL=postgres://localhost/mydb
+
+# Local variables:
+temp_file=/tmp/data.txt
+```
+
+### 3. Quote Variable References
+
+Prevent word splitting and globbing:
+
+```bash
+# Good:
+if [ -f "$filename" ]; then
+    cat "$filename"
+fi
+
+# Risky (fails with spaces in filename):
+if [ -f $filename ]; then
+    cat $filename
+fi
+```
+
+### 4. Check Before Using
+
+```bash
+# Check if set:
+if [ -n "$CONFIG_FILE" ]; then
+    source "$CONFIG_FILE"
+fi
+
+# Or provide default:
+CONFIG=${CONFIG:-/etc/app.conf}
+```
+
+### 5. Don't Export Sensitive Data
+
+```bash
+# Bad (visible to all child processes):
+export PASSWORD=secret123
+
+# Better (keep local):
+PASSWORD=secret123
+
+# Best (prompt for it):
+read -s -p "Enter password: " PASSWORD
+```
+
+### 6. Use Readonly for Constants
+
+```bash
+readonly VERSION=1.0.0
+readonly APP_NAME=MyApplication
+
+# Attempts to change will fail:
+VERSION=2.0.0
+bash: VERSION: readonly variable
+```
+
+## Troubleshooting Variables
+
+### Problem 1: Variable Not Found
+
+```bash
+echo $MYVAR
+# (empty)
+
+# Check if it's set:
+echo ${MYVAR:-NOT SET}
+NOT SET
+
+# Set it:
+MYVAR=hello
+echo $MYVAR
+hello
+```
+
+### Problem 2: Variable Not Available in Script
+
+```bash
+# In terminal:
+COLOR=blue
+
+# In script.sh:
+echo $COLOR
+# (empty)
+
+# Solution: Export it:
+export COLOR=blue
+./script.sh
+blue
+```
+
+### Problem 3: PATH Not Working
+
+```bash
+# Command not found:
+my_command
+bash: my_command: command not found
+
+# Check PATH:
+echo $PATH
+# Is your script's directory in PATH?
+
+# Add it:
+export PATH=$PATH:/path/to/my/scripts
+```
+
+### Problem 4: Spaces in Values
+
+```bash
+# Wrong:
+MESSAGE=Hello World
+# Only "Hello" is assigned
+
+# Correct:
+MESSAGE="Hello World"
+echo $MESSAGE
+Hello World
+```
+
+### Problem 5: Variable Name Conflicts
+
+```bash
+# Avoid using names that conflict with system variables:
+# Bad:
+PATH=/my/custom/path    # Breaks everything!
+
+# Good:
+MY_PATH=/my/custom/path
+```
+
+## Variables Cheat Sheet
+
+### Creating and Using Variables
+
+| Operation | Syntax | Example |
+|-----------|--------|---------|
+| Create variable | `VAR=value` | `NAME=John` |
+| Use variable | `$VAR` or `${VAR}` | `echo $NAME` |
+| Export variable | `export VAR=value` | `export PATH=/usr/bin` |
+| Unset variable | `unset VAR` | `unset NAME` |
+| Make readonly | `readonly VAR=value` | `readonly VERSION=1.0` |
+| Default value | `${VAR:-default}` | `${PORT:-8080}` |
+| Command substitution | `VAR=$(command)` | `DATE=$(date)` |
+
+### Important System Variables
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `$PATH` | Command search path | `/usr/bin:/bin` |
+| `$HOME` | Home directory | `/home/user` |
+| `$USER` | Username | `centos9` |
+| `$SHELL` | Current shell | `/bin/bash` |
+| `$PWD` | Current directory | `/home/user/docs` |
+| `$OLDPWD` | Previous directory | `/tmp` |
+| `$HOSTNAME` | System hostname | `server1` |
+| `$LANG` | System language | `en_US.UTF-8` |
+| `$?` | Last exit status | `0` or `1` |
+| `$$` | Current PID | `12345` |
+
+### Viewing Variables
+
+| Command | Description |
+|---------|-------------|
+| `env` | Show all environment variables |
+| `printenv` | Show all environment variables |
+| `printenv VAR` | Show specific variable |
+| `set` | Show all variables (local + env) |
+| `export -p` | Show all exported variables |
+| `echo $VAR` | Display variable value |
+
+## Practice Labs
+
+Let's practice working with shell variables.
+
+### Lab 1: Create and Display a Variable
+**Task**: Create a variable called `NAME` with your name, then display it.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+NAME="John Doe"
+echo $NAME
+John Doe
+```
+
+</details>
+
+### Lab 2: View Your PATH
+**Task**: Display your current PATH variable.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+echo $PATH
+```
+
+</details>
+
+### Lab 3: View Your HOME Directory
+**Task**: Use a variable to display your home directory path.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+echo $HOME
+# Or:
+echo ~
+```
+
+</details>
+
+### Lab 4: Create a Local Variable
+**Task**: Create a variable `COLOR=red`, start a new bash shell, check if the variable exists in the new shell, then exit.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+COLOR=red
+echo $COLOR
+red
+
+bash
+echo $COLOR
+# (empty - variable not in child shell)
+
+exit
+echo $COLOR
+red
+```
+
+</details>
+
+### Lab 5: Export a Variable
+**Task**: Create and export a variable `CITY=Boston`, start a new shell, verify it exists, then exit.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+export CITY=Boston
+echo $CITY
+Boston
+
+bash
+echo $CITY
+Boston
+
+exit
+```
+
+</details>
+
+### Lab 6: View All Environment Variables
+**Task**: Display all your environment variables.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+env
+# Or:
+printenv
+```
+
+</details>
+
+### Lab 7: View Specific Variable with printenv
+**Task**: Use `printenv` to display only your USER variable.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+printenv USER
+```
+
+</details>
+
+### Lab 8: Check Exit Status
+**Task**: Run a successful command, check its exit status. Then run a failing command and check its status.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+ls /home
+echo $?
+0
+
+ls /nonexistent
+echo $?
+2
+```
+
+</details>
+
+### Lab 9: Use Command Substitution
+**Task**: Store the current date in a variable and display it.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+TODAY=$(date +%Y-%m-%d)
+echo $TODAY
+2025-12-11
+```
+
+</details>
+
+### Lab 10: Store File Count
+**Task**: Count files in your current directory and store the count in a variable.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+FILE_COUNT=$(ls -1 | wc -l)
+echo "There are $FILE_COUNT files"
+```
+
+</details>
+
+### Lab 11: Concatenate Variables
+**Task**: Create `FIRST_NAME` and `LAST_NAME` variables, then create a `FULL_NAME` variable that combines them.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+FIRST_NAME="Jane"
+LAST_NAME="Smith"
+FULL_NAME="$FIRST_NAME $LAST_NAME"
+echo $FULL_NAME
+Jane Smith
+```
+
+</details>
+
+### Lab 12: Use Curly Braces
+**Task**: Create a variable `PREFIX=test` and use it to create the string "testfile.txt".
+
+<details>
+<summary>Solution</summary>
+
+```bash
+PREFIX=test
+echo ${PREFIX}file.txt
+testfile.txt
+```
+
+</details>
+
+### Lab 13: Default Value
+**Task**: Display a variable `PORT` with a default value of 8080 if it's not set.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# PORT is not set
+echo ${PORT:-8080}
+8080
+
+# Now set it:
+PORT=3000
+echo ${PORT:-8080}
+3000
+```
+
+</details>
+
+### Lab 14: Add to PATH
+**Task**: Add `~/scripts` to your PATH.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+export PATH=$PATH:~/scripts
+echo $PATH
+# Should show ~/scripts at the end
+```
+
+</details>
+
+### Lab 15: Create a Custom Script in PATH
+**Task**: Create a directory `~/bin`, create a simple script there, and verify you can run it by name.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+mkdir -p ~/bin
+echo 'echo "Hello from my script!"' > ~/bin/myscript.sh
+chmod +x ~/bin/myscript.sh
+
+# If ~/bin is in your PATH:
+myscript.sh
+Hello from my script!
+
+# If not, add it:
+export PATH=$PATH:~/bin
+myscript.sh
+Hello from my script!
+```
+
+</details>
+
+### Lab 16: Unset a Variable
+**Task**: Create a variable, display it, unset it, then try to display it again.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+TEMP=value
+echo $TEMP
+value
+
+unset TEMP
+echo $TEMP
+# (empty)
+```
+
+</details>
+
+### Lab 17: Check Current Shell PID
+**Task**: Display your current shell's process ID.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+echo $$
+# Shows PID like: 12345
+```
+
+</details>
+
+### Lab 18: Use PWD and OLDPWD
+**Task**: Navigate to `/tmp`, then to `/var`, then return to the previous directory using a variable.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+cd /tmp
+pwd
+/tmp
+
+cd /var
+pwd
+/var
+
+cd $OLDPWD
+pwd
+/tmp
+```
+
+</details>
+
+### Lab 19: Create Readonly Variable
+**Task**: Create a readonly variable and try to change it.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+readonly VERSION=1.0.0
+echo $VERSION
+1.0.0
+
+# Try to change it:
+VERSION=2.0.0
+bash: VERSION: readonly variable
+```
+
+</details>
+
+### Lab 20: Build a Path Variable
+**Task**: Create variables for a project root and subdirectories, then display them.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+PROJECT_ROOT=/var/www/myapp
+LOGS_DIR=$PROJECT_ROOT/logs
+CONFIG_DIR=$PROJECT_ROOT/config
+DATA_DIR=$PROJECT_ROOT/data
+
+echo "Project root: $PROJECT_ROOT"
+echo "Logs: $LOGS_DIR"
+echo "Config: $CONFIG_DIR"
+echo "Data: $DATA_DIR"
+```
+
+</details>
+
+## Key Takeaways
+
+1. **Variables Store Data**: Named containers for values
+
+2. **Creating Variables**: `VAR=value` (no spaces around `=`)
+
+3. **Using Variables**: Prefix with `$` (e.g., `$VAR` or `${VAR}`)
+
+4. **Local vs Environment**:
+   - Local: Only in current shell
+   - Environment: Passed to child processes (use `export`)
+
+5. **Important Variables**:
+   - `PATH`: Where shell looks for commands
+   - `HOME`: Your home directory
+   - `USER`: Your username
+   - `SHELL`: Your current shell
+
+6. **View Variables**:
+   - `env` or `printenv`: Environment variables
+   - `set`: All variables
+
+7. **Command Substitution**: `VAR=$(command)`
+
+8. **Special Variables**:
+   - `$?`: Exit status
+   - `$$`: Current PID
+   - `$0`, `$1`, etc.: Script name and arguments
+
+9. **Make Permanent**: Add to `~/.bashrc`
+
+10. **Best Practices**: Quote references, use defaults, descriptive names
+
+## What's Next?
+
+You now understand how to use shell variables to customize your environment and write more powerful commands and scripts. In the next post, **Part 51: Using Aliases and Keyboard Shortcuts**, we'll learn how to:
+
+- Create command aliases for frequently used commands
+- Make aliases permanent in your configuration
+- Use powerful keyboard shortcuts (Ctrl-l, Ctrl-u, Ctrl-a, Ctrl-e, etc.)
+- Build an efficient command-line workflow
+- Combine aliases with variables for maximum productivity
+
+Aliases and keyboard shortcuts, combined with your knowledge of variables, history, and Tab completion, will make you incredibly fast and efficient in the terminal. See you in the next post!

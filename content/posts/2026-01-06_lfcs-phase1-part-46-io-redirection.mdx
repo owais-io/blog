@@ -1,0 +1,1334 @@
+---
+title: "LFCS Part 46: Mastering I/O Redirection in Linux"
+description: "Learn how to control where command output goes and where input comes from using standard streams, file descriptors, and redirection operators in Linux"
+date: 2026-01-06
+topic: "LFCS Prep"
+series: "LFCS Certification Preparation - Phase 1"
+seriesOrder: 46
+tags: ["linux", "lfcs", "certification", "io-redirection", "streams", "file-descriptors", "stdout", "stderr", "stdin"]
+categories: ["Linux", "LFCS Certification"]
+---
+
+## Introduction
+
+Every Linux command you run has three invisible data streams attached to it. These streams are like pipes that carry information in and out of your commands. Understanding how to control these streams is one of the most powerful skills in Linux system administration—it allows you to automate tasks, filter data, save logs, suppress errors, and build complex command pipelines.
+
+In this comprehensive guide, you'll learn exactly how I/O (Input/Output) redirection works in Linux. We'll cover standard input, standard output, and standard error, along with all the redirection operators you need to control where data flows. By the end, you'll be able to redirect output to files, combine streams, discard unwanted messages, and build powerful command combinations.
+
+## What is I/O Redirection?
+
+**I/O redirection** is the mechanism that allows you to control where a command's input comes from and where its output goes. By default:
+
+- Commands read input from your keyboard (standard input)
+- Commands send normal output to your terminal screen (standard output)
+- Commands send error messages to your terminal screen (standard error)
+
+With redirection, you can change these defaults. You can:
+- Send output to a file instead of the screen
+- Read input from a file instead of the keyboard
+- Separate error messages from normal output
+- Discard unwanted output entirely
+- Combine multiple streams
+
+This is essential for automation, logging, filtering data, and building complex command pipelines.
+
+## Understanding Standard Streams
+
+Every process in Linux automatically has three standard streams open:
+
+### 1. Standard Input (stdin) - File Descriptor 0
+
+**Standard input** is where a command reads its input data. By default, this is your keyboard. When you type into a terminal, you're providing data to stdin.
+
+**File descriptor number**: 0
+
+Example: The `cat` command reads from stdin when no filename is provided:
+```bash
+cat
+# Now type something and press Enter
+# The command echoes what you type
+# Press Ctrl-D to signal end of input
+```
+
+### 2. Standard Output (stdout) - File Descriptor 1
+
+**Standard output** is where a command sends its normal, successful results. By default, this goes to your terminal screen.
+
+**File descriptor number**: 1
+
+Example: When you run `ls`, the list of files is sent to stdout:
+```bash
+ls
+Desktop  Documents  Downloads  Music  Pictures
+```
+
+### 3. Standard Error (stderr) - File Descriptor 2
+
+**Standard error** is where a command sends error messages and diagnostics. By default, this also goes to your terminal screen, but it's a separate stream from stdout.
+
+**File descriptor number**: 2
+
+Example: When a command encounters an error:
+```bash
+cat nonexistentfile.txt
+cat: nonexistentfile.txt: No such file or directory
+```
+
+The error message above was sent to stderr, not stdout.
+
+## Why Separate stdout and stderr?
+
+Having separate streams for normal output and errors is incredibly useful:
+
+1. **Filter errors separately**: You can save normal output to a file while still seeing errors on screen
+2. **Log files clean**: Error logs can be kept separate from data logs
+3. **Scripting**: Scripts can detect errors by checking stderr without parsing output data
+4. **Automation**: Automated processes can handle errors differently from normal output
+
+## File Descriptors Explained
+
+**File descriptors** are numbers that the Linux kernel uses to track open files and streams. Every process has a file descriptor table:
+
+| File Descriptor | Name | Default Destination |
+|----------------|------|---------------------|
+| 0 | stdin | Keyboard |
+| 1 | stdout | Terminal screen |
+| 2 | stderr | Terminal screen |
+
+When you use redirection, you're changing where these file descriptors point. Instead of pointing to your terminal, they can point to files, other commands, or even be closed entirely.
+
+## Redirecting Standard Output (stdout)
+
+The most common redirection operation is sending stdout to a file instead of the screen.
+
+### The `>` Operator: Redirect and Overwrite
+
+The `>` operator redirects stdout to a file, **overwriting** the file if it already exists.
+
+**Syntax**:
+```bash
+command > filename
+```
+
+**Example**: Save directory listing to a file:
+```bash
+ls > filelist.txt
+```
+
+What happens:
+1. The `ls` command runs and generates output
+2. Instead of displaying on screen, output goes to `filelist.txt`
+3. If `filelist.txt` already exists, its contents are completely replaced
+4. If the file doesn't exist, it's created
+
+View the contents:
+```bash
+cat filelist.txt
+Desktop
+Documents
+Downloads
+Music
+Pictures
+```
+
+**Another example**: Save current date and time:
+```bash
+date > timestamp.txt
+cat timestamp.txt
+Mon Dec 11 14:32:15 EST 2025
+```
+
+### The `>>` Operator: Redirect and Append
+
+The `>>` operator redirects stdout to a file, **appending** to the file if it already exists.
+
+**Syntax**:
+```bash
+command >> filename
+```
+
+**Example**: Add multiple entries to a log file:
+```bash
+echo "System check started" > system.log
+echo "Checking disk space..." >> system.log
+df -h >> system.log
+echo "Check completed" >> system.log
+
+cat system.log
+System check started
+Checking disk space...
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/sda1        50G   20G   28G  42% /
+Check completed
+```
+
+Notice:
+- First command uses `>` to create/overwrite the file
+- Subsequent commands use `>>` to add to the file
+- Each append adds to the end without removing previous content
+
+### Practical stdout Redirection Examples
+
+**Save command output for later review**:
+```bash
+ps aux > running_processes.txt
+netstat -tuln > network_connections.txt
+```
+
+**Create a file with specific content**:
+```bash
+echo "127.0.0.1 localhost" > /etc/hosts.backup
+```
+
+**Capture system information**:
+```bash
+uname -a > system_info.txt
+lscpu >> system_info.txt
+free -h >> system_info.txt
+```
+
+## Redirecting Standard Input (stdin)
+
+Instead of typing input manually or reading from keyboard, you can redirect stdin to read from a file.
+
+### The `<` Operator: Redirect Input
+
+The `<` operator tells a command to read its input from a file instead of the keyboard.
+
+**Syntax**:
+```bash
+command < filename
+```
+
+**Example**: Sort the contents of a file:
+
+First, create a file with unsorted data:
+```bash
+cat > names.txt
+Zoe
+Alice
+Mike
+Bob
+# Press Ctrl-D to finish
+```
+
+Now sort it using input redirection:
+```bash
+sort < names.txt
+Alice
+Bob
+Mike
+Zoe
+```
+
+What happened:
+1. `sort` normally reads from keyboard (stdin)
+2. With `<`, we redirected stdin to read from `names.txt`
+3. `sort` processed the file contents and sent output to stdout (screen)
+
+### Combining Input and Output Redirection
+
+You can redirect both input and output in the same command:
+
+**Example**: Sort a file and save the result:
+```bash
+sort < names.txt > sorted_names.txt
+cat sorted_names.txt
+Alice
+Bob
+Mike
+Zoe
+```
+
+What happened:
+1. Input (`<`) came from `names.txt`
+2. The `sort` command processed it
+3. Output (`>`) went to `sorted_names.txt`
+
+**Another example with `/etc/services`**:
+```bash
+# Get the first 10 lines of sorted /etc/services
+sort < /etc/services | head
+
+# Output (sorted alphabetically):
+
+
+
+acap            674/tcp                 # ACAP
+acap            674/udp                 # ACAP
+```
+
+## Redirecting Standard Error (stderr)
+
+Error messages go to stderr (file descriptor 2), not stdout (file descriptor 1). To redirect errors, you must specify the file descriptor.
+
+### The `2>` Operator: Redirect Errors
+
+The `2>` operator redirects stderr to a file.
+
+**Syntax**:
+```bash
+command 2> error_file
+```
+
+**Example**: Try to list a directory that doesn't exist:
+
+Without redirection:
+```bash
+ls /nonexistent
+ls: cannot access '/nonexistent': No such file or directory
+```
+
+The error appears on screen. Now redirect it:
+```bash
+ls /nonexistent 2> errors.txt
+```
+
+Nothing appears on screen! The error went to the file:
+```bash
+cat errors.txt
+ls: cannot access '/nonexistent': No such file or directory
+```
+
+### Why `2>` and Not Just `>`?
+
+The number before `>` specifies which file descriptor to redirect:
+- `>` is shorthand for `1>` (redirect stdout)
+- `2>` redirects stderr
+- `0<` redirects stdin (though `<` alone works)
+
+**Example showing the difference**:
+```bash
+# Create a scenario with both output and errors
+ls /home /nonexistent
+
+# Output shows both:
+ls: cannot access '/nonexistent': No such file or directory
+/home:
+centos9  user1  user2
+```
+
+Now redirect only stdout:
+```bash
+ls /home /nonexistent > output.txt
+ls: cannot access '/nonexistent': No such file or directory
+
+cat output.txt
+/home:
+centos9  user1  user2
+```
+
+Notice: The error still appeared on screen because we only redirected stdout (`>`), not stderr.
+
+Now redirect only stderr:
+```bash
+ls /home /nonexistent 2> errors.txt
+/home:
+centos9  user1  user2
+
+cat errors.txt
+ls: cannot access '/nonexistent': No such file or directory
+```
+
+Notice: Normal output appeared on screen, but errors went to the file.
+
+### Redirecting Both stdout and stderr to Different Files
+
+You can redirect stdout and stderr to separate files in one command:
+
+**Syntax**:
+```bash
+command > output.txt 2> errors.txt
+```
+
+**Example**:
+```bash
+ls /home /nonexistent /tmp > output.txt 2> errors.txt
+
+cat output.txt
+/home:
+centos9  user1  user2
+/tmp:
+file1.txt  file2.txt
+
+cat errors.txt
+ls: cannot access '/nonexistent': No such file or directory
+```
+
+This is extremely useful for logging:
+- Normal operation logs go to one file
+- Error logs go to another file
+- Easy to monitor problems separately
+
+## Redirecting Both stdout and stderr Together
+
+Sometimes you want all output (both normal and errors) in the same file.
+
+### The `&>` Operator: Redirect Both Streams
+
+The `&>` operator redirects both stdout and stderr to the same file.
+
+**Syntax**:
+```bash
+command &> output_file
+```
+
+**Example**:
+```bash
+grep root /etc/* &> search_results.txt
+```
+
+What this does:
+1. `grep` searches all files in `/etc/` for "root"
+2. Normal matches go to stdout
+3. "Permission denied" and "Is a directory" errors go to stderr
+4. Both streams are captured in `search_results.txt`
+
+View the file:
+```bash
+cat search_results.txt | head
+grep: /etc/audit: Permission denied
+/etc/aliases:postmaster:	root
+/etc/aliases:bin:		root
+grep: /etc/alternatives: Is a directory
+/etc/anacrontab:MAILTO=root
+/etc/group:root:x:0:
+```
+
+You can see both errors and matches mixed together in the output.
+
+### The `2>&1` Syntax: Redirect stderr to stdout
+
+An alternative (older) syntax for redirecting both streams:
+
+**Syntax**:
+```bash
+command > output_file 2>&1
+```
+
+This means:
+1. `> output_file` - redirect stdout to `output_file`
+2. `2>&1` - redirect stderr (file descriptor 2) to wherever stdout (file descriptor 1) is currently going
+
+**Example**:
+```bash
+grep root /etc/* > search_results.txt 2>&1
+```
+
+This achieves the same result as `&>`, but the order matters:
+
+**Correct order**:
+```bash
+command > file 2>&1  # ✓ Works: stdout goes to file, then stderr follows
+```
+
+**Wrong order**:
+```bash
+command 2>&1 > file  # ✗ Doesn't work as expected
+```
+
+Why? Because `2>&1` redirects stderr to wherever stdout is *currently* pointing. If stdout hasn't been redirected yet, stderr goes to the terminal.
+
+**Modern recommendation**: Use `&>` instead—it's clearer and less error-prone.
+
+## Discarding Output with /dev/null
+
+`/dev/null` is a special file in Linux that discards everything written to it. It's called the "null device" or "black hole."
+
+**Location**: `/dev/null`
+
+**Purpose**: Throw away output you don't want to see or save
+
+### Suppressing Errors with 2>/dev/null
+
+One of the most common uses is suppressing error messages.
+
+**Example**: Find files named "hosts" without seeing permission errors:
+
+Without redirection:
+```bash
+find / -name "hosts"
+find: '/etc/polkit-1/rules.d': Permission denied
+find: '/etc/audit': Permission denied
+/etc/hosts
+find: '/root': Permission denied
+/etc/avahi/hosts
+find: '/var/lib/sss/db': Permission denied
+```
+
+Many permission errors clutter the output! Redirect them:
+```bash
+find / -name "hosts" 2>/dev/null
+/etc/hosts
+/etc/avahi/hosts
+/usr/share/doc/python3-dns/examples/hosts
+```
+
+Much cleaner! Only actual results are shown.
+
+**What happened**:
+1. `find` generates normal output (file paths found) → stdout → terminal
+2. `find` generates errors (permission denied) → stderr → `/dev/null` (discarded)
+3. You only see what you care about
+
+### Suppressing All Output with &>/dev/null
+
+To completely silence a command (both stdout and stderr):
+
+**Syntax**:
+```bash
+command &>/dev/null
+```
+
+**Example**: Run a command silently:
+```bash
+grep root /etc/* &>/dev/null
+```
+
+Nothing appears! All output (matches and errors) was discarded.
+
+**Use case**: This is useful in scripts when you only care about the command's exit status, not its output:
+
+```bash
+if grep -q "error" /var/log/syslog &>/dev/null; then
+    echo "Errors found in syslog!"
+fi
+```
+
+### Suppressing Only Normal Output
+
+You can also suppress stdout while keeping stderr visible:
+
+**Syntax**:
+```bash
+command >/dev/null
+```
+
+**Example**:
+```bash
+ls /home /nonexistent >/dev/null
+ls: cannot access '/nonexistent': No such file or directory
+```
+
+Only the error is shown; normal output was discarded.
+
+## Real-World I/O Redirection Scenarios
+
+### Scenario 1: Creating a System Report
+
+Generate a comprehensive system report:
+
+```bash
+{
+    echo "========================================="
+    echo "System Report - $(date)"
+    echo "========================================="
+    echo
+    echo "Hostname:"
+    hostname
+    echo
+    echo "Kernel Version:"
+    uname -r
+    echo
+    echo "Uptime:"
+    uptime
+    echo
+    echo "Disk Usage:"
+    df -h
+    echo
+    echo "Memory Usage:"
+    free -h
+    echo
+    echo "Top 10 Processes by Memory:"
+    ps aux --sort=-%mem | head -11
+} > system_report.txt
+```
+
+The curly braces `{}` group all commands together, and their combined output goes to the file.
+
+### Scenario 2: Cleaning Log Output
+
+Search logs but filter out noise:
+
+```bash
+# Search for errors in syslog, but exclude permission denied messages
+grep -i error /var/log/syslog 2>/dev/null | grep -v "permission denied"
+```
+
+### Scenario 3: Automated Backup with Logging
+
+Create a backup script that logs both successes and errors:
+
+```bash
+#!/bin/bash
+DATE=$(date +%Y-%m-%d)
+LOGFILE="/var/log/backup_${DATE}.log"
+
+{
+    echo "Backup started at $(date)"
+    tar -czf /backup/home_${DATE}.tar.gz /home
+    echo "Backup completed at $(date)"
+} >> $LOGFILE 2>&1
+```
+
+This appends all output (normal and errors) to the log file.
+
+### Scenario 4: Testing Configuration Files
+
+Test if a configuration file has syntax errors:
+
+```bash
+# Test nginx configuration
+nginx -t > /dev/null 2>&1
+
+if [ $? -eq 0 ]; then
+    echo "Configuration is valid"
+else
+    echo "Configuration has errors"
+    nginx -t  # Show the errors
+fi
+```
+
+### Scenario 5: Creating Empty Files vs. Clearing Files
+
+Create an empty file or clear an existing file:
+
+```bash
+# Method 1: Using redirection
+> empty_file.txt
+
+# Method 2: Using echo with redirection
+echo -n > empty_file.txt
+
+# Method 3: Clear an existing file
+> /var/log/old_log.txt
+```
+
+The `>` operator with no command creates or clears a file.
+
+## Common Patterns and Idioms
+
+### Pattern 1: Save Output and Display It
+
+Use `tee` (covered in next post) or redirection with `cat`:
+
+```bash
+ls -la > listing.txt
+cat listing.txt
+```
+
+### Pattern 2: Append Date-Stamped Log Entries
+
+```bash
+echo "$(date): Backup completed" >> /var/log/backup.log
+```
+
+### Pattern 3: Redirect to Multiple Files
+
+```bash
+# Save to both files (using tee, covered next post)
+ls -la | tee file1.txt file2.txt
+
+# Or do it manually:
+ls -la > file1.txt
+ls -la > file2.txt
+```
+
+### Pattern 4: Conditional Redirection in Scripts
+
+```bash
+if [ "$DEBUG" = "true" ]; then
+    command 2>&1 | tee debug.log
+else
+    command &>/dev/null
+fi
+```
+
+## Visual Diagram: I/O Redirection Flow
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         COMMAND                                 │
+│                                                                 │
+│  Input ──→ [Process] ──→ Output                                │
+│   (0)                     (1)                                   │
+│                      └──→ Errors                                │
+│                           (2)                                   │
+└─────────────────────────────────────────────────────────────────┘
+
+DEFAULT BEHAVIOR (No Redirection):
+├─ stdin  (0) ← Keyboard
+├─ stdout (1) → Terminal screen
+└─ stderr (2) → Terminal screen
+
+WITH REDIRECTION:
+├─ stdin  (0) ← file.txt          (using <)
+├─ stdout (1) → output.txt        (using > or >>)
+└─ stderr (2) → errors.txt        (using 2>)
+
+COMBINED REDIRECTION:
+├─ stdin  (0) ← input.txt         (using <)
+└─ stdout + stderr → all.txt      (using &> or 2>&1)
+
+TO /dev/null (DISCARD):
+├─ stdout → /dev/null             (using >/dev/null)
+├─ stderr → /dev/null             (using 2>/dev/null)
+└─ both   → /dev/null             (using &>/dev/null)
+```
+
+## Best Practices for I/O Redirection
+
+### 1. Use Append (`>>`) for Logs
+
+Always use `>>` when adding to log files to avoid accidentally deleting previous logs:
+
+```bash
+# Good
+echo "Log entry" >> /var/log/app.log
+
+# Dangerous
+echo "Log entry" > /var/log/app.log  # Deletes previous logs!
+```
+
+### 2. Suppress Expected Errors
+
+When you expect errors and they don't matter:
+
+```bash
+find / -name "*.conf" 2>/dev/null
+```
+
+### 3. Keep Error Logs Separate
+
+For important operations, keep error logs separate for easier troubleshooting:
+
+```bash
+./backup_script.sh > backup.log 2> backup_errors.log
+```
+
+### 4. Use Absolute Paths in Scripts
+
+When redirecting in scripts, use absolute paths to avoid confusion:
+
+```bash
+# Good
+echo "Log" >> /var/log/myapp.log
+
+# Risky (depends on current directory)
+echo "Log" >> myapp.log
+```
+
+### 5. Check Exit Status After Redirecting to /dev/null
+
+Even if output is hidden, check if the command succeeded:
+
+```bash
+if command &>/dev/null; then
+    echo "Success"
+else
+    echo "Failed"
+fi
+```
+
+### 6. Be Careful with `>` (Overwrite)
+
+Double-check before using `>` on important files:
+
+```bash
+# Dangerous! Overwrites important file
+important_command > /etc/passwd  # DON'T DO THIS
+
+# Safer
+important_command > /tmp/output.txt
+```
+
+### 7. Use `&>` for Modern Syntax
+
+Prefer `&>` over `2>&1` for readability:
+
+```bash
+# Modern (clear)
+command &> output.txt
+
+# Traditional (less clear)
+command > output.txt 2>&1
+```
+
+## Common Pitfalls and How to Avoid Them
+
+### Pitfall 1: Wrong Order in Redirection
+
+**Problem**:
+```bash
+command 2>&1 > file  # WRONG ORDER
+```
+
+**Why it fails**: `2>&1` redirects stderr to wherever stdout is pointing *right now* (the terminal). Then `> file` redirects stdout to file, but stderr is still going to the terminal.
+
+**Solution**:
+```bash
+command > file 2>&1  # CORRECT ORDER
+# Or use modern syntax:
+command &> file
+```
+
+### Pitfall 2: Forgetting to Append
+
+**Problem**:
+```bash
+for i in {1..5}; do
+    echo "Line $i" > log.txt  # BUG: Overwrites each time
+done
+```
+
+Result: Only "Line 5" ends up in the file!
+
+**Solution**:
+```bash
+for i in {1..5}; do
+    echo "Line $i" >> log.txt  # Correct: Appends
+done
+```
+
+### Pitfall 3: Redirecting to the Same File You're Reading
+
+**Problem**:
+```bash
+sort file.txt > file.txt  # DANGEROUS!
+```
+
+This can corrupt or empty the file because the shell opens `file.txt` for writing (truncating it) before `sort` can read it.
+
+**Solution**:
+```bash
+sort file.txt > file.txt.tmp && mv file.txt.tmp file.txt
+# Or use sponge (from moreutils package):
+sort file.txt | sponge file.txt
+```
+
+### Pitfall 4: Not Quoting File Names with Spaces
+
+**Problem**:
+```bash
+cat > my file.txt  # Creates two files: "my" and "file.txt"
+```
+
+**Solution**:
+```bash
+cat > "my file.txt"  # Creates one file: "my file.txt"
+```
+
+### Pitfall 5: Thinking `>` Creates Directories
+
+**Problem**:
+```bash
+command > /path/to/nonexistent/dir/file.txt
+bash: /path/to/nonexistent/dir/file.txt: No such file or directory
+```
+
+**Solution**: Create the directory first:
+```bash
+mkdir -p /path/to/nonexistent/dir
+command > /path/to/nonexistent/dir/file.txt
+```
+
+### Pitfall 6: Accidentally Overwriting Important Files
+
+**Problem**:
+```bash
+ls > /etc/hosts  # DISASTER!
+```
+
+**Solution**: Enable `noclobber` in bash to prevent accidental overwrites:
+```bash
+set -o noclobber
+ls > /etc/hosts
+bash: /etc/hosts: cannot overwrite existing file
+
+# Force overwrite if needed:
+ls >| /etc/hosts
+```
+
+## I/O Redirection Command Cheat Sheet
+
+| Operator | Description | Example |
+|----------|-------------|---------|
+| `>` | Redirect stdout, overwrite file | `ls > files.txt` |
+| `>>` | Redirect stdout, append to file | `echo "text" >> log.txt` |
+| `<` | Redirect stdin from file | `sort < names.txt` |
+| `2>` | Redirect stderr, overwrite | `command 2> errors.txt` |
+| `2>>` | Redirect stderr, append | `command 2>> errors.txt` |
+| `&>` | Redirect both stdout and stderr | `command &> all.txt` |
+| `&>>` | Redirect both, append | `command &>> all.txt` |
+| `2>&1` | Redirect stderr to stdout | `command > file 2>&1` |
+| `1>&2` | Redirect stdout to stderr | `echo "error" 1>&2` |
+| `>/dev/null` | Discard stdout | `command >/dev/null` |
+| `2>/dev/null` | Discard stderr | `command 2>/dev/null` |
+| `&>/dev/null` | Discard all output | `command &>/dev/null` |
+| `>` (no command) | Create/clear file | `> empty.txt` |
+
+## Practice Labs
+
+Let's practice I/O redirection with hands-on exercises. Try to solve each task before looking at the solution.
+
+### Lab 1: Basic Output Redirection
+**Task**: List all files in your home directory and save the output to `homedir.txt`.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+ls ~ > homedir.txt
+# Or:
+ls -la ~ > homedir.txt
+
+# Verify:
+cat homedir.txt
+```
+
+</details>
+
+### Lab 2: Append to File
+**Task**: Create a file called `fruits.txt` with "apple" on the first line. Then append "banana", "cherry", and "date" on separate lines.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+echo "apple" > fruits.txt
+echo "banana" >> fruits.txt
+echo "cherry" >> fruits.txt
+echo "date" >> fruits.txt
+
+# Verify:
+cat fruits.txt
+apple
+banana
+cherry
+date
+```
+
+</details>
+
+### Lab 3: Input Redirection
+**Task**: Create a file `numbers.txt` with numbers 5, 2, 8, 1, 9 (one per line). Use input redirection to sort the numbers and display the result.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create file:
+cat > numbers.txt
+5
+2
+8
+1
+9
+# Press Ctrl-D
+
+# Sort using input redirection:
+sort < numbers.txt
+1
+2
+5
+8
+9
+```
+
+</details>
+
+### Lab 4: Combined Input and Output Redirection
+**Task**: Sort the `numbers.txt` file from Lab 3 and save the sorted output to `sorted_numbers.txt`.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+sort < numbers.txt > sorted_numbers.txt
+
+# Verify:
+cat sorted_numbers.txt
+1
+2
+5
+8
+9
+```
+
+</details>
+
+### Lab 5: Redirecting Errors Only
+**Task**: Try to list the directory `/root` (which you likely don't have permission to access) and redirect any error messages to `access_errors.txt`.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+ls /root 2> access_errors.txt
+
+# Verify the error was captured:
+cat access_errors.txt
+ls: cannot access '/root': Permission denied
+```
+
+</details>
+
+### Lab 6: Separate Output and Errors
+**Task**: Run `ls /home /nonexistent /tmp` and redirect normal output to `output.txt` and errors to `errors.txt`.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+ls /home /nonexistent /tmp > output.txt 2> errors.txt
+
+# Check normal output:
+cat output.txt
+/home:
+user1
+/tmp:
+file1
+
+# Check errors:
+cat errors.txt
+ls: cannot access '/nonexistent': No such file or directory
+```
+
+</details>
+
+### Lab 7: Redirect Both Streams Together
+**Task**: Search for the word "root" in all files under `/etc` and redirect all output (both matches and errors) to `search_all.txt`.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+grep root /etc/* &> search_all.txt
+
+# Or using traditional syntax:
+grep root /etc/* > search_all.txt 2>&1
+
+# View first few lines:
+head search_all.txt
+```
+
+</details>
+
+### Lab 8: Discard Errors with /dev/null
+**Task**: Find all files named `*.conf` starting from the root directory, but suppress permission denied errors.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+find / -name "*.conf" 2>/dev/null
+```
+
+</details>
+
+### Lab 9: Discard All Output
+**Task**: Run the command `grep -r "test" /etc` but don't display any output at all (neither matches nor errors).
+
+<details>
+<summary>Solution</summary>
+
+```bash
+grep -r "test" /etc &>/dev/null
+
+# Or:
+grep -r "test" /etc >/dev/null 2>&1
+```
+
+</details>
+
+### Lab 10: Create an Empty File
+**Task**: Create an empty file called `placeholder.txt` using only redirection (no `touch` command).
+
+<details>
+<summary>Solution</summary>
+
+```bash
+> placeholder.txt
+
+# Verify:
+ls -l placeholder.txt
+-rw-r--r--. 1 user user 0 Dec 11 15:30 placeholder.txt
+```
+
+</details>
+
+### Lab 11: Clear a File's Contents
+**Task**: Create a file with some content, then clear its contents using redirection without deleting the file.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+# Create file with content:
+echo "This will be cleared" > test_clear.txt
+
+# Verify it has content:
+cat test_clear.txt
+This will be cleared
+
+# Clear it:
+> test_clear.txt
+
+# Verify it's empty:
+cat test_clear.txt
+# (no output)
+
+ls -l test_clear.txt
+-rw-r--r--. 1 user user 0 Dec 11 15:32 test_clear.txt
+```
+
+</details>
+
+### Lab 12: Build a System Info Report
+**Task**: Create a file `sysinfo.txt` that contains the output of these commands on separate lines: `hostname`, `date`, `uname -r`, and `uptime`.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+hostname > sysinfo.txt
+date >> sysinfo.txt
+uname -r >> sysinfo.txt
+uptime >> sysinfo.txt
+
+# Verify:
+cat sysinfo.txt
+vm1.example.com
+Wed Dec 11 15:35:22 EST 2025
+5.14.0-362.el9.x86_64
+ 15:35:22 up  2:15,  2 users,  load average: 0.15, 0.22, 0.18
+```
+
+</details>
+
+### Lab 13: Filter Command Output
+**Task**: Get a list of all running processes, save to `processes.txt`, then search that file for processes containing "ssh" and save results to `ssh_processes.txt`.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+ps aux > processes.txt
+grep ssh < processes.txt > ssh_processes.txt
+
+# Or combine:
+grep ssh processes.txt > ssh_processes.txt
+
+# Verify:
+cat ssh_processes.txt
+```
+
+</details>
+
+### Lab 14: Dealing with Permission Errors
+**Task**: Use `grep` to search for "centos" in all files under `/etc`, suppress errors, and save only successful matches to `matches.txt`.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+sudo grep -r "centos" /etc 2>/dev/null > matches.txt
+
+# Verify:
+head matches.txt
+```
+
+</details>
+
+### Lab 15: Create a Log File Entry
+**Task**: Append a timestamped log entry to `app.log` that says "Application started".
+
+<details>
+<summary>Solution</summary>
+
+```bash
+echo "$(date): Application started" >> app.log
+
+# Verify:
+cat app.log
+Wed Dec 11 15:40:15 EST 2025: Application started
+
+# Add more entries:
+echo "$(date): Processing data" >> app.log
+echo "$(date): Application stopped" >> app.log
+
+cat app.log
+Wed Dec 11 15:40:15 EST 2025: Application started
+Wed Dec 11 15:40:22 EST 2025: Processing data
+Wed Dec 11 15:40:28 EST 2025: Application stopped
+```
+
+</details>
+
+### Lab 16: Test Command Success Silently
+**Task**: Write a command that tests if the directory `/var/log` exists by using `ls`, but suppress all output. Then use `echo $?` to check the exit status.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+ls /var/log &>/dev/null
+echo $?
+0
+
+# Try with non-existent directory:
+ls /nonexistent &>/dev/null
+echo $?
+2
+```
+
+Exit status 0 means success (directory exists). Non-zero means failure.
+
+</details>
+
+### Lab 17: Redirect to Multiple Destinations
+**Task**: Save your current directory's detailed listing to both `list1.txt` and `list2.txt` (without using pipes for now).
+
+<details>
+<summary>Solution</summary>
+
+```bash
+ls -la > list1.txt
+ls -la > list2.txt
+
+# Verify both files:
+diff list1.txt list2.txt
+# (no output means files are identical)
+```
+
+Note: In the next post, we'll learn about `tee` which makes this easier.
+
+</details>
+
+### Lab 18: Simulating Command Logging
+**Task**: Create a simple "command log" by redirecting the output of several commands to `command_log.txt`. Include: current user, current directory, date, and list of files.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+{
+    echo "=== Command Log ==="
+    echo "User: $(whoami)"
+    echo "Directory: $(pwd)"
+    echo "Date: $(date)"
+    echo "Files:"
+    ls -l
+} > command_log.txt
+
+# Verify:
+cat command_log.txt
+```
+
+</details>
+
+### Lab 19: Error Log Analysis
+**Task**: Run the command `find /etc -type f -name "*.conf"` and save only the error messages to `find_errors.log`, while displaying the found files on screen.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+find /etc -type f -name "*.conf" 2> find_errors.log
+
+# Normal output (files found) displays on screen
+# Errors go to find_errors.log
+
+# Check errors:
+cat find_errors.log
+find: '/etc/audit': Permission denied
+find: '/etc/polkit-1/rules.d': Permission denied
+...
+```
+
+</details>
+
+### Lab 20: Advanced: Separate Logging Script
+**Task**: Create a script that runs `df -h` and `free -h`, saving normal output to `stats.log` and any errors to `stats_errors.log`, with timestamps for each command.
+
+<details>
+<summary>Solution</summary>
+
+```bash
+#!/bin/bash
+
+{
+    echo "=== Disk Usage at $(date) ==="
+    df -h
+    echo ""
+    echo "=== Memory Usage at $(date) ==="
+    free -h
+} >> stats.log 2>> stats_errors.log
+
+# Make it executable:
+chmod +x stats_script.sh
+
+# Run it:
+./stats_script.sh
+
+# Check the log:
+cat stats.log
+=== Disk Usage at Wed Dec 11 15:50:00 EST 2025 ===
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/sda1        50G   20G   28G  42% /
+
+=== Memory Usage at Wed Dec 11 15:50:00 EST 2025 ===
+              total        used        free      shared  buff/cache   available
+Mem:           7.7G        2.1G        3.2G        156M        2.4G        5.1G
+Swap:          2.0G          0B        2.0G
+```
+
+</details>
+
+## Key Takeaways
+
+1. **Three Standard Streams**: Every command has stdin (0), stdout (1), and stderr (2)
+
+2. **Output Redirection**:
+   - `>` redirects stdout and overwrites the file
+   - `>>` redirects stdout and appends to the file
+
+3. **Input Redirection**:
+   - `<` redirects stdin from a file
+
+4. **Error Redirection**:
+   - `2>` redirects stderr
+   - `2>&1` redirects stderr to stdout
+   - `&>` redirects both stdout and stderr (modern syntax)
+
+5. **The Black Hole**:
+   - `/dev/null` discards any data sent to it
+   - Use `2>/dev/null` to suppress errors
+   - Use `&>/dev/null` to suppress everything
+
+6. **Order Matters**:
+   - `command > file 2>&1` works correctly
+   - `command 2>&1 > file` doesn't work as expected
+
+7. **Append vs Overwrite**:
+   - Use `>>` for logs to avoid data loss
+   - Use `>` carefully—it erases the existing file
+
+8. **Practical Uses**:
+   - Save command output for later analysis
+   - Create automated reports and logs
+   - Suppress expected errors to reduce noise
+   - Separate error logs from normal operation logs
+   - Build reusable script outputs
+
+## What's Next?
+
+You now understand how to control where command input comes from and where output goes. In the next post, **Part 47: Using Pipes and the tee Command**, we'll learn how to:
+
+- Connect commands together with pipes (`|`)
+- Chain multiple commands to build powerful data processing pipelines
+- Use `tee` to send output to both files and the screen simultaneously
+- Combine pipes with redirection for advanced workflows
+- Build real-world system administration pipelines
+
+Pipes are one of the most powerful features of Linux, allowing you to combine simple commands into sophisticated data processing workflows. See you in the next post!
