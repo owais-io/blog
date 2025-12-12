@@ -1643,19 +1643,19 @@ sed 's|/path/to/file|/new/path|' file.txt
         <td className="border border-gray-300 px-4 py-2"><code>sed -n '/pattern/p' file.txt</code></td>
       </tr>
       <tr>
-        <td className="border border-gray-300 px-4 py-2"><code>i\</code></td>
+        <td className="border border-gray-300 px-4 py-2"><code>{`i\\`}</code></td>
         <td className="border border-gray-300 px-4 py-2">Insert before line</td>
-        <td className="border border-gray-300 px-4 py-2"><code>sed '3i\new line' file.txt</code></td>
+        <td className="border border-gray-300 px-4 py-2"><code>{`sed '3i\\new line' file.txt`}</code></td>
       </tr>
       <tr>
-        <td className="border border-gray-300 px-4 py-2"><code>a\</code></td>
+        <td className="border border-gray-300 px-4 py-2"><code>{`a\\`}</code></td>
         <td className="border border-gray-300 px-4 py-2">Append after line</td>
-        <td className="border border-gray-300 px-4 py-2"><code>sed '3a\new line' file.txt</code></td>
+        <td className="border border-gray-300 px-4 py-2"><code>{`sed '3a\\new line' file.txt`}</code></td>
       </tr>
       <tr>
-        <td className="border border-gray-300 px-4 py-2"><code>c\</code></td>
+        <td className="border border-gray-300 px-4 py-2"><code>{`c\\`}</code></td>
         <td className="border border-gray-300 px-4 py-2">Change/replace line</td>
-        <td className="border border-gray-300 px-4 py-2"><code>sed '3c\replacement' file.txt</code></td>
+        <td className="border border-gray-300 px-4 py-2"><code>{`sed '3c\\replacement' file.txt`}</code></td>
       </tr>
       <tr>
         <td className="border border-gray-300 px-4 py-2"><code>5</code></td>
