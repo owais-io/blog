@@ -793,32 +793,130 @@ rm $(echo "file.txt")
 
 ## Pipe vs Redirection: When to Use What
 
-| Goal | Use | Example |
-|------|-----|---------|
-| Save output to file | Redirection `>` | `ls > files.txt` |
-| Append to file | Redirection `>>` | `echo "log" >> log.txt` |
-| Send to another command | Pipe `\|` | `ls \| wc -l` |
-| Display AND save | tee | `ls \| tee files.txt` |
-| Chain multiple commands | Pipe `\|` | `cat file \| sort \| uniq` |
-| Discard output | Redirect to /dev/null | `command >/dev/null` |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Goal</th>
+        <th className="border border-gray-300 px-4 py-2">Use</th>
+        <th className="border border-gray-300 px-4 py-2">Example</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2">Save output to file</td>
+        <td className="border border-gray-300 px-4 py-2">Redirection <code>&gt;</code></td>
+        <td className="border border-gray-300 px-4 py-2"><code>ls &gt; files.txt</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2">Append to file</td>
+        <td className="border border-gray-300 px-4 py-2">Redirection <code>&gt;&gt;</code></td>
+        <td className="border border-gray-300 px-4 py-2"><code>echo "log" &gt;&gt; log.txt</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2">Send to another command</td>
+        <td className="border border-gray-300 px-4 py-2">Pipe <code>|</code></td>
+        <td className="border border-gray-300 px-4 py-2"><code>ls | wc -l</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2">Display AND save</td>
+        <td className="border border-gray-300 px-4 py-2">tee</td>
+        <td className="border border-gray-300 px-4 py-2"><code>ls | tee files.txt</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2">Chain multiple commands</td>
+        <td className="border border-gray-300 px-4 py-2">Pipe <code>|</code></td>
+        <td className="border border-gray-300 px-4 py-2"><code>cat file | sort | uniq</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2">Discard output</td>
+        <td className="border border-gray-300 px-4 py-2">Redirect to /dev/null</td>
+        <td className="border border-gray-300 px-4 py-2"><code>command &gt;/dev/null</code></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 ## Pipe and tee Command Cheat Sheet
 
-| Command/Pattern | Description | Example |
-|----------------|-------------|---------|
-| `cmd1 \| cmd2` | Pipe stdout of cmd1 to stdin of cmd2 | `ls \| wc -l` |
-| `cmd1 \| cmd2 \| cmd3` | Chain multiple commands | `cat file \| sort \| uniq` |
-| `cmd \| tee file` | Display and save to file | `ps aux \| tee procs.txt` |
-| `cmd \| tee -a file` | Display and append to file | `echo "log" \| tee -a log.txt` |
-| `cmd \| tee f1 f2` | Save to multiple files | `ls \| tee list1 list2` |
-| `cmd 2>&1 \| grep` | Pipe both stdout and stderr | `find / 2>&1 \| grep conf` |
-| `cmd \| head -n` | Show first n lines | `ps aux \| head -10` |
-| `cmd \| tail -n` | Show last n lines | `dmesg \| tail -20` |
-| `cmd \| grep pattern` | Filter by pattern | `ps aux \| grep ssh` |
-| `cmd \| wc -l` | Count lines | `cat file \| wc -l` |
-| `cmd \| sort` | Sort output | `cut -d: -f1 /etc/passwd \| sort` |
-| `cmd \| uniq` | Remove duplicate consecutive lines | `sort file \| uniq` |
-| `cmd \| sort \| uniq -c` | Count occurrences | `cat log \| sort \| uniq -c` |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Command/Pattern</th>
+        <th className="border border-gray-300 px-4 py-2">Description</th>
+        <th className="border border-gray-300 px-4 py-2">Example</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>cmd1 | cmd2</code></td>
+        <td className="border border-gray-300 px-4 py-2">Pipe stdout of cmd1 to stdin of cmd2</td>
+        <td className="border border-gray-300 px-4 py-2"><code>ls | wc -l</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>cmd1 | cmd2 | cmd3</code></td>
+        <td className="border border-gray-300 px-4 py-2">Chain multiple commands</td>
+        <td className="border border-gray-300 px-4 py-2"><code>cat file | sort | uniq</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>cmd | tee file</code></td>
+        <td className="border border-gray-300 px-4 py-2">Display and save to file</td>
+        <td className="border border-gray-300 px-4 py-2"><code>ps aux | tee procs.txt</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>cmd | tee -a file</code></td>
+        <td className="border border-gray-300 px-4 py-2">Display and append to file</td>
+        <td className="border border-gray-300 px-4 py-2"><code>echo "log" | tee -a log.txt</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>cmd | tee f1 f2</code></td>
+        <td className="border border-gray-300 px-4 py-2">Save to multiple files</td>
+        <td className="border border-gray-300 px-4 py-2"><code>ls | tee list1 list2</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>cmd 2&gt;&amp;1 | grep</code></td>
+        <td className="border border-gray-300 px-4 py-2">Pipe both stdout and stderr</td>
+        <td className="border border-gray-300 px-4 py-2"><code>find / 2&gt;&amp;1 | grep conf</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>cmd | head -n</code></td>
+        <td className="border border-gray-300 px-4 py-2">Show first n lines</td>
+        <td className="border border-gray-300 px-4 py-2"><code>ps aux | head -10</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>cmd | tail -n</code></td>
+        <td className="border border-gray-300 px-4 py-2">Show last n lines</td>
+        <td className="border border-gray-300 px-4 py-2"><code>dmesg | tail -20</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>cmd | grep pattern</code></td>
+        <td className="border border-gray-300 px-4 py-2">Filter by pattern</td>
+        <td className="border border-gray-300 px-4 py-2"><code>ps aux | grep ssh</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>cmd | wc -l</code></td>
+        <td className="border border-gray-300 px-4 py-2">Count lines</td>
+        <td className="border border-gray-300 px-4 py-2"><code>cat file | wc -l</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>cmd | sort</code></td>
+        <td className="border border-gray-300 px-4 py-2">Sort output</td>
+        <td className="border border-gray-300 px-4 py-2"><code>cut -d: -f1 /etc/passwd | sort</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>cmd | uniq</code></td>
+        <td className="border border-gray-300 px-4 py-2">Remove duplicate consecutive lines</td>
+        <td className="border border-gray-300 px-4 py-2"><code>sort file | uniq</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>cmd | sort | uniq -c</code></td>
+        <td className="border border-gray-300 px-4 py-2">Count occurrences</td>
+        <td className="border border-gray-300 px-4 py-2"><code>cat log | sort | uniq -c</code></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 ## Practice Labs
 

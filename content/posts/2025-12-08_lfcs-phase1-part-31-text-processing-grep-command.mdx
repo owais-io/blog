@@ -440,21 +440,84 @@ $ ps aux | grep python | grep -v grep
 
 ## Common grep Options Summary
 
-| Option | Description | Example |
-|--------|-------------|---------|
-| `-i` | Case-insensitive | `grep -i error log.txt` |
-| `-v` | Invert match (exclude) | `grep -v comment config.txt` |
-| `-l` | List filenames only | `grep -l pattern *.txt` |
-| `-n` | Show line numbers | `grep -n TODO code.py` |
-| `-c` | Count matches | `grep -c error log.txt` |
-| `-r` | Recursive search | `grep -r pattern /path/` |
-| `-A N` | Show N lines after | `grep -A5 error log.txt` |
-| `-B N` | Show N lines before | `grep -B5 error log.txt` |
-| `-C N` | Show N lines around | `grep -C3 error log.txt` |
-| `-w` | Match whole words | `grep -w cat animals.txt` |
-| `-x` | Match whole lines | `grep -x "exact line" file.txt` |
-| `-E` | Extended regex | `grep -E "cat|dog" file.txt` |
-| `-o` | Show only matched part | `grep -o "[0-9]*" file.txt` |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Option</th>
+        <th className="border border-gray-300 px-4 py-2">Description</th>
+        <th className="border border-gray-300 px-4 py-2">Example</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-i</code></td>
+        <td className="border border-gray-300 px-4 py-2">Case-insensitive</td>
+        <td className="border border-gray-300 px-4 py-2"><code>grep -i error log.txt</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-v</code></td>
+        <td className="border border-gray-300 px-4 py-2">Invert match (exclude)</td>
+        <td className="border border-gray-300 px-4 py-2"><code>grep -v comment config.txt</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-l</code></td>
+        <td className="border border-gray-300 px-4 py-2">List filenames only</td>
+        <td className="border border-gray-300 px-4 py-2"><code>grep -l pattern *.txt</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-n</code></td>
+        <td className="border border-gray-300 px-4 py-2">Show line numbers</td>
+        <td className="border border-gray-300 px-4 py-2"><code>grep -n TODO code.py</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-c</code></td>
+        <td className="border border-gray-300 px-4 py-2">Count matches</td>
+        <td className="border border-gray-300 px-4 py-2"><code>grep -c error log.txt</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-r</code></td>
+        <td className="border border-gray-300 px-4 py-2">Recursive search</td>
+        <td className="border border-gray-300 px-4 py-2"><code>grep -r pattern /path/</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-A N</code></td>
+        <td className="border border-gray-300 px-4 py-2">Show N lines after</td>
+        <td className="border border-gray-300 px-4 py-2"><code>grep -A5 error log.txt</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-B N</code></td>
+        <td className="border border-gray-300 px-4 py-2">Show N lines before</td>
+        <td className="border border-gray-300 px-4 py-2"><code>grep -B5 error log.txt</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-C N</code></td>
+        <td className="border border-gray-300 px-4 py-2">Show N lines around</td>
+        <td className="border border-gray-300 px-4 py-2"><code>grep -C3 error log.txt</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-w</code></td>
+        <td className="border border-gray-300 px-4 py-2">Match whole words</td>
+        <td className="border border-gray-300 px-4 py-2"><code>grep -w cat animals.txt</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-x</code></td>
+        <td className="border border-gray-300 px-4 py-2">Match whole lines</td>
+        <td className="border border-gray-300 px-4 py-2"><code>grep -x "exact line" file.txt</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-E</code></td>
+        <td className="border border-gray-300 px-4 py-2">Extended regex</td>
+        <td className="border border-gray-300 px-4 py-2"><code>grep -E "cat|dog" file.txt</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-o</code></td>
+        <td className="border border-gray-300 px-4 py-2">Show only matched part</td>
+        <td className="border border-gray-300 px-4 py-2"><code>grep -o "[0-9]*" file.txt</code></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 ---
 

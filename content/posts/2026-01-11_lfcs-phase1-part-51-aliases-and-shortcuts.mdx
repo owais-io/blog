@@ -484,14 +484,49 @@ Keyboard shortcuts are just as important as aliases for productivity. Here are t
 
 **Move the cursor**:
 
-| Shortcut | Action | Example Use |
-|----------|--------|-------------|
-| `Ctrl-A` | Jump to **beginning** of line | Fix command prefix |
-| `Ctrl-E` | Jump to **end** of line | Add argument at end |
-| `Ctrl-B` | Move **backward** one character | Same as ← arrow |
-| `Ctrl-F` | Move **forward** one character | Same as → arrow |
-| `Alt-B` | Move **backward** one word | Jump between words |
-| `Alt-F` | Move **forward** one word | Jump between words |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Shortcut</th>
+        <th className="border border-gray-300 px-4 py-2">Action</th>
+        <th className="border border-gray-300 px-4 py-2">Example Use</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Ctrl-A</code></td>
+        <td className="border border-gray-300 px-4 py-2">Jump to <strong>beginning</strong> of line</td>
+        <td className="border border-gray-300 px-4 py-2">Fix command prefix</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Ctrl-E</code></td>
+        <td className="border border-gray-300 px-4 py-2">Jump to <strong>end</strong> of line</td>
+        <td className="border border-gray-300 px-4 py-2">Add argument at end</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Ctrl-B</code></td>
+        <td className="border border-gray-300 px-4 py-2">Move <strong>backward</strong> one character</td>
+        <td className="border border-gray-300 px-4 py-2">Same as ← arrow</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Ctrl-F</code></td>
+        <td className="border border-gray-300 px-4 py-2">Move <strong>forward</strong> one character</td>
+        <td className="border border-gray-300 px-4 py-2">Same as → arrow</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Alt-B</code></td>
+        <td className="border border-gray-300 px-4 py-2">Move <strong>backward</strong> one word</td>
+        <td className="border border-gray-300 px-4 py-2">Jump between words</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Alt-F</code></td>
+        <td className="border border-gray-300 px-4 py-2">Move <strong>forward</strong> one word</td>
+        <td className="border border-gray-300 px-4 py-2">Jump between words</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 **Examples**:
 ```bash
@@ -511,15 +546,54 @@ ls /var/log/|
 
 **Modify the command line**:
 
-| Shortcut | Action | Example Use |
-|----------|--------|-------------|
-| `Ctrl-U` | Delete from cursor to **beginning** of line | Clear command prefix |
-| `Ctrl-K` | Delete from cursor to **end** of line | Clear command suffix |
-| `Ctrl-W` | Delete **word** before cursor | Remove last argument |
-| `Alt-D` | Delete **word** after cursor | Remove next word |
-| `Ctrl-D` | Delete character **under** cursor | Remove single char |
-| `Ctrl-H` | Delete character **before** cursor | Same as Backspace |
-| `Ctrl-Y` | **Paste** (yank) previously deleted text | Restore deleted text |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Shortcut</th>
+        <th className="border border-gray-300 px-4 py-2">Action</th>
+        <th className="border border-gray-300 px-4 py-2">Example Use</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Ctrl-U</code></td>
+        <td className="border border-gray-300 px-4 py-2">Delete from cursor to <strong>beginning</strong> of line</td>
+        <td className="border border-gray-300 px-4 py-2">Clear command prefix</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Ctrl-K</code></td>
+        <td className="border border-gray-300 px-4 py-2">Delete from cursor to <strong>end</strong> of line</td>
+        <td className="border border-gray-300 px-4 py-2">Clear command suffix</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Ctrl-W</code></td>
+        <td className="border border-gray-300 px-4 py-2">Delete <strong>word</strong> before cursor</td>
+        <td className="border border-gray-300 px-4 py-2">Remove last argument</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Alt-D</code></td>
+        <td className="border border-gray-300 px-4 py-2">Delete <strong>word</strong> after cursor</td>
+        <td className="border border-gray-300 px-4 py-2">Remove next word</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Ctrl-D</code></td>
+        <td className="border border-gray-300 px-4 py-2">Delete character <strong>under</strong> cursor</td>
+        <td className="border border-gray-300 px-4 py-2">Remove single char</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Ctrl-H</code></td>
+        <td className="border border-gray-300 px-4 py-2">Delete character <strong>before</strong> cursor</td>
+        <td className="border border-gray-300 px-4 py-2">Same as Backspace</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Ctrl-Y</code></td>
+        <td className="border border-gray-300 px-4 py-2"><strong>Paste</strong> (yank) previously deleted text</td>
+        <td className="border border-gray-300 px-4 py-2">Restore deleted text</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 **Examples**:
 ```bash
@@ -543,14 +617,49 @@ sudo apt install |
 
 **Control terminal behavior**:
 
-| Shortcut | Action | Example Use |
-|----------|--------|-------------|
-| `Ctrl-L` | **Clear** screen | Quick cleanup |
-| `Ctrl-C` | **Interrupt** (kill) current process | Stop running command |
-| `Ctrl-Z` | **Suspend** current process | Pause process |
-| `Ctrl-D` | **EOF** (End of File) or logout | Exit shell |
-| `Ctrl-S` | **Freeze** terminal output | Pause scrolling |
-| `Ctrl-Q` | **Unfreeze** terminal output | Resume scrolling |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Shortcut</th>
+        <th className="border border-gray-300 px-4 py-2">Action</th>
+        <th className="border border-gray-300 px-4 py-2">Example Use</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Ctrl-L</code></td>
+        <td className="border border-gray-300 px-4 py-2"><strong>Clear</strong> screen</td>
+        <td className="border border-gray-300 px-4 py-2">Quick cleanup</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Ctrl-C</code></td>
+        <td className="border border-gray-300 px-4 py-2"><strong>Interrupt</strong> (kill) current process</td>
+        <td className="border border-gray-300 px-4 py-2">Stop running command</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Ctrl-Z</code></td>
+        <td className="border border-gray-300 px-4 py-2"><strong>Suspend</strong> current process</td>
+        <td className="border border-gray-300 px-4 py-2">Pause process</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Ctrl-D</code></td>
+        <td className="border border-gray-300 px-4 py-2"><strong>EOF</strong> (End of File) or logout</td>
+        <td className="border border-gray-300 px-4 py-2">Exit shell</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Ctrl-S</code></td>
+        <td className="border border-gray-300 px-4 py-2"><strong>Freeze</strong> terminal output</td>
+        <td className="border border-gray-300 px-4 py-2">Pause scrolling</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Ctrl-Q</code></td>
+        <td className="border border-gray-300 px-4 py-2"><strong>Unfreeze</strong> terminal output</td>
+        <td className="border border-gray-300 px-4 py-2">Resume scrolling</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 **Examples**:
 ```bash
@@ -575,23 +684,85 @@ vim largefile.txt
 
 **Navigate command history** (covered in detail in Post 48):
 
-| Shortcut | Action | Example Use |
-|----------|--------|-------------|
-| `Ctrl-R` | **Reverse search** history | Find previous command |
-| `Ctrl-G` | **Cancel** reverse search | Exit search |
-| `↑` | **Previous** command | Navigate history |
-| `↓` | **Next** command | Navigate history |
-| `Alt-.` | Insert **last argument** of previous command | Reuse argument |
-| `!!` | Repeat **last** command | Rerun command |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Shortcut</th>
+        <th className="border border-gray-300 px-4 py-2">Action</th>
+        <th className="border border-gray-300 px-4 py-2">Example Use</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Ctrl-R</code></td>
+        <td className="border border-gray-300 px-4 py-2"><strong>Reverse search</strong> history</td>
+        <td className="border border-gray-300 px-4 py-2">Find previous command</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Ctrl-G</code></td>
+        <td className="border border-gray-300 px-4 py-2"><strong>Cancel</strong> reverse search</td>
+        <td className="border border-gray-300 px-4 py-2">Exit search</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>↑</code></td>
+        <td className="border border-gray-300 px-4 py-2"><strong>Previous</strong> command</td>
+        <td className="border border-gray-300 px-4 py-2">Navigate history</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>↓</code></td>
+        <td className="border border-gray-300 px-4 py-2"><strong>Next</strong> command</td>
+        <td className="border border-gray-300 px-4 py-2">Navigate history</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Alt-.</code></td>
+        <td className="border border-gray-300 px-4 py-2">Insert <strong>last argument</strong> of previous command</td>
+        <td className="border border-gray-300 px-4 py-2">Reuse argument</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>!!</code></td>
+        <td className="border border-gray-300 px-4 py-2">Repeat <strong>last</strong> command</td>
+        <td className="border border-gray-300 px-4 py-2">Rerun command</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 ### Command Execution Shortcuts
 
-| Shortcut | Action | Example Use |
-|----------|--------|-------------|
-| `Ctrl-O` | Execute command and keep it in prompt | Run and edit |
-| `Alt-#` | Comment out current line | Save for later |
-| `!!` | Execute last command | Quick rerun |
-| `!$` | Last argument of previous command | Reuse argument |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Shortcut</th>
+        <th className="border border-gray-300 px-4 py-2">Action</th>
+        <th className="border border-gray-300 px-4 py-2">Example Use</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Ctrl-O</code></td>
+        <td className="border border-gray-300 px-4 py-2">Execute command and keep it in prompt</td>
+        <td className="border border-gray-300 px-4 py-2">Run and edit</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Alt-#</code></td>
+        <td className="border border-gray-300 px-4 py-2">Comment out current line</td>
+        <td className="border border-gray-300 px-4 py-2">Save for later</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>!!</code></td>
+        <td className="border border-gray-300 px-4 py-2">Execute last command</td>
+        <td className="border border-gray-300 px-4 py-2">Quick rerun</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>!$</code></td>
+        <td className="border border-gray-300 px-4 py-2">Last argument of previous command</td>
+        <td className="border border-gray-300 px-4 py-2">Reuse argument</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 ## Combining Aliases and Shortcuts
 
@@ -897,58 +1068,206 @@ alias myls='ls --color=auto'
 
 ### Navigation
 
-| Shortcut | Action |
-|----------|--------|
-| `Ctrl-A` | Beginning of line |
-| `Ctrl-E` | End of line |
-| `Ctrl-B` | Back one character |
-| `Ctrl-F` | Forward one character |
-| `Alt-B` | Back one word |
-| `Alt-F` | Forward one word |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Shortcut</th>
+        <th className="border border-gray-300 px-4 py-2">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Ctrl-A</code></td>
+        <td className="border border-gray-300 px-4 py-2">Beginning of line</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Ctrl-E</code></td>
+        <td className="border border-gray-300 px-4 py-2">End of line</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Ctrl-B</code></td>
+        <td className="border border-gray-300 px-4 py-2">Back one character</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Ctrl-F</code></td>
+        <td className="border border-gray-300 px-4 py-2">Forward one character</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Alt-B</code></td>
+        <td className="border border-gray-300 px-4 py-2">Back one word</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Alt-F</code></td>
+        <td className="border border-gray-300 px-4 py-2">Forward one word</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 ### Editing
 
-| Shortcut | Action |
-|----------|--------|
-| `Ctrl-U` | Delete to beginning |
-| `Ctrl-K` | Delete to end |
-| `Ctrl-W` | Delete word before cursor |
-| `Alt-D` | Delete word after cursor |
-| `Ctrl-Y` | Paste deleted text |
-| `Ctrl-D` | Delete character |
-| `Ctrl-H` | Backspace |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Shortcut</th>
+        <th className="border border-gray-300 px-4 py-2">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Ctrl-U</code></td>
+        <td className="border border-gray-300 px-4 py-2">Delete to beginning</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Ctrl-K</code></td>
+        <td className="border border-gray-300 px-4 py-2">Delete to end</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Ctrl-W</code></td>
+        <td className="border border-gray-300 px-4 py-2">Delete word before cursor</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Alt-D</code></td>
+        <td className="border border-gray-300 px-4 py-2">Delete word after cursor</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Ctrl-Y</code></td>
+        <td className="border border-gray-300 px-4 py-2">Paste deleted text</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Ctrl-D</code></td>
+        <td className="border border-gray-300 px-4 py-2">Delete character</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Ctrl-H</code></td>
+        <td className="border border-gray-300 px-4 py-2">Backspace</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 ### Control
 
-| Shortcut | Action |
-|----------|--------|
-| `Ctrl-L` | Clear screen |
-| `Ctrl-C` | Interrupt process |
-| `Ctrl-Z` | Suspend process |
-| `Ctrl-D` | EOF/logout |
-| `Ctrl-S` | Freeze output |
-| `Ctrl-Q` | Unfreeze output |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Shortcut</th>
+        <th className="border border-gray-300 px-4 py-2">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Ctrl-L</code></td>
+        <td className="border border-gray-300 px-4 py-2">Clear screen</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Ctrl-C</code></td>
+        <td className="border border-gray-300 px-4 py-2">Interrupt process</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Ctrl-Z</code></td>
+        <td className="border border-gray-300 px-4 py-2">Suspend process</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Ctrl-D</code></td>
+        <td className="border border-gray-300 px-4 py-2">EOF/logout</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Ctrl-S</code></td>
+        <td className="border border-gray-300 px-4 py-2">Freeze output</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Ctrl-Q</code></td>
+        <td className="border border-gray-300 px-4 py-2">Unfreeze output</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 ### History
 
-| Shortcut | Action |
-|----------|--------|
-| `Ctrl-R` | Reverse search |
-| `↑` | Previous command |
-| `↓` | Next command |
-| `Alt-.` | Last argument |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Shortcut</th>
+        <th className="border border-gray-300 px-4 py-2">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Ctrl-R</code></td>
+        <td className="border border-gray-300 px-4 py-2">Reverse search</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>↑</code></td>
+        <td className="border border-gray-300 px-4 py-2">Previous command</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>↓</code></td>
+        <td className="border border-gray-300 px-4 py-2">Next command</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Alt-.</code></td>
+        <td className="border border-gray-300 px-4 py-2">Last argument</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 ## Alias Command Reference
 
-| Command | Description | Example |
-|---------|-------------|---------|
-| `alias name='command'` | Create alias | `alias ll='ls -la'` |
-| `alias` | List all aliases | `alias` |
-| `alias name` | Show specific alias | `alias ll` |
-| `unalias name` | Remove alias | `unalias ll` |
-| `unalias -a` | Remove all aliases | `unalias -a` |
-| `\command` | Bypass alias | `\ls` |
-| `type name` | Check what name is | `type ll` |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Command</th>
+        <th className="border border-gray-300 px-4 py-2">Description</th>
+        <th className="border border-gray-300 px-4 py-2">Example</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>alias name='command'</code></td>
+        <td className="border border-gray-300 px-4 py-2">Create alias</td>
+        <td className="border border-gray-300 px-4 py-2"><code>alias ll='ls -la'</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>alias</code></td>
+        <td className="border border-gray-300 px-4 py-2">List all aliases</td>
+        <td className="border border-gray-300 px-4 py-2"><code>alias</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>alias name</code></td>
+        <td className="border border-gray-300 px-4 py-2">Show specific alias</td>
+        <td className="border border-gray-300 px-4 py-2"><code>alias ll</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>unalias name</code></td>
+        <td className="border border-gray-300 px-4 py-2">Remove alias</td>
+        <td className="border border-gray-300 px-4 py-2"><code>unalias ll</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>unalias -a</code></td>
+        <td className="border border-gray-300 px-4 py-2">Remove all aliases</td>
+        <td className="border border-gray-300 px-4 py-2"><code>unalias -a</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>\command</code></td>
+        <td className="border border-gray-300 px-4 py-2">Bypass alias</td>
+        <td className="border border-gray-300 px-4 py-2"><code>\ls</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>type name</code></td>
+        <td className="border border-gray-300 px-4 py-2">Check what name is</td>
+        <td className="border border-gray-300 px-4 py-2"><code>type ll</code></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 ## Practice Labs
 

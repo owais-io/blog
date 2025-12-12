@@ -1554,50 +1554,195 @@ getfacl /tmp/troubleshoot/mystery.txt
 
 ## Quick Reference: ACL Commands
 
-| Command | Description | Example |
-|---------|-------------|---------|
-| `getfacl FILE` | View ACLs | `getfacl data.txt` |
-| `setfacl -m u:USER:PERMS FILE` | Grant user permissions | `setfacl -m u:bob:rw file.txt` |
-| `setfacl -m g:GROUP:PERMS FILE` | Grant group permissions | `setfacl -m g:dev:rwx dir/` |
-| `setfacl -x u:USER FILE` | Remove user ACL | `setfacl -x u:bob file.txt` |
-| `setfacl -b FILE` | Remove all ACLs | `setfacl -b file.txt` |
-| `setfacl -m d:u:USER:PERMS DIR` | Set default ACL | `setfacl -m d:u:bob:rw dir/` |
-| `setfacl -R -m u:USER:PERMS DIR` | Recursive ACL | `setfacl -R -m u:bob:rx /data` |
-| `setfacl -m m::PERMS FILE` | Set mask | `setfacl -m m::r file.txt` |
-| `getfacl -R dir > acls.txt` | Backup ACLs | `getfacl -R /project > backup.txt` |
-| `setfacl --restore=acls.txt` | Restore ACLs | `setfacl --restore=backup.txt` |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Command</th>
+        <th className="border border-gray-300 px-4 py-2">Description</th>
+        <th className="border border-gray-300 px-4 py-2">Example</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>getfacl FILE</code></td>
+        <td className="border border-gray-300 px-4 py-2">View ACLs</td>
+        <td className="border border-gray-300 px-4 py-2"><code>getfacl data.txt</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>setfacl -m u:USER:PERMS FILE</code></td>
+        <td className="border border-gray-300 px-4 py-2">Grant user permissions</td>
+        <td className="border border-gray-300 px-4 py-2"><code>setfacl -m u:bob:rw file.txt</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>setfacl -m g:GROUP:PERMS FILE</code></td>
+        <td className="border border-gray-300 px-4 py-2">Grant group permissions</td>
+        <td className="border border-gray-300 px-4 py-2"><code>setfacl -m g:dev:rwx dir/</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>setfacl -x u:USER FILE</code></td>
+        <td className="border border-gray-300 px-4 py-2">Remove user ACL</td>
+        <td className="border border-gray-300 px-4 py-2"><code>setfacl -x u:bob file.txt</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>setfacl -b FILE</code></td>
+        <td className="border border-gray-300 px-4 py-2">Remove all ACLs</td>
+        <td className="border border-gray-300 px-4 py-2"><code>setfacl -b file.txt</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>setfacl -m d:u:USER:PERMS DIR</code></td>
+        <td className="border border-gray-300 px-4 py-2">Set default ACL</td>
+        <td className="border border-gray-300 px-4 py-2"><code>setfacl -m d:u:bob:rw dir/</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>setfacl -R -m u:USER:PERMS DIR</code></td>
+        <td className="border border-gray-300 px-4 py-2">Recursive ACL</td>
+        <td className="border border-gray-300 px-4 py-2"><code>setfacl -R -m u:bob:rx /data</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>setfacl -m m::PERMS FILE</code></td>
+        <td className="border border-gray-300 px-4 py-2">Set mask</td>
+        <td className="border border-gray-300 px-4 py-2"><code>setfacl -m m::r file.txt</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>getfacl -R dir &gt; acls.txt</code></td>
+        <td className="border border-gray-300 px-4 py-2">Backup ACLs</td>
+        <td className="border border-gray-300 px-4 py-2"><code>getfacl -R /project &gt; backup.txt</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>setfacl --restore=acls.txt</code></td>
+        <td className="border border-gray-300 px-4 py-2">Restore ACLs</td>
+        <td className="border border-gray-300 px-4 py-2"><code>setfacl --restore=backup.txt</code></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 ---
 
 ## Quick Reference: File Attribute Commands
 
-| Command | Description | Example |
-|---------|-------------|---------|
-| `lsattr FILE` | View attributes | `lsattr important.txt` |
-| `lsattr -d DIR` | View directory attributes | `lsattr -d /project` |
-| `lsattr -a` | Include hidden files | `lsattr -a` |
-| `sudo chattr +i FILE` | Make immutable | `sudo chattr +i config.txt` |
-| `sudo chattr -i FILE` | Remove immutable | `sudo chattr -i config.txt` |
-| `sudo chattr +a FILE` | Make append-only | `sudo chattr +a app.log` |
-| `sudo chattr -a FILE` | Remove append-only | `sudo chattr -a app.log` |
-| `sudo chattr -R +i DIR` | Recursive immutable | `sudo chattr -R +i /backup` |
-| `sudo chattr +A FILE` | No atime updates | `sudo chattr +A bigfile.dat` |
-| `sudo chattr +S FILE` | Synchronous writes | `sudo chattr +S critical.db` |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Command</th>
+        <th className="border border-gray-300 px-4 py-2">Description</th>
+        <th className="border border-gray-300 px-4 py-2">Example</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>lsattr FILE</code></td>
+        <td className="border border-gray-300 px-4 py-2">View attributes</td>
+        <td className="border border-gray-300 px-4 py-2"><code>lsattr important.txt</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>lsattr -d DIR</code></td>
+        <td className="border border-gray-300 px-4 py-2">View directory attributes</td>
+        <td className="border border-gray-300 px-4 py-2"><code>lsattr -d /project</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>lsattr -a</code></td>
+        <td className="border border-gray-300 px-4 py-2">Include hidden files</td>
+        <td className="border border-gray-300 px-4 py-2"><code>lsattr -a</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>sudo chattr +i FILE</code></td>
+        <td className="border border-gray-300 px-4 py-2">Make immutable</td>
+        <td className="border border-gray-300 px-4 py-2"><code>sudo chattr +i config.txt</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>sudo chattr -i FILE</code></td>
+        <td className="border border-gray-300 px-4 py-2">Remove immutable</td>
+        <td className="border border-gray-300 px-4 py-2"><code>sudo chattr -i config.txt</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>sudo chattr +a FILE</code></td>
+        <td className="border border-gray-300 px-4 py-2">Make append-only</td>
+        <td className="border border-gray-300 px-4 py-2"><code>sudo chattr +a app.log</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>sudo chattr -a FILE</code></td>
+        <td className="border border-gray-300 px-4 py-2">Remove append-only</td>
+        <td className="border border-gray-300 px-4 py-2"><code>sudo chattr -a app.log</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>sudo chattr -R +i DIR</code></td>
+        <td className="border border-gray-300 px-4 py-2">Recursive immutable</td>
+        <td className="border border-gray-300 px-4 py-2"><code>sudo chattr -R +i /backup</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>sudo chattr +A FILE</code></td>
+        <td className="border border-gray-300 px-4 py-2">No atime updates</td>
+        <td className="border border-gray-300 px-4 py-2"><code>sudo chattr +A bigfile.dat</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>sudo chattr +S FILE</code></td>
+        <td className="border border-gray-300 px-4 py-2">Synchronous writes</td>
+        <td className="border border-gray-300 px-4 py-2"><code>sudo chattr +S critical.db</code></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 ---
 
 ## Common Attribute Flags
 
-| Flag | Meaning | Effect |
-|------|---------|--------|
-| `i` | Immutable | Cannot modify, delete, rename, or link |
-| `a` | Append-only | Can only append data, can't modify existing |
-| `A` | No atime | Don't update access time (performance) |
-| `S` | Synchronous | Changes written immediately to disk |
-| `s` | Secure delete | Zeros data blocks on deletion |
-| `u` | Undeletable | Can be recovered after deletion |
-| `c` | Compressed | Automatically compressed (if supported) |
-| `e` | Extent format | Uses extents (ext4 default) |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Flag</th>
+        <th className="border border-gray-300 px-4 py-2">Meaning</th>
+        <th className="border border-gray-300 px-4 py-2">Effect</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>i</code></td>
+        <td className="border border-gray-300 px-4 py-2">Immutable</td>
+        <td className="border border-gray-300 px-4 py-2">Cannot modify, delete, rename, or link</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>a</code></td>
+        <td className="border border-gray-300 px-4 py-2">Append-only</td>
+        <td className="border border-gray-300 px-4 py-2">Can only append data, can't modify existing</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>A</code></td>
+        <td className="border border-gray-300 px-4 py-2">No atime</td>
+        <td className="border border-gray-300 px-4 py-2">Don't update access time (performance)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>S</code></td>
+        <td className="border border-gray-300 px-4 py-2">Synchronous</td>
+        <td className="border border-gray-300 px-4 py-2">Changes written immediately to disk</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>s</code></td>
+        <td className="border border-gray-300 px-4 py-2">Secure delete</td>
+        <td className="border border-gray-300 px-4 py-2">Zeros data blocks on deletion</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>u</code></td>
+        <td className="border border-gray-300 px-4 py-2">Undeletable</td>
+        <td className="border border-gray-300 px-4 py-2">Can be recovered after deletion</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>c</code></td>
+        <td className="border border-gray-300 px-4 py-2">Compressed</td>
+        <td className="border border-gray-300 px-4 py-2">Automatically compressed (if supported)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>e</code></td>
+        <td className="border border-gray-300 px-4 py-2">Extent format</td>
+        <td className="border border-gray-300 px-4 py-2">Uses extents (ext4 default)</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 ---
 

@@ -731,14 +731,42 @@ ls *.tx[Tab]
 
 ## Common Tab Completion Shortcuts
 
-| Keys | Action |
-|------|--------|
-| `Tab` | Complete or show matches (once) |
-| `Tab Tab` | Show all matches |
-| `Esc Tab` | Same as Tab Tab (alternative) |
-| `Alt-?` | Show possible completions |
-| `Alt-*` | Insert all possible completions |
-| `Ctrl-x /` | List possible filename completions |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Keys</th>
+        <th className="border border-gray-300 px-4 py-2">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Tab</code></td>
+        <td className="border border-gray-300 px-4 py-2">Complete or show matches (once)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Tab Tab</code></td>
+        <td className="border border-gray-300 px-4 py-2">Show all matches</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Esc Tab</code></td>
+        <td className="border border-gray-300 px-4 py-2">Same as Tab Tab (alternative)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Alt-?</code></td>
+        <td className="border border-gray-300 px-4 py-2">Show possible completions</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Alt-*</code></td>
+        <td className="border border-gray-300 px-4 py-2">Insert all possible completions</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Ctrl-x /</code></td>
+        <td className="border border-gray-300 px-4 py-2">List possible filename completions</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 ## Best Practices for Tab Completion
 
@@ -857,17 +885,54 @@ set completion-ignore-case on
 
 ## Tab Completion Command Reference
 
-| Command/Setting | Description |
-|----------------|-------------|
-| `Tab` | Attempt to complete current word |
-| `Tab Tab` | Show all possible completions |
-| `complete -p` | Show all completion settings |
-| `complete -r command` | Remove completion for command |
-| `compgen -c` | List all available commands |
-| `compgen -d` | List directories |
-| `compgen -f` | List files |
-| `compgen -v` | List variables |
-| `bind -p` | Show all readline keybindings |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Command/Setting</th>
+        <th className="border border-gray-300 px-4 py-2">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Tab</code></td>
+        <td className="border border-gray-300 px-4 py-2">Attempt to complete current word</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Tab Tab</code></td>
+        <td className="border border-gray-300 px-4 py-2">Show all possible completions</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>complete -p</code></td>
+        <td className="border border-gray-300 px-4 py-2">Show all completion settings</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>complete -r command</code></td>
+        <td className="border border-gray-300 px-4 py-2">Remove completion for command</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>compgen -c</code></td>
+        <td className="border border-gray-300 px-4 py-2">List all available commands</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>compgen -d</code></td>
+        <td className="border border-gray-300 px-4 py-2">List directories</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>compgen -f</code></td>
+        <td className="border border-gray-300 px-4 py-2">List files</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>compgen -v</code></td>
+        <td className="border border-gray-300 px-4 py-2">List variables</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>bind -p</code></td>
+        <td className="border border-gray-300 px-4 py-2">Show all readline keybindings</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 ## Practice Labs
 

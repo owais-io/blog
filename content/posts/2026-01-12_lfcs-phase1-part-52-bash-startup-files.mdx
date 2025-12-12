@@ -1435,10 +1435,12 @@ Let's practice everything we've learned with hands-on labs!
 
 ### Warm-up Labs
 
-<details>
-<summary><strong>Lab 1: Check if your current shell is a login shell</strong></summary>
+### Lab 1: Check if your current shell is a login shell
 
 **Task**: Determine if your current shell is a login or non-login shell using two different methods.
+
+<details>
+<summary>Solution</summary>
 
 **Solution**:
 
@@ -1464,10 +1466,12 @@ shopt | grep login_shell
 - New terminal windows typically show non-login shell
 </details>
 
-<details>
-<summary><strong>Lab 2: View your current .bashrc file</strong></summary>
+### Lab 2: View your current .bashrc file
 
 **Task**: Display the contents of your `~/.bashrc` file and count how many lines it contains.
+
+<details>
+<summary>Solution</summary>
 
 **Solution**:
 
@@ -1491,10 +1495,12 @@ grep alias ~/.bashrc
 **Expected output**: Shows your current bash configuration
 </details>
 
-<details>
-<summary><strong>Lab 3: List all currently defined aliases</strong></summary>
+### Lab 3: List all currently defined aliases
 
 **Task**: Display all aliases currently active in your shell.
+
+<details>
+<summary>Solution</summary>
 
 **Solution**:
 
@@ -1515,10 +1521,12 @@ alias ll 2>/dev/null || echo "Alias 'll' not defined"
 **Expected output**: List of all current aliases
 </details>
 
-<details>
-<summary><strong>Lab 4: Create a temporary alias and test it</strong></summary>
+### Lab 4: Create a temporary alias and test it
 
 **Task**: Create an alias called `mydate` that shows the current date in YYYY-MM-DD format. Verify it works, then verify it disappears in a new shell.
+
+<details>
+<summary>Solution</summary>
 
 **Solution**:
 
@@ -1551,10 +1559,12 @@ mydate
 **Learning**: Temporary aliases only exist in the current shell
 </details>
 
-<details>
-<summary><strong>Lab 5: View the /etc/profile file</strong></summary>
+### Lab 5: View the /etc/profile file
 
 **Task**: Examine the system-wide login initialization file.
+
+<details>
+<summary>Solution</summary>
 
 **Solution**:
 
@@ -1580,10 +1590,12 @@ ls -l /etc/profile
 
 ### Core Practice Labs
 
-<details>
-<summary><strong>Lab 6: Add a permanent alias to .bashrc</strong></summary>
+### Lab 6: Add a permanent alias to .bashrc
 
 **Task**: Create an alias `ll` that shows a long listing with human-readable sizes and colors, make it permanent, and reload your configuration.
+
+<details>
+<summary>Solution</summary>
 
 **Solution**:
 
@@ -1612,10 +1624,12 @@ exit
 **Verification**: The `ll` alias works in new shells
 </details>
 
-<details>
-<summary><strong>Lab 7: Create a shell function to create and enter directories</strong></summary>
+### Lab 7: Create a shell function to create and enter directories
 
 **Task**: Create a function called `mkcd` that creates a directory and immediately changes into it. Make it permanent in `.bashrc`.
+
+<details>
+<summary>Solution</summary>
 
 **Solution**:
 
@@ -1652,10 +1666,12 @@ exit
 **Verification**: Function works in new shells
 </details>
 
-<details>
-<summary><strong>Lab 8: Add a directory to your PATH</strong></summary>
+### Lab 8: Add a directory to your PATH
 
 **Task**: Create a `~/bin` directory, add it to your PATH in `.bash_profile`, and verify scripts there can be executed from anywhere.
+
+<details>
+<summary>Solution</summary>
 
 **Solution**:
 
@@ -1698,10 +1714,12 @@ exit
 **Verification**: Script runs from any directory
 </details>
 
-<details>
-<summary><strong>Lab 9: Customize your command prompt</strong></summary>
+### Lab 9: Customize your command prompt
 
 **Task**: Change your prompt to show username, hostname, and current directory in color.
+
+<details>
+<summary>Solution</summary>
 
 **Solution**:
 
@@ -1731,10 +1749,12 @@ export PS1='\[\033[01;31m\]\u\[\033[00m\]@\[\033[01;32m\]\h\[\033[00m\]:\[\033[0
 **Verification**: Prompt shows in color with user@host:path$
 </details>
 
-<details>
-<summary><strong>Lab 10: Set your default editor</strong></summary>
+### Lab 10: Set your default editor
 
 **Task**: Set vim as your default editor for all applications using the EDITOR and VISUAL environment variables.
+
+<details>
+<summary>Solution</summary>
 
 **Solution**:
 
@@ -1771,10 +1791,12 @@ exit
 **Verification**: Applications use vim as editor
 </details>
 
-<details>
-<summary><strong>Lab 11: Configure history settings</strong></summary>
+### Lab 11: Configure history settings
 
 **Task**: Increase history size to 10,000 commands, add timestamps, and configure to ignore duplicates.
+
+<details>
+<summary>Solution</summary>
 
 **Solution**:
 
@@ -1818,10 +1840,12 @@ history | tail -5
 **Verification**: History shows timestamps and ignores duplicates
 </details>
 
-<details>
-<summary><strong>Lab 12: Create a logout script</strong></summary>
+### Lab 12: Create a logout script
 
 **Task**: Create a `.bash_logout` file that clears the screen and logs your logout time.
+
+<details>
+<summary>Solution</summary>
 
 **Solution**:
 
@@ -1855,10 +1879,12 @@ exit
 **Verification**: Screen clears and logout is logged
 </details>
 
-<details>
-<summary><strong>Lab 13: Create a system-wide PATH addition</strong></summary>
+### Lab 13: Create a system-wide PATH addition
 
 **Task**: Add `/opt/custom/bin` to PATH for all users by creating a file in `/etc/profile.d/`.
+
+<details>
+<summary>Solution</summary>
 
 **Solution**:
 
@@ -1900,10 +1926,12 @@ exit
 **Verification**: Custom app runs for all users after login
 </details>
 
-<details>
-<summary><strong>Lab 14: Source .bashrc from .bash_profile</strong></summary>
+### Lab 14: Source .bashrc from .bash_profile
 
 **Task**: Ensure your `.bash_profile` sources `.bashrc` so interactive settings work in login shells.
+
+<details>
+<summary>Solution</summary>
 
 **Solution**:
 
@@ -1942,10 +1970,12 @@ grep -A 3 "Source .bashrc" ~/.bash_profile
 **Verification**: Aliases from .bashrc work in login shells
 </details>
 
-<details>
-<summary><strong>Lab 15: Create a modular configuration</strong></summary>
+### Lab 15: Create a modular configuration
 
 **Task**: Split your `.bashrc` into separate files for aliases, functions, and prompt configuration.
+
+<details>
+<summary>Solution</summary>
 
 **Solution**:
 
@@ -2030,10 +2060,12 @@ ls -la ~/.bash_*
 
 ### Advanced Challenge Labs
 
-<details>
-<summary><strong>Lab 16: Create a Git-aware prompt</strong></summary>
+### Lab 16: Create a Git-aware prompt
 
 **Task**: Create a custom prompt that shows the current Git branch when inside a Git repository.
+
+<details>
+<summary>Solution</summary>
 
 **Solution**:
 
@@ -2075,10 +2107,12 @@ rm -rf ~/git-test
 **Verification**: Prompt shows current Git branch in yellow
 </details>
 
-<details>
-<summary><strong>Lab 17: Create an extract function for archives</strong></summary>
+### Lab 17: Create an extract function for archives
 
 **Task**: Create a function that can extract any type of archive automatically based on file extension.
+
+<details>
+<summary>Solution</summary>
 
 **Solution**:
 
@@ -2133,10 +2167,12 @@ rm -rf test-dir test.tar.gz
 **Verification**: Function extracts various archive formats automatically
 </details>
 
-<details>
-<summary><strong>Lab 18: Create a system information function</strong></summary>
+### Lab 18: Create a system information function
 
 **Task**: Create a function that displays a formatted system information summary.
+
+<details>
+<summary>Solution</summary>
 
 **Solution**:
 
@@ -2180,10 +2216,12 @@ si
 **Verification**: Displays formatted system information
 </details>
 
-<details>
-<summary><strong>Lab 19: Prevent duplicate PATH entries</strong></summary>
+### Lab 19: Prevent duplicate PATH entries
 
 **Task**: Create a function that safely adds directories to PATH only if they're not already present.
+
+<details>
+<summary>Solution</summary>
 
 **Solution**:
 
@@ -2233,10 +2271,12 @@ echo $PATH | tr ':' '\n' | grep test-bin
 **Verification**: Directories added only once to PATH
 </details>
 
-<details>
-<summary><strong>Lab 20: Complete bash configuration with all best practices (FINAL LAB!)</strong></summary>
+### Lab 20: Complete bash configuration with all best practices (FINAL LAB!)
 
 **Task**: Create a complete, production-ready bash configuration following all best practices from this guide. This is your final lab - make it comprehensive!
+
+<details>
+<summary>Solution</summary>
 
 **Solution**:
 

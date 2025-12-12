@@ -522,12 +522,34 @@ ignoredups:ignorespace
 
 **Common values**:
 
-| Value | Effect |
-|-------|--------|
-| `ignoredups` | Don't save duplicate consecutive commands |
-| `ignorespace` | Don't save commands starting with a space |
-| `ignoreboth` | Combine `ignoredups` and `ignorespace` |
-| `erasedups` | Remove all previous matching commands from history |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Value</th>
+        <th className="border border-gray-300 px-4 py-2">Effect</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>ignoredups</code></td>
+        <td className="border border-gray-300 px-4 py-2">Don't save duplicate consecutive commands</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>ignorespace</code></td>
+        <td className="border border-gray-300 px-4 py-2">Don't save commands starting with a space</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>ignoreboth</code></td>
+        <td className="border border-gray-300 px-4 py-2">Combine <code>ignoredups</code> and <code>ignorespace</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>erasedups</code></td>
+        <td className="border border-gray-300 px-4 py-2">Remove all previous matching commands from history</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 ### Prevent Commands from Being Saved
 
@@ -749,39 +771,165 @@ history | grep -i "password\|secret\|key"
 
 ## History Command Cheat Sheet
 
-| Command/Shortcut | Description | Example |
-|-----------------|-------------|---------|
-| `history` | Show all history | `history` |
-| `history 10` | Show last 10 commands | `history 10` |
-| `history \| grep term` | Search history | `history \| grep ssh` |
-| `history -c` | Clear history (memory only) | `history -c` |
-| `history -w` | Write history to file | `history -w` |
-| `history -d N` | Delete entry number N | `history -d 1024` |
-| `history -a` | Append new commands to file | `history -a` |
-| `history -r` | Read history from file | `history -r` |
-| `!!` | Repeat last command | `sudo !!` |
-| `!n` | Execute command number n | `!234` |
-| `!string` | Execute last command starting with string | `!ssh` |
-| `!?string` | Execute last command containing string | `!?httpd` |
-| `!$` | Last argument of previous command | `vim !$` |
-| `!*` | All arguments of previous command | `cp -r !* /backup/` |
-| `^old^new` | Replace old with new in previous command | `^tset^test` |
-| `Ctrl-R` | Reverse search history | Press Ctrl-R, type search term |
-| `Ctrl-R` again | Find next match in reverse search | While in reverse search |
-| `Ctrl-G` | Cancel reverse search | While in reverse search |
-| `↑` (Up arrow) | Previous command | Press ↑ |
-| `↓` (Down arrow) | Next command | Press ↓ |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Command/Shortcut</th>
+        <th className="border border-gray-300 px-4 py-2">Description</th>
+        <th className="border border-gray-300 px-4 py-2">Example</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>history</code></td>
+        <td className="border border-gray-300 px-4 py-2">Show all history</td>
+        <td className="border border-gray-300 px-4 py-2"><code>history</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>history 10</code></td>
+        <td className="border border-gray-300 px-4 py-2">Show last 10 commands</td>
+        <td className="border border-gray-300 px-4 py-2"><code>history 10</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>history | grep term</code></td>
+        <td className="border border-gray-300 px-4 py-2">Search history</td>
+        <td className="border border-gray-300 px-4 py-2"><code>history | grep ssh</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>history -c</code></td>
+        <td className="border border-gray-300 px-4 py-2">Clear history (memory only)</td>
+        <td className="border border-gray-300 px-4 py-2"><code>history -c</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>history -w</code></td>
+        <td className="border border-gray-300 px-4 py-2">Write history to file</td>
+        <td className="border border-gray-300 px-4 py-2"><code>history -w</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>history -d N</code></td>
+        <td className="border border-gray-300 px-4 py-2">Delete entry number N</td>
+        <td className="border border-gray-300 px-4 py-2"><code>history -d 1024</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>history -a</code></td>
+        <td className="border border-gray-300 px-4 py-2">Append new commands to file</td>
+        <td className="border border-gray-300 px-4 py-2"><code>history -a</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>history -r</code></td>
+        <td className="border border-gray-300 px-4 py-2">Read history from file</td>
+        <td className="border border-gray-300 px-4 py-2"><code>history -r</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>!!</code></td>
+        <td className="border border-gray-300 px-4 py-2">Repeat last command</td>
+        <td className="border border-gray-300 px-4 py-2"><code>sudo !!</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>!n</code></td>
+        <td className="border border-gray-300 px-4 py-2">Execute command number n</td>
+        <td className="border border-gray-300 px-4 py-2"><code>!234</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>!string</code></td>
+        <td className="border border-gray-300 px-4 py-2">Execute last command starting with string</td>
+        <td className="border border-gray-300 px-4 py-2"><code>!ssh</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>!?string</code></td>
+        <td className="border border-gray-300 px-4 py-2">Execute last command containing string</td>
+        <td className="border border-gray-300 px-4 py-2"><code>!?httpd</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>!$</code></td>
+        <td className="border border-gray-300 px-4 py-2">Last argument of previous command</td>
+        <td className="border border-gray-300 px-4 py-2"><code>vim !$</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>!*</code></td>
+        <td className="border border-gray-300 px-4 py-2">All arguments of previous command</td>
+        <td className="border border-gray-300 px-4 py-2"><code>cp -r !* /backup/</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>^old^new</code></td>
+        <td className="border border-gray-300 px-4 py-2">Replace old with new in previous command</td>
+        <td className="border border-gray-300 px-4 py-2"><code>^tset^test</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Ctrl-R</code></td>
+        <td className="border border-gray-300 px-4 py-2">Reverse search history</td>
+        <td className="border border-gray-300 px-4 py-2">Press Ctrl-R, type search term</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Ctrl-R</code> again</td>
+        <td className="border border-gray-300 px-4 py-2">Find next match in reverse search</td>
+        <td className="border border-gray-300 px-4 py-2">While in reverse search</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Ctrl-G</code></td>
+        <td className="border border-gray-300 px-4 py-2">Cancel reverse search</td>
+        <td className="border border-gray-300 px-4 py-2">While in reverse search</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>↑</code> (Up arrow)</td>
+        <td className="border border-gray-300 px-4 py-2">Previous command</td>
+        <td className="border border-gray-300 px-4 py-2">Press ↑</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>↓</code> (Down arrow)</td>
+        <td className="border border-gray-300 px-4 py-2">Next command</td>
+        <td className="border border-gray-300 px-4 py-2">Press ↓</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 ## Environment Variables Cheat Sheet
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `HISTSIZE` | Commands kept in memory | 1000 |
-| `HISTFILESIZE` | Commands stored in file | 1000 |
-| `HISTFILE` | History file location | `~/.bash_history` |
-| `HISTCONTROL` | What to ignore | `ignoredups` |
-| `HISTIGNORE` | Commands to never save | (none) |
-| `HISTTIMEFORMAT` | Timestamp format | (none) |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Variable</th>
+        <th className="border border-gray-300 px-4 py-2">Description</th>
+        <th className="border border-gray-300 px-4 py-2">Default</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>HISTSIZE</code></td>
+        <td className="border border-gray-300 px-4 py-2">Commands kept in memory</td>
+        <td className="border border-gray-300 px-4 py-2">1000</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>HISTFILESIZE</code></td>
+        <td className="border border-gray-300 px-4 py-2">Commands stored in file</td>
+        <td className="border border-gray-300 px-4 py-2">1000</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>HISTFILE</code></td>
+        <td className="border border-gray-300 px-4 py-2">History file location</td>
+        <td className="border border-gray-300 px-4 py-2"><code>~/.bash_history</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>HISTCONTROL</code></td>
+        <td className="border border-gray-300 px-4 py-2">What to ignore</td>
+        <td className="border border-gray-300 px-4 py-2"><code>ignoredups</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>HISTIGNORE</code></td>
+        <td className="border border-gray-300 px-4 py-2">Commands to never save</td>
+        <td className="border border-gray-300 px-4 py-2">(none)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>HISTTIMEFORMAT</code></td>
+        <td className="border border-gray-300 px-4 py-2">Timestamp format</td>
+        <td className="border border-gray-300 px-4 py-2">(none)</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 ## Practice Labs
 

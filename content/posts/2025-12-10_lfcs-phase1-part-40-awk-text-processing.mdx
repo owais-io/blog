@@ -1723,36 +1723,120 @@ awk -f script.awk file           # Run awk script file
 
 ### Field Variables
 
-| Variable | Meaning |
-|----------|---------|
-| `$0` | Entire line |
-| `$1, $2, $3...` | First, second, third field |
-| `$NF` | Last field |
-| `$(NF-1)` | Second-to-last field |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Variable</th>
+        <th className="border border-gray-300 px-4 py-2">Meaning</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>$0</code></td>
+        <td className="border border-gray-300 px-4 py-2">Entire line</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>$1, $2, $3...</code></td>
+        <td className="border border-gray-300 px-4 py-2">First, second, third field</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>$NF</code></td>
+        <td className="border border-gray-300 px-4 py-2">Last field</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>$(NF-1)</code></td>
+        <td className="border border-gray-300 px-4 py-2">Second-to-last field</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 ### Built-in Variables
 
-| Variable | Meaning |
-|----------|---------|
-| `NR` | Current record (line) number |
-| `NF` | Number of fields in current record |
-| `FS` | Input field separator (default: whitespace) |
-| `OFS` | Output field separator (default: space) |
-| `RS` | Record separator (default: newline) |
-| `ORS` | Output record separator (default: newline) |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Variable</th>
+        <th className="border border-gray-300 px-4 py-2">Meaning</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>NR</code></td>
+        <td className="border border-gray-300 px-4 py-2">Current record (line) number</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>NF</code></td>
+        <td className="border border-gray-300 px-4 py-2">Number of fields in current record</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>FS</code></td>
+        <td className="border border-gray-300 px-4 py-2">Input field separator (default: whitespace)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>OFS</code></td>
+        <td className="border border-gray-300 px-4 py-2">Output field separator (default: space)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>RS</code></td>
+        <td className="border border-gray-300 px-4 py-2">Record separator (default: newline)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>ORS</code></td>
+        <td className="border border-gray-300 px-4 py-2">Output record separator (default: newline)</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 ### Operators
 
-| Operator | Meaning |
-|----------|---------|
-| `==` | Equal |
-| `!=` | Not equal |
-| `<, >, <=, >=` | Comparison |
-| `~` | Matches regex |
-| `!~` | Doesn't match regex |
-| `&&` | Logical AND |
-| `||` | Logical OR |
-| `!` | Logical NOT |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Operator</th>
+        <th className="border border-gray-300 px-4 py-2">Meaning</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>==</code></td>
+        <td className="border border-gray-300 px-4 py-2">Equal</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>!=</code></td>
+        <td className="border border-gray-300 px-4 py-2">Not equal</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>&lt;, &gt;, &lt;=, &gt;=</code></td>
+        <td className="border border-gray-300 px-4 py-2">Comparison</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>~</code></td>
+        <td className="border border-gray-300 px-4 py-2">Matches regex</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>!~</code></td>
+        <td className="border border-gray-300 px-4 py-2">Doesn't match regex</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>&&</code></td>
+        <td className="border border-gray-300 px-4 py-2">Logical AND</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>||</code></td>
+        <td className="border border-gray-300 px-4 py-2">Logical OR</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>!</code></td>
+        <td className="border border-gray-300 px-4 py-2">Logical NOT</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 ### Common Patterns
 

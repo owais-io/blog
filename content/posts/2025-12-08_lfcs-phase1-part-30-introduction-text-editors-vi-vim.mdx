@@ -89,12 +89,39 @@ lrwxrwxrwx. 1 root root 3 Jun 25 2024 /usr/bin/vi -> vim
 
 Unlike modern editors where you just start typing, vim has different **modes** for different tasks:
 
-| Mode | Purpose | How to Enter |
-|------|---------|--------------|
-| **Normal** | Navigate and execute commands | Press `Esc` (default mode when vim opens) |
-| **Insert** | Type and edit text | Press `i`, `a`, `o`, `O` from Normal mode |
-| **Visual** | Select text | Press `v`, `V`, `Ctrl+v` from Normal mode |
-| **Command-line** | Execute commands (save, quit, search) | Press `:`, `/`, `?` from Normal mode |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Mode</th>
+        <th className="border border-gray-300 px-4 py-2">Purpose</th>
+        <th className="border border-gray-300 px-4 py-2">How to Enter</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><strong>Normal</strong></td>
+        <td className="border border-gray-300 px-4 py-2">Navigate and execute commands</td>
+        <td className="border border-gray-300 px-4 py-2">Press <code>Esc</code> (default mode when vim opens)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><strong>Insert</strong></td>
+        <td className="border border-gray-300 px-4 py-2">Type and edit text</td>
+        <td className="border border-gray-300 px-4 py-2">Press <code>i</code>, <code>a</code>, <code>o</code>, <code>O</code> from Normal mode</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><strong>Visual</strong></td>
+        <td className="border border-gray-300 px-4 py-2">Select text</td>
+        <td className="border border-gray-300 px-4 py-2">Press <code>v</code>, <code>V</code>, <code>Ctrl+v</code> from Normal mode</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><strong>Command-line</strong></td>
+        <td className="border border-gray-300 px-4 py-2">Execute commands (save, quit, search)</td>
+        <td className="border border-gray-300 px-4 py-2">Press <code>:</code>, <code>/</code>, <code>?</code> from Normal mode</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 ### Why Modal Editing?
 
@@ -231,14 +258,42 @@ G  = go to last line
 
 From Normal mode, press one of these keys:
 
-| Key | Action |
-|-----|--------|
-| `i` | Insert before cursor |
-| `a` | Insert **a**fter cursor |
-| `I` | Insert at beginning of line |
-| `A` | Insert at end of line |
-| `o` | **O**pen new line below |
-| `O` | **O**pen new line above |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Key</th>
+        <th className="border border-gray-300 px-4 py-2">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>i</code></td>
+        <td className="border border-gray-300 px-4 py-2">Insert before cursor</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>a</code></td>
+        <td className="border border-gray-300 px-4 py-2">Insert <strong>a</strong>fter cursor</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>I</code></td>
+        <td className="border border-gray-300 px-4 py-2">Insert at beginning of line</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>A</code></td>
+        <td className="border border-gray-300 px-4 py-2">Insert at end of line</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>o</code></td>
+        <td className="border border-gray-300 px-4 py-2"><strong>O</strong>pen new line below</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>O</code></td>
+        <td className="border border-gray-300 px-4 py-2"><strong>O</strong>pen new line above</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 ### Your First Edit
 
@@ -338,14 +393,42 @@ All of these work in **Normal mode**.
 
 ### Deleting Text
 
-| Command | Action |
-|---------|--------|
-| `x` | Delete character under cursor |
-| `X` | Delete character before cursor |
-| `dd` | Delete entire line |
-| `dw` | Delete word |
-| `d$` | Delete from cursor to end of line |
-| `d0` | Delete from cursor to beginning of line |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Command</th>
+        <th className="border border-gray-300 px-4 py-2">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>x</code></td>
+        <td className="border border-gray-300 px-4 py-2">Delete character under cursor</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>X</code></td>
+        <td className="border border-gray-300 px-4 py-2">Delete character before cursor</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>dd</code></td>
+        <td className="border border-gray-300 px-4 py-2">Delete entire line</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>dw</code></td>
+        <td className="border border-gray-300 px-4 py-2">Delete word</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>d$</code></td>
+        <td className="border border-gray-300 px-4 py-2">Delete from cursor to end of line</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>d0</code></td>
+        <td className="border border-gray-300 px-4 py-2">Delete from cursor to beginning of line</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 **Examples**:
 ```bash
@@ -383,12 +466,34 @@ In vim terminology:
 - **Copy** = Yank (y)
 - **Paste** = Put (p)
 
-| Command | Action |
-|---------|--------|
-| `yy` | Yank (copy) entire line |
-| `yw` | Yank word |
-| `p` | Put (paste) after cursor |
-| `P` | Put (paste) before cursor |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Command</th>
+        <th className="border border-gray-300 px-4 py-2">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>yy</code></td>
+        <td className="border border-gray-300 px-4 py-2">Yank (copy) entire line</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>yw</code></td>
+        <td className="border border-gray-300 px-4 py-2">Yank word</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>p</code></td>
+        <td className="border border-gray-300 px-4 py-2">Put (paste) after cursor</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>P</code></td>
+        <td className="border border-gray-300 px-4 py-2">Put (paste) before cursor</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 **Example workflow**:
 ```bash

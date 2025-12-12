@@ -1707,44 +1707,147 @@ fi
 
 ### Essential Options
 
-| Option | Description |
-|--------|-------------|
-| `-i` | Case-insensitive search |
-| `-v` | Invert match (show non-matching lines) |
-| `-n` | Show line numbers |
-| `-c` | Count matching lines |
-| `-l` | List filenames with matches |
-| `-L` | List filenames without matches |
-| `-w` | Match whole words only |
-| `-x` | Match whole lines only |
-| `-r` | Recursive directory search |
-| `-h` | Suppress filename in output |
-| `-H` | Show filename in output |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Option</th>
+        <th className="border border-gray-300 px-4 py-2">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-i</code></td>
+        <td className="border border-gray-300 px-4 py-2">Case-insensitive search</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-v</code></td>
+        <td className="border border-gray-300 px-4 py-2">Invert match (show non-matching lines)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-n</code></td>
+        <td className="border border-gray-300 px-4 py-2">Show line numbers</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-c</code></td>
+        <td className="border border-gray-300 px-4 py-2">Count matching lines</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-l</code></td>
+        <td className="border border-gray-300 px-4 py-2">List filenames with matches</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-L</code></td>
+        <td className="border border-gray-300 px-4 py-2">List filenames without matches</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-w</code></td>
+        <td className="border border-gray-300 px-4 py-2">Match whole words only</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-x</code></td>
+        <td className="border border-gray-300 px-4 py-2">Match whole lines only</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-r</code></td>
+        <td className="border border-gray-300 px-4 py-2">Recursive directory search</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-h</code></td>
+        <td className="border border-gray-300 px-4 py-2">Suppress filename in output</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-H</code></td>
+        <td className="border border-gray-300 px-4 py-2">Show filename in output</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 ### Context Options
 
-| Option | Description |
-|--------|-------------|
-| `-A N` | Show N lines after match |
-| `-B N` | Show N lines before match |
-| `-C N` | Show N lines before and after match |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Option</th>
+        <th className="border border-gray-300 px-4 py-2">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-A N</code></td>
+        <td className="border border-gray-300 px-4 py-2">Show N lines after match</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-B N</code></td>
+        <td className="border border-gray-300 px-4 py-2">Show N lines before match</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-C N</code></td>
+        <td className="border border-gray-300 px-4 py-2">Show N lines before and after match</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 ### Regex Options
 
-| Option | Description |
-|--------|-------------|
-| `-E` | Extended regex (egrep) |
-| `-F` | Fixed string (fgrep) |
-| `-P` | Perl-compatible regex |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Option</th>
+        <th className="border border-gray-300 px-4 py-2">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-E</code></td>
+        <td className="border border-gray-300 px-4 py-2">Extended regex (egrep)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-F</code></td>
+        <td className="border border-gray-300 px-4 py-2">Fixed string (fgrep)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-P</code></td>
+        <td className="border border-gray-300 px-4 py-2">Perl-compatible regex</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 ### Output Control
 
-| Option | Description |
-|--------|-------------|
-| `-o` | Show only matched part |
-| `-q` | Quiet mode (no output, status only) |
-| `-m N` | Stop after N matches |
-| `--color=auto` | Highlight matches |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Option</th>
+        <th className="border border-gray-300 px-4 py-2">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-o</code></td>
+        <td className="border border-gray-300 px-4 py-2">Show only matched part</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-q</code></td>
+        <td className="border border-gray-300 px-4 py-2">Quiet mode (no output, status only)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-m N</code></td>
+        <td className="border border-gray-300 px-4 py-2">Stop after N matches</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>--color=auto</code></td>
+        <td className="border border-gray-300 px-4 py-2">Highlight matches</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 ### Common Patterns
 

@@ -1046,41 +1046,159 @@ MY_PATH=/my/custom/path
 
 ### Creating and Using Variables
 
-| Operation | Syntax | Example |
-|-----------|--------|---------|
-| Create variable | `VAR=value` | `NAME=John` |
-| Use variable | `$VAR` or `${VAR}` | `echo $NAME` |
-| Export variable | `export VAR=value` | `export PATH=/usr/bin` |
-| Unset variable | `unset VAR` | `unset NAME` |
-| Make readonly | `readonly VAR=value` | `readonly VERSION=1.0` |
-| Default value | `${VAR:-default}` | `${PORT:-8080}` |
-| Command substitution | `VAR=$(command)` | `DATE=$(date)` |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Operation</th>
+        <th className="border border-gray-300 px-4 py-2">Syntax</th>
+        <th className="border border-gray-300 px-4 py-2">Example</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2">Create variable</td>
+        <td className="border border-gray-300 px-4 py-2"><code>VAR=value</code></td>
+        <td className="border border-gray-300 px-4 py-2"><code>NAME=John</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2">Use variable</td>
+        <td className="border border-gray-300 px-4 py-2"><code>$VAR</code> or <code>{`\${VAR}`}</code></td>
+        <td className="border border-gray-300 px-4 py-2"><code>echo $NAME</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2">Export variable</td>
+        <td className="border border-gray-300 px-4 py-2"><code>export VAR=value</code></td>
+        <td className="border border-gray-300 px-4 py-2"><code>export PATH=/usr/bin</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2">Unset variable</td>
+        <td className="border border-gray-300 px-4 py-2"><code>unset VAR</code></td>
+        <td className="border border-gray-300 px-4 py-2"><code>unset NAME</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2">Make readonly</td>
+        <td className="border border-gray-300 px-4 py-2"><code>readonly VAR=value</code></td>
+        <td className="border border-gray-300 px-4 py-2"><code>readonly VERSION=1.0</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2">Default value</td>
+        <td className="border border-gray-300 px-4 py-2"><code>{`\${VAR:-default}`}</code></td>
+        <td className="border border-gray-300 px-4 py-2"><code>{`\${PORT:-8080}`}</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2">Command substitution</td>
+        <td className="border border-gray-300 px-4 py-2"><code>VAR=$(command)</code></td>
+        <td className="border border-gray-300 px-4 py-2"><code>DATE=$(date)</code></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 ### Important System Variables
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `$PATH` | Command search path | `/usr/bin:/bin` |
-| `$HOME` | Home directory | `/home/user` |
-| `$USER` | Username | `centos9` |
-| `$SHELL` | Current shell | `/bin/bash` |
-| `$PWD` | Current directory | `/home/user/docs` |
-| `$OLDPWD` | Previous directory | `/tmp` |
-| `$HOSTNAME` | System hostname | `server1` |
-| `$LANG` | System language | `en_US.UTF-8` |
-| `$?` | Last exit status | `0` or `1` |
-| `$$` | Current PID | `12345` |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Variable</th>
+        <th className="border border-gray-300 px-4 py-2">Description</th>
+        <th className="border border-gray-300 px-4 py-2">Example</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>$PATH</code></td>
+        <td className="border border-gray-300 px-4 py-2">Command search path</td>
+        <td className="border border-gray-300 px-4 py-2"><code>/usr/bin:/bin</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>$HOME</code></td>
+        <td className="border border-gray-300 px-4 py-2">Home directory</td>
+        <td className="border border-gray-300 px-4 py-2"><code>/home/user</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>$USER</code></td>
+        <td className="border border-gray-300 px-4 py-2">Username</td>
+        <td className="border border-gray-300 px-4 py-2"><code>centos9</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>$SHELL</code></td>
+        <td className="border border-gray-300 px-4 py-2">Current shell</td>
+        <td className="border border-gray-300 px-4 py-2"><code>/bin/bash</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>$PWD</code></td>
+        <td className="border border-gray-300 px-4 py-2">Current directory</td>
+        <td className="border border-gray-300 px-4 py-2"><code>/home/user/docs</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>$OLDPWD</code></td>
+        <td className="border border-gray-300 px-4 py-2">Previous directory</td>
+        <td className="border border-gray-300 px-4 py-2"><code>/tmp</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>$HOSTNAME</code></td>
+        <td className="border border-gray-300 px-4 py-2">System hostname</td>
+        <td className="border border-gray-300 px-4 py-2"><code>server1</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>$LANG</code></td>
+        <td className="border border-gray-300 px-4 py-2">System language</td>
+        <td className="border border-gray-300 px-4 py-2"><code>en_US.UTF-8</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>$?</code></td>
+        <td className="border border-gray-300 px-4 py-2">Last exit status</td>
+        <td className="border border-gray-300 px-4 py-2"><code>0</code> or <code>1</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>$$</code></td>
+        <td className="border border-gray-300 px-4 py-2">Current PID</td>
+        <td className="border border-gray-300 px-4 py-2"><code>12345</code></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 ### Viewing Variables
 
-| Command | Description |
-|---------|-------------|
-| `env` | Show all environment variables |
-| `printenv` | Show all environment variables |
-| `printenv VAR` | Show specific variable |
-| `set` | Show all variables (local + env) |
-| `export -p` | Show all exported variables |
-| `echo $VAR` | Display variable value |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Command</th>
+        <th className="border border-gray-300 px-4 py-2">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>env</code></td>
+        <td className="border border-gray-300 px-4 py-2">Show all environment variables</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>printenv</code></td>
+        <td className="border border-gray-300 px-4 py-2">Show all environment variables</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>printenv VAR</code></td>
+        <td className="border border-gray-300 px-4 py-2">Show specific variable</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>set</code></td>
+        <td className="border border-gray-300 px-4 py-2">Show all variables (local + env)</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>export -p</code></td>
+        <td className="border border-gray-300 px-4 py-2">Show all exported variables</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>echo $VAR</code></td>
+        <td className="border border-gray-300 px-4 py-2">Display variable value</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 ## Practice Labs
 

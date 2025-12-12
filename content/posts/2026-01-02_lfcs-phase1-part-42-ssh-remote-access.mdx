@@ -107,14 +107,49 @@ This is why **Telnet should never be used in production** environments.
 
 ### Comparison Table
 
-| Feature | Telnet | SSH |
-|---------|--------|-----|
-| **Encryption** | None (plain text) | Strong encryption |
-| **Authentication** | Plain text password | Encrypted password or keys |
-| **Port** | 23 | 22 |
-| **Security** | Completely insecure | Secure |
-| **Use case** | Legacy systems, testing | Production servers, all remote access |
-| **Modern usage** | Deprecated | Standard |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Feature</th>
+        <th className="border border-gray-300 px-4 py-2">Telnet</th>
+        <th className="border border-gray-300 px-4 py-2">SSH</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><strong>Encryption</strong></td>
+        <td className="border border-gray-300 px-4 py-2">None (plain text)</td>
+        <td className="border border-gray-300 px-4 py-2">Strong encryption</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><strong>Authentication</strong></td>
+        <td className="border border-gray-300 px-4 py-2">Plain text password</td>
+        <td className="border border-gray-300 px-4 py-2">Encrypted password or keys</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><strong>Port</strong></td>
+        <td className="border border-gray-300 px-4 py-2">23</td>
+        <td className="border border-gray-300 px-4 py-2">22</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><strong>Security</strong></td>
+        <td className="border border-gray-300 px-4 py-2">Completely insecure</td>
+        <td className="border border-gray-300 px-4 py-2">Secure</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><strong>Use case</strong></td>
+        <td className="border border-gray-300 px-4 py-2">Legacy systems, testing</td>
+        <td className="border border-gray-300 px-4 py-2">Production servers, all remote access</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><strong>Modern usage</strong></td>
+        <td className="border border-gray-300 px-4 py-2">Deprecated</td>
+        <td className="border border-gray-300 px-4 py-2">Standard</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 **Bottom line**: Always use SSH for remote access. Disable Telnet on all production systems.
 
@@ -1509,22 +1544,89 @@ ssh-copy-id user@server
 
 ## SSH Command Cheat Sheet
 
-| Command | Description | Example |
-|---------|-------------|---------|
-| `ssh user@host` | Connect to remote server | `ssh john@192.168.1.100` |
-| `ssh -p PORT` | Connect on custom port | `ssh -p 2222 john@server` |
-| `ssh user@host 'cmd'` | Execute remote command | `ssh john@server 'uptime'` |
-| `ssh -v` | Verbose output (debugging) | `ssh -v john@server` |
-| `scp file user@host:/path` | Copy file to remote | `scp file.txt john@server:/tmp/` |
-| `scp user@host:/path file` | Copy file from remote | `scp john@server:/tmp/file.txt .` |
-| `scp -r dir user@host:/path` | Copy directory recursively | `scp -r mydir john@server:/tmp/` |
-| `scp -P PORT` | scp with custom port | `scp -P 2222 file.txt john@server:/tmp/` |
-| `ssh-keygen` | Generate SSH key pair | `ssh-keygen -t ed25519` |
-| `ssh-copy-id user@host` | Copy public key to server | `ssh-copy-id john@server` |
-| `systemctl status sshd` | Check SSH service status | `sudo systemctl status sshd` |
-| `systemctl start sshd` | Start SSH service | `sudo systemctl start sshd` |
-| `systemctl enable sshd` | Enable SSH at boot | `sudo systemctl enable sshd` |
-| `ss -tlnp \| grep :22` | Check if SSH is listening | `sudo ss -tlnp \| grep :22` |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Command</th>
+        <th className="border border-gray-300 px-4 py-2">Description</th>
+        <th className="border border-gray-300 px-4 py-2">Example</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>ssh user@host</code></td>
+        <td className="border border-gray-300 px-4 py-2">Connect to remote server</td>
+        <td className="border border-gray-300 px-4 py-2"><code>ssh john@192.168.1.100</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>ssh -p PORT</code></td>
+        <td className="border border-gray-300 px-4 py-2">Connect on custom port</td>
+        <td className="border border-gray-300 px-4 py-2"><code>ssh -p 2222 john@server</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>ssh user@host 'cmd'</code></td>
+        <td className="border border-gray-300 px-4 py-2">Execute remote command</td>
+        <td className="border border-gray-300 px-4 py-2"><code>ssh john@server 'uptime'</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>ssh -v</code></td>
+        <td className="border border-gray-300 px-4 py-2">Verbose output (debugging)</td>
+        <td className="border border-gray-300 px-4 py-2"><code>ssh -v john@server</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>scp file user@host:/path</code></td>
+        <td className="border border-gray-300 px-4 py-2">Copy file to remote</td>
+        <td className="border border-gray-300 px-4 py-2"><code>scp file.txt john@server:/tmp/</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>scp user@host:/path file</code></td>
+        <td className="border border-gray-300 px-4 py-2">Copy file from remote</td>
+        <td className="border border-gray-300 px-4 py-2"><code>scp john@server:/tmp/file.txt .</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>scp -r dir user@host:/path</code></td>
+        <td className="border border-gray-300 px-4 py-2">Copy directory recursively</td>
+        <td className="border border-gray-300 px-4 py-2"><code>scp -r mydir john@server:/tmp/</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>scp -P PORT</code></td>
+        <td className="border border-gray-300 px-4 py-2">scp with custom port</td>
+        <td className="border border-gray-300 px-4 py-2"><code>scp -P 2222 file.txt john@server:/tmp/</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>ssh-keygen</code></td>
+        <td className="border border-gray-300 px-4 py-2">Generate SSH key pair</td>
+        <td className="border border-gray-300 px-4 py-2"><code>ssh-keygen -t ed25519</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>ssh-copy-id user@host</code></td>
+        <td className="border border-gray-300 px-4 py-2">Copy public key to server</td>
+        <td className="border border-gray-300 px-4 py-2"><code>ssh-copy-id john@server</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>systemctl status sshd</code></td>
+        <td className="border border-gray-300 px-4 py-2">Check SSH service status</td>
+        <td className="border border-gray-300 px-4 py-2"><code>sudo systemctl status sshd</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>systemctl start sshd</code></td>
+        <td className="border border-gray-300 px-4 py-2">Start SSH service</td>
+        <td className="border border-gray-300 px-4 py-2"><code>sudo systemctl start sshd</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>systemctl enable sshd</code></td>
+        <td className="border border-gray-300 px-4 py-2">Enable SSH at boot</td>
+        <td className="border border-gray-300 px-4 py-2"><code>sudo systemctl enable sshd</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>ss -tlnp | grep :22</code></td>
+        <td className="border border-gray-300 px-4 py-2">Check if SSH is listening</td>
+        <td className="border border-gray-300 px-4 py-2"><code>sudo ss -tlnp | grep :22</code></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 ---
 

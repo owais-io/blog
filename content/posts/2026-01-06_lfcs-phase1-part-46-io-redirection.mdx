@@ -89,11 +89,34 @@ Having separate streams for normal output and errors is incredibly useful:
 
 **File descriptors** are numbers that the Linux kernel uses to track open files and streams. Every process has a file descriptor table:
 
-| File Descriptor | Name | Default Destination |
-|----------------|------|---------------------|
-| 0 | stdin | Keyboard |
-| 1 | stdout | Terminal screen |
-| 2 | stderr | Terminal screen |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">File Descriptor</th>
+        <th className="border border-gray-300 px-4 py-2">Name</th>
+        <th className="border border-gray-300 px-4 py-2">Default Destination</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2">0</td>
+        <td className="border border-gray-300 px-4 py-2">stdin</td>
+        <td className="border border-gray-300 px-4 py-2">Keyboard</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2">1</td>
+        <td className="border border-gray-300 px-4 py-2">stdout</td>
+        <td className="border border-gray-300 px-4 py-2">Terminal screen</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2">2</td>
+        <td className="border border-gray-300 px-4 py-2">stderr</td>
+        <td className="border border-gray-300 px-4 py-2">Terminal screen</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 When you use redirection, you're changing where these file descriptors point. Instead of pointing to your terminal, they can point to files, other commands, or even be closed entirely.
 
@@ -851,21 +874,84 @@ ls >| /etc/hosts
 
 ## I/O Redirection Command Cheat Sheet
 
-| Operator | Description | Example |
-|----------|-------------|---------|
-| `>` | Redirect stdout, overwrite file | `ls > files.txt` |
-| `>>` | Redirect stdout, append to file | `echo "text" >> log.txt` |
-| `<` | Redirect stdin from file | `sort < names.txt` |
-| `2>` | Redirect stderr, overwrite | `command 2> errors.txt` |
-| `2>>` | Redirect stderr, append | `command 2>> errors.txt` |
-| `&>` | Redirect both stdout and stderr | `command &> all.txt` |
-| `&>>` | Redirect both, append | `command &>> all.txt` |
-| `2>&1` | Redirect stderr to stdout | `command > file 2>&1` |
-| `1>&2` | Redirect stdout to stderr | `echo "error" 1>&2` |
-| `>/dev/null` | Discard stdout | `command >/dev/null` |
-| `2>/dev/null` | Discard stderr | `command 2>/dev/null` |
-| `&>/dev/null` | Discard all output | `command &>/dev/null` |
-| `>` (no command) | Create/clear file | `> empty.txt` |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Operator</th>
+        <th className="border border-gray-300 px-4 py-2">Description</th>
+        <th className="border border-gray-300 px-4 py-2">Example</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>&gt;</code></td>
+        <td className="border border-gray-300 px-4 py-2">Redirect stdout, overwrite file</td>
+        <td className="border border-gray-300 px-4 py-2"><code>ls &gt; files.txt</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>&gt;&gt;</code></td>
+        <td className="border border-gray-300 px-4 py-2">Redirect stdout, append to file</td>
+        <td className="border border-gray-300 px-4 py-2"><code>echo "text" &gt;&gt; log.txt</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>&lt;</code></td>
+        <td className="border border-gray-300 px-4 py-2">Redirect stdin from file</td>
+        <td className="border border-gray-300 px-4 py-2"><code>sort &lt; names.txt</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>2&gt;</code></td>
+        <td className="border border-gray-300 px-4 py-2">Redirect stderr, overwrite</td>
+        <td className="border border-gray-300 px-4 py-2"><code>command 2&gt; errors.txt</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>2&gt;&gt;</code></td>
+        <td className="border border-gray-300 px-4 py-2">Redirect stderr, append</td>
+        <td className="border border-gray-300 px-4 py-2"><code>command 2&gt;&gt; errors.txt</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>&amp;&gt;</code></td>
+        <td className="border border-gray-300 px-4 py-2">Redirect both stdout and stderr</td>
+        <td className="border border-gray-300 px-4 py-2"><code>command &amp;&gt; all.txt</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>&amp;&gt;&gt;</code></td>
+        <td className="border border-gray-300 px-4 py-2">Redirect both, append</td>
+        <td className="border border-gray-300 px-4 py-2"><code>command &amp;&gt;&gt; all.txt</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>2&gt;&amp;1</code></td>
+        <td className="border border-gray-300 px-4 py-2">Redirect stderr to stdout</td>
+        <td className="border border-gray-300 px-4 py-2"><code>command &gt; file 2&gt;&amp;1</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>1&gt;&amp;2</code></td>
+        <td className="border border-gray-300 px-4 py-2">Redirect stdout to stderr</td>
+        <td className="border border-gray-300 px-4 py-2"><code>echo "error" 1&gt;&amp;2</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>&gt;/dev/null</code></td>
+        <td className="border border-gray-300 px-4 py-2">Discard stdout</td>
+        <td className="border border-gray-300 px-4 py-2"><code>command &gt;/dev/null</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>2&gt;/dev/null</code></td>
+        <td className="border border-gray-300 px-4 py-2">Discard stderr</td>
+        <td className="border border-gray-300 px-4 py-2"><code>command 2&gt;/dev/null</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>&amp;&gt;/dev/null</code></td>
+        <td className="border border-gray-300 px-4 py-2">Discard all output</td>
+        <td className="border border-gray-300 px-4 py-2"><code>command &amp;&gt;/dev/null</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>&gt;</code> (no command)</td>
+        <td className="border border-gray-300 px-4 py-2">Create/clear file</td>
+        <td className="border border-gray-300 px-4 py-2"><code>&gt; empty.txt</code></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 ## Practice Labs
 

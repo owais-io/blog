@@ -35,13 +35,50 @@ The LFCS exam expects you to be fluent with multiple viewing commands. Each has 
 
 Linux offers multiple commands for viewing files, each optimized for different scenarios:
 
-| Command | Best For | Interactive? | Memory Usage |
-|---------|----------|--------------|--------------|
-| `cat` | Small files, quick views | No | Loads entire file |
-| `less` | Large files, searching | Yes | Loads on demand |
-| `more` | Simple paging | Limited | Loads page by page |
-| `head` | First N lines | No | Minimal |
-| `tail` | Last N lines, logs | No (unless -f) | Minimal |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Command</th>
+        <th className="border border-gray-300 px-4 py-2">Best For</th>
+        <th className="border border-gray-300 px-4 py-2">Interactive?</th>
+        <th className="border border-gray-300 px-4 py-2">Memory Usage</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>cat</code></td>
+        <td className="border border-gray-300 px-4 py-2">Small files, quick views</td>
+        <td className="border border-gray-300 px-4 py-2">No</td>
+        <td className="border border-gray-300 px-4 py-2">Loads entire file</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>less</code></td>
+        <td className="border border-gray-300 px-4 py-2">Large files, searching</td>
+        <td className="border border-gray-300 px-4 py-2">Yes</td>
+        <td className="border border-gray-300 px-4 py-2">Loads on demand</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>more</code></td>
+        <td className="border border-gray-300 px-4 py-2">Simple paging</td>
+        <td className="border border-gray-300 px-4 py-2">Limited</td>
+        <td className="border border-gray-300 px-4 py-2">Loads page by page</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>head</code></td>
+        <td className="border border-gray-300 px-4 py-2">First N lines</td>
+        <td className="border border-gray-300 px-4 py-2">No</td>
+        <td className="border border-gray-300 px-4 py-2">Minimal</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>tail</code></td>
+        <td className="border border-gray-300 px-4 py-2">Last N lines, logs</td>
+        <td className="border border-gray-300 px-4 py-2">No (unless -f)</td>
+        <td className="border border-gray-300 px-4 py-2">Minimal</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 **Quick Decision Guide**:
 - Quick peek at config file → `cat`
@@ -121,14 +158,49 @@ $ cat -b /etc/hosts
 
 ### Common cat Options
 
-| Option | Description | Example Use |
-|--------|-------------|-------------|
-| `-n` | Number all lines | Debugging code |
-| `-b` | Number non-blank lines | Analyzing structured files |
-| `-A` | Show all special characters | Finding hidden whitespace |
-| `-s` | Squeeze multiple blank lines into one | Cleaning up output |
-| `-E` | Show `$` at end of lines | Checking line endings |
-| `-T` | Show tabs as `^I` | Finding tab vs space issues |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Option</th>
+        <th className="border border-gray-300 px-4 py-2">Description</th>
+        <th className="border border-gray-300 px-4 py-2">Example Use</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-n</code></td>
+        <td className="border border-gray-300 px-4 py-2">Number all lines</td>
+        <td className="border border-gray-300 px-4 py-2">Debugging code</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-b</code></td>
+        <td className="border border-gray-300 px-4 py-2">Number non-blank lines</td>
+        <td className="border border-gray-300 px-4 py-2">Analyzing structured files</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-A</code></td>
+        <td className="border border-gray-300 px-4 py-2">Show all special characters</td>
+        <td className="border border-gray-300 px-4 py-2">Finding hidden whitespace</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-s</code></td>
+        <td className="border border-gray-300 px-4 py-2">Squeeze multiple blank lines into one</td>
+        <td className="border border-gray-300 px-4 py-2">Cleaning up output</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-E</code></td>
+        <td className="border border-gray-300 px-4 py-2">Show <code>$</code> at end of lines</td>
+        <td className="border border-gray-300 px-4 py-2">Checking line endings</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-T</code></td>
+        <td className="border border-gray-300 px-4 py-2">Show tabs as <code>^I</code></td>
+        <td className="border border-gray-300 px-4 py-2">Finding tab vs space issues</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 ---
 
@@ -166,17 +238,54 @@ $ less /var/log/messages
 
 ### Navigation in less
 
-| Key | Action |
-|-----|--------|
-| `Space` or `f` | Forward one screen |
-| `b` | Backward one screen |
-| `d` | Forward half screen |
-| `u` | Backward half screen |
-| `j` or `↓` | Down one line |
-| `k` or `↑` | Up one line |
-| `g` | Go to beginning |
-| `G` | Go to end |
-| `q` | Quit |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Key</th>
+        <th className="border border-gray-300 px-4 py-2">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>Space</code> or <code>f</code></td>
+        <td className="border border-gray-300 px-4 py-2">Forward one screen</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>b</code></td>
+        <td className="border border-gray-300 px-4 py-2">Backward one screen</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>d</code></td>
+        <td className="border border-gray-300 px-4 py-2">Forward half screen</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>u</code></td>
+        <td className="border border-gray-300 px-4 py-2">Backward half screen</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>j</code> or <code>↓</code></td>
+        <td className="border border-gray-300 px-4 py-2">Down one line</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>k</code> or <code>↑</code></td>
+        <td className="border border-gray-300 px-4 py-2">Up one line</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>g</code></td>
+        <td className="border border-gray-300 px-4 py-2">Go to beginning</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>G</code></td>
+        <td className="border border-gray-300 px-4 py-2">Go to end</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>q</code></td>
+        <td className="border border-gray-300 px-4 py-2">Quit</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 ### Searching in less
 

@@ -72,15 +72,42 @@ Hello John!
 Bash provides several special variables to work with command line arguments:
 
 <div className="overflow-x-auto my-6">
-
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `$0` | Script name | `./greet.sh` |
-| `$1`, `$2`, `$3`... | Individual arguments | `John`, `Bob`, `Alice` |
-| `$@` | All arguments as separate strings | `"John" "Bob" "Alice"` |
-| `$*` | All arguments as single string | `"John Bob Alice"` |
-| `$#` | Number of arguments | `3` |
-
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Variable</th>
+        <th className="border border-gray-300 px-4 py-2">Description</th>
+        <th className="border border-gray-300 px-4 py-2">Example</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>$0</code></td>
+        <td className="border border-gray-300 px-4 py-2">Script name</td>
+        <td className="border border-gray-300 px-4 py-2"><code>./greet.sh</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>$1</code>, <code>$2</code>, <code>$3</code>...</td>
+        <td className="border border-gray-300 px-4 py-2">Individual arguments</td>
+        <td className="border border-gray-300 px-4 py-2"><code>John</code>, <code>Bob</code>, <code>Alice</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>$@</code></td>
+        <td className="border border-gray-300 px-4 py-2">All arguments as separate strings</td>
+        <td className="border border-gray-300 px-4 py-2"><code>"John" "Bob" "Alice"</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>$*</code></td>
+        <td className="border border-gray-300 px-4 py-2">All arguments as single string</td>
+        <td className="border border-gray-300 px-4 py-2"><code>"John Bob Alice"</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>$#</code></td>
+        <td className="border border-gray-300 px-4 py-2">Number of arguments</td>
+        <td className="border border-gray-300 px-4 py-2"><code>3</code></td>
+      </tr>
+    </tbody>
+  </table>
 </div>
 
 ### Accessing Individual Arguments

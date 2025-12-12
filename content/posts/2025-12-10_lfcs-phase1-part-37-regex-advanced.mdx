@@ -1741,33 +1741,136 @@ grep -E '\bcat\b' text.txt    # Matches: only "cat"
 
 ## Quick Reference: Advanced Regex
 
-| Feature | Syntax | Example | Description |
-|---------|--------|---------|-------------|
-| Extended regex | `grep -E` | `grep -E 'a+b'` | No escaping needed |
-| Grouping | `()` | `(ab)+` | Group patterns |
-| Alternation | `\|` | `cat\|dog` | OR logic |
-| Backreference | `\1` `\2` | `([a-z])\1` | Match captured group |
-| Word boundary | `\b` | `\bword\b` | Word edges |
-| Exact count | `{n}` | `[0-9]{3}` | Exactly n times |
-| Min count | `{n,}` | `[0-9]{3,}` | n or more times |
-| Range count | `{n,m}` | `[0-9]{3,5}` | Between n and m |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Feature</th>
+        <th className="border border-gray-300 px-4 py-2">Syntax</th>
+        <th className="border border-gray-300 px-4 py-2">Example</th>
+        <th className="border border-gray-300 px-4 py-2">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2">Extended regex</td>
+        <td className="border border-gray-300 px-4 py-2"><code>grep -E</code></td>
+        <td className="border border-gray-300 px-4 py-2"><code>grep -E 'a+b'</code></td>
+        <td className="border border-gray-300 px-4 py-2">No escaping needed</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2">Grouping</td>
+        <td className="border border-gray-300 px-4 py-2"><code>()</code></td>
+        <td className="border border-gray-300 px-4 py-2"><code>(ab)+</code></td>
+        <td className="border border-gray-300 px-4 py-2">Group patterns</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2">Alternation</td>
+        <td className="border border-gray-300 px-4 py-2"><code>\|</code></td>
+        <td className="border border-gray-300 px-4 py-2"><code>cat\|dog</code></td>
+        <td className="border border-gray-300 px-4 py-2">OR logic</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2">Backreference</td>
+        <td className="border border-gray-300 px-4 py-2"><code>\1</code> <code>\2</code></td>
+        <td className="border border-gray-300 px-4 py-2"><code>([a-z])\1</code></td>
+        <td className="border border-gray-300 px-4 py-2">Match captured group</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2">Word boundary</td>
+        <td className="border border-gray-300 px-4 py-2"><code>\b</code></td>
+        <td className="border border-gray-300 px-4 py-2"><code>\bword\b</code></td>
+        <td className="border border-gray-300 px-4 py-2">Word edges</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2">Exact count</td>
+        <td className="border border-gray-300 px-4 py-2"><code>{`{n}`}</code></td>
+        <td className="border border-gray-300 px-4 py-2"><code>[0-9]{`{3}`}</code></td>
+        <td className="border border-gray-300 px-4 py-2">Exactly n times</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2">Min count</td>
+        <td className="border border-gray-300 px-4 py-2"><code>{`{n,}`}</code></td>
+        <td className="border border-gray-300 px-4 py-2"><code>[0-9]{`{3,}`}</code></td>
+        <td className="border border-gray-300 px-4 py-2">n or more times</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2">Range count</td>
+        <td className="border border-gray-300 px-4 py-2"><code>{`{n,m}`}</code></td>
+        <td className="border border-gray-300 px-4 py-2"><code>[0-9]{`{3,5}`}</code></td>
+        <td className="border border-gray-300 px-4 py-2">Between n and m</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 ---
 
 ## Quick Reference: grep Options
 
-| Option | Description | Example |
-|--------|-------------|---------|
-| `-E` | Extended regex | `grep -E 'a+b' file` |
-| `-P` | Perl regex | `grep -P '\d+' file` |
-| `-o` | Only matching | `grep -o '[0-9]+' file` |
-| `-v` | Invert match | `grep -v 'error' file` |
-| `-i` | Case insensitive | `grep -i 'ERROR' file` |
-| `-c` | Count matches | `grep -c 'error' file` |
-| `-n` | Line numbers | `grep -n 'error' file` |
-| `-A N` | N lines after | `grep -A 5 'error' file` |
-| `-B N` | N lines before | `grep -B 3 'error' file` |
-| `-C N` | N lines context | `grep -C 2 'error' file` |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Option</th>
+        <th className="border border-gray-300 px-4 py-2">Description</th>
+        <th className="border border-gray-300 px-4 py-2">Example</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-E</code></td>
+        <td className="border border-gray-300 px-4 py-2">Extended regex</td>
+        <td className="border border-gray-300 px-4 py-2"><code>grep -E 'a+b' file</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-P</code></td>
+        <td className="border border-gray-300 px-4 py-2">Perl regex</td>
+        <td className="border border-gray-300 px-4 py-2"><code>grep -P '\d+' file</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-o</code></td>
+        <td className="border border-gray-300 px-4 py-2">Only matching</td>
+        <td className="border border-gray-300 px-4 py-2"><code>grep -o '[0-9]+' file</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-v</code></td>
+        <td className="border border-gray-300 px-4 py-2">Invert match</td>
+        <td className="border border-gray-300 px-4 py-2"><code>grep -v 'error' file</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-i</code></td>
+        <td className="border border-gray-300 px-4 py-2">Case insensitive</td>
+        <td className="border border-gray-300 px-4 py-2"><code>grep -i 'ERROR' file</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-c</code></td>
+        <td className="border border-gray-300 px-4 py-2">Count matches</td>
+        <td className="border border-gray-300 px-4 py-2"><code>grep -c 'error' file</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-n</code></td>
+        <td className="border border-gray-300 px-4 py-2">Line numbers</td>
+        <td className="border border-gray-300 px-4 py-2"><code>grep -n 'error' file</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-A N</code></td>
+        <td className="border border-gray-300 px-4 py-2">N lines after</td>
+        <td className="border border-gray-300 px-4 py-2"><code>grep -A 5 'error' file</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-B N</code></td>
+        <td className="border border-gray-300 px-4 py-2">N lines before</td>
+        <td className="border border-gray-300 px-4 py-2"><code>grep -B 3 'error' file</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-C N</code></td>
+        <td className="border border-gray-300 px-4 py-2">N lines context</td>
+        <td className="border border-gray-300 px-4 py-2"><code>grep -C 2 'error' file</code></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 ---
 

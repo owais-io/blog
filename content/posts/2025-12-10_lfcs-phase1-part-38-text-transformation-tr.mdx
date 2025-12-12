@@ -50,11 +50,34 @@ tr [OPTIONS] SET1 [SET2]
 
 ### tr vs sed vs awk
 
-| Tool | Best For | Example |
-|------|----------|---------|
-| `tr` | Simple character transformations | Convert case, delete spaces |
-| `sed` | Line-based pattern replacement | Complex substitutions |
-| `awk` | Field-based processing | Column extraction, calculations |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Tool</th>
+        <th className="border border-gray-300 px-4 py-2">Best For</th>
+        <th className="border border-gray-300 px-4 py-2">Example</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>tr</code></td>
+        <td className="border border-gray-300 px-4 py-2">Simple character transformations</td>
+        <td className="border border-gray-300 px-4 py-2">Convert case, delete spaces</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>sed</code></td>
+        <td className="border border-gray-300 px-4 py-2">Line-based pattern replacement</td>
+        <td className="border border-gray-300 px-4 py-2">Complex substitutions</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>awk</code></td>
+        <td className="border border-gray-300 px-4 py-2">Field-based processing</td>
+        <td className="border border-gray-300 px-4 py-2">Column extraction, calculations</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 **When to use tr:**
 - Converting case
@@ -219,16 +242,59 @@ echo "Hello World 123" | tr 'A-Z' '*'
 
 POSIX character classes for portable scripts:
 
-| Class | Description | Equivalent |
-|-------|-------------|------------|
-| `[:alnum:]` | Alphanumeric | `[a-zA-Z0-9]` |
-| `[:alpha:]` | Alphabetic | `[a-zA-Z]` |
-| `[:digit:]` | Digits | `[0-9]` |
-| `[:lower:]` | Lowercase | `[a-z]` |
-| `[:upper:]` | Uppercase | `[A-Z]` |
-| `[:space:]` | Whitespace | Space, tab, newline |
-| `[:punct:]` | Punctuation | `. , ; : ! ?` etc. |
-| `[:blank:]` | Space and tab | ` \t` |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Class</th>
+        <th className="border border-gray-300 px-4 py-2">Description</th>
+        <th className="border border-gray-300 px-4 py-2">Equivalent</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>[:alnum:]</code></td>
+        <td className="border border-gray-300 px-4 py-2">Alphanumeric</td>
+        <td className="border border-gray-300 px-4 py-2"><code>[a-zA-Z0-9]</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>[:alpha:]</code></td>
+        <td className="border border-gray-300 px-4 py-2">Alphabetic</td>
+        <td className="border border-gray-300 px-4 py-2"><code>[a-zA-Z]</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>[:digit:]</code></td>
+        <td className="border border-gray-300 px-4 py-2">Digits</td>
+        <td className="border border-gray-300 px-4 py-2"><code>[0-9]</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>[:lower:]</code></td>
+        <td className="border border-gray-300 px-4 py-2">Lowercase</td>
+        <td className="border border-gray-300 px-4 py-2"><code>[a-z]</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>[:upper:]</code></td>
+        <td className="border border-gray-300 px-4 py-2">Uppercase</td>
+        <td className="border border-gray-300 px-4 py-2"><code>[A-Z]</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>[:space:]</code></td>
+        <td className="border border-gray-300 px-4 py-2">Whitespace</td>
+        <td className="border border-gray-300 px-4 py-2">Space, tab, newline</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>[:punct:]</code></td>
+        <td className="border border-gray-300 px-4 py-2">Punctuation</td>
+        <td className="border border-gray-300 px-4 py-2"><code>. , ; : ! ?</code> etc.</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>[:blank:]</code></td>
+        <td className="border border-gray-300 px-4 py-2">Space and tab</td>
+        <td className="border border-gray-300 px-4 py-2"><code> \t</code></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 **Example 9: Using character classes**
 
@@ -1177,28 +1243,102 @@ echo "hello" | tr 'a-z' 'A-Z'
 
 ## Quick Reference: tr Options
 
-| Option | Description | Example |
-|--------|-------------|---------|
-| (none) | Translate SET1 to SET2 | `tr 'a-z' 'A-Z'` |
-| `-d` | Delete characters in SET1 | `tr -d '[:digit:]'` |
-| `-s` | Squeeze repeated chars | `tr -s ' '` |
-| `-c` | Complement of SET1 | `tr -cd '[:alnum:]'` |
-| `-t` | Truncate SET1 to SET2 length | `tr -t 'a-z' 'AB'` |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Option</th>
+        <th className="border border-gray-300 px-4 py-2">Description</th>
+        <th className="border border-gray-300 px-4 py-2">Example</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2">(none)</td>
+        <td className="border border-gray-300 px-4 py-2">Translate SET1 to SET2</td>
+        <td className="border border-gray-300 px-4 py-2"><code>tr 'a-z' 'A-Z'</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-d</code></td>
+        <td className="border border-gray-300 px-4 py-2">Delete characters in SET1</td>
+        <td className="border border-gray-300 px-4 py-2"><code>tr -d '[:digit:]'</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-s</code></td>
+        <td className="border border-gray-300 px-4 py-2">Squeeze repeated chars</td>
+        <td className="border border-gray-300 px-4 py-2"><code>tr -s ' '</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-c</code></td>
+        <td className="border border-gray-300 px-4 py-2">Complement of SET1</td>
+        <td className="border border-gray-300 px-4 py-2"><code>tr -cd '[:alnum:]'</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-t</code></td>
+        <td className="border border-gray-300 px-4 py-2">Truncate SET1 to SET2 length</td>
+        <td className="border border-gray-300 px-4 py-2"><code>tr -t 'a-z' 'AB'</code></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 ---
 
 ## Quick Reference: Character Classes
 
-| Class | Description | Example Characters |
-|-------|-------------|--------------------|
-| `[:alnum:]` | Letters and digits | a-z, A-Z, 0-9 |
-| `[:alpha:]` | Letters only | a-z, A-Z |
-| `[:digit:]` | Digits | 0-9 |
-| `[:lower:]` | Lowercase letters | a-z |
-| `[:upper:]` | Uppercase letters | A-Z |
-| `[:space:]` | Whitespace | space, tab, newline |
-| `[:punct:]` | Punctuation | . , ; : ! ? |
-| `[:blank:]` | Space and tab | (space) \t |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Class</th>
+        <th className="border border-gray-300 px-4 py-2">Description</th>
+        <th className="border border-gray-300 px-4 py-2">Example Characters</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>[:alnum:]</code></td>
+        <td className="border border-gray-300 px-4 py-2">Letters and digits</td>
+        <td className="border border-gray-300 px-4 py-2">a-z, A-Z, 0-9</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>[:alpha:]</code></td>
+        <td className="border border-gray-300 px-4 py-2">Letters only</td>
+        <td className="border border-gray-300 px-4 py-2">a-z, A-Z</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>[:digit:]</code></td>
+        <td className="border border-gray-300 px-4 py-2">Digits</td>
+        <td className="border border-gray-300 px-4 py-2">0-9</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>[:lower:]</code></td>
+        <td className="border border-gray-300 px-4 py-2">Lowercase letters</td>
+        <td className="border border-gray-300 px-4 py-2">a-z</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>[:upper:]</code></td>
+        <td className="border border-gray-300 px-4 py-2">Uppercase letters</td>
+        <td className="border border-gray-300 px-4 py-2">A-Z</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>[:space:]</code></td>
+        <td className="border border-gray-300 px-4 py-2">Whitespace</td>
+        <td className="border border-gray-300 px-4 py-2">space, tab, newline</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>[:punct:]</code></td>
+        <td className="border border-gray-300 px-4 py-2">Punctuation</td>
+        <td className="border border-gray-300 px-4 py-2">. , ; : ! ?</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>[:blank:]</code></td>
+        <td className="border border-gray-300 px-4 py-2">Space and tab</td>
+        <td className="border border-gray-300 px-4 py-2">(space) \t</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 ---
 

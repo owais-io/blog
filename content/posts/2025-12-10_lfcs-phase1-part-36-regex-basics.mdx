@@ -1760,34 +1760,143 @@ grep '[Ee][Rr][Rr][Oo][Rr]' file.txt
 
 ## Quick Reference: Basic Regex Syntax
 
-| Pattern | Meaning | Example | Matches |
-|---------|---------|---------|---------|
-| `^` | Start of line | `^Error` | Lines starting with "Error" |
-| `$` | End of line | `failed$` | Lines ending with "failed" |
-| `.` | Any single character | `e.r` | "ear", "err", "e3r" |
-| `[abc]` | Any of a, b, c | `[aeiou]` | Any vowel |
-| `[a-z]` | Range (lowercase) | `[0-9]` | Any digit |
-| `[^abc]` | NOT a, b, or c | `[^0-9]` | Any non-digit |
-| `*` | Zero or more | `a*` | "", "a", "aa", "aaa" |
-| `\+` | One or more | `a\+` | "a", "aa", "aaa" (not "") |
-| `\?` | Zero or one | `colou\?r` | "color" or "colour" |
-| `\|` | OR (alternation) | `cat\|dog` | "cat" or "dog" |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Pattern</th>
+        <th className="border border-gray-300 px-4 py-2">Meaning</th>
+        <th className="border border-gray-300 px-4 py-2">Example</th>
+        <th className="border border-gray-300 px-4 py-2">Matches</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>^</code></td>
+        <td className="border border-gray-300 px-4 py-2">Start of line</td>
+        <td className="border border-gray-300 px-4 py-2"><code>^Error</code></td>
+        <td className="border border-gray-300 px-4 py-2">Lines starting with "Error"</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>$</code></td>
+        <td className="border border-gray-300 px-4 py-2">End of line</td>
+        <td className="border border-gray-300 px-4 py-2"><code>failed$</code></td>
+        <td className="border border-gray-300 px-4 py-2">Lines ending with "failed"</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>.</code></td>
+        <td className="border border-gray-300 px-4 py-2">Any single character</td>
+        <td className="border border-gray-300 px-4 py-2"><code>e.r</code></td>
+        <td className="border border-gray-300 px-4 py-2">"ear", "err", "e3r"</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>[abc]</code></td>
+        <td className="border border-gray-300 px-4 py-2">Any of a, b, c</td>
+        <td className="border border-gray-300 px-4 py-2"><code>[aeiou]</code></td>
+        <td className="border border-gray-300 px-4 py-2">Any vowel</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>[a-z]</code></td>
+        <td className="border border-gray-300 px-4 py-2">Range (lowercase)</td>
+        <td className="border border-gray-300 px-4 py-2"><code>[0-9]</code></td>
+        <td className="border border-gray-300 px-4 py-2">Any digit</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>[^abc]</code></td>
+        <td className="border border-gray-300 px-4 py-2">NOT a, b, or c</td>
+        <td className="border border-gray-300 px-4 py-2"><code>[^0-9]</code></td>
+        <td className="border border-gray-300 px-4 py-2">Any non-digit</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>*</code></td>
+        <td className="border border-gray-300 px-4 py-2">Zero or more</td>
+        <td className="border border-gray-300 px-4 py-2"><code>a*</code></td>
+        <td className="border border-gray-300 px-4 py-2">"", "a", "aa", "aaa"</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>\+</code></td>
+        <td className="border border-gray-300 px-4 py-2">One or more</td>
+        <td className="border border-gray-300 px-4 py-2"><code>a\+</code></td>
+        <td className="border border-gray-300 px-4 py-2">"a", "aa", "aaa" (not "")</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>\?</code></td>
+        <td className="border border-gray-300 px-4 py-2">Zero or one</td>
+        <td className="border border-gray-300 px-4 py-2"><code>colou\?r</code></td>
+        <td className="border border-gray-300 px-4 py-2">"color" or "colour"</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>\|</code></td>
+        <td className="border border-gray-300 px-4 py-2">OR (alternation)</td>
+        <td className="border border-gray-300 px-4 py-2"><code>cat\|dog</code></td>
+        <td className="border border-gray-300 px-4 py-2">"cat" or "dog"</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 ---
 
 ## Quick Reference: Common grep Options
 
-| Option | Description | Example |
-|--------|-------------|---------|
-| `-E` | Extended regex | `grep -E 'error\|warn' file.txt` |
-| `-i` | Case insensitive | `grep -i 'error' file.txt` |
-| `-v` | Invert match | `grep -v '^#' file.txt` |
-| `-c` | Count matches | `grep -c 'error' file.txt` |
-| `-n` | Show line numbers | `grep -n 'error' file.txt` |
-| `-o` | Show only match | `grep -o '[0-9]\+' file.txt` |
-| `-A N` | N lines after | `grep -A 5 'error' file.txt` |
-| `-B N` | N lines before | `grep -B 3 'error' file.txt` |
-| `-C N` | N lines context | `grep -C 2 'error' file.txt` |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Option</th>
+        <th className="border border-gray-300 px-4 py-2">Description</th>
+        <th className="border border-gray-300 px-4 py-2">Example</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-E</code></td>
+        <td className="border border-gray-300 px-4 py-2">Extended regex</td>
+        <td className="border border-gray-300 px-4 py-2"><code>grep -E 'error\|warn' file.txt</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-i</code></td>
+        <td className="border border-gray-300 px-4 py-2">Case insensitive</td>
+        <td className="border border-gray-300 px-4 py-2"><code>grep -i 'error' file.txt</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-v</code></td>
+        <td className="border border-gray-300 px-4 py-2">Invert match</td>
+        <td className="border border-gray-300 px-4 py-2"><code>grep -v '^#' file.txt</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-c</code></td>
+        <td className="border border-gray-300 px-4 py-2">Count matches</td>
+        <td className="border border-gray-300 px-4 py-2"><code>grep -c 'error' file.txt</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-n</code></td>
+        <td className="border border-gray-300 px-4 py-2">Show line numbers</td>
+        <td className="border border-gray-300 px-4 py-2"><code>grep -n 'error' file.txt</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-o</code></td>
+        <td className="border border-gray-300 px-4 py-2">Show only match</td>
+        <td className="border border-gray-300 px-4 py-2"><code>grep -o '[0-9]\+' file.txt</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-A N</code></td>
+        <td className="border border-gray-300 px-4 py-2">N lines after</td>
+        <td className="border border-gray-300 px-4 py-2"><code>grep -A 5 'error' file.txt</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-B N</code></td>
+        <td className="border border-gray-300 px-4 py-2">N lines before</td>
+        <td className="border border-gray-300 px-4 py-2"><code>grep -B 3 'error' file.txt</code></td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><code>-C N</code></td>
+        <td className="border border-gray-300 px-4 py-2">N lines context</td>
+        <td className="border border-gray-300 px-4 py-2"><code>grep -C 2 'error' file.txt</code></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 ---
 

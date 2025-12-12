@@ -1988,17 +1988,84 @@ open sftp://john@192.168.1.100 -privatekey="C:\path\to\key.ppk"
 
 ## WinSCP vs Other File Transfer Tools
 
-| Feature | WinSCP | FileZilla | MobaXterm SFTP | Windows Explorer |
-|---------|--------|-----------|----------------|------------------|
-| **SFTP Support** | ✅ | ✅ | ✅ | ❌ |
-| **Directory Sync** | ✅ Excellent | ✅ Basic | ❌ | ❌ |
-| **Dual-Pane View** | ✅ | ✅ | ✅ | ❌ |
-| **Scripting** | ✅ Powerful | ❌ Weak | ✅ | ❌ |
-| **Integrated Editor** | ✅ | ✅ | ✅ | N/A |
-| **SSH Keys** | ✅ .ppk | ✅ OpenSSH | ✅ | N/A |
-| **Cost** | ✅ Free | ✅ Free | ✅ Free | N/A |
-| **Platform** | Windows | Cross-platform | Windows | Windows |
-| **Terminal** | ❌ | ❌ | ✅ | N/A |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Feature</th>
+        <th className="border border-gray-300 px-4 py-2">WinSCP</th>
+        <th className="border border-gray-300 px-4 py-2">FileZilla</th>
+        <th className="border border-gray-300 px-4 py-2">MobaXterm SFTP</th>
+        <th className="border border-gray-300 px-4 py-2">Windows Explorer</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><strong>SFTP Support</strong></td>
+        <td className="border border-gray-300 px-4 py-2">✅</td>
+        <td className="border border-gray-300 px-4 py-2">✅</td>
+        <td className="border border-gray-300 px-4 py-2">✅</td>
+        <td className="border border-gray-300 px-4 py-2">❌</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><strong>Directory Sync</strong></td>
+        <td className="border border-gray-300 px-4 py-2">✅ Excellent</td>
+        <td className="border border-gray-300 px-4 py-2">✅ Basic</td>
+        <td className="border border-gray-300 px-4 py-2">❌</td>
+        <td className="border border-gray-300 px-4 py-2">❌</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><strong>Dual-Pane View</strong></td>
+        <td className="border border-gray-300 px-4 py-2">✅</td>
+        <td className="border border-gray-300 px-4 py-2">✅</td>
+        <td className="border border-gray-300 px-4 py-2">✅</td>
+        <td className="border border-gray-300 px-4 py-2">❌</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><strong>Scripting</strong></td>
+        <td className="border border-gray-300 px-4 py-2">✅ Powerful</td>
+        <td className="border border-gray-300 px-4 py-2">❌ Weak</td>
+        <td className="border border-gray-300 px-4 py-2">✅</td>
+        <td className="border border-gray-300 px-4 py-2">❌</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><strong>Integrated Editor</strong></td>
+        <td className="border border-gray-300 px-4 py-2">✅</td>
+        <td className="border border-gray-300 px-4 py-2">✅</td>
+        <td className="border border-gray-300 px-4 py-2">✅</td>
+        <td className="border border-gray-300 px-4 py-2">N/A</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><strong>SSH Keys</strong></td>
+        <td className="border border-gray-300 px-4 py-2">✅ .ppk</td>
+        <td className="border border-gray-300 px-4 py-2">✅ OpenSSH</td>
+        <td className="border border-gray-300 px-4 py-2">✅</td>
+        <td className="border border-gray-300 px-4 py-2">N/A</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><strong>Cost</strong></td>
+        <td className="border border-gray-300 px-4 py-2">✅ Free</td>
+        <td className="border border-gray-300 px-4 py-2">✅ Free</td>
+        <td className="border border-gray-300 px-4 py-2">✅ Free</td>
+        <td className="border border-gray-300 px-4 py-2">N/A</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><strong>Platform</strong></td>
+        <td className="border border-gray-300 px-4 py-2">Windows</td>
+        <td className="border border-gray-300 px-4 py-2">Cross-platform</td>
+        <td className="border border-gray-300 px-4 py-2">Windows</td>
+        <td className="border border-gray-300 px-4 py-2">Windows</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2"><strong>Terminal</strong></td>
+        <td className="border border-gray-300 px-4 py-2">❌</td>
+        <td className="border border-gray-300 px-4 py-2">❌</td>
+        <td className="border border-gray-300 px-4 py-2">✅</td>
+        <td className="border border-gray-300 px-4 py-2">N/A</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 **WinSCP advantages**: Best synchronization features, excellent scripting, Windows-optimized.
 

@@ -186,16 +186,68 @@ Permissions are calculated by adding these values for each category.
 
 ### Permission Calculation Table
 
-| Binary | Octal | Permissions | Meaning |
-|--------|-------|-------------|---------|
-| 000 | 0 | `---` | No permissions |
-| 001 | 1 | `--x` | Execute only |
-| 010 | 2 | `-w-` | Write only |
-| 011 | 3 | `-wx` | Write and execute |
-| 100 | 4 | `r--` | Read only |
-| 101 | 5 | `r-x` | Read and execute |
-| 110 | 6 | `rw-` | Read and write |
-| 111 | 7 | `rwx` | Read, write, and execute |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Binary</th>
+        <th className="border border-gray-300 px-4 py-2">Octal</th>
+        <th className="border border-gray-300 px-4 py-2">Permissions</th>
+        <th className="border border-gray-300 px-4 py-2">Meaning</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2">000</td>
+        <td className="border border-gray-300 px-4 py-2">0</td>
+        <td className="border border-gray-300 px-4 py-2"><code>---</code></td>
+        <td className="border border-gray-300 px-4 py-2">No permissions</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2">001</td>
+        <td className="border border-gray-300 px-4 py-2">1</td>
+        <td className="border border-gray-300 px-4 py-2"><code>--x</code></td>
+        <td className="border border-gray-300 px-4 py-2">Execute only</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2">010</td>
+        <td className="border border-gray-300 px-4 py-2">2</td>
+        <td className="border border-gray-300 px-4 py-2"><code>-w-</code></td>
+        <td className="border border-gray-300 px-4 py-2">Write only</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2">011</td>
+        <td className="border border-gray-300 px-4 py-2">3</td>
+        <td className="border border-gray-300 px-4 py-2"><code>-wx</code></td>
+        <td className="border border-gray-300 px-4 py-2">Write and execute</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2">100</td>
+        <td className="border border-gray-300 px-4 py-2">4</td>
+        <td className="border border-gray-300 px-4 py-2"><code>r--</code></td>
+        <td className="border border-gray-300 px-4 py-2">Read only</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2">101</td>
+        <td className="border border-gray-300 px-4 py-2">5</td>
+        <td className="border border-gray-300 px-4 py-2"><code>r-x</code></td>
+        <td className="border border-gray-300 px-4 py-2">Read and execute</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2">110</td>
+        <td className="border border-gray-300 px-4 py-2">6</td>
+        <td className="border border-gray-300 px-4 py-2"><code>rw-</code></td>
+        <td className="border border-gray-300 px-4 py-2">Read and write</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2">111</td>
+        <td className="border border-gray-300 px-4 py-2">7</td>
+        <td className="border border-gray-300 px-4 py-2"><code>rwx</code></td>
+        <td className="border border-gray-300 px-4 py-2">Read, write, and execute</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 ### Common Permission Combinations
 
@@ -635,11 +687,42 @@ chmod 1777 /opt/uploads
 
 ### Special Permissions Summary Table
 
-| Permission | Numeric | File Effect | Directory Effect | Symbol |
-|------------|---------|-------------|------------------|--------|
-| Setuid | 4000 | Run as file owner | (no effect) | `s` in user position |
-| Setgid | 2000 | Run as file group | New files inherit directory group | `s` in group position |
-| Sticky Bit | 1000 | (no effect) | Only owner can delete files | `t` in other position |
+<div className="overflow-x-auto">
+  <table className="min-w-full border-collapse border border-gray-300">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Permission</th>
+        <th className="border border-gray-300 px-4 py-2">Numeric</th>
+        <th className="border border-gray-300 px-4 py-2">File Effect</th>
+        <th className="border border-gray-300 px-4 py-2">Directory Effect</th>
+        <th className="border border-gray-300 px-4 py-2">Symbol</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2">Setuid</td>
+        <td className="border border-gray-300 px-4 py-2">4000</td>
+        <td className="border border-gray-300 px-4 py-2">Run as file owner</td>
+        <td className="border border-gray-300 px-4 py-2">(no effect)</td>
+        <td className="border border-gray-300 px-4 py-2"><code>s</code> in user position</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2">Setgid</td>
+        <td className="border border-gray-300 px-4 py-2">2000</td>
+        <td className="border border-gray-300 px-4 py-2">Run as file group</td>
+        <td className="border border-gray-300 px-4 py-2">New files inherit directory group</td>
+        <td className="border border-gray-300 px-4 py-2"><code>s</code> in group position</td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2">Sticky Bit</td>
+        <td className="border border-gray-300 px-4 py-2">1000</td>
+        <td className="border border-gray-300 px-4 py-2">(no effect)</td>
+        <td className="border border-gray-300 px-4 py-2">Only owner can delete files</td>
+        <td className="border border-gray-300 px-4 py-2"><code>t</code> in other position</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 ### Combining Special Permissions
 
