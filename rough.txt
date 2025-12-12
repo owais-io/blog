@@ -43,62 +43,7 @@ Expected the closing tag `</code>` either after the end of `emphasis` (842:72) o
 More information: https://mdxjs.com/docs/troubleshooting-mdx] {
   digest: '1356111532'
 }
-[Error: [next-mdx-remote] error compiling MDX:
-Unexpected closing tag `</td>`, expected corresponding closing tag for `<code>` (1635:58-1635:64)
-
-  1633 |       </tr>
-  1634 |       <tr>
-> 1635 |         <td className="border border-gray-300 px-4 py-2"><code>i\</code></td>
-       |                                                          ^
-  1636 |         <td className="border border-gray-300 px-4 py-2">Insert before line</td>
-  1637 |         <td className="border border-gray-300 px-4 py-2"><code>sed '3i\new line' file.txt</code></td>
-
-More information: https://mdxjs.com/docs/troubleshooting-mdx] {
-  digest: '3379862983'
-}
-[Error: [next-mdx-remote] error compiling MDX:
-Unexpected closing tag `</td>`, expected corresponding closing tag for `<code>` (1635:58-1635:64)
-
-  1633 |       </tr>
-  1634 |       <tr>
-> 1635 |         <td className="border border-gray-300 px-4 py-2"><code>i\</code></td>
-       |                                                          ^
-  1636 |         <td className="border border-gray-300 px-4 py-2">Insert before line</td>
-  1637 |         <td className="border border-gray-300 px-4 py-2"><code>sed '3i\new line' file.txt</code></td>
-
-More information: https://mdxjs.com/docs/troubleshooting-mdx] {
-  digest: '3379862983'
-}
-[Error: [next-mdx-remote] error compiling MDX:
-Unexpected closing tag `</td>`, expected corresponding closing tag for `<code>` (1635:58-1635:64)
-
-  1633 |       </tr>
-  1634 |       <tr>
-> 1635 |         <td className="border border-gray-300 px-4 py-2"><code>i\</code></td>
-       |                                                          ^
-  1636 |         <td className="border border-gray-300 px-4 py-2">Insert before line</td>
-  1637 |         <td className="border border-gray-300 px-4 py-2"><code>sed '3i\new line' file.txt</code></td>
-
-More information: https://mdxjs.com/docs/troubleshooting-mdx] {
-  digest: '3379862983'
-}
-
-Error occurred prerendering page "/blog/2026-01-01_lfcs-phase1-part-41-sed-stream-editor". Read more: https://nextjs.org/docs/messages/prerender-error
-
-[Error: [next-mdx-remote] error compiling MDX:
-Unexpected closing tag `</td>`, expected corresponding closing tag for `<code>` (1635:58-1635:64)
-
-  1633 |       </tr>
-  1634 |       <tr>
-> 1635 |         <td className="border border-gray-300 px-4 py-2"><code>i\</code></td>
-       |                                                          ^
-  1636 |         <td className="border border-gray-300 px-4 py-2">Insert before line</td>
-  1637 |         <td className="border border-gray-300 px-4 py-2"><code>sed '3i\new line' file.txt</code></td>
-
-More information: https://mdxjs.com/docs/troubleshooting-mdx] {
-  digest: '3379862983'
-}
-   Generating static pages (25/155) 
+   Generating static pages (26/155) 
 [Error: [next-mdx-remote] error compiling MDX:
 Expected the closing tag `</code>` either after the end of `emphasis` (1802:66) or another opening tag after the start of `emphasis` (1800:64)
 
@@ -127,15 +72,14 @@ More information: https://mdxjs.com/docs/troubleshooting-mdx] {
   digest: '1173757000'
 }
    Generating static pages (38/155) 
-   Generating static pages (60/155) 
+   Generating static pages (63/155) 
    Generating static pages (77/155) 
-   Generating static pages (100/155) 
+   Generating static pages (101/155) 
    Generating static pages (116/155) 
    Generating static pages (141/155) 
  ✓ Generating static pages (155/155)
 
 > Export encountered errors on following paths:
 	/blog/[slug]/page: /blog/2025-12-10_lfcs-phase1-part-36-regex-basics
-	/blog/[slug]/page: /blog/2026-01-01_lfcs-phase1-part-41-sed-stream-editor
 	/blog/[slug]/page: /blog/2026-01-08_lfcs-phase1-part-48-command-history
 Error: Process completed with exit code 1.
