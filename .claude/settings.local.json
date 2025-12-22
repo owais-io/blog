@@ -22,7 +22,15 @@
       "Bash(npm run dev:*)",
       "Bash(lsof:*)",
       "Bash(find:*)",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(while read file)",
+      "Bash(for f in 2025-12-1*_lfcs-phase1-part-4*.mdx 2025-12-1*_lfcs-phase1-part-5*.mdx)",
+      "Bash(do echo \"$f\")",
+      "Bash(bash:*)",
+      "Bash(if [ $? -eq 0 ])",
+      "Bash(then echo \"\")",
+      "Bash(fi)",
+      "Bash(python:*)"
     ],
     "deny": [],
     "ask": []

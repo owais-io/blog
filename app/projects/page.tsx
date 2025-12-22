@@ -21,25 +21,26 @@ const projects: Project[] = [
   {
     id: 1,
     title: "Personal Blog Platform",
-    description: "A production-grade blog platform deployed on AWS EC2 (t2.micro) with fully automated CI/CD pipeline. Built with AI-assistance to implement cloud infrastructure, system administration, and DevOps best practices. Features zero-downtime deployments via GitHub Actions, Nginx reverse proxy, PM2 process management, and SSL/TLS encryption with Let's Encrypt. Overcame memory constraints on free tier by implementing swap space and optimizing Node.js build process. Achieved 99.9% uptime with 1-2 minute deployment cycles from git push to production.",
-    technologies: ["Next.js", "TypeScript", "AWS EC2", "GitHub Actions", "Linux", "Nginx", "PM2", "Let's Encrypt"],
+    description: "A production-grade serverless blog platform deployed on AWS S3 with CloudFront CDN and fully automated CI/CD pipeline. Built with AI-assistance to implement modern cloud architecture and DevOps best practices. Migrated from EC2 to serverless infrastructure for improved global performance, infinite scalability, and reduced operational overhead. Features static site generation with Next.js, automated deployments via GitHub Actions, CloudFront cache invalidation, and SSL/TLS encryption with AWS Certificate Manager. Delivers content from 400+ edge locations worldwide with sub-500ms page loads globally.",
+    technologies: ["Next.js", "TypeScript", "AWS S3", "CloudFront", "GitHub Actions", "AWS Certificate Manager", "Tailwind CSS", "MDX"],
     githubUrl: "https://github.com/owais-io/blog",
     liveUrl: "https://owais.io",
     status: "completed",
     highlights: [
       "Built entirely with AI-assistance using Claude Code",
+      "Serverless architecture with AWS S3 + CloudFront",
+      "Global CDN delivery from 400+ edge locations",
       "Fully automated CI/CD with GitHub Actions",
-      "Zero-downtime deployments using PM2 graceful restarts",
-      "SSL/TLS encryption with auto-renewal",
-      "Optimized for t2.micro free tier (1GB RAM)",
-      "Custom Nginx reverse proxy configuration",
-      "99.9% uptime with monitoring"
+      "Static site generation for optimal performance",
+      "Automatic CloudFront cache invalidation",
+      "SSL/TLS with AWS Certificate Manager (auto-renewal)",
+      "99.99% uptime SLA with infinite scalability"
     ],
     metrics: [
       { label: "Deployment Time", value: "1-2 min" },
-      { label: "Build Time", value: "~2 min" },
-      { label: "Uptime", value: "99.9%" },
-      { label: "Monthly Cost", value: "$0 (Free Tier)" }
+      { label: "Page Load", value: "<500ms" },
+      { label: "Uptime SLA", value: "99.99%" },
+      { label: "Edge Locations", value: "400+" }
     ]
   },
   {

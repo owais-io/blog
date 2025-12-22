@@ -1,6 +1,6 @@
 # My Personal Blog & Portfolio
 
-[![Deploy Status](https://github.com/owais-io/blog/workflows/Deploy%20to%20EC2/badge.svg)](https://github.com/owais-io/blog/actions)
+[![Deploy Status](https://github.com/owais-io/blog/workflows/Deploy%20Blog%20to%20S3%20+%20CloudFront/badge.svg)](https://github.com/owais-io/blog/actions)
 [![Live Site](https://img.shields.io/badge/live-owais.io-blue)](https://owais.io)
 
 ## About This Project
@@ -16,19 +16,24 @@ This is my personal blog and portfolio website where I write comprehensive techn
 
 I built this project to demonstrate my expertise in system architecture, cloud deployment, and DevOps practices. It showcases my ability to design, deploy, and maintain production-grade infrastructure and applications.
 
+### Infrastructure Evolution
+
+**Previous Architecture (EC2)**: Initially deployed on AWS EC2 with Nginx, PM2, and Let's Encrypt for SSL.
+
+**Current Architecture (S3 + CloudFront)**: Migrated to a serverless architecture using AWS S3 for static hosting and CloudFront for global content delivery, significantly improving performance, reducing costs, and eliminating server maintenance overhead.
+
 ## Tech Stack
 
 ### Frontend & Framework (designed with the help of Claude)
-- **Next.js 14** - React framework with App Router
+- **Next.js 14** - React framework with App Router (Static Export)
 - **TypeScript** - Type-safe development
 - **Tailwind CSS** - Utility-first styling
 - **MDX** - Markdown with JSX for rich blog content
 
 ### Infrastructure & Deployment
-- **AWS EC2** - Ubuntu 24.04 LTS on t2.micro (Free Tier)
-- **Nginx** - Reverse proxy and web server
-- **PM2** - Production process manager
-- **Let's Encrypt** - Free SSL/TLS certificates via Certbot
+- **AWS S3** - Static website hosting with high durability
+- **AWS CloudFront** - Global CDN for fast content delivery
+- **AWS Certificate Manager** - Free SSL/TLS certificates
 - **GitHub Actions** - Automated CI/CD pipeline
 
 ## Architecture Overview
@@ -38,113 +43,145 @@ User Request (HTTPS)
          ↓
     Domain (owais.io)
          ↓
-    AWS EC2 Instance
+    AWS Route 53 / DNS
          ↓
-    Nginx (Port 80/443)
+    AWS CloudFront (CDN)
+    - Global Edge Locations
+    - SSL/TLS Termination
+    - Caching & Compression
          ↓
-    Next.js App (Port 3000)
+    AWS S3 Bucket (owais.io)
+    - Static Website Hosting
+    - 99.999999999% Durability
          ↓
-    Static & Dynamic Content
+    Static HTML/CSS/JS Assets
 ```
 
-## AWS EC2 Deployment (Free Tier)
+## AWS S3 + CloudFront Deployment
 
-I deployed this application on AWS EC2 to gain hands-on experience with cloud infrastructure management while keeping costs minimal.
+I migrated this application to AWS S3 with CloudFront to leverage serverless architecture, improve global performance, reduce costs, and eliminate server maintenance overhead.
 
-### Instance Configuration
-- **Instance Type**: t2.micro (1 vCPU, 1GB RAM)
-- **AMI**: Ubuntu Server 24.04 LTS
-- **Storage**: 8GB gp3 SSD
-- **Network**: VPC with Elastic IP for static addressing
-- **Security**: Custom security group with SSH, HTTP, HTTPS access
+### Infrastructure Configuration
+
+#### S3 Bucket Setup
+- **Bucket Name**: owais.io (matches domain for easy routing)
+- **Region**: us-east-1 (required for CloudFront integration)
+- **Purpose**: Static website hosting
+- **Features**:
+  - 99.999999999% (11 9's) durability
+  - Automatic scaling with traffic
+  - Pay only for storage and requests used
+
+#### CloudFront Distribution
+- **Origin**: S3 bucket (owais.io)
+- **SSL/TLS**: AWS Certificate Manager (ACM) certificate
+- **Edge Locations**: 400+ globally distributed
+- **Features**:
+  - Automatic HTTPS enforcement
+  - Gzip/Brotli compression
+  - Edge caching for faster delivery
+  - DDoS protection via AWS Shield
 
 ### Setup Process
 
-#### 1. **Server Provisioning**
-- Launched EC2 instance via AWS Console
-- Configured security groups with proper inbound/outbound rules
-- Allocated and associated Elastic IP for consistent DNS mapping
-- Set up SSH key pair for secure access
-
-#### 2. **Environment Configuration**
-```bash
-# Updated system packages
-sudo apt update && sudo apt upgrade -y
-
-# Installed Node.js 18 LTS
-curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-sudo apt install nodejs -y
-
-# Installed PM2 for process management
-sudo npm install -g pm2
-
-# Installed Nginx as reverse proxy
-sudo apt install nginx -y
-
-# Created 2GB swap space (critical for t2.micro with limited RAM)
-sudo fallocate -l 2G /swapfile
-sudo chmod 600 /swapfile
-sudo mkswap /swapfile
-sudo swapon /swapfile
-```
-
-#### 3. **Application Deployment**
-```bash
-# Cloned repository
-git clone https://github.com/YOUR_USERNAME/blog.git
-cd blog
-
-# Installed dependencies
-npm install
-
-# Built production bundle
-npm run build
-
-# Started app with PM2
-pm2 start npm --name "blog" -- start
-pm2 startup  # Configure PM2 to start on system boot
-pm2 save
-```
-
-#### 4. **Nginx Configuration**
-I configured Nginx as a reverse proxy to forward traffic from port 80/443 to the Next.js application running on port 3000:
-
-```nginx
-server {
-    listen 80;
-    server_name owais.io www.owais.io;
-
-    location / {
-        proxy_pass http://localhost:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_cache_bypass $http_upgrade;
-    }
+#### 1. **Next.js Configuration for Static Export**
+Modified `next.config.js` to enable static site generation:
+```javascript
+const nextConfig = {
+  output: 'export',
+  images: {
+    unoptimized: true,
+  },
 }
 ```
 
-#### 5. **SSL/TLS Setup**
+#### 2. **S3 Bucket Creation & Configuration**
 ```bash
-# Installed Certbot
-sudo apt install certbot python3-certbot-nginx -y
+# Create S3 bucket
+aws s3 mb s3://owais.io --region us-east-1
 
-# Obtained free SSL certificate from Let's Encrypt
-sudo certbot --nginx -d owais.io -d www.owais.io
+# Enable static website hosting
+aws s3 website s3://owais.io/ \
+  --index-document index.html \
+  --error-document 404.html
 
-# Configured auto-renewal
-sudo certbot renew --dry-run
+# Configure bucket policy for public read access
+aws s3api put-bucket-policy --bucket owais.io --policy file://bucket-policy.json
 ```
 
-#### 6. **DNS Configuration**
-- Updated domain DNS records (A records) to point to EC2 Elastic IP
-- Configured both root domain and www subdomain
-- Waited for DNS propagation (10-15 minutes)
+Bucket policy JSON:
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Sid": "PublicReadGetObject",
+    "Effect": "Allow",
+    "Principal": "*",
+    "Action": "s3:GetObject",
+    "Resource": "arn:aws:s3:::owais.io/*"
+  }]
+}
+```
+
+#### 3. **CloudFront Distribution Setup**
+Created CloudFront distribution via AWS Console:
+- **Origin Domain**: owais.io.s3-website-us-east-1.amazonaws.com
+- **Viewer Protocol Policy**: Redirect HTTP to HTTPS
+- **Allowed HTTP Methods**: GET, HEAD, OPTIONS
+- **Compress Objects Automatically**: Yes
+- **Alternate Domain Names (CNAMEs)**: owais.io, www.owais.io
+- **SSL Certificate**: Custom ACM certificate for owais.io
+
+#### 4. **SSL/TLS Certificate (AWS Certificate Manager)**
+```bash
+# Request certificate in us-east-1 (required for CloudFront)
+aws acm request-certificate \
+  --domain-name owais.io \
+  --subject-alternative-names www.owais.io \
+  --validation-method DNS \
+  --region us-east-1
+
+# Validate via DNS records (added to domain provider)
+# Certificate auto-renews before expiration
+```
+
+#### 5. **DNS Configuration**
+Updated domain DNS records:
+- **A Record (Apex)**: owais.io → CloudFront distribution (using ALIAS)
+- **A Record (WWW)**: www.owais.io → CloudFront distribution (using ALIAS)
+- Or use CNAME if domain provider doesn't support ALIAS records
+- TTL: 300 seconds for faster propagation
+
+#### 6. **IAM User for GitHub Actions**
+Created dedicated IAM user with minimal permissions:
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:PutObject",
+        "s3:DeleteObject",
+        "s3:ListBucket"
+      ],
+      "Resource": [
+        "arn:aws:s3:::owais.io",
+        "arn:aws:s3:::owais.io/*"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": "cloudfront:CreateInvalidation",
+      "Resource": "arn:aws:cloudfront::*:distribution/YOUR_DISTRIBUTION_ID"
+    }
+  ]
+}
+```
 
 ## 🔄 CI/CD Pipeline with GitHub Actions
 
-I implemented a fully automated CI/CD pipeline to streamline the deployment process and demonstrate modern DevOps practices.
+I implemented a fully automated CI/CD pipeline that builds and deploys the static site to S3 with CloudFront cache invalidation.
 
 ### Pipeline Architecture
 
@@ -153,128 +190,152 @@ Git Push (main branch)
          ↓
 GitHub Actions Trigger
          ↓
-SSH into EC2 Instance
+Checkout Code
          ↓
-Pull Latest Code
+Setup Node.js 18
          ↓
-Install Dependencies
+Install Dependencies (npm ci)
          ↓
-Build Application
+Build Static Site (npm run build)
          ↓
-Restart PM2 Process
+Configure AWS Credentials
+         ↓
+Sync Files to S3 (aws s3 sync)
+         ↓
+Invalidate CloudFront Cache
          ↓
 Deployment Complete ✅
 ```
 
 ### Implementation Details
 
-#### 1. **SSH Key Setup**
-Generated dedicated SSH key pair on EC2 for GitHub Actions:
-```bash
-ssh-keygen -t rsa -b 4096 -C "github-actions" -f ~/.ssh/github_actions_key
-cat ~/.ssh/github_actions_key.pub >> ~/.ssh/authorized_keys
-```
+#### 1. **GitHub Secrets Configuration**
+Stored AWS credentials securely in GitHub repository secrets:
+- `AWS_ACCESS_KEY_ID` - IAM user access key
+- `AWS_SECRET_ACCESS_KEY` - IAM user secret key
+- `CLOUDFRONT_DISTRIBUTION_ID` - CloudFront distribution ID
 
-#### 2. **GitHub Secrets Configuration**
-Stored sensitive credentials securely in GitHub repository secrets:
-- `EC2_SSH_KEY` - Private SSH key for authentication
-- `EC2_HOST` - EC2 Elastic IP address
-- `EC2_USER` - Ubuntu username
-
-#### 3. **GitHub Actions Workflow**
+#### 2. **GitHub Actions Workflow**
 Created `.github/workflows/deploy.yml`:
 
 ```yaml
-name: Deploy to EC2
+name: Deploy Blog to S3 + CloudFront
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy to EC2
-        uses: appleboy/ssh-action@master
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            cd ~/blog
-            git pull origin main
-            export NODE_OPTIONS="--max-old-space-size=1536"
-            npm install
-            npm run build
-            pm2 restart blog
-            pm2 save
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Next.js site
+        run: npm run build
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Sync files to S3
+        run: |
+          aws s3 sync out/ s3://owais.io/ --delete --no-progress
+
+      - name: Invalidate CloudFront cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "/*"
 ```
 
-#### 4. **Security Group Configuration**
-Updated EC2 security group to allow SSH access from GitHub Actions runners:
-- Port 22 (SSH): Open to 0.0.0.0/0 for GitHub Actions
-- Port 80 (HTTP): Open to 0.0.0.0/0 (redirects to HTTPS)
-- Port 443 (HTTPS): Open to 0.0.0.0/0
+#### 3. **Build Output**
+Next.js generates static files to the `out/` directory:
+- Pre-rendered HTML pages
+- Optimized CSS and JavaScript bundles
+- Static assets (images, fonts)
+- All ready for S3 hosting
 
 ### Benefits of This CI/CD Setup
 
-**Automated Deployments** - Push to main branch and changes go live automatically
-**Zero Downtime** - PM2 performs graceful restarts
-**Fast Iterations** - Typical deployment completes in 1-2 minutes
+**Fully Serverless** - No servers to manage or maintain
+**Global Performance** - Content delivered from 400+ edge locations worldwide
+**Cost Efficient** - Pay only for storage and data transfer, no idle server costs
+**Instant Scaling** - Handles traffic spikes automatically without configuration
+**Automated Deployments** - Push to main branch and changes go live in 1-2 minutes
+**Cache Invalidation** - Ensures users see latest content immediately
 **Reduced Human Error** - Eliminates manual deployment steps
 **Audit Trail** - Full deployment history in GitHub Actions logs
 **Rollback Capability** - Can revert to previous commits if needed
 
-## 🔔 Monitoring & Alerting with CloudWatch
+## 🔔 Monitoring & Performance with CloudWatch
 
-To ensure high availability and immediate awareness of any issues, I implemented AWS CloudWatch alarms with SNS notifications.
+CloudFront and S3 provide built-in monitoring through AWS CloudWatch, giving visibility into performance, usage, and potential issues.
 
-### Setup Process
+### CloudFront Metrics (Automatic)
 
-#### 1. **Create SNS Topic**
-Created an SNS topic to receive and distribute alerts:
+**Real-time Monitoring** - Available in CloudWatch console:
+- **Requests** - Total number of viewer requests
+- **Bytes Downloaded** - Amount of data transferred to viewers
+- **Bytes Uploaded** - Amount of data uploaded from viewers
+- **4xx Error Rate** - Client errors (e.g., 404 not found)
+- **5xx Error Rate** - Server/origin errors
+- **Cache Hit Rate** - Percentage of requests served from cache
+
+### S3 Metrics (Request Metrics)
+
+**Storage & Request Monitoring**:
+- **Bucket Size** - Total storage used
+- **Number of Objects** - Total files stored
+- **All Requests** - GET, PUT, DELETE operations
+- **Data Transfer** - Bytes uploaded/downloaded
+- **4xx/5xx Errors** - Request failures
+
+### Optional: CloudWatch Alarms
+
+Can set up alarms for proactive monitoring:
+
 ```bash
-# Via AWS Console:
-# SNS → Topics → Create topic
-# Type: Standard
-# Name: EC2-Instance-Down-Alert
+# Example: Alert on high 5xx error rate
+aws cloudwatch put-metric-alarm \
+  --alarm-name high-cloudfront-errors \
+  --alarm-description "Alert when 5xx errors spike" \
+  --metric-name 5xxErrorRate \
+  --namespace AWS/CloudFront \
+  --statistic Average \
+  --period 300 \
+  --threshold 5 \
+  --comparison-operator GreaterThanThreshold
 ```
 
-#### 2. **Subscribe to Notifications**
-Configured email notifications for instant alerts:
-- Created email subscription to the SNS topic
-- Confirmed subscription via email link
-- Optional: Added SMS subscription for mobile alerts (format: +923001234567)
+**Recommended Alarms:**
+- **High 5xx Error Rate** - Detect origin/configuration issues
+- **Low Cache Hit Rate** - Optimize caching strategy
+- **Unusual Request Volume** - Detect traffic spikes or attacks
+- **High 4xx Error Rate** - Find broken links
 
-#### 3. **Configure CloudWatch Alarm**
-Set up CloudWatch alarm to monitor instance health:
-- **Metric**: `StatusCheckFailed` (Per-Instance)
-- **Threshold**: Alert when ≥ 1
-- **Period**: 5 minutes (free tier)
-- **Action**: Send notification to SNS topic
-- **Result**: Immediate email alert when instance goes down
+### Benefits of S3 + CloudFront Monitoring
 
-### Monitoring Coverage
-
-**Current Alarms:**
-- **Instance Status Check** - Detects instance failures, stops, or crashes
-- Triggers within 5-10 minutes of failure
-- Email notification with instance details
-
-**Additional Recommended Alarms:**
-- High CPU Utilization (>80%) - Catch performance issues
-- Low CPU Credit Balance (<20) - Prevent t2.micro throttling
-- Disk Space Usage (>80%) - Requires CloudWatch agent
-- Memory Pressure (>90%) - Requires CloudWatch agent
-
-### Benefits
-- **Immediate Awareness** - Know about issues within minutes
-- **Proactive Response** - Address problems before users notice
-- **Free Tier Friendly** - Basic monitoring included in AWS free tier
-- **Uptime Tracking** - Historical data for reliability metrics
+- **High Availability Built-in** - 99.99% SLA for CloudFront, no instance failures
+- **No Server Metrics Needed** - No CPU, memory, or disk to monitor
+- **Automatic Scaling** - Infrastructure scales without intervention
+- **DDoS Protection** - AWS Shield Standard included automatically
+- **Cost Monitoring** - Track S3 storage and CloudFront data transfer costs
+- **Performance Insights** - Identify slow-loading pages or assets
 
 ## Key Features & Learnings
 
@@ -283,114 +344,129 @@ Set up CloudWatch alarm to monitor instance health:
 - **Dynamic tagging system** with filter functionality
 - **Responsive design** optimized for all devices
 - **SEO optimization** with meta tags and sitemap
-- **Performance optimized** with Next.js static generation
-- **HTTPS everywhere** with automatic SSL renewal
+- **Static site generation** with Next.js for optimal performance
+- **Global CDN delivery** with CloudFront edge locations
+- **HTTPS everywhere** with AWS Certificate Manager
+- **Serverless architecture** with zero server maintenance
 
 ### Skills Demonstrated
-- **Cloud Infrastructure** - AWS EC2, VPC, Security Groups, Elastic IP
-- **System Administration** - Linux, Nginx, PM2, SSH
+- **Cloud Infrastructure** - AWS S3, CloudFront, Certificate Manager, IAM
+- **Serverless Architecture** - Static site hosting, CDN configuration
 - **DevOps** - CI/CD pipelines, automated deployments, GitHub Actions
-- **Security** - SSL/TLS, SSH key management, firewall configuration
-- **DNS Management** - Domain configuration, A records, propagation
+- **Security** - SSL/TLS certificates, IAM policies, least-privilege access
+- **DNS Management** - Domain configuration, CNAME/ALIAS records
+- **Performance Optimization** - CDN caching, compression, edge delivery
+- **Cost Optimization** - Serverless pay-per-use model, free SSL certificates
 
 ## Troubleshooting / Debugging
 
-### 1. **Memory Constraints on t2.micro**
-**Problem**: t2.micro instance has only 1GB RAM, which is insufficient for Next.js builds.
+### 1. **Next.js Static Export Configuration**
+**Problem**: Next.js Server Components and dynamic features don't work with static export.
 
 **Error Encountered**:
 ```
-FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory
+Error: Page "/blog/[slug]" is using `export const dynamic = "force-dynamic"` which is not compatible with `output: "export"`.
 ```
 
 **Solution**:
-- Created 2GB swap space to supplement physical RAM
-- Set `NODE_OPTIONS="--max-old-space-size=1536"` in deployment script
-- Optimized build process to use available memory efficiently
+- Configured `next.config.js` with `output: 'export'`
+- Set `images.unoptimized: true` to disable Next.js Image Optimization (requires Node.js server)
+- Removed server-side features (API routes, ISR, dynamic rendering)
+- Used static generation for all pages with `generateStaticParams`
+
+**Lesson Learned**: Static export requires all pages to be pre-rendered at build time.
+
+### 2. **CloudFront Caching Issues**
+**Problem**: Updated content not appearing on the live site after deployment.
+
+**Root Cause**: CloudFront caches content at edge locations, old versions remain cached.
+
+**Solution**:
+- Added CloudFront cache invalidation to GitHub Actions workflow
+- Invalidates all paths (`/*`) after each deployment
+- Ensures users get fresh content within 1-2 minutes
 
 ```bash
-sudo fallocate -l 2G /swapfile
-sudo chmod 600 /swapfile
-sudo mkswap /swapfile
-sudo swapon /swapfile
-echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+aws cloudfront create-invalidation \
+  --distribution-id YOUR_DISTRIBUTION_ID \
+  --paths "/*"
 ```
 
-### 2. **GitHub Actions SSH Authentication Failure**
-**Problem**: First deployment attempt failed with SSH key parsing error.
+**Cost Note**: First 1,000 invalidation paths per month are free, then $0.005 per path.
+
+### 3. **S3 Bucket Policy - Access Denied**
+**Problem**: Site returns 403 Forbidden errors when accessing pages.
+
+**Root Cause**: S3 bucket doesn't have public read permissions configured.
+
+**Solution**:
+- Created bucket policy allowing public `s3:GetObject` access
+- Ensured block public access settings allow bucket policies
+- Verified CloudFront origin is configured correctly
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Sid": "PublicReadGetObject",
+    "Effect": "Allow",
+    "Principal": "*",
+    "Action": "s3:GetObject",
+    "Resource": "arn:aws:s3:::owais.io/*"
+  }]
+}
+```
+
+### 4. **GitHub Actions AWS Credentials Error**
+**Problem**: Deployment fails with AWS authentication errors.
 
 **Error Encountered**:
 ```
-2025/10/10 17:48:37 ssh.ParsePrivateKey: ssh: no key found
+Error: Could not load credentials from any providers
 ```
 
-**Root Cause**: The private SSH key wasn't copied correctly to GitHub Secrets - missing characters or extra whitespace.
+**Root Cause**: AWS credentials not properly configured in GitHub Secrets.
 
 **Solution**:
-- Regenerated the private key display: `cat ~/.ssh/github_actions_key`
-- Carefully copied the **entire** key including `-----BEGIN OPENSSH PRIVATE KEY-----` and `-----END OPENSSH PRIVATE KEY-----`
-- Updated the `EC2_SSH_KEY` secret in GitHub with the complete, unmodified key
-- Ensured no extra spaces or line breaks were added during copy-paste
+- Created IAM user with specific S3 and CloudFront permissions
+- Added `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` to GitHub Secrets
+- Verified IAM policy grants necessary permissions:
+  - `s3:PutObject`, `s3:DeleteObject`, `s3:ListBucket` for S3
+  - `cloudfront:CreateInvalidation` for CloudFront
 
-**Lesson Learned**: Always verify secret values are copied exactly as displayed in terminal.
+**Security Best Practice**: Use least-privilege IAM policies, never use root credentials.
 
-### 3. **GitHub Actions Network Timeout**
-**Problem**: After fixing the SSH key, deployment failed with connection timeout.
-
-**Error Encountered**:
-```
-2025/10/10 17:54:49 dial tcp ***:22: i/o timeout
-Error: Process completed with exit code 1.
-```
-
-**Root Cause**: EC2 security group was configured to allow SSH only from "My IP", blocking GitHub Actions runners.
+### 5. **DNS Configuration for CloudFront**
+**Problem**: Domain not resolving to CloudFront distribution.
 
 **Solution**:
-- Updated EC2 security group inbound rules
-- Added SSH (port 22) access from `0.0.0.0/0` to allow GitHub's dynamic runner IPs
-- Maintained the rule allowing my personal IP for manual SSH access
-- Configured proper descriptions for each rule to track their purpose
+- Updated DNS records to point to CloudFront distribution domain
+- Used CNAME record for `www.owais.io` → CloudFront domain
+- Used ALIAS record (if supported by DNS provider) for apex domain `owais.io`
+- Waited 5-10 minutes for DNS propagation
 
-**Security Note**: While opening port 22 to all IPs is less restrictive, I mitigated risk by:
-- Using SSH key authentication (no password authentication)
-- Keeping the SSH key secure in GitHub Secrets
-- Monitoring access logs regularly with `sudo tail -f /var/log/auth.log`
-
-### 4. **DNS Propagation Delay**
-**Problem**: Domain didn't immediately point to EC2 instance after updating DNS records.
-
-**Root Cause**: DNS caching at multiple levels (local machine, ISP, global DNS servers).
-
-**Solution**:
-- Verified DNS records were correctly set in GoDaddy (A record: `owais.io` → `98.90.226.233`)
-- Tested DNS propagation using: `nslookup owais.io 8.8.8.8` (Google DNS)
-- Cleared local DNS cache on development machine
-- Waited 10-15 minutes for global DNS propagation
-- Verified EC2 was responding correctly to IP address before troubleshooting DNS
-
-**Diagnostic Commands Used**:
+**Diagnostic Commands**:
 ```bash
 # Test DNS resolution
 nslookup owais.io
 dig owais.io
 
-# Test direct IP access
-curl -I http://98.90.226.233
+# Check CloudFront distribution
+curl -I https://d1234567890abc.cloudfront.net
 
-# Check global DNS propagation
-# Used: https://dnschecker.org
+# Verify SSL certificate
+openssl s_client -connect owais.io:443 -servername owais.io
 ```
 
-### 5. **Zero-Downtime Deployments**
-**Challenge**: Ensuring the site remains available during automated deployments.
+### 6. **Missing 404 Page**
+**Problem**: Non-existent pages show CloudFront error instead of custom 404.
 
-**Solution**: Leveraged PM2's graceful restart capability
-- PM2 automatically spawns new process before killing old one
-- Configured `pm2 restart blog` instead of `pm2 stop` then `pm2 start`
-- Used `pm2 save` to persist process list
-- Set up `pm2 startup` to auto-restart on system reboot
+**Solution**:
+- Created custom `404.html` page in Next.js (`app/not-found.tsx`)
+- Configured S3 static website hosting with error document: `404.html`
+- Set CloudFront to forward 404 errors to custom error page
 
-**Result**: Achieved seamless deployments with no user-facing downtime.
+**Result**: Users see branded 404 page instead of generic error message.
 
 ## Running Locally
 
@@ -418,9 +494,11 @@ Visit `http://localhost:3000` to see the site.
 
 - **Lines of Code**: 5000+ (TypeScript, TSX, CSS)
 - **Blog Posts**: Growing collection of technical tutorials
-- **Build Time**: ~2 minutes on EC2 t2.micro
-- **Deployment Time**: ~1-2 minutes (automated)
-- **Uptime**: 99.9% (monitored via PM2)
+- **Build Time**: ~1-2 minutes on GitHub Actions runners
+- **Deployment Time**: ~1-2 minutes (automated via GitHub Actions)
+- **Global Edge Locations**: 400+ CloudFront POPs worldwide
+- **Uptime SLA**: 99.99% (CloudFront) + 99.99% (S3)
+- **Page Load Time**: <500ms globally (thanks to CDN caching)
 
 ## Links
 
@@ -437,4 +515,4 @@ Feel free to reach out if you have questions about this project or want to discu
 
 ---
 
-**Built using Next.js, deployed on AWS EC2, and automated with GitHub Actions.**
+**Built with Next.js, hosted on AWS S3 + CloudFront, and automated with GitHub Actions.**
