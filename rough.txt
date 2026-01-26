@@ -1,0 +1,2644 @@
+[13:47:03 centos9@vm1 Repo]$ # DELETING A BRANCH
+[13:47:23 centos9@vm1 Repo]$ cd seconddemo/
+[13:47:26 centos9@vm1 seconddemo]$ git branch
+  dev
+  master
+* newtest
+[13:47:33 centos9@vm1 seconddemo]$ git status
+On branch newtest
+Your branch is up to date with 'hello/newtest'.
+
+nothing to commit, working tree clean
+[13:47:38 centos9@vm1 seconddemo]$ git checkout master
+Switched to branch 'master'
+Your branch is up to date with 'hello/master'.
+[13:47:51 centos9@vm1 seconddemo]$ git branch -d newtest
+warning: deleting branch 'newtest' that has been merged to
+         'refs/remotes/hello/newtest', but not yet merged to HEAD
+Deleted branch newtest (was 6d3aac9).
+[13:48:11 centos9@vm1 seconddemo]$ git branch
+  dev
+* master
+[13:48:33 centos9@vm1 seconddemo]$ # but that branch is still available in github
+[13:57:02 centos9@vm1 seconddemo]$ git branch -dr hello/newtest
+Deleted remote-tracking branch hello/newtest (was 6d3aac9).
+[13:57:09 centos9@vm1 seconddemo]$ git status
+On branch master
+Your branch is up to date with 'hello/master'.
+
+nothing to commit, working tree clean
+[13:57:16 centos9@vm1 seconddemo]$ # still available in github
+[13:57:32 centos9@vm1 seconddemo]$ git pull
+From https://github.com/owais-io/secondproject
+ * [new branch]      newtest    -> hello/newtest
+Already up to date.
+[13:57:50 centos9@vm1 seconddemo]$ git branch
+  dev
+* master
+[13:58:10 centos9@vm1 seconddemo]$ git status
+On branch master
+Your branch is up to date with 'hello/master'.
+
+nothing to commit, working tree clean
+[13:58:12 centos9@vm1 seconddemo]$ git push hello --delete newtest
+Username for 'https://github.com': owais-io
+Password for 'https://owais-io@github.com': 
+To https://github.com/owais-io/secondproject.git
+ - [deleted]         newtest
+[13:59:11 centos9@vm1 seconddemo]$ # now the branch is also deleted on github as well
+[14:05:38 centos9@vm1 seconddemo]$ 
+[14:05:39 centos9@vm1 seconddemo]$ 
+[14:10:33 centos9@vm1 seconddemo]$ 
+[14:10:33 centos9@vm1 seconddemo]$ 
+[14:10:33 centos9@vm1 seconddemo]$ 
+[14:10:33 centos9@vm1 seconddemo]$ 
+[14:10:33 centos9@vm1 seconddemo]$ 
+[14:10:33 centos9@vm1 seconddemo]$ 
+[14:10:33 centos9@vm1 seconddemo]$ 
+[14:10:34 centos9@vm1 seconddemo]$ git status
+On branch master
+Your branch is up to date with 'hello/master'.
+
+nothing to commit, working tree clean
+[14:36:33 centos9@vm1 seconddemo]$ ls
+first.txt  second.txt  third.txt
+[14:36:39 centos9@vm1 seconddemo]$ echo Hello > Fourth.txt
+[14:37:04 centos9@vm1 seconddemo]$ ls
+first.txt  Fourth.txt  second.txt  third.txt
+[14:37:06 centos9@vm1 seconddemo]$ cat Fourth.txt 
+Hello
+[14:37:08 centos9@vm1 seconddemo]$ git status
+On branch master
+Your branch is up to date with 'hello/master'.
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	Fourth.txt
+
+nothing added to commit but untracked files present (use "git add" to track)
+[14:37:16 centos9@vm1 seconddemo]$ git add .
+[14:37:24 centos9@vm1 seconddemo]$ git commit -m "added fourth.txt"
+[master 795429a] added fourth.txt
+ 1 file changed, 1 insertion(+)
+ create mode 100644 Fourth.txt
+[14:37:37 centos9@vm1 seconddemo]$ git status
+On branch master
+Your branch is ahead of 'hello/master' by 1 commit.
+  (use "git push" to publish your local commits)
+
+nothing to commit, working tree clean
+[14:37:53 centos9@vm1 seconddemo]$ echo "hello world new change" >> second.txt 
+[14:38:19 centos9@vm1 seconddemo]$ cat second.txt 
+working
+
+working again
+
+hello from remote repo on github
+hello world new change
+[14:38:22 centos9@vm1 seconddemo]$ git status
+On branch master
+Your branch is ahead of 'hello/master' by 1 commit.
+  (use "git push" to publish your local commits)
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   second.txt
+
+no changes added to commit (use "git add" and/or "git commit -a")
+[14:38:28 centos9@vm1 seconddemo]$ git add .
+[14:38:37 centos9@vm1 seconddemo]$ git commit -m "updated second.txt"
+[master 479cd2a] updated second.txt
+ 1 file changed, 1 insertion(+)
+[14:38:45 centos9@vm1 seconddemo]$ git log
+commit 479cd2a6d3db3b50abf3a7261d3774e14e9979ed (HEAD -> master)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:38:45 2026 +0500
+
+    updated second.txt
+
+commit 795429a1faa5bb77f9e3c052d32db92e62b008a7
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:37:37 2026 +0500
+
+    added fourth.txt
+
+commit 87de0f7ad3b2e2f1e68e2f17fe1c2a559a87ce24 (hello/master, hello/dev, dev)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Sun Oct 19 02:45:34 2025 +0500
+
+    added third.txt
+
+commit 8c331caa10309fcb76a8cbd38c4f2e8cbff80b64
+Author: Owais Abbasi <81351747+owais-io@users.noreply.github.com>
+Date:   Tue Sep 30 23:47:49 2025 +0500
+
+    Update second.txt on github
+
+commit 4a130bb7b63436556220809afcaefe58260d7c45
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:43:25 2025 +0500
+
+    updated second.txt
+
+commit a38542e836ebbc1e75179c3b6b6c064efb72b8cd
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:30:38 2025 +0500
+
+    updated first.txt and added second.txt
+
+commit 303fea0985b17714f6f3ed934684a653e11c6578
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:28:12 2025 +0500
+
+    added first.txt
+[14:38:57 centos9@vm1 seconddemo]$ git push hello master
+Username for 'https://github.com': owais-io
+Password for 'https://owais-io@github.com': 
+Enumerating objects: 8, done.
+Counting objects: 100% (8/8), done.
+Delta compression using up to 4 threads
+Compressing objects: 100% (5/5), done.
+Writing objects: 100% (6/6), 625 bytes | 312.00 KiB/s, done.
+Total 6 (delta 1), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas: 100% (1/1), done.
+To https://github.com/owais-io/secondproject.git
+   87de0f7..479cd2a  master -> master
+[14:39:34 centos9@vm1 seconddemo]$ git log
+commit 479cd2a6d3db3b50abf3a7261d3774e14e9979ed (HEAD -> master, hello/master)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:38:45 2026 +0500
+
+    updated second.txt
+
+commit 795429a1faa5bb77f9e3c052d32db92e62b008a7
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:37:37 2026 +0500
+
+    added fourth.txt
+
+commit 87de0f7ad3b2e2f1e68e2f17fe1c2a559a87ce24 (hello/dev, dev)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Sun Oct 19 02:45:34 2025 +0500
+
+    added third.txt
+
+commit 8c331caa10309fcb76a8cbd38c4f2e8cbff80b64
+Author: Owais Abbasi <81351747+owais-io@users.noreply.github.com>
+Date:   Tue Sep 30 23:47:49 2025 +0500
+
+    Update second.txt on github
+
+commit 4a130bb7b63436556220809afcaefe58260d7c45
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:43:25 2025 +0500
+
+    updated second.txt
+
+commit a38542e836ebbc1e75179c3b6b6c064efb72b8cd
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:30:38 2025 +0500
+
+    updated first.txt and added second.txt
+
+commit 303fea0985b17714f6f3ed934684a653e11c6578
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:28:12 2025 +0500
+
+    added first.txt
+[14:39:55 centos9@vm1 seconddemo]$ git revert 795429a
+[master ce0024b] Revert "added fourth.txt"
+ 1 file changed, 1 deletion(-)
+ delete mode 100644 Fourth.txt
+[14:42:09 centos9@vm1 seconddemo]$ git log
+commit ce0024b5fc0365ab9830c94eee7be465b141a617 (HEAD -> master)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:42:05 2026 +0500
+
+    Revert "added fourth.txt"
+    
+    This reverts commit 795429a1faa5bb77f9e3c052d32db92e62b008a7.
+
+commit 479cd2a6d3db3b50abf3a7261d3774e14e9979ed (hello/master)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:38:45 2026 +0500
+
+    updated second.txt
+
+commit 795429a1faa5bb77f9e3c052d32db92e62b008a7
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:37:37 2026 +0500
+
+    added fourth.txt
+
+commit 87de0f7ad3b2e2f1e68e2f17fe1c2a559a87ce24 (hello/dev, dev)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Sun Oct 19 02:45:34 2025 +0500
+
+    added third.txt
+
+commit 8c331caa10309fcb76a8cbd38c4f2e8cbff80b64
+Author: Owais Abbasi <81351747+owais-io@users.noreply.github.com>
+Date:   Tue Sep 30 23:47:49 2025 +0500
+
+    Update second.txt on github
+
+commit 4a130bb7b63436556220809afcaefe58260d7c45
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:43:25 2025 +0500
+
+    updated second.txt
+
+commit a38542e836ebbc1e75179c3b6b6c064efb72b8cd
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:30:38 2025 +0500
+
+    updated first.txt and added second.txt
+
+commit 303fea0985b17714f6f3ed934684a653e11c6578
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:28:12 2025 +0500
+
+    added first.txt
+[14:42:29 centos9@vm1 seconddemo]$ ls
+first.txt  second.txt  third.txt
+[14:43:20 centos9@vm1 seconddemo]$ cat second.txt 
+working
+
+working again
+
+hello from remote repo on github
+hello world new change
+[14:43:29 centos9@vm1 seconddemo]$ # but the fourth.txt is still there on github
+[14:45:41 centos9@vm1 seconddemo]$ git  push hello master
+Username for 'https://github.com': owais-io
+Password for 'https://owais-io@github.com': 
+remote: Invalid username or token. Password authentication is not supported for Git operations.
+fatal: Authentication failed for 'https://github.com/owais-io/secondproject.git/'
+[14:45:57 centos9@vm1 seconddemo]$ git push hello master
+Username for 'https://github.com': owais-io
+Password for 'https://owais-io@github.com': 
+Enumerating objects: 3, done.
+Counting objects: 100% (3/3), done.
+Delta compression using up to 4 threads
+Compressing objects: 100% (2/2), done.
+Writing objects: 100% (2/2), 274 bytes | 274.00 KiB/s, done.
+Total 2 (delta 1), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas: 100% (1/1), completed with 1 local object.
+To https://github.com/owais-io/secondproject.git
+   479cd2a..ce0024b  master -> master
+[14:46:42 centos9@vm1 seconddemo]$ #now both local and remote are updated
+[14:47:18 centos9@vm1 seconddemo]$ git log
+commit ce0024b5fc0365ab9830c94eee7be465b141a617 (HEAD -> master, hello/master)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:42:05 2026 +0500
+
+    Revert "added fourth.txt"
+    
+    This reverts commit 795429a1faa5bb77f9e3c052d32db92e62b008a7.
+
+commit 479cd2a6d3db3b50abf3a7261d3774e14e9979ed
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:38:45 2026 +0500
+
+    updated second.txt
+
+commit 795429a1faa5bb77f9e3c052d32db92e62b008a7
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:37:37 2026 +0500
+
+    added fourth.txt
+
+commit 87de0f7ad3b2e2f1e68e2f17fe1c2a559a87ce24 (hello/dev, dev)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Sun Oct 19 02:45:34 2025 +0500
+
+    added third.txt
+
+commit 8c331caa10309fcb76a8cbd38c4f2e8cbff80b64
+Author: Owais Abbasi <81351747+owais-io@users.noreply.github.com>
+Date:   Tue Sep 30 23:47:49 2025 +0500
+
+    Update second.txt on github
+
+commit 4a130bb7b63436556220809afcaefe58260d7c45
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:43:25 2025 +0500
+
+    updated second.txt
+
+commit a38542e836ebbc1e75179c3b6b6c064efb72b8cd
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:30:38 2025 +0500
+
+    updated first.txt and added second.txt
+
+commit 303fea0985b17714f6f3ed934684a653e11c6578
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:28:12 2025 +0500
+
+    added first.txt
+[14:47:20 centos9@vm1 seconddemo]$ 
+[14:56:33 centos9@vm1 seconddemo]$ 
+[14:56:34 centos9@vm1 seconddemo]$ 
+[14:56:34 centos9@vm1 seconddemo]$ 
+[14:56:34 centos9@vm1 seconddemo]$ 
+[14:56:34 centos9@vm1 seconddemo]$ 
+[14:56:34 centos9@vm1 seconddemo]$ 
+[14:56:34 centos9@vm1 seconddemo]$ 
+[14:56:34 centos9@vm1 seconddemo]$ 
+[14:56:34 centos9@vm1 seconddemo]$ 
+[14:56:34 centos9@vm1 seconddemo]$ 
+[14:56:34 centos9@vm1 seconddemo]$ 
+[14:56:34 centos9@vm1 seconddemo]$ 
+[14:56:34 centos9@vm1 seconddemo]$ git status
+On branch master
+Your branch is up to date with 'hello/master'.
+
+nothing to commit, working tree clean
+[14:57:03 centos9@vm1 seconddemo]$ git log
+commit ce0024b5fc0365ab9830c94eee7be465b141a617 (HEAD -> master, hello/master)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:42:05 2026 +0500
+
+    Revert "added fourth.txt"
+    
+    This reverts commit 795429a1faa5bb77f9e3c052d32db92e62b008a7.
+
+commit 479cd2a6d3db3b50abf3a7261d3774e14e9979ed
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:38:45 2026 +0500
+
+    updated second.txt
+
+commit 795429a1faa5bb77f9e3c052d32db92e62b008a7
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:37:37 2026 +0500
+
+    added fourth.txt
+
+commit 87de0f7ad3b2e2f1e68e2f17fe1c2a559a87ce24 (hello/dev, dev)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Sun Oct 19 02:45:34 2025 +0500
+
+    added third.txt
+
+commit 8c331caa10309fcb76a8cbd38c4f2e8cbff80b64
+Author: Owais Abbasi <81351747+owais-io@users.noreply.github.com>
+Date:   Tue Sep 30 23:47:49 2025 +0500
+
+    Update second.txt on github
+
+commit 4a130bb7b63436556220809afcaefe58260d7c45
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:43:25 2025 +0500
+
+    updated second.txt
+
+commit a38542e836ebbc1e75179c3b6b6c064efb72b8cd
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:30:38 2025 +0500
+
+    updated first.txt and added second.txt
+
+commit 303fea0985b17714f6f3ed934684a653e11c6578
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:28:12 2025 +0500
+
+    added first.txt
+[14:57:08 centos9@vm1 seconddemo]$ echo "Hello world" > Fourth.txt
+[14:58:42 centos9@vm1 seconddemo]$ ls
+first.txt  Fourth.txt  second.txt  third.txt
+[14:58:43 centos9@vm1 seconddemo]$ cat Fourth.txt 
+Hello world
+[14:58:46 centos9@vm1 seconddemo]$ git status
+On branch master
+Your branch is up to date with 'hello/master'.
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	Fourth.txt
+
+nothing added to commit but untracked files present (use "git add" to track)
+[14:58:50 centos9@vm1 seconddemo]$ git add .
+[14:58:52 centos9@vm1 seconddemo]$ git commit -m "added fourth.txt"
+[master a2464fe] added fourth.txt
+ 1 file changed, 1 insertion(+)
+ create mode 100644 Fourth.txt
+[14:59:03 centos9@vm1 seconddemo]$ echo "updated for reset" >> third.txt 
+[14:59:35 centos9@vm1 seconddemo]$ git add .
+[14:59:39 centos9@vm1 seconddemo]$ git commit -m "updated third.txt"
+[master ca0a0bc] updated third.txt
+ 1 file changed, 1 insertion(+)
+[14:59:58 centos9@vm1 seconddemo]$ cat first.txt 
+hello world
+
+new changes
+[15:00:09 centos9@vm1 seconddemo]$ echo "updated for reset" >> first.txt 
+[15:00:30 centos9@vm1 seconddemo]$ git add .
+[15:00:33 centos9@vm1 seconddemo]$ git commit -m "updated first.txt"
+[master 6ba2cf9] updated first.txt
+ 1 file changed, 1 insertion(+)
+[15:00:47 centos9@vm1 seconddemo]$ git log
+commit 6ba2cf9d542e08e35c3a44d18dc30d803e081acf (HEAD -> master)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 15:00:47 2026 +0500
+
+    updated first.txt
+
+commit ca0a0bc990527f72ae92d8a7f0cece1461d7684b
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:59:58 2026 +0500
+
+    updated third.txt
+
+commit a2464fe62296925ce69366ea3c7d9de4fb95e29a
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:59:03 2026 +0500
+
+    added fourth.txt
+
+commit ce0024b5fc0365ab9830c94eee7be465b141a617 (hello/master)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:42:05 2026 +0500
+
+    Revert "added fourth.txt"
+    
+    This reverts commit 795429a1faa5bb77f9e3c052d32db92e62b008a7.
+
+commit 479cd2a6d3db3b50abf3a7261d3774e14e9979ed
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:38:45 2026 +0500
+
+    updated second.txt
+
+commit 795429a1faa5bb77f9e3c052d32db92e62b008a7
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:37:37 2026 +0500
+
+    added fourth.txt
+
+commit 87de0f7ad3b2e2f1e68e2f17fe1c2a559a87ce24 (hello/dev, dev)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Sun Oct 19 02:45:34 2025 +0500
+
+    added third.txt
+
+commit 8c331caa10309fcb76a8cbd38c4f2e8cbff80b64
+Author: Owais Abbasi <81351747+owais-io@users.noreply.github.com>
+Date:   Tue Sep 30 23:47:49 2025 +0500
+
+    Update second.txt on github
+
+commit 4a130bb7b63436556220809afcaefe58260d7c45
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:43:25 2025 +0500
+
+    updated second.txt
+[15:01:08 centos9@vm1 seconddemo]$ git push hello master
+Username for 'https://github.com': owais-io
+Password for 'https://owais-io@github.com': 
+Enumerating objects: 12, done.
+Counting objects: 100% (12/12), done.
+Delta compression using up to 4 threads
+Compressing objects: 100% (6/6), done.
+Writing objects: 100% (9/9), 841 bytes | 420.00 KiB/s, done.
+Total 9 (delta 2), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas: 100% (2/2), done.
+To https://github.com/owais-io/secondproject.git
+   ce0024b..6ba2cf9  master -> master
+[15:01:26 centos9@vm1 seconddemo]$ #verify the changes on github as well
+[15:01:41 centos9@vm1 seconddemo]$ git reset --hard a2464fe
+HEAD is now at a2464fe added fourth.txt
+[15:04:23 centos9@vm1 seconddemo]$ git log
+commit a2464fe62296925ce69366ea3c7d9de4fb95e29a (HEAD -> master)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:59:03 2026 +0500
+
+    added fourth.txt
+
+commit ce0024b5fc0365ab9830c94eee7be465b141a617
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:42:05 2026 +0500
+
+    Revert "added fourth.txt"
+    
+    This reverts commit 795429a1faa5bb77f9e3c052d32db92e62b008a7.
+
+commit 479cd2a6d3db3b50abf3a7261d3774e14e9979ed
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:38:45 2026 +0500
+
+    updated second.txt
+
+commit 795429a1faa5bb77f9e3c052d32db92e62b008a7
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:37:37 2026 +0500
+
+    added fourth.txt
+
+commit 87de0f7ad3b2e2f1e68e2f17fe1c2a559a87ce24 (hello/dev, dev)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Sun Oct 19 02:45:34 2025 +0500
+
+    added third.txt
+
+commit 8c331caa10309fcb76a8cbd38c4f2e8cbff80b64
+Author: Owais Abbasi <81351747+owais-io@users.noreply.github.com>
+Date:   Tue Sep 30 23:47:49 2025 +0500
+
+    Update second.txt on github
+
+commit 4a130bb7b63436556220809afcaefe58260d7c45
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:43:25 2025 +0500
+
+    updated second.txt
+
+commit a38542e836ebbc1e75179c3b6b6c064efb72b8cd
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:30:38 2025 +0500
+
+    updated first.txt and added second.txt
+
+commit 303fea0985b17714f6f3ed934684a653e11c6578
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:28:12 2025 +0500
+
+    added first.txt
+[15:04:32 centos9@vm1 seconddemo]$ git status
+On branch master
+Your branch is behind 'hello/master' by 2 commits, and can be fast-forwarded.
+  (use "git pull" to update your local branch)
+
+nothing to commit, working tree clean
+[15:06:04 centos9@vm1 seconddemo]$ git push
+Username for 'https://github.com': owais-io
+Password for 'https://owais-io@github.com': 
+remote: Invalid username or token. Password authentication is not supported for Git operations.
+fatal: Authentication failed for 'https://github.com/owais-io/secondproject.git/'
+[15:07:34 centos9@vm1 seconddemo]$ git push
+Username for 'https://github.com': owais-io
+Password for 'https://owais-io@github.com': 
+To https://github.com/owais-io/secondproject.git
+ ! [rejected]        master -> master (non-fast-forward)
+error: failed to push some refs to 'https://github.com/owais-io/secondproject.git'
+hint: Updates were rejected because the tip of your current branch is behind
+hint: its remote counterpart. If you want to integrate the remote changes,
+hint: use 'git pull' before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+[15:07:53 centos9@vm1 seconddemo]$ git push -f hello master
+Username for 'https://github.com': owais-io
+Password for 'https://owais-io@github.com': 
+Total 0 (delta 0), reused 0 (delta 0), pack-reused 0 (from 0)
+To https://github.com/owais-io/secondproject.git
+ + 6ba2cf9...a2464fe master -> master (forced update)
+[15:08:13 centos9@vm1 seconddemo]$ #now verify the commits and changes on github
+[15:08:38 centos9@vm1 seconddemo]$ 
+[15:24:34 centos9@vm1 seconddemo]$ # REBASE
+[15:24:38 centos9@vm1 seconddemo]$ 
+[15:24:39 centos9@vm1 seconddemo]$ # DIFFERENCE BETWEEN REBASE AND MERGE
+[15:24:47 centos9@vm1 seconddemo]$ 
+[15:24:48 centos9@vm1 seconddemo]$ git branch
+* master
+[15:27:09 centos9@vm1 seconddemo]$ git log
+commit a2464fe62296925ce69366ea3c7d9de4fb95e29a (HEAD -> master, hello/master)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:59:03 2026 +0500
+
+    added fourth.txt
+
+commit ce0024b5fc0365ab9830c94eee7be465b141a617
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:42:05 2026 +0500
+
+    Revert "added fourth.txt"
+    
+    This reverts commit 795429a1faa5bb77f9e3c052d32db92e62b008a7.
+
+commit 479cd2a6d3db3b50abf3a7261d3774e14e9979ed
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:38:45 2026 +0500
+
+    updated second.txt
+
+commit 795429a1faa5bb77f9e3c052d32db92e62b008a7
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:37:37 2026 +0500
+
+    added fourth.txt
+
+commit 87de0f7ad3b2e2f1e68e2f17fe1c2a559a87ce24
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Sun Oct 19 02:45:34 2025 +0500
+
+    added third.txt
+
+commit 8c331caa10309fcb76a8cbd38c4f2e8cbff80b64
+Author: Owais Abbasi <81351747+owais-io@users.noreply.github.com>
+Date:   Tue Sep 30 23:47:49 2025 +0500
+
+    Update second.txt on github
+
+commit 4a130bb7b63436556220809afcaefe58260d7c45
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:43:25 2025 +0500
+
+    updated second.txt
+
+commit a38542e836ebbc1e75179c3b6b6c064efb72b8cd
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:30:38 2025 +0500
+
+    updated first.txt and added second.txt
+
+commit 303fea0985b17714f6f3ed934684a653e11c6578
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:28:12 2025 +0500
+
+    added first.txt
+[15:27:19 centos9@vm1 seconddemo]$ git branch dev
+[17:42:47 centos9@vm1 seconddemo]$ git branch
+  dev
+* master
+[17:42:51 centos9@vm1 seconddemo]$ git checkout dev
+Switched to branch 'dev'
+[17:42:57 centos9@vm1 seconddemo]$ git status
+On branch dev
+nothing to commit, working tree clean
+[17:43:02 centos9@vm1 seconddemo]$ git log
+commit a2464fe62296925ce69366ea3c7d9de4fb95e29a (HEAD -> dev, hello/master, master)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:59:03 2026 +0500
+
+    added fourth.txt
+
+commit ce0024b5fc0365ab9830c94eee7be465b141a617
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:42:05 2026 +0500
+
+    Revert "added fourth.txt"
+    
+    This reverts commit 795429a1faa5bb77f9e3c052d32db92e62b008a7.
+
+commit 479cd2a6d3db3b50abf3a7261d3774e14e9979ed
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:38:45 2026 +0500
+
+    updated second.txt
+
+commit 795429a1faa5bb77f9e3c052d32db92e62b008a7
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:37:37 2026 +0500
+
+    added fourth.txt
+
+commit 87de0f7ad3b2e2f1e68e2f17fe1c2a559a87ce24
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Sun Oct 19 02:45:34 2025 +0500
+
+    added third.txt
+
+commit 8c331caa10309fcb76a8cbd38c4f2e8cbff80b64
+Author: Owais Abbasi <81351747+owais-io@users.noreply.github.com>
+Date:   Tue Sep 30 23:47:49 2025 +0500
+
+    Update second.txt on github
+
+commit 4a130bb7b63436556220809afcaefe58260d7c45
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:43:25 2025 +0500
+
+    updated second.txt
+
+commit a38542e836ebbc1e75179c3b6b6c064efb72b8cd
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:30:38 2025 +0500
+
+    updated first.txt and added second.txt
+
+commit 303fea0985b17714f6f3ed934684a653e11c6578
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:28:12 2025 +0500
+
+    added first.txt
+[17:43:06 centos9@vm1 seconddemo]$ cat first.txt 
+hello world
+
+new changes
+[17:43:32 centos9@vm1 seconddemo]$ echo "\nworking to update fast forward" >> first.txt 
+[17:44:32 centos9@vm1 seconddemo]$ cat first.txt 
+hello world
+
+new changes
+\nworking to update fast forward
+[17:44:34 centos9@vm1 seconddemo]$ git status
+On branch dev
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   first.txt
+
+no changes added to commit (use "git add" and/or "git commit -a")
+[17:44:51 centos9@vm1 seconddemo]$ git add .
+[17:44:57 centos9@vm1 seconddemo]$ git commit -m "updated first.txt"
+[dev 73cdf0c] updated first.txt
+ 1 file changed, 1 insertion(+)
+[17:45:07 centos9@vm1 seconddemo]$ git log
+commit 73cdf0c190c96203a7fdbf37c921e34d5e1ad775 (HEAD -> dev)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 17:45:07 2026 +0500
+
+    updated first.txt
+
+commit a2464fe62296925ce69366ea3c7d9de4fb95e29a (hello/master, master)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:59:03 2026 +0500
+
+    added fourth.txt
+
+commit ce0024b5fc0365ab9830c94eee7be465b141a617
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:42:05 2026 +0500
+
+    Revert "added fourth.txt"
+    
+    This reverts commit 795429a1faa5bb77f9e3c052d32db92e62b008a7.
+
+commit 479cd2a6d3db3b50abf3a7261d3774e14e9979ed
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:38:45 2026 +0500
+
+    updated second.txt
+
+commit 795429a1faa5bb77f9e3c052d32db92e62b008a7
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:37:37 2026 +0500
+
+    added fourth.txt
+
+commit 87de0f7ad3b2e2f1e68e2f17fe1c2a559a87ce24
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Sun Oct 19 02:45:34 2025 +0500
+
+    added third.txt
+
+commit 8c331caa10309fcb76a8cbd38c4f2e8cbff80b64
+Author: Owais Abbasi <81351747+owais-io@users.noreply.github.com>
+Date:   Tue Sep 30 23:47:49 2025 +0500
+
+    Update second.txt on github
+
+commit 4a130bb7b63436556220809afcaefe58260d7c45
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:43:25 2025 +0500
+
+    updated second.txt
+
+commit a38542e836ebbc1e75179c3b6b6c064efb72b8cd
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:30:38 2025 +0500
+
+    updated first.txt and added second.txt
+
+commit 303fea0985b17714f6f3ed934684a653e11c6578
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:28:12 2025 +0500
+
+    added first.txt
+[17:45:15 centos9@vm1 seconddemo]$ echo "working to update fast forward" >> third.txt 
+[17:46:04 centos9@vm1 seconddemo]$ git add .
+[17:46:11 centos9@vm1 seconddemo]$ git status
+On branch dev
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+	modified:   third.txt
+
+[17:46:13 centos9@vm1 seconddemo]$ git commit -m "updated third.txt"
+[dev d4a741d] updated third.txt
+ 1 file changed, 1 insertion(+)
+[17:46:24 centos9@vm1 seconddemo]$ git log
+commit d4a741d23d92068794d457eb33ed8c88ced1f102 (HEAD -> dev)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 17:46:24 2026 +0500
+
+    updated third.txt
+
+commit 73cdf0c190c96203a7fdbf37c921e34d5e1ad775
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 17:45:07 2026 +0500
+
+    updated first.txt
+
+commit d4a741d23d92068794d457eb33ed8c88ced1f102 (HEAD -> dev)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 17:46:24 2026 +0500
+
+    updated third.txt
+
+commit 73cdf0c190c96203a7fdbf37c921e34d5e1ad775
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 17:45:07 2026 +0500
+
+    updated first.txt
+
+commit a2464fe62296925ce69366ea3c7d9de4fb95e29a (hello/master, master)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:59:03 2026 +0500
+
+    added fourth.txt
+
+commit ce0024b5fc0365ab9830c94eee7be465b141a617
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:42:05 2026 +0500
+
+    Revert "added fourth.txt"
+    
+    This reverts commit 795429a1faa5bb77f9e3c052d32db92e62b008a7.
+
+commit 479cd2a6d3db3b50abf3a7261d3774e14e9979ed
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:38:45 2026 +0500
+
+    updated second.txt
+
+commit 795429a1faa5bb77f9e3c052d32db92e62b008a7
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:37:37 2026 +0500
+
+    added fourth.txt
+
+commit 87de0f7ad3b2e2f1e68e2f17fe1c2a559a87ce24
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Sun Oct 19 02:45:34 2025 +0500
+
+    added third.txt
+
+commit 8c331caa10309fcb76a8cbd38c4f2e8cbff80b64
+Author: Owais Abbasi <81351747+owais-io@users.noreply.github.com>
+Date:   Tue Sep 30 23:47:49 2025 +0500
+
+    Update second.txt on github
+
+commit 4a130bb7b63436556220809afcaefe58260d7c45
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:43:25 2025 +0500
+
+    updated second.txt
+[17:46:32 centos9@vm1 seconddemo]$ git checkout master
+Switched to branch 'master'
+Your branch is up to date with 'hello/master'.
+[17:46:52 centos9@vm1 seconddemo]$ git status
+On branch master
+Your branch is up to date with 'hello/master'.
+
+nothing to commit, working tree clean
+[17:46:54 centos9@vm1 seconddemo]$ git log
+commit a2464fe62296925ce69366ea3c7d9de4fb95e29a (HEAD -> master, hello/master)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:59:03 2026 +0500
+
+    added fourth.txt
+
+commit ce0024b5fc0365ab9830c94eee7be465b141a617
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:42:05 2026 +0500
+
+    Revert "added fourth.txt"
+    
+    This reverts commit 795429a1faa5bb77f9e3c052d32db92e62b008a7.
+
+commit 479cd2a6d3db3b50abf3a7261d3774e14e9979ed
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:38:45 2026 +0500
+
+    updated second.txt
+
+commit 795429a1faa5bb77f9e3c052d32db92e62b008a7
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:37:37 2026 +0500
+
+    added fourth.txt
+
+commit 87de0f7ad3b2e2f1e68e2f17fe1c2a559a87ce24
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Sun Oct 19 02:45:34 2025 +0500
+
+    added third.txt
+
+commit 8c331caa10309fcb76a8cbd38c4f2e8cbff80b64
+Author: Owais Abbasi <81351747+owais-io@users.noreply.github.com>
+Date:   Tue Sep 30 23:47:49 2025 +0500
+
+    Update second.txt on github
+
+commit 4a130bb7b63436556220809afcaefe58260d7c45
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:43:25 2025 +0500
+
+    updated second.txt
+
+commit a38542e836ebbc1e75179c3b6b6c064efb72b8cd
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:30:38 2025 +0500
+
+    updated first.txt and added second.txt
+
+commit 303fea0985b17714f6f3ed934684a653e11c6578
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:28:12 2025 +0500
+
+    added first.txt
+[17:47:17 centos9@vm1 seconddemo]$ git merge dev
+Updating a2464fe..d4a741d
+Fast-forward
+ first.txt | 1 +
+ third.txt | 1 +
+ 2 files changed, 2 insertions(+)
+[17:47:48 centos9@vm1 seconddemo]$ git log
+commit d4a741d23d92068794d457eb33ed8c88ced1f102 (HEAD -> master, dev)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 17:46:24 2026 +0500
+
+    updated third.txt
+
+commit 73cdf0c190c96203a7fdbf37c921e34d5e1ad775
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 17:45:07 2026 +0500
+
+    updated first.txt
+
+commit a2464fe62296925ce69366ea3c7d9de4fb95e29a (hello/master)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:59:03 2026 +0500
+
+    added fourth.txt
+
+commit ce0024b5fc0365ab9830c94eee7be465b141a617
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:42:05 2026 +0500
+
+    Revert "added fourth.txt"
+    
+    This reverts commit 795429a1faa5bb77f9e3c052d32db92e62b008a7.
+
+commit 479cd2a6d3db3b50abf3a7261d3774e14e9979ed
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:38:45 2026 +0500
+
+    updated second.txt
+
+commit 795429a1faa5bb77f9e3c052d32db92e62b008a7
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:37:37 2026 +0500
+
+    added fourth.txt
+
+commit 87de0f7ad3b2e2f1e68e2f17fe1c2a559a87ce24
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Sun Oct 19 02:45:34 2025 +0500
+
+    added third.txt
+
+commit 8c331caa10309fcb76a8cbd38c4f2e8cbff80b64
+Author: Owais Abbasi <81351747+owais-io@users.noreply.github.com>
+Date:   Tue Sep 30 23:47:49 2025 +0500
+
+    Update second.txt on github
+
+commit 4a130bb7b63436556220809afcaefe58260d7c45
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:43:25 2025 +0500
+
+    updated second.txt
+
+commit a38542e836ebbc1e75179c3b6b6c064efb72b8cd
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:30:38 2025 +0500
+
+    updated first.txt and added second.txt
+
+commit 303fea0985b17714f6f3ed934684a653e11c6578
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:28:12 2025 +0500
+
+    added first.txt
+[17:48:00 centos9@vm1 seconddemo]$ cat third.txt 
+working
+working to update fast forward
+[17:48:06 centos9@vm1 seconddemo]$ git push hello master
+Username for 'https://github.com': owais-io
+Password for 'https://owais-io@github.com': 
+Enumerating objects: 9, done.
+Counting objects: 100% (9/9), done.
+Delta compression using up to 4 threads
+Compressing objects: 100% (5/5), done.
+Writing objects: 100% (6/6), 589 bytes | 589.00 KiB/s, done.
+Total 6 (delta 2), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas: 100% (2/2), completed with 1 local object.
+To https://github.com/owais-io/secondproject.git
+   a2464fe..d4a741d  master -> master
+[17:48:48 centos9@vm1 seconddemo]$ 
+[17:53:18 centos9@vm1 seconddemo]$ git branch
+  dev
+* master
+[17:56:00 centos9@vm1 seconddemo]$ git log
+commit d4a741d23d92068794d457eb33ed8c88ced1f102 (HEAD -> master, hello/master, dev)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 17:46:24 2026 +0500
+
+    updated third.txt
+
+commit 73cdf0c190c96203a7fdbf37c921e34d5e1ad775
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 17:45:07 2026 +0500
+
+    updated first.txt
+
+commit a2464fe62296925ce69366ea3c7d9de4fb95e29a
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:59:03 2026 +0500
+
+    added fourth.txt
+
+commit ce0024b5fc0365ab9830c94eee7be465b141a617
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:42:05 2026 +0500
+
+    Revert "added fourth.txt"
+    
+    This reverts commit 795429a1faa5bb77f9e3c052d32db92e62b008a7.
+
+commit 479cd2a6d3db3b50abf3a7261d3774e14e9979ed
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:38:45 2026 +0500
+
+    updated second.txt
+
+commit 795429a1faa5bb77f9e3c052d32db92e62b008a7
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:37:37 2026 +0500
+
+    added fourth.txt
+
+commit 87de0f7ad3b2e2f1e68e2f17fe1c2a559a87ce24
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Sun Oct 19 02:45:34 2025 +0500
+
+    added third.txt
+
+commit 8c331caa10309fcb76a8cbd38c4f2e8cbff80b64
+Author: Owais Abbasi <81351747+owais-io@users.noreply.github.com>
+Date:   Tue Sep 30 23:47:49 2025 +0500
+
+    Update second.txt on github
+
+commit 4a130bb7b63436556220809afcaefe58260d7c45
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:43:25 2025 +0500
+
+    updated second.txt
+
+commit a38542e836ebbc1e75179c3b6b6c064efb72b8cd
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:30:38 2025 +0500
+
+    updated first.txt and added second.txt
+
+commit 303fea0985b17714f6f3ed934684a653e11c6578
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:28:12 2025 +0500
+
+    added first.txt
+[17:56:13 centos9@vm1 seconddemo]$ git branch devtest
+[17:56:33 centos9@vm1 seconddemo]$ git branch
+  dev
+  devtest
+* master
+[17:56:35 centos9@vm1 seconddemo]$ git checkout devtest
+Switched to branch 'devtest'
+[17:56:42 centos9@vm1 seconddemo]$ git log
+commit d4a741d23d92068794d457eb33ed8c88ced1f102 (HEAD -> devtest, hello/master, master, dev)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 17:46:24 2026 +0500
+
+    updated third.txt
+
+commit 73cdf0c190c96203a7fdbf37c921e34d5e1ad775
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 17:45:07 2026 +0500
+
+    updated first.txt
+
+commit a2464fe62296925ce69366ea3c7d9de4fb95e29a
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:59:03 2026 +0500
+
+    added fourth.txt
+
+commit ce0024b5fc0365ab9830c94eee7be465b141a617
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:42:05 2026 +0500
+
+    Revert "added fourth.txt"
+    
+    This reverts commit 795429a1faa5bb77f9e3c052d32db92e62b008a7.
+
+commit 479cd2a6d3db3b50abf3a7261d3774e14e9979ed
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:38:45 2026 +0500
+
+    updated second.txt
+
+commit 795429a1faa5bb77f9e3c052d32db92e62b008a7
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:37:37 2026 +0500
+
+    added fourth.txt
+
+commit 87de0f7ad3b2e2f1e68e2f17fe1c2a559a87ce24
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Sun Oct 19 02:45:34 2025 +0500
+
+    added third.txt
+
+commit 8c331caa10309fcb76a8cbd38c4f2e8cbff80b64
+Author: Owais Abbasi <81351747+owais-io@users.noreply.github.com>
+Date:   Tue Sep 30 23:47:49 2025 +0500
+
+    Update second.txt on github
+
+commit 4a130bb7b63436556220809afcaefe58260d7c45
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:43:25 2025 +0500
+
+    updated second.txt
+
+commit a38542e836ebbc1e75179c3b6b6c064efb72b8cd
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:30:38 2025 +0500
+
+    updated first.txt and added second.txt
+
+commit 303fea0985b17714f6f3ed934684a653e11c6578
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:28:12 2025 +0500
+
+    added first.txt
+[17:56:47 centos9@vm1 seconddemo]$ 
+
+[22:47:07 centos9@vm1 seconddemo]$ git status
+On branch devtest
+nothing to commit, working tree clean
+[22:47:21 centos9@vm1 seconddemo]$ ls
+first.txt  Fourth.txt  second.txt  third.txt
+[22:47:37 centos9@vm1 seconddemo]$ cat Fourth.txt 
+Hello world
+[22:47:41 centos9@vm1 seconddemo]$ vi Fourth.txt 
+[22:48:06 centos9@vm1 seconddemo]$ cat Fourth.txt 
+Hello world
+
+updated for merge commit
+[22:48:10 centos9@vm1 seconddemo]$ git status
+On branch devtest
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   Fourth.txt
+
+no changes added to commit (use "git add" and/or "git commit -a")
+[22:48:20 centos9@vm1 seconddemo]$ git add .
+[22:48:24 centos9@vm1 seconddemo]$ git commit -m "updated fourth.txt for merge commit"
+[devtest 41083cf] updated fourth.txt for merge commit
+ 1 file changed, 2 insertions(+)
+[22:48:40 centos9@vm1 seconddemo]$ git log
+commit 41083cfd161c7eba030bffa95369f63b33afecb5 (HEAD -> devtest)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 22:48:40 2026 +0500
+
+    updated fourth.txt for merge commit
+
+commit d4a741d23d92068794d457eb33ed8c88ced1f102 (hello/master, master, dev)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 17:46:24 2026 +0500
+
+    updated third.txt
+
+commit 73cdf0c190c96203a7fdbf37c921e34d5e1ad775
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 17:45:07 2026 +0500
+
+    updated first.txt
+
+commit a2464fe62296925ce69366ea3c7d9de4fb95e29a
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:59:03 2026 +0500
+
+    added fourth.txt
+
+commit ce0024b5fc0365ab9830c94eee7be465b141a617
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:42:05 2026 +0500
+
+    Revert "added fourth.txt"
+    
+    This reverts commit 795429a1faa5bb77f9e3c052d32db92e62b008a7.
+
+commit 479cd2a6d3db3b50abf3a7261d3774e14e9979ed
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:38:45 2026 +0500
+
+    updated second.txt
+
+commit 795429a1faa5bb77f9e3c052d32db92e62b008a7
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:37:37 2026 +0500
+
+    added fourth.txt
+
+commit 87de0f7ad3b2e2f1e68e2f17fe1c2a559a87ce24
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Sun Oct 19 02:45:34 2025 +0500
+
+    added third.txt
+
+commit 8c331caa10309fcb76a8cbd38c4f2e8cbff80b64
+Author: Owais Abbasi <81351747+owais-io@users.noreply.github.com>
+Date:   Tue Sep 30 23:47:49 2025 +0500
+
+    Update second.txt on github
+
+commit 4a130bb7b63436556220809afcaefe58260d7c45
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:43:25 2025 +0500
+
+    updated second.txt
+
+commit a38542e836ebbc1e75179c3b6b6c064efb72b8cd
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:30:38 2025 +0500
+
+    updated first.txt and added second.txt
+
+commit 303fea0985b17714f6f3ed934684a653e11c6578
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:28:12 2025 +0500
+
+    added first.txt
+[22:48:47 centos9@vm1 seconddemo]$ git checkout master
+Switched to branch 'master'
+Your branch is up to date with 'hello/master'.
+[22:49:07 centos9@vm1 seconddemo]$ git status
+On branch master
+Your branch is up to date with 'hello/master'.
+
+nothing to commit, working tree clean
+[22:49:10 centos9@vm1 seconddemo]$ ls
+first.txt  Fourth.txt  second.txt  third.txt
+[22:49:15 centos9@vm1 seconddemo]$ cat Fourth.txt 
+Hello world
+[22:49:24 centos9@vm1 seconddemo]$ cat second.txt 
+working
+
+working again
+
+hello from remote repo on github
+hello world new change
+[22:49:29 centos9@vm1 seconddemo]$ vi second.txt 
+[22:49:44 centos9@vm1 seconddemo]$ cat second.txt 
+working
+
+working again
+
+hello from remote repo on github
+hello world new change
+
+updated for merge commit 
+[22:49:48 centos9@vm1 seconddemo]$ git status
+On branch master
+Your branch is up to date with 'hello/master'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   second.txt
+
+no changes added to commit (use "git add" and/or "git commit -a")
+[22:49:50 centos9@vm1 seconddemo]$ git add .
+[22:49:52 centos9@vm1 seconddemo]$ git commit -m "updated second.txt for merge commit"
+[master 03439a0] updated second.txt for merge commit
+ 1 file changed, 2 insertions(+)
+[22:50:06 centos9@vm1 seconddemo]$ git status
+On branch master
+Your branch is ahead of 'hello/master' by 1 commit.
+  (use "git push" to publish your local commits)
+
+nothing to commit, working tree clean
+[22:50:09 centos9@vm1 seconddemo]$ git log
+commit 03439a0e6fa97d01d965f2721ee69daca6cee5dd (HEAD -> master)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 22:50:06 2026 +0500
+
+    updated second.txt for merge commit
+
+commit d4a741d23d92068794d457eb33ed8c88ced1f102 (hello/master, dev)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 17:46:24 2026 +0500
+
+    updated third.txt
+
+commit 73cdf0c190c96203a7fdbf37c921e34d5e1ad775
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 17:45:07 2026 +0500
+
+    updated first.txt
+
+commit a2464fe62296925ce69366ea3c7d9de4fb95e29a
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:59:03 2026 +0500
+
+    added fourth.txt
+
+commit ce0024b5fc0365ab9830c94eee7be465b141a617
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:42:05 2026 +0500
+
+    Revert "added fourth.txt"
+    
+    This reverts commit 795429a1faa5bb77f9e3c052d32db92e62b008a7.
+
+commit 479cd2a6d3db3b50abf3a7261d3774e14e9979ed
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:38:45 2026 +0500
+
+    updated second.txt
+
+commit 795429a1faa5bb77f9e3c052d32db92e62b008a7
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:37:37 2026 +0500
+
+    added fourth.txt
+
+commit 87de0f7ad3b2e2f1e68e2f17fe1c2a559a87ce24
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Sun Oct 19 02:45:34 2025 +0500
+
+    added third.txt
+
+commit 8c331caa10309fcb76a8cbd38c4f2e8cbff80b64
+Author: Owais Abbasi <81351747+owais-io@users.noreply.github.com>
+Date:   Tue Sep 30 23:47:49 2025 +0500
+
+    Update second.txt on github
+
+commit 4a130bb7b63436556220809afcaefe58260d7c45
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:43:25 2025 +0500
+
+    updated second.txt
+
+commit a38542e836ebbc1e75179c3b6b6c064efb72b8cd
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:30:38 2025 +0500
+
+    updated first.txt and added second.txt
+
+commit 303fea0985b17714f6f3ed934684a653e11c6578
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:28:12 2025 +0500
+
+    added first.txt
+[22:50:26 centos9@vm1 seconddemo]$ git branch
+  dev
+  devtest
+* master
+[22:50:43 centos9@vm1 seconddemo]$ git checkout devtest
+Switched to branch 'devtest'
+[22:52:00 centos9@vm1 seconddemo]$ git log
+commit 41083cfd161c7eba030bffa95369f63b33afecb5 (HEAD -> devtest)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 22:48:40 2026 +0500
+
+    updated fourth.txt for merge commit
+
+commit d4a741d23d92068794d457eb33ed8c88ced1f102 (hello/master, dev)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 17:46:24 2026 +0500
+
+    updated third.txt
+
+commit 73cdf0c190c96203a7fdbf37c921e34d5e1ad775
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 17:45:07 2026 +0500
+
+    updated first.txt
+
+commit a2464fe62296925ce69366ea3c7d9de4fb95e29a
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:59:03 2026 +0500
+
+    added fourth.txt
+
+commit ce0024b5fc0365ab9830c94eee7be465b141a617
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:42:05 2026 +0500
+
+    Revert "added fourth.txt"
+    
+    This reverts commit 795429a1faa5bb77f9e3c052d32db92e62b008a7.
+
+commit 479cd2a6d3db3b50abf3a7261d3774e14e9979ed
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:38:45 2026 +0500
+
+    updated second.txt
+
+commit 795429a1faa5bb77f9e3c052d32db92e62b008a7
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:37:37 2026 +0500
+
+    added fourth.txt
+
+commit 87de0f7ad3b2e2f1e68e2f17fe1c2a559a87ce24
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Sun Oct 19 02:45:34 2025 +0500
+
+    added third.txt
+
+commit 8c331caa10309fcb76a8cbd38c4f2e8cbff80b64
+Author: Owais Abbasi <81351747+owais-io@users.noreply.github.com>
+Date:   Tue Sep 30 23:47:49 2025 +0500
+
+    Update second.txt on github
+
+commit 4a130bb7b63436556220809afcaefe58260d7c45
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:43:25 2025 +0500
+
+    updated second.txt
+
+commit a38542e836ebbc1e75179c3b6b6c064efb72b8cd
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:30:38 2025 +0500
+
+    updated first.txt and added second.txt
+
+commit 303fea0985b17714f6f3ed934684a653e11c6578
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:28:12 2025 +0500
+
+    added first.txt
+[22:52:15 centos9@vm1 seconddemo]$ git checkout master
+Switched to branch 'master'
+Your branch is ahead of 'hello/master' by 1 commit.
+  (use "git push" to publish your local commits)
+[22:52:23 centos9@vm1 seconddemo]$ git merge devtest
+Merge made by the 'ort' strategy.
+ Fourth.txt | 2 ++
+ 1 file changed, 2 insertions(+)
+[22:52:58 centos9@vm1 seconddemo]$ git log
+commit bdc2211595e50ac397fea2cb8f4ce652a410224f (HEAD -> master)
+Merge: 03439a0 41083cf
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 22:52:42 2026 +0500
+
+    Merge branch 'devtest'
+
+commit 03439a0e6fa97d01d965f2721ee69daca6cee5dd
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 22:50:06 2026 +0500
+
+    updated second.txt for merge commit
+
+commit 41083cfd161c7eba030bffa95369f63b33afecb5 (devtest)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 22:48:40 2026 +0500
+
+    updated fourth.txt for merge commit
+
+commit d4a741d23d92068794d457eb33ed8c88ced1f102 (hello/master, dev)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 17:46:24 2026 +0500
+
+    updated third.txt
+
+commit 73cdf0c190c96203a7fdbf37c921e34d5e1ad775
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 17:45:07 2026 +0500
+
+    updated first.txt
+
+commit a2464fe62296925ce69366ea3c7d9de4fb95e29a
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:59:03 2026 +0500
+
+    added fourth.txt
+
+commit ce0024b5fc0365ab9830c94eee7be465b141a617
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:42:05 2026 +0500
+
+    Revert "added fourth.txt"
+    
+    This reverts commit 795429a1faa5bb77f9e3c052d32db92e62b008a7.
+
+commit 479cd2a6d3db3b50abf3a7261d3774e14e9979ed
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:38:45 2026 +0500
+
+    updated second.txt
+
+commit 795429a1faa5bb77f9e3c052d32db92e62b008a7
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:37:37 2026 +0500
+
+    added fourth.txt
+
+commit 87de0f7ad3b2e2f1e68e2f17fe1c2a559a87ce24
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Sun Oct 19 02:45:34 2025 +0500
+
+    added third.txt
+
+commit 8c331caa10309fcb76a8cbd38c4f2e8cbff80b64
+Author: Owais Abbasi <81351747+owais-io@users.noreply.github.com>
+Date:   Tue Sep 30 23:47:49 2025 +0500
+
+    Update second.txt on github
+
+commit 4a130bb7b63436556220809afcaefe58260d7c45
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:43:25 2025 +0500
+
+    updated second.txt
+
+commit a38542e836ebbc1e75179c3b6b6c064efb72b8cd
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:30:38 2025 +0500
+
+    updated first.txt and added second.txt
+
+commit 303fea0985b17714f6f3ed934684a653e11c6578
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:28:12 2025 +0500
+
+    added first.txt
+[22:53:31 centos9@vm1 seconddemo]$ git merge master
+Already up to date.
+[22:59:24 centos9@vm1 seconddemo]$ git status
+On branch master
+Your branch is ahead of 'hello/master' by 3 commits.
+  (use "git push" to publish your local commits)
+
+nothing to commit, working tree clean
+[22:59:52 centos9@vm1 seconddemo]$ git checkout devtest
+Switched to branch 'devtest'
+[23:00:02 centos9@vm1 seconddemo]$ git log
+commit 41083cfd161c7eba030bffa95369f63b33afecb5 (HEAD -> devtest)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 22:48:40 2026 +0500
+
+    updated fourth.txt for merge commit
+
+commit d4a741d23d92068794d457eb33ed8c88ced1f102 (hello/master, dev)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 17:46:24 2026 +0500
+
+    updated third.txt
+
+commit 73cdf0c190c96203a7fdbf37c921e34d5e1ad775
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 17:45:07 2026 +0500
+
+    updated first.txt
+
+commit a2464fe62296925ce69366ea3c7d9de4fb95e29a
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:59:03 2026 +0500
+
+    added fourth.txt
+
+commit ce0024b5fc0365ab9830c94eee7be465b141a617
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:42:05 2026 +0500
+
+    Revert "added fourth.txt"
+    
+    This reverts commit 795429a1faa5bb77f9e3c052d32db92e62b008a7.
+
+commit 479cd2a6d3db3b50abf3a7261d3774e14e9979ed
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:38:45 2026 +0500
+
+    updated second.txt
+
+commit 795429a1faa5bb77f9e3c052d32db92e62b008a7
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:37:37 2026 +0500
+
+    added fourth.txt
+
+commit 87de0f7ad3b2e2f1e68e2f17fe1c2a559a87ce24
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Sun Oct 19 02:45:34 2025 +0500
+
+    added third.txt
+
+commit 8c331caa10309fcb76a8cbd38c4f2e8cbff80b64
+Author: Owais Abbasi <81351747+owais-io@users.noreply.github.com>
+Date:   Tue Sep 30 23:47:49 2025 +0500
+
+    Update second.txt on github
+
+commit 4a130bb7b63436556220809afcaefe58260d7c45
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:43:25 2025 +0500
+
+    updated second.txt
+
+commit a38542e836ebbc1e75179c3b6b6c064efb72b8cd
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:30:38 2025 +0500
+
+    updated first.txt and added second.txt
+
+commit 303fea0985b17714f6f3ed934684a653e11c6578
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:28:12 2025 +0500
+
+    added first.txt
+[23:00:09 centos9@vm1 seconddemo]$ git merge master
+Updating 41083cf..bdc2211
+Fast-forward
+ second.txt | 2 ++
+ 1 file changed, 2 insertions(+)
+[23:01:23 centos9@vm1 seconddemo]$ git log
+commit bdc2211595e50ac397fea2cb8f4ce652a410224f (HEAD -> devtest, master)
+Merge: 03439a0 41083cf
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 22:52:42 2026 +0500
+
+    Merge branch 'devtest'
+
+commit 03439a0e6fa97d01d965f2721ee69daca6cee5dd
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 22:50:06 2026 +0500
+
+    updated second.txt for merge commit
+
+commit 41083cfd161c7eba030bffa95369f63b33afecb5
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 22:48:40 2026 +0500
+
+    updated fourth.txt for merge commit
+
+commit d4a741d23d92068794d457eb33ed8c88ced1f102 (hello/master, dev)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 17:46:24 2026 +0500
+
+    updated third.txt
+
+commit 73cdf0c190c96203a7fdbf37c921e34d5e1ad775
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 17:45:07 2026 +0500
+
+    updated first.txt
+
+commit a2464fe62296925ce69366ea3c7d9de4fb95e29a
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:59:03 2026 +0500
+
+    added fourth.txt
+
+commit ce0024b5fc0365ab9830c94eee7be465b141a617
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:42:05 2026 +0500
+
+    Revert "added fourth.txt"
+    
+    This reverts commit 795429a1faa5bb77f9e3c052d32db92e62b008a7.
+
+commit 479cd2a6d3db3b50abf3a7261d3774e14e9979ed
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:38:45 2026 +0500
+
+    updated second.txt
+
+commit 795429a1faa5bb77f9e3c052d32db92e62b008a7
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:37:37 2026 +0500
+
+    added fourth.txt
+
+commit 87de0f7ad3b2e2f1e68e2f17fe1c2a559a87ce24
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Sun Oct 19 02:45:34 2025 +0500
+
+    added third.txt
+
+commit 8c331caa10309fcb76a8cbd38c4f2e8cbff80b64
+Author: Owais Abbasi <81351747+owais-io@users.noreply.github.com>
+Date:   Tue Sep 30 23:47:49 2025 +0500
+
+    Update second.txt on github
+
+commit 4a130bb7b63436556220809afcaefe58260d7c45
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:43:25 2025 +0500
+
+    updated second.txt
+
+commit a38542e836ebbc1e75179c3b6b6c064efb72b8cd
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:30:38 2025 +0500
+
+    updated first.txt and added second.txt
+
+commit 303fea0985b17714f6f3ed934684a653e11c6578
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:28:12 2025 +0500
+
+    added first.txt
+[23:02:14 centos9@vm1 seconddemo]$ 
+[23:02:50 centos9@vm1 seconddemo]$ 
+[23:02:50 centos9@vm1 seconddemo]$ 
+[23:02:51 centos9@vm1 seconddemo]$ 
+
+
+[23:02:51 centos9@vm1 seconddemo]$ 
+[23:02:51 centos9@vm1 seconddemo]$ 
+
+[23:02:51 centos9@vm1 seconddemo]$ 
+
+[23:02:51 centos9@vm1 seconddemo]$ 
+[23:02:51 centos9@vm1 seconddemo]$ 
+
+[23:05:54 centos9@vm1 seconddemo]$ # pitfalls and benefits of rebase
+[23:08:49 centos9@vm1 seconddemo]$ 
+[23:10:11 centos9@vm1 seconddemo]$ git branch
+  dev
+* devtest
+  master
+[23:16:26 centos9@vm1 seconddemo]$ git checkout master
+Switched to branch 'master'
+Your branch is ahead of 'hello/master' by 3 commits.
+  (use "git push" to publish your local commits)
+[23:16:51 centos9@vm1 seconddemo]$ git log
+commit bdc2211595e50ac397fea2cb8f4ce652a410224f (HEAD -> master, devtest)
+Merge: 03439a0 41083cf
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 22:52:42 2026 +0500
+
+    Merge branch 'devtest'
+
+commit 03439a0e6fa97d01d965f2721ee69daca6cee5dd
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 22:50:06 2026 +0500
+
+    updated second.txt for merge commit
+
+commit 41083cfd161c7eba030bffa95369f63b33afecb5
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 22:48:40 2026 +0500
+
+    updated fourth.txt for merge commit
+
+commit d4a741d23d92068794d457eb33ed8c88ced1f102 (hello/master, dev)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 17:46:24 2026 +0500
+
+    updated third.txt
+
+commit 73cdf0c190c96203a7fdbf37c921e34d5e1ad775
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 17:45:07 2026 +0500
+
+    updated first.txt
+
+commit a2464fe62296925ce69366ea3c7d9de4fb95e29a
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:59:03 2026 +0500
+
+    added fourth.txt
+
+commit ce0024b5fc0365ab9830c94eee7be465b141a617
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:42:05 2026 +0500
+
+    Revert "added fourth.txt"
+    
+    This reverts commit 795429a1faa5bb77f9e3c052d32db92e62b008a7.
+
+commit 479cd2a6d3db3b50abf3a7261d3774e14e9979ed
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:38:45 2026 +0500
+
+    updated second.txt
+
+commit 795429a1faa5bb77f9e3c052d32db92e62b008a7
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:37:37 2026 +0500
+
+    added fourth.txt
+
+commit 87de0f7ad3b2e2f1e68e2f17fe1c2a559a87ce24
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Sun Oct 19 02:45:34 2025 +0500
+
+    added third.txt
+
+commit 8c331caa10309fcb76a8cbd38c4f2e8cbff80b64
+Author: Owais Abbasi <81351747+owais-io@users.noreply.github.com>
+Date:   Tue Sep 30 23:47:49 2025 +0500
+
+    Update second.txt on github
+
+commit 4a130bb7b63436556220809afcaefe58260d7c45
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:43:25 2025 +0500
+
+    updated second.txt
+
+commit a38542e836ebbc1e75179c3b6b6c064efb72b8cd
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:30:38 2025 +0500
+
+    updated first.txt and added second.txt
+
+commit 303fea0985b17714f6f3ed934684a653e11c6578
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:28:12 2025 +0500
+
+    added first.txt
+[23:16:56 centos9@vm1 seconddemo]$ touch fifth.txt
+[23:17:15 centos9@vm1 seconddemo]$ vi fifth.txt 
+[23:17:26 centos9@vm1 seconddemo]$ cat fifth.txt 
+Hello world
+[23:17:29 centos9@vm1 seconddemo]$ git add .
+[23:17:35 centos9@vm1 seconddemo]$ git commit -m "added fifth.txt"
+[master a404ed9] added fifth.txt
+ 1 file changed, 1 insertion(+)
+ create mode 100644 fifth.txt
+[23:17:46 centos9@vm1 seconddemo]$ git status
+On branch master
+Your branch is ahead of 'hello/master' by 4 commits.
+  (use "git push" to publish your local commits)
+
+nothing to commit, working tree clean
+[23:17:51 centos9@vm1 seconddemo]$ cat second.txt 
+working
+
+working again
+
+hello from remote repo on github
+hello world new change
+
+updated for merge commit 
+[23:17:57 centos9@vm1 seconddemo]$ vi second.txt 
+[23:18:11 centos9@vm1 seconddemo]$ cat second.txt 
+working
+
+working again
+
+hello from remote repo on github
+hello world new change
+
+updated for merge commit
+
+working in rebase 
+[23:18:13 centos9@vm1 seconddemo]$ git add .
+[23:18:20 centos9@vm1 seconddemo]$ git commit -m "updated second.txt"
+[master 9884fa0] updated second.txt
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+[23:18:32 centos9@vm1 seconddemo]$ git status
+On branch master
+Your branch is ahead of 'hello/master' by 5 commits.
+  (use "git push" to publish your local commits)
+
+nothing to commit, working tree clean
+[23:18:35 centos9@vm1 seconddemo]$ git log
+commit 9884fa0c38b057c8ee9450d61cc597a6146b9894 (HEAD -> master)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 23:18:32 2026 +0500
+
+    updated second.txt
+
+commit a404ed9d47a5507e55ff92c9d3155006a5718dac
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 23:17:46 2026 +0500
+
+    added fifth.txt
+
+commit bdc2211595e50ac397fea2cb8f4ce652a410224f (devtest)
+Merge: 03439a0 41083cf
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 22:52:42 2026 +0500
+
+    Merge branch 'devtest'
+
+commit 03439a0e6fa97d01d965f2721ee69daca6cee5dd
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 22:50:06 2026 +0500
+
+    updated second.txt for merge commit
+
+commit 41083cfd161c7eba030bffa95369f63b33afecb5
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 22:48:40 2026 +0500
+
+    updated fourth.txt for merge commit
+
+commit d4a741d23d92068794d457eb33ed8c88ced1f102 (hello/master, dev)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 17:46:24 2026 +0500
+
+    updated third.txt
+
+commit 73cdf0c190c96203a7fdbf37c921e34d5e1ad775
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 17:45:07 2026 +0500
+
+    updated first.txt
+
+commit a2464fe62296925ce69366ea3c7d9de4fb95e29a
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:59:03 2026 +0500
+
+    added fourth.txt
+
+commit ce0024b5fc0365ab9830c94eee7be465b141a617
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:42:05 2026 +0500
+
+    Revert "added fourth.txt"
+    
+    This reverts commit 795429a1faa5bb77f9e3c052d32db92e62b008a7.
+
+commit 479cd2a6d3db3b50abf3a7261d3774e14e9979ed
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:38:45 2026 +0500
+
+    updated second.txt
+
+commit 795429a1faa5bb77f9e3c052d32db92e62b008a7
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:37:37 2026 +0500
+
+    added fourth.txt
+
+commit 87de0f7ad3b2e2f1e68e2f17fe1c2a559a87ce24
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Sun Oct 19 02:45:34 2025 +0500
+
+    added third.txt
+
+commit 8c331caa10309fcb76a8cbd38c4f2e8cbff80b64
+Author: Owais Abbasi <81351747+owais-io@users.noreply.github.com>
+Date:   Tue Sep 30 23:47:49 2025 +0500
+
+    Update second.txt on github
+
+commit 4a130bb7b63436556220809afcaefe58260d7c45
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:43:25 2025 +0500
+
+    updated second.txt
+
+commit a38542e836ebbc1e75179c3b6b6c064efb72b8cd
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:30:38 2025 +0500
+
+    updated first.txt and added second.txt
+
+commit 303fea0985b17714f6f3ed934684a653e11c6578
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:28:12 2025 +0500
+
+    added first.txt
+[23:20:06 centos9@vm1 seconddemo]$ git status
+On branch master
+Your branch is ahead of 'hello/master' by 5 commits.
+  (use "git push" to publish your local commits)
+
+nothing to commit, working tree clean
+[23:20:08 centos9@vm1 seconddemo]$ git branch demorebase
+[23:20:20 centos9@vm1 seconddemo]$ git branch
+  demorebase
+  dev
+  devtest
+* master
+[23:20:22 centos9@vm1 seconddemo]$ git checkout demorebase
+Switched to branch 'demorebase'
+[23:20:29 centos9@vm1 seconddemo]$ git log
+commit 9884fa0c38b057c8ee9450d61cc597a6146b9894 (HEAD -> demorebase, master)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 23:18:32 2026 +0500
+
+    updated second.txt
+
+commit a404ed9d47a5507e55ff92c9d3155006a5718dac
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 23:17:46 2026 +0500
+
+    added fifth.txt
+
+commit bdc2211595e50ac397fea2cb8f4ce652a410224f (devtest)
+Merge: 03439a0 41083cf
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 22:52:42 2026 +0500
+
+    Merge branch 'devtest'
+
+commit 03439a0e6fa97d01d965f2721ee69daca6cee5dd
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 22:50:06 2026 +0500
+
+    updated second.txt for merge commit
+
+commit 41083cfd161c7eba030bffa95369f63b33afecb5
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 22:48:40 2026 +0500
+
+    updated fourth.txt for merge commit
+
+commit d4a741d23d92068794d457eb33ed8c88ced1f102 (hello/master, dev)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 17:46:24 2026 +0500
+
+    updated third.txt
+
+commit 73cdf0c190c96203a7fdbf37c921e34d5e1ad775
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 17:45:07 2026 +0500
+
+    updated first.txt
+
+commit a2464fe62296925ce69366ea3c7d9de4fb95e29a
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:59:03 2026 +0500
+
+    added fourth.txt
+
+commit ce0024b5fc0365ab9830c94eee7be465b141a617
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:42:05 2026 +0500
+
+    Revert "added fourth.txt"
+    
+    This reverts commit 795429a1faa5bb77f9e3c052d32db92e62b008a7.
+
+commit 479cd2a6d3db3b50abf3a7261d3774e14e9979ed
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:38:45 2026 +0500
+
+    updated second.txt
+
+commit 795429a1faa5bb77f9e3c052d32db92e62b008a7
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:37:37 2026 +0500
+
+    added fourth.txt
+
+commit 87de0f7ad3b2e2f1e68e2f17fe1c2a559a87ce24
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Sun Oct 19 02:45:34 2025 +0500
+
+    added third.txt
+
+commit 8c331caa10309fcb76a8cbd38c4f2e8cbff80b64
+Author: Owais Abbasi <81351747+owais-io@users.noreply.github.com>
+Date:   Tue Sep 30 23:47:49 2025 +0500
+
+    Update second.txt on github
+
+commit 4a130bb7b63436556220809afcaefe58260d7c45
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:43:25 2025 +0500
+
+    updated second.txt
+
+commit a38542e836ebbc1e75179c3b6b6c064efb72b8cd
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:30:38 2025 +0500
+
+    updated first.txt and added second.txt
+
+commit 303fea0985b17714f6f3ed934684a653e11c6578
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:28:12 2025 +0500
+
+    added first.txt
+[23:20:36 centos9@vm1 seconddemo]$ cat Fourth.txt 
+Hello world
+
+updated for merge commit
+[23:21:05 centos9@vm1 seconddemo]$ vi Fourth.txt 
+[23:21:24 centos9@vm1 seconddemo]$ cat Fourth.txt 
+Hello world
+
+updated for merge commit
+
+updated for rebase in demorebase branch
+[23:21:26 centos9@vm1 seconddemo]$ git status
+On branch demorebase
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   Fourth.txt
+
+no changes added to commit (use "git add" and/or "git commit -a")
+[23:21:29 centos9@vm1 seconddemo]$ git add .
+[23:21:30 centos9@vm1 seconddemo]$ git commit -m "updated Fourth.txt"
+[demorebase ba3a0d6] updated Fourth.txt
+ 1 file changed, 2 insertions(+)
+[23:21:41 centos9@vm1 seconddemo]$ git status
+On branch demorebase
+nothing to commit, working tree clean
+[23:21:50 centos9@vm1 seconddemo]$ git log
+commit ba3a0d6b2ba152ddb1fe5792a2b8fa723b95e15a (HEAD -> demorebase)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 23:21:41 2026 +0500
+
+    updated Fourth.txt
+
+commit 9884fa0c38b057c8ee9450d61cc597a6146b9894 (master)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 23:18:32 2026 +0500
+
+    updated second.txt
+
+commit a404ed9d47a5507e55ff92c9d3155006a5718dac
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 23:17:46 2026 +0500
+
+    added fifth.txt
+
+commit bdc2211595e50ac397fea2cb8f4ce652a410224f (devtest)
+Merge: 03439a0 41083cf
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 22:52:42 2026 +0500
+
+    Merge branch 'devtest'
+
+commit 03439a0e6fa97d01d965f2721ee69daca6cee5dd
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 22:50:06 2026 +0500
+
+    updated second.txt for merge commit
+
+commit 41083cfd161c7eba030bffa95369f63b33afecb5
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 22:48:40 2026 +0500
+
+    updated fourth.txt for merge commit
+
+commit d4a741d23d92068794d457eb33ed8c88ced1f102 (hello/master, dev)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 17:46:24 2026 +0500
+
+    updated third.txt
+
+commit 73cdf0c190c96203a7fdbf37c921e34d5e1ad775
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 17:45:07 2026 +0500
+
+    updated first.txt
+
+commit a2464fe62296925ce69366ea3c7d9de4fb95e29a
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:59:03 2026 +0500
+
+    added fourth.txt
+
+commit ce0024b5fc0365ab9830c94eee7be465b141a617
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:42:05 2026 +0500
+
+    Revert "added fourth.txt"
+    
+    This reverts commit 795429a1faa5bb77f9e3c052d32db92e62b008a7.
+
+commit 479cd2a6d3db3b50abf3a7261d3774e14e9979ed
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:38:45 2026 +0500
+
+    updated second.txt
+
+commit 795429a1faa5bb77f9e3c052d32db92e62b008a7
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:37:37 2026 +0500
+
+    added fourth.txt
+
+commit 87de0f7ad3b2e2f1e68e2f17fe1c2a559a87ce24
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Sun Oct 19 02:45:34 2025 +0500
+
+    added third.txt
+
+commit 8c331caa10309fcb76a8cbd38c4f2e8cbff80b64
+Author: Owais Abbasi <81351747+owais-io@users.noreply.github.com>
+Date:   Tue Sep 30 23:47:49 2025 +0500
+
+    Update second.txt on github
+
+commit 4a130bb7b63436556220809afcaefe58260d7c45
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:43:25 2025 +0500
+
+    updated second.txt
+
+commit a38542e836ebbc1e75179c3b6b6c064efb72b8cd
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:30:38 2025 +0500
+
+    updated first.txt and added second.txt
+
+commit 303fea0985b17714f6f3ed934684a653e11c6578
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:28:12 2025 +0500
+
+    added first.txt
+[23:21:55 centos9@vm1 seconddemo]$ git checkout master
+Switched to branch 'master'
+Your branch is ahead of 'hello/master' by 5 commits.
+  (use "git push" to publish your local commits)
+[23:22:08 centos9@vm1 seconddemo]$ cat first.txt 
+hello world
+
+new changes
+\nworking to update fast forward
+[23:24:27 centos9@vm1 seconddemo]$ vi first.txt 
+[23:24:47 centos9@vm1 seconddemo]$ cat first.txt 
+hello world
+
+new changes
+\nworking to update fast forward
+
+updated for rebase in master
+
+[23:24:51 centos9@vm1 seconddemo]$ git status
+On branch master
+Your branch is ahead of 'hello/master' by 5 commits.
+  (use "git push" to publish your local commits)
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   first.txt
+
+no changes added to commit (use "git add" and/or "git commit -a")
+[23:24:54 centos9@vm1 seconddemo]$ git add .
+[23:24:55 centos9@vm1 seconddemo]$ git commit -m "updated first.txt"
+[master f6d428d] updated first.txt
+ 1 file changed, 3 insertions(+)
+[23:25:02 centos9@vm1 seconddemo]$ git log
+commit f6d428dc284ea2b8b2bb0fb2d45405b4595b20e1 (HEAD -> master)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 23:25:02 2026 +0500
+
+    updated first.txt
+
+commit 9884fa0c38b057c8ee9450d61cc597a6146b9894
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 23:18:32 2026 +0500
+
+    updated second.txt
+
+commit a404ed9d47a5507e55ff92c9d3155006a5718dac
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 23:17:46 2026 +0500
+
+    added fifth.txt
+
+commit bdc2211595e50ac397fea2cb8f4ce652a410224f (devtest)
+Merge: 03439a0 41083cf
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 22:52:42 2026 +0500
+
+    Merge branch 'devtest'
+
+commit 03439a0e6fa97d01d965f2721ee69daca6cee5dd
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 22:50:06 2026 +0500
+
+    updated second.txt for merge commit
+
+commit 41083cfd161c7eba030bffa95369f63b33afecb5
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 22:48:40 2026 +0500
+
+    updated fourth.txt for merge commit
+
+commit d4a741d23d92068794d457eb33ed8c88ced1f102 (hello/master, dev)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 17:46:24 2026 +0500
+
+    updated third.txt
+
+commit 73cdf0c190c96203a7fdbf37c921e34d5e1ad775
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 17:45:07 2026 +0500
+
+    updated first.txt
+
+commit a2464fe62296925ce69366ea3c7d9de4fb95e29a
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:59:03 2026 +0500
+
+    added fourth.txt
+
+commit ce0024b5fc0365ab9830c94eee7be465b141a617
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:42:05 2026 +0500
+
+    Revert "added fourth.txt"
+    
+    This reverts commit 795429a1faa5bb77f9e3c052d32db92e62b008a7.
+
+commit 479cd2a6d3db3b50abf3a7261d3774e14e9979ed
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:38:45 2026 +0500
+
+    updated second.txt
+
+commit 795429a1faa5bb77f9e3c052d32db92e62b008a7
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:37:37 2026 +0500
+
+    added fourth.txt
+
+commit 87de0f7ad3b2e2f1e68e2f17fe1c2a559a87ce24
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Sun Oct 19 02:45:34 2025 +0500
+
+    added third.txt
+
+commit 8c331caa10309fcb76a8cbd38c4f2e8cbff80b64
+Author: Owais Abbasi <81351747+owais-io@users.noreply.github.com>
+Date:   Tue Sep 30 23:47:49 2025 +0500
+
+    Update second.txt on github
+
+commit 4a130bb7b63436556220809afcaefe58260d7c45
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:43:25 2025 +0500
+
+    updated second.txt
+
+commit a38542e836ebbc1e75179c3b6b6c064efb72b8cd
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:30:38 2025 +0500
+
+    updated first.txt and added second.txt
+
+commit 303fea0985b17714f6f3ed934684a653e11c6578
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:28:12 2025 +0500
+
+    added first.txt
+[23:25:08 centos9@vm1 seconddemo]$ git checkout demorebase
+Switched to branch 'demorebase'
+[23:26:23 centos9@vm1 seconddemo]$ git log
+commit ba3a0d6b2ba152ddb1fe5792a2b8fa723b95e15a (HEAD -> demorebase)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 23:21:41 2026 +0500
+
+    updated Fourth.txt
+
+commit 9884fa0c38b057c8ee9450d61cc597a6146b9894
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 23:18:32 2026 +0500
+
+    updated second.txt
+
+commit a404ed9d47a5507e55ff92c9d3155006a5718dac
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 23:17:46 2026 +0500
+
+    added fifth.txt
+
+commit bdc2211595e50ac397fea2cb8f4ce652a410224f (devtest)
+Merge: 03439a0 41083cf
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 22:52:42 2026 +0500
+
+    Merge branch 'devtest'
+
+commit 03439a0e6fa97d01d965f2721ee69daca6cee5dd
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 22:50:06 2026 +0500
+
+    updated second.txt for merge commit
+
+commit 41083cfd161c7eba030bffa95369f63b33afecb5
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 22:48:40 2026 +0500
+
+    updated fourth.txt for merge commit
+
+commit d4a741d23d92068794d457eb33ed8c88ced1f102 (hello/master, dev)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 17:46:24 2026 +0500
+
+    updated third.txt
+
+commit 73cdf0c190c96203a7fdbf37c921e34d5e1ad775
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 17:45:07 2026 +0500
+
+    updated first.txt
+
+commit a2464fe62296925ce69366ea3c7d9de4fb95e29a
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:59:03 2026 +0500
+
+    added fourth.txt
+
+commit ce0024b5fc0365ab9830c94eee7be465b141a617
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:42:05 2026 +0500
+
+    Revert "added fourth.txt"
+    
+    This reverts commit 795429a1faa5bb77f9e3c052d32db92e62b008a7.
+
+commit 479cd2a6d3db3b50abf3a7261d3774e14e9979ed
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:38:45 2026 +0500
+
+    updated second.txt
+
+commit 795429a1faa5bb77f9e3c052d32db92e62b008a7
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:37:37 2026 +0500
+
+    added fourth.txt
+
+commit 87de0f7ad3b2e2f1e68e2f17fe1c2a559a87ce24
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Sun Oct 19 02:45:34 2025 +0500
+
+    added third.txt
+
+commit 8c331caa10309fcb76a8cbd38c4f2e8cbff80b64
+Author: Owais Abbasi <81351747+owais-io@users.noreply.github.com>
+Date:   Tue Sep 30 23:47:49 2025 +0500
+
+    Update second.txt on github
+
+commit 4a130bb7b63436556220809afcaefe58260d7c45
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:43:25 2025 +0500
+
+    updated second.txt
+
+commit a38542e836ebbc1e75179c3b6b6c064efb72b8cd
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:30:38 2025 +0500
+
+    updated first.txt and added second.txt
+
+commit 303fea0985b17714f6f3ed934684a653e11c6578
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:28:12 2025 +0500
+
+    added first.txt
+[23:26:29 centos9@vm1 seconddemo]$ git checkout master
+Switched to branch 'master'
+Your branch is ahead of 'hello/master' by 6 commits.
+  (use "git push" to publish your local commits)
+[23:28:33 centos9@vm1 seconddemo]$ git rebase demorebase
+Successfully rebased and updated refs/heads/master.
+[23:28:42 centos9@vm1 seconddemo]$ git status
+On branch master
+Your branch is ahead of 'hello/master' by 7 commits.
+  (use "git push" to publish your local commits)
+
+nothing to commit, working tree clean
+[23:29:06 centos9@vm1 seconddemo]$ git log
+commit 0b6e79f2b7d0cc2be552d6e5e9a2bd36199feb92 (HEAD -> master)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 23:25:02 2026 +0500
+
+    updated first.txt
+
+commit ba3a0d6b2ba152ddb1fe5792a2b8fa723b95e15a (demorebase)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 23:21:41 2026 +0500
+
+    updated Fourth.txt
+
+commit 9884fa0c38b057c8ee9450d61cc597a6146b9894
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 23:18:32 2026 +0500
+
+    updated second.txt
+
+commit a404ed9d47a5507e55ff92c9d3155006a5718dac
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 23:17:46 2026 +0500
+
+    added fifth.txt
+
+commit bdc2211595e50ac397fea2cb8f4ce652a410224f (devtest)
+Merge: 03439a0 41083cf
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 22:52:42 2026 +0500
+
+    Merge branch 'devtest'
+
+commit 03439a0e6fa97d01d965f2721ee69daca6cee5dd
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 22:50:06 2026 +0500
+
+    updated second.txt for merge commit
+
+commit 41083cfd161c7eba030bffa95369f63b33afecb5
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 22:48:40 2026 +0500
+
+    updated fourth.txt for merge commit
+
+commit d4a741d23d92068794d457eb33ed8c88ced1f102 (hello/master, dev)
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 17:46:24 2026 +0500
+
+    updated third.txt
+
+commit 73cdf0c190c96203a7fdbf37c921e34d5e1ad775
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 17:45:07 2026 +0500
+
+    updated first.txt
+
+commit a2464fe62296925ce69366ea3c7d9de4fb95e29a
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:59:03 2026 +0500
+
+    added fourth.txt
+
+commit ce0024b5fc0365ab9830c94eee7be465b141a617
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:42:05 2026 +0500
+
+    Revert "added fourth.txt"
+    
+    This reverts commit 795429a1faa5bb77f9e3c052d32db92e62b008a7.
+
+commit 479cd2a6d3db3b50abf3a7261d3774e14e9979ed
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:38:45 2026 +0500
+
+    updated second.txt
+
+commit 795429a1faa5bb77f9e3c052d32db92e62b008a7
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Mon Jan 26 14:37:37 2026 +0500
+
+    added fourth.txt
+
+commit 87de0f7ad3b2e2f1e68e2f17fe1c2a559a87ce24
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Sun Oct 19 02:45:34 2025 +0500
+
+    added third.txt
+
+commit 8c331caa10309fcb76a8cbd38c4f2e8cbff80b64
+Author: Owais Abbasi <81351747+owais-io@users.noreply.github.com>
+Date:   Tue Sep 30 23:47:49 2025 +0500
+
+    Update second.txt on github
+
+commit 4a130bb7b63436556220809afcaefe58260d7c45
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:43:25 2025 +0500
+
+    updated second.txt
+
+commit a38542e836ebbc1e75179c3b6b6c064efb72b8cd
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:30:38 2025 +0500
+
+    updated first.txt and added second.txt
+
+commit 303fea0985b17714f6f3ed934684a653e11c6578
+Author: Owais Abbasi <owais.abbasi9@gmail.com>
+Date:   Tue Sep 30 23:28:12 2025 +0500
+
+    added first.txt
+[23:29:15 centos9@vm1 seconddemo]$ 
+[23:33:05 centos9@vm1 seconddemo]$ 
+[23:33:05 centos9@vm1 seconddemo]$ 
+[23:33:05 centos9@vm1 seconddemo]$ 
+[23:33:05 centos9@vm1 seconddemo]$ 
+[23:36:47 centos9@vm1 seconddemo]$ # MARKDOWN
+[23:36:52 centos9@vm1 seconddemo]$ 
+[23:36:54 centos9@vm1 seconddemo]$ # explain GFM
+[23:37:33 centos9@vm1 seconddemo]$ 
+[23:37:33 centos9@vm1 seconddemo]$ # explain the heading, stylist text, quoting text, quoting code, links, lists, task lists, etc.
+[23:39:17 centos9@vm1 seconddemo]$ 
+[23:39:17 centos9@vm1 seconddemo]$ # explain readme.md
+[23:43:29 centos9@vm1 seconddemo]$ 
+[23:43:29 centos9@vm1 seconddemo]$ # refer the following link for docs on markdown
+[23:46:35 centos9@vm1 seconddemo]$ # https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax
