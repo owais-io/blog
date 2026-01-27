@@ -30,7 +30,8 @@
       "Bash(if [ $? -eq 0 ])",
       "Bash(then echo \"\")",
       "Bash(fi)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(xargs -I {} sh -c 'grep -m1 \"\"^date:\"\" \"\"{}\"\" | sed \"\"s/date: //\"\" | tr -d \"\"\\\\\"\"\"\" | xargs -I @ echo \"\"@ {}\"\"')"
     ],
     "deny": [],
     "ask": []

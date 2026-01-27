@@ -29,6 +29,13 @@ export default function HomePageClient({
 }: HomePageClientProps) {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
 
+  // Combine all posts for filtering when a category is selected
+  const allPosts = [...featuredPosts, ...gridPosts]
+
+  // When a category is selected, use all posts for filtering
+  // When no category, use only gridPosts (featured shown separately)
+  const postsForGrid = selectedCategory ? allPosts : gridPosts
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -59,8 +66,8 @@ export default function HomePageClient({
       </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-        {/* Featured Posts */}
-        {featuredPosts.length > 0 && (
+        {/* Featured Posts - only show when no category is selected */}
+        {featuredPosts.length > 0 && !selectedCategory && (
           <section className="mb-20">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-10 tracking-tight">Latest Posts</h2>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -128,9 +135,9 @@ export default function HomePageClient({
         )}
 
         {/* All Posts with Lazy Loading + Category Filter */}
-        {gridPosts.length > 0 && (
+        {postsForGrid.length > 0 && (
           <LazyPostsGrid
-            posts={gridPosts}
+            posts={postsForGrid}
             selectedCategory={selectedCategory || undefined}
             showTitle={!!selectedCategory}
             initialCount={20}

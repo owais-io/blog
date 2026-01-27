@@ -1,0 +1,524 @@
+---
+title: "Git Rebase: Creating a Clean Linear History"
+description: "Master git rebase to create clean, linear commit histories. Learn how rebase works, when to use it instead of merge, and follow best practices to avoid common pitfalls with practical examples."
+date: "2025-12-26T00:00:00.000Z"
+tags: ["git", "version-control", "git-rebase", "branching", "github", "workflow"]
+published: true
+author: "Owais"
+categories: ["Version Control", "Git"]
+seo:
+  canonical: "https://owais.io/blog/2025-12-26_git-rebase-clean-linear-history-guide"
+  keywords: ["git rebase", "rebase vs merge", "linear git history", "git rebase tutorial", "clean git history", "rebase branch"]
+toc: true
+---
+
+While merge preserves the exact history of how branches evolved, rebase rewrites history to create a clean, linear sequence of commits. This makes your project history easier to read and understand, but comes with important caveats you need to know.
+
+<Callout type="info">
+**What You'll Learn**: In this comprehensive guide, you'll master:
+- How git rebase works internally (commit replaying)
+- The difference between rebase and merge outcomes
+- Step-by-step rebase workflow with real examples
+- Understanding the "replayed" commits
+- When rebase is safe vs dangerous
+- Best practices for using rebase effectively
+</Callout>
+
+## What Does Rebase Actually Do?
+
+Rebase takes your commits and "replays" them on top of another branch, as if you had created them there originally.
+
+```
+MERGE (Preserves Branch Structure)
+==================================
+Before:
+    master: A---B---E
+                 \
+    feature:      C---D
+
+After merge:
+    master: A---B---E-------M
+                 \         /
+                  C---D---+
+
+
+REBASE (Creates Linear History)
+===============================
+Before:
+    master: A---B---E
+                 \
+    feature:      C---D
+
+After rebase:
+    master:  A---B---E
+                      \
+    feature:           C'---D'
+
+    C and D are REPLAYED as C' and D'
+    (new commits with different hashes!)
+```
+
+<Callout type="warning">
+**Key Insight**: Rebase creates NEW commits (C' and D') with different hashes than the originals. The original commits still exist but become orphaned.
+</Callout>
+
+## Setting Up Our Rebase Scenario
+
+Let's walk through a complete rebase example from the terminal logs.
+
+### Starting State
+
+```bash
+git branch
+```
+
+**Output:**
+```
+  demorebase
+  dev
+  devtest
+* master
+```
+
+Check the current master state:
+
+```bash
+git log --oneline
+```
+
+**Output:**
+```
+9884fa0 (HEAD -> master) updated second.txt
+a404ed9 added fifth.txt
+bdc2211 (devtest) Merge branch 'devtest'
+03439a0 updated second.txt for merge commit
+```
+
+### Create and Set Up the Rebase Branch
+
+```bash
+# Create demorebase branch from master
+git branch demorebase
+git checkout demorebase
+
+# Make a commit on demorebase
+vi Fourth.txt  # Add: "updated for rebase in demorebase branch"
+git add .
+git commit -m "updated Fourth.txt"
+```
+
+Check demorebase history:
+
+```bash
+git log --oneline
+```
+
+**Output:**
+```
+ba3a0d6 (HEAD -> demorebase) updated Fourth.txt
+9884fa0 (master) updated second.txt
+a404ed9 added fifth.txt
+```
+
+### Make Commits on Master (Create Divergence)
+
+```bash
+# Switch to master
+git checkout master
+
+# Make a commit on master
+vi first.txt  # Add: "updated for rebase in master"
+git add .
+git commit -m "updated first.txt"
+```
+
+Check master history:
+
+```bash
+git log --oneline
+```
+
+**Output:**
+```
+f6d428d (HEAD -> master) updated first.txt
+9884fa0 updated second.txt
+a404ed9 added fifth.txt
+```
+
+### Current State Before Rebase
+
+```
+Visualized:
+
+                f6d428d (master, HEAD)
+               /        "updated first.txt"
+    9884fa0 --+
+               \
+                ba3a0d6 (demorebase)
+                        "updated Fourth.txt"
+```
+
+Both branches have diverged from commit `9884fa0`.
+
+## Performing the Rebase
+
+Now let's rebase master onto demorebase. This will take master's new commit and replay it after demorebase's commits.
+
+```bash
+# On master branch
+git rebase demorebase
+```
+
+**Output:**
+```
+Successfully rebased and updated refs/heads/master.
+```
+
+### After Rebase - Checking the Result
+
+```bash
+git log --oneline
+```
+
+**Output:**
+```
+0b6e79f (HEAD -> master) updated first.txt
+ba3a0d6 (demorebase) updated Fourth.txt
+9884fa0 updated second.txt
+a404ed9 added fifth.txt
+```
+
+<Callout type="success">
+**Notice**: The "updated first.txt" commit now has a NEW hash (`0b6e79f` instead of `f6d428d`). It was replayed on top of `ba3a0d6`!
+</Callout>
+
+### Visualizing What Happened
+
+```
+BEFORE REBASE:
+
+                f6d428d (master) "updated first.txt"
+               /
+    9884fa0 --+
+               \
+                ba3a0d6 (demorebase) "updated Fourth.txt"
+
+
+AFTER REBASE:
+
+    9884fa0 --> ba3a0d6 --> 0b6e79f (master)
+                   |           |
+              demorebase   "updated first.txt"
+                          (REPLAYED - new hash!)
+
+    The old f6d428d is now orphaned (still exists but unreachable)
+```
+
+## How Rebase Works Internally
+
+When you run `git rebase demorebase` on master:
+
+```
+Step 1: Git finds the common ancestor
+        (9884fa0 - where branches diverged)
+
+Step 2: Git identifies commits to replay
+        (f6d428d - commits on master since ancestor)
+
+Step 3: Git moves master to point to demorebase tip
+        (ba3a0d6)
+
+Step 4: Git replays each commit on top
+        f6d428d becomes 0b6e79f (new parent, new hash)
+
+Step 5: Git updates master to point to the replayed commit
+        master now at 0b6e79f
+```
+
+## Comparing Git Log Before and After
+
+### Before Rebase (master)
+
+```
+commit f6d428dc284ea2b8b2bb0fb2d45405b4595b20e1 (HEAD -> master)
+    updated first.txt
+
+commit 9884fa0c38b057c8ee9450d61cc597a6146b9894
+    updated second.txt
+```
+
+### After Rebase (master)
+
+```
+commit 0b6e79f2b7d0cc2be552d6e5e9a2bd36199feb92 (HEAD -> master)
+    updated first.txt      <-- Same message, DIFFERENT hash!
+
+commit ba3a0d6b2ba152ddb1fe5792a2b8fa723b95e15a (demorebase)
+    updated Fourth.txt     <-- demorebase commit is now in history
+
+commit 9884fa0c38b057c8ee9450d61cc597a6146b9894
+    updated second.txt
+```
+
+The history is now **linear** - no merge commits, no branch structure visible.
+
+## Rebase vs Merge: Visual Comparison
+
+```
+SAME STARTING POINT:
+
+    master: A---B---E
+                 \
+    feature:      C---D
+
+============================================================
+
+AFTER MERGE (git merge feature):
+
+    master: A---B---E-------M  (merge commit)
+                 \         /
+    feature:      C---D---+
+
+    - Branch structure preserved
+    - Merge commit M created
+    - Original commits C, D unchanged
+
+============================================================
+
+AFTER REBASE (git rebase master, then merge):
+
+    master:  A---B---E---C'---D'
+                          |
+                       feature
+
+    - Linear history
+    - No merge commit
+    - C and D become C' and D' (new hashes)
+    - Branch structure lost
+```
+
+## The Golden Rule of Rebase
+
+<Callout type="error">
+**Golden Rule**: Never rebase commits that have been pushed to a shared repository and that others may have based work on!
+</Callout>
+
+### Why This Rule Exists
+
+When you rebase, you create NEW commits with different hashes:
+
+```
+Your Local (after rebase):
+    A---B---C'---D'  (master)
+
+Your Colleague's Local:
+    A---B---C---D  (master)
+         \
+          E---F  (their work based on C and D)
+```
+
+If you push your rebased history, your colleague has a problem:
+- Their commits E and F are based on C and D
+- But C and D no longer exist in the shared history!
+
+### Safe Rebase Scenarios
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead className="bg-gray-50 dark:bg-gray-800">
+    <tr>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Scenario</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Safe to Rebase?</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Local commits not yet pushed</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Yes</strong></td>
+    </tr>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Personal feature branch</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Yes</strong></td>
+    </tr>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Before opening a Pull Request</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><strong>Yes</strong></td>
+    </tr>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">After PR is merged</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">No</td>
+    </tr>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Shared branch (main, develop)</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">No</td>
+    </tr>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">After others have pulled</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">No</td>
+    </tr>
+  </tbody>
+</table>
+
+## Common Rebase Workflows
+
+### Workflow 1: Keeping Feature Branch Updated
+
+```bash
+# On your feature branch
+git checkout feature-x
+
+# Rebase onto latest master
+git fetch origin
+git rebase origin/master
+
+# Your feature commits are now on top of latest master
+```
+
+### Workflow 2: Clean Up Before Pull Request
+
+```bash
+# Squash messy commits before PR
+git rebase -i HEAD~3  # Interactive rebase last 3 commits
+```
+
+### Workflow 3: Linear History Merge
+
+```bash
+# Instead of merge, rebase then fast-forward
+git checkout feature
+git rebase master
+
+git checkout master
+git merge feature  # Will be fast-forward!
+```
+
+## Handling Rebase Conflicts
+
+When rebasing, conflicts can occur during replay:
+
+```bash
+git rebase master
+```
+
+**Output if conflict:**
+```
+CONFLICT (content): Merge conflict in file.txt
+error: could not apply abc123... commit message
+hint: Resolve all conflicts manually, mark them as resolved with
+hint: "git add <file>" then run "git rebase --continue"
+```
+
+### Resolving Rebase Conflicts
+
+```bash
+# 1. Fix the conflict in the file
+vi file.txt
+
+# 2. Stage the resolution
+git add file.txt
+
+# 3. Continue the rebase
+git rebase --continue
+
+# OR abort the entire rebase
+git rebase --abort
+```
+
+## Useful Rebase Options
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead className="bg-gray-50 dark:bg-gray-800">
+    <tr>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Command</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>git rebase master</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Rebase current branch onto master</td>
+    </tr>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>git rebase -i HEAD~n</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Interactive rebase (squash, edit, reorder)</td>
+    </tr>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>git rebase --onto A B C</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Advanced: rebase C onto A, starting from B</td>
+    </tr>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>git rebase --continue</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Continue after resolving conflicts</td>
+    </tr>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>git rebase --abort</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Cancel rebase, return to original state</td>
+    </tr>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>git rebase --skip</code></td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Skip the current commit (use carefully)</td>
+    </tr>
+  </tbody>
+</table>
+
+## Interactive Rebase Preview
+
+Interactive rebase (`-i`) opens an editor to modify commits:
+
+```bash
+git rebase -i HEAD~3
+```
+
+**Editor shows:**
+```
+pick abc123 First commit
+pick def456 Second commit
+pick ghi789 Third commit
+
+# Commands:
+# p, pick = use commit
+# r, reword = use commit, but edit message
+# e, edit = use commit, but stop for amending
+# s, squash = meld into previous commit
+# f, fixup = like squash, but discard message
+# d, drop = remove commit
+```
+
+This allows you to:
+- Reorder commits
+- Squash multiple commits into one
+- Edit commit messages
+- Remove commits entirely
+
+## Quick Reference
+
+```bash
+# Basic rebase
+git rebase target-branch
+
+# Rebase current branch onto master
+git checkout feature
+git rebase master
+
+# Interactive rebase
+git rebase -i HEAD~n
+
+# During conflict resolution
+git rebase --continue   # After fixing conflicts
+git rebase --abort      # Cancel everything
+git rebase --skip       # Skip problematic commit
+
+# See what will be rebased
+git log target-branch..HEAD --oneline
+```
+
+## Summary
+
+Git rebase is powerful for creating clean, linear history:
+
+- **How it works**: Replays your commits on top of another branch
+- **Creates new commits**: Original commits get new hashes
+- **Linear history**: No merge commits, cleaner log
+- **Golden rule**: Never rebase shared/pushed commits
+- **Use cases**: Keeping feature branches updated, cleaning up before PR
+
+Choose rebase for clean history on personal branches; use merge for shared branches where preserving exact history matters!

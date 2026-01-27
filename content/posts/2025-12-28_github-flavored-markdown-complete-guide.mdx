@@ -1,0 +1,613 @@
+---
+title: "GitHub Flavored Markdown (GFM): Complete Guide to Writing on GitHub"
+description: "Master GitHub Flavored Markdown for README files, issues, pull requests, and documentation. Learn headings, text styling, code blocks, links, lists, tables, and task lists with practical examples."
+date: "2025-12-28T00:00:00.000Z"
+tags: ["git", "github", "markdown", "documentation", "readme", "gfm"]
+published: true
+author: "Owais"
+categories: ["Version Control", "Git"]
+seo:
+  canonical: "https://owais.io/blog/2025-12-28_github-flavored-markdown-complete-guide"
+  keywords: ["github markdown", "gfm", "readme markdown", "markdown syntax", "github documentation", "markdown tutorial"]
+toc: true
+---
+
+Markdown is the standard way to format text on GitHub. Whether you're writing README files, creating issues, commenting on pull requests, or building documentation, understanding GitHub Flavored Markdown (GFM) is essential for effective communication in the developer community.
+
+<Callout type="info">
+**What You'll Learn**: In this comprehensive guide, you'll master:
+- Basic Markdown syntax (headings, paragraphs, emphasis)
+- Text styling (bold, italic, strikethrough)
+- Creating links and images
+- Code blocks and syntax highlighting
+- Lists (ordered, unordered, nested)
+- Task lists for tracking progress
+- Tables for organized data
+- Blockquotes and alerts
+- GitHub-specific features
+</Callout>
+
+## What is GitHub Flavored Markdown?
+
+GitHub Flavored Markdown (GFM) is GitHub's extension of standard Markdown. It adds features like:
+
+- Task lists with checkboxes
+- Tables
+- Syntax-highlighted code blocks
+- Auto-linking URLs
+- Strikethrough text
+- Emoji support
+
+<Callout type="success">
+**Where GFM is Used**: README.md files, Issues, Pull Requests, Comments, Wiki pages, Gists, and GitHub Discussions.
+</Callout>
+
+## Headings
+
+Create headings using `#` symbols. More `#` means smaller heading:
+
+```markdown
+# Heading 1 (Largest)
+## Heading 2
+### Heading 3
+#### Heading 4
+##### Heading 5
+###### Heading 6 (Smallest)
+```
+
+**Best Practice**: Use headings hierarchically. Don't skip levels (e.g., don't go from H1 to H4).
+
+## Text Styling
+
+### Bold Text
+
+```markdown
+**This is bold text**
+__This is also bold__
+```
+
+**Result**: **This is bold text**
+
+### Italic Text
+
+```markdown
+*This is italic*
+_This is also italic_
+```
+
+**Result**: *This is italic*
+
+### Bold and Italic
+
+```markdown
+***Bold and italic***
+___Also bold and italic___
+**_Another way_**
+```
+
+**Result**: ***Bold and italic***
+
+### Strikethrough
+
+```markdown
+~~This text is crossed out~~
+```
+
+**Result**: ~~This text is crossed out~~
+
+### Combining Styles
+
+```markdown
+This is **bold**, this is *italic*, and this is ~~strikethrough~~.
+You can also do ***bold italic*** or **_bold italic_**.
+```
+
+## Quoting Text
+
+### Blockquotes
+
+Use `>` to create blockquotes:
+
+```markdown
+> This is a quote.
+> It can span multiple lines.
+
+> You can also have
+>
+> Multiple paragraphs in a quote.
+```
+
+**Result**:
+> This is a quote.
+> It can span multiple lines.
+
+### Nested Blockquotes
+
+```markdown
+> First level quote
+>> Nested quote
+>>> Even deeper
+```
+
+## Code
+
+### Inline Code
+
+Use backticks for inline code:
+
+```markdown
+Use the `git status` command to check your repository.
+```
+
+**Result**: Use the `git status` command to check your repository.
+
+### Code Blocks
+
+Use triple backticks for code blocks:
+
+````markdown
+```
+This is a code block
+Multiple lines work here
+```
+````
+
+### Syntax Highlighting
+
+Specify the language after the opening backticks:
+
+````markdown
+```python
+def hello():
+    print("Hello, World!")
+```
+````
+
+````markdown
+```javascript
+function greet(name) {
+    console.log(`Hello, ${name}!`);
+}
+```
+````
+
+````markdown
+```bash
+git clone https://github.com/user/repo.git
+cd repo
+npm install
+```
+````
+
+**Common language identifiers**: `python`, `javascript`, `js`, `typescript`, `ts`, `bash`, `shell`, `json`, `yaml`, `html`, `css`, `sql`, `go`, `rust`, `java`, `c`, `cpp`, `ruby`, `php`
+
+## Links
+
+### Basic Links
+
+```markdown
+[Link Text](https://example.com)
+```
+
+**Result**: [Link Text](https://example.com)
+
+### Links with Titles
+
+```markdown
+[GitHub](https://github.com "Visit GitHub")
+```
+
+Hover over the link to see the title.
+
+### Auto-linking
+
+GitHub automatically converts URLs to links:
+
+```markdown
+Visit https://github.com for more info.
+```
+
+### Reference-Style Links
+
+```markdown
+[GitHub][1] is where developers collaborate.
+
+[1]: https://github.com
+```
+
+Useful for keeping text readable when you have many links.
+
+### Section Links
+
+Link to headings within the same document:
+
+```markdown
+See the [Installation](#installation) section below.
+```
+
+GitHub automatically creates anchors for headings (lowercase, spaces become hyphens).
+
+## Images
+
+### Basic Image
+
+```markdown
+![Alt text](https://example.com/image.png)
+```
+
+### Image with Title
+
+```markdown
+![Alt text](https://example.com/image.png "Image title")
+```
+
+### Image from Repository
+
+```markdown
+![Screenshot](./screenshots/demo.png)
+```
+
+### Linking an Image
+
+```markdown
+[![Alt text](image.png)](https://example.com)
+```
+
+## Lists
+
+### Unordered Lists
+
+Use `-`, `*`, or `+`:
+
+```markdown
+- Item 1
+- Item 2
+- Item 3
+
+* Also works
+* With asterisks
+
++ Or plus signs
++ Your choice
+```
+
+### Ordered Lists
+
+```markdown
+1. First item
+2. Second item
+3. Third item
+```
+
+Numbers don't have to be sequential:
+
+```markdown
+1. First
+1. Second (still renders as 2)
+1. Third (still renders as 3)
+```
+
+### Nested Lists
+
+```markdown
+- Parent item
+  - Child item
+  - Another child
+    - Grandchild
+- Another parent
+```
+
+**Result**:
+- Parent item
+  - Child item
+  - Another child
+    - Grandchild
+- Another parent
+
+### Mixed Lists
+
+```markdown
+1. First ordered item
+   - Unordered sub-item
+   - Another sub-item
+2. Second ordered item
+   1. Ordered sub-item
+   2. Another ordered sub-item
+```
+
+## Task Lists
+
+GitHub's special feature for tracking progress:
+
+```markdown
+- [x] Completed task
+- [x] Another completed task
+- [ ] Incomplete task
+- [ ] Another todo item
+```
+
+**Result**:
+- [x] Completed task
+- [x] Another completed task
+- [ ] Incomplete task
+- [ ] Another todo item
+
+<Callout type="success">
+**Pro Tip**: In GitHub Issues and PRs, you can click the checkboxes to toggle them!
+</Callout>
+
+### Task Lists in Issues
+
+```markdown
+## Sprint Tasks
+
+- [x] Set up development environment
+- [x] Create database schema
+- [ ] Implement user authentication
+- [ ] Write unit tests
+- [ ] Deploy to staging
+```
+
+GitHub shows a progress bar for issues containing task lists!
+
+## Tables
+
+Create tables using pipes `|` and hyphens `-`:
+
+```markdown
+| Header 1 | Header 2 | Header 3 |
+|----------|----------|----------|
+| Cell 1   | Cell 2   | Cell 3   |
+| Cell 4   | Cell 5   | Cell 6   |
+```
+
+### Column Alignment
+
+```markdown
+| Left | Center | Right |
+|:-----|:------:|------:|
+| L    |   C    |     R |
+| Left | Center | Right |
+```
+
+- `:---` = Left align
+- `:---:` = Center align
+- `---:` = Right align
+
+### Table Example
+
+```markdown
+| Command | Description |
+|---------|-------------|
+| `git status` | Show working tree status |
+| `git add` | Add files to staging |
+| `git commit` | Record changes |
+| `git push` | Upload to remote |
+```
+
+## Horizontal Rules
+
+Create dividers with three or more hyphens, asterisks, or underscores:
+
+```markdown
+---
+
+***
+
+___
+```
+
+All produce a horizontal line.
+
+## Escaping Characters
+
+Use backslash to show literal characters:
+
+```markdown
+\*Not italic\*
+\# Not a heading
+\[Not a link\]
+```
+
+**Result**: \*Not italic\*
+
+Characters that can be escaped: `\`, `` ` ``, `*`, `_`, `{}`, `[]`, `()`, `#`, `+`, `-`, `.`, `!`, `|`
+
+## GitHub-Specific Features
+
+### Mentioning Users
+
+```markdown
+@username will be notified about this comment.
+```
+
+### Referencing Issues and PRs
+
+```markdown
+This fixes #123
+Related to #456
+See PR #789
+```
+
+GitHub auto-links these to the corresponding issues/PRs.
+
+### Cross-Repository References
+
+```markdown
+owner/repo#123
+```
+
+### Commit References
+
+```markdown
+Full SHA: a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0
+Short SHA: a1b2c3d
+```
+
+### Emoji
+
+```markdown
+:smile: :rocket: :tada: :bug: :fire:
+```
+
+**Result**: :smile: :rocket: :tada: :bug: :fire:
+
+<Callout type="info">
+**Find Emoji Codes**: Visit [emoji-cheat-sheet.com](https://www.webfx.com/tools/emoji-cheat-sheet/) for a complete list.
+</Callout>
+
+### Alerts (GitHub Specific)
+
+```markdown
+> [!NOTE]
+> Useful information that users should know.
+
+> [!TIP]
+> Helpful advice for doing things better.
+
+> [!IMPORTANT]
+> Key information users need to know.
+
+> [!WARNING]
+> Urgent info that needs immediate attention.
+
+> [!CAUTION]
+> Advises about risks or negative outcomes.
+```
+
+## README.md Best Practices
+
+A good README should include:
+
+```markdown
+# Project Name
+
+Brief description of what the project does.
+
+## Features
+
+- Feature 1
+- Feature 2
+- Feature 3
+
+## Installation
+
+\`\`\`bash
+git clone https://github.com/user/project.git
+cd project
+npm install
+\`\`\`
+
+## Usage
+
+\`\`\`javascript
+const project = require('project');
+project.doSomething();
+\`\`\`
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch
+3. Commit your changes
+4. Push to the branch
+5. Open a Pull Request
+
+## License
+
+MIT License - see LICENSE file for details.
+```
+
+### README Badges
+
+Add status badges:
+
+```markdown
+![Build Status](https://img.shields.io/github/actions/workflow/status/user/repo/ci.yml)
+![License](https://img.shields.io/github/license/user/repo)
+![Version](https://img.shields.io/github/v/release/user/repo)
+```
+
+## Quick Reference
+
+<table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700 my-6">
+  <thead className="bg-gray-50 dark:bg-gray-800">
+    <tr>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Element</th>
+      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Syntax</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Heading</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code># H1 ## H2 ### H3</code></td>
+    </tr>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Bold</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>**text**</code></td>
+    </tr>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Italic</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>*text*</code></td>
+    </tr>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Strikethrough</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>~~text~~</code></td>
+    </tr>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Link</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>[text](url)</code></td>
+    </tr>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Image</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>![alt](url)</code></td>
+    </tr>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Inline code</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>`code`</code></td>
+    </tr>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Code block</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>```lang code ```</code></td>
+    </tr>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Quote</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>&gt; quote</code></td>
+    </tr>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Unordered list</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>- item</code></td>
+    </tr>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Ordered list</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>1. item</code></td>
+    </tr>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Task list</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>- [x] done - [ ] todo</code></td>
+    </tr>
+    <tr>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">Horizontal rule</td>
+      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2"><code>---</code></td>
+    </tr>
+  </tbody>
+</table>
+
+## Learn More
+
+For complete documentation, visit the official GitHub Markdown guide:
+- [Basic Writing and Formatting Syntax](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax)
+- [Working with Advanced Formatting](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting)
+
+## Summary
+
+GitHub Flavored Markdown is your tool for clear communication on GitHub:
+
+- **Text styling**: Bold, italic, strikethrough for emphasis
+- **Structure**: Headings, lists, and tables for organization
+- **Code**: Inline and blocks with syntax highlighting
+- **Links/Images**: Connect to resources and show visuals
+- **Task lists**: Track progress in issues and PRs
+- **GitHub features**: Mentions, references, and emoji
+
+Master these basics and your README files, issues, and documentation will be professional and easy to read!
