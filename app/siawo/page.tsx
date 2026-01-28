@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function SiawoPage() {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Banner */}
       <div className="mb-8 bg-slate-700 border border-slate-600 rounded-xl shadow-sm overflow-hidden" style={{ aspectRatio: '1584/396' }}>
         <div className="flex w-full h-full" style={{ width: '100%', height: '396px', minHeight: '396px' }}>

@@ -12,7 +12,7 @@ export default function SponsorsPage() {
     <div className="min-h-screen bg-slate-700">
       {/* Hero Section - Mobile First */}
       <section className="relative overflow-hidden py-12 sm:py-16 lg:py-20 bg-gradient-to-br from-slate-800 via-slate-900 to-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-100 mb-4 sm:mb-6">
               Our Sponsors

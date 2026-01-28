@@ -41,7 +41,7 @@ export default function HomePageClient({
       {/* Hero Section */}
       <section className="relative overflow-hidden py-12 sm:py-19">
         <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 animate-gradient" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="relative max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-4xl sm:text-6xl font-bold text-slate-100 mb-6 fade-in-up leading-tight">
               Welcome to my{' '}
@@ -65,7 +65,7 @@ export default function HomePageClient({
         </div>
       </section>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pb-16">
         {/* Featured Posts - only show when no category is selected */}
         {featuredPosts.length > 0 && !selectedCategory && (
           <section className="mb-20">

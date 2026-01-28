@@ -16,7 +16,7 @@ export default function CategoriesPage() {
   const allCategories = getAllCategories()
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="lg:grid lg:grid-cols-4 lg:gap-8">
         {/* Sidebar - Categories */}
         <div className="lg:col-span-1">

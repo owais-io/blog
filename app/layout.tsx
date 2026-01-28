@@ -129,7 +129,7 @@ export default function RootLayout({
         </main>
         <ScrollToTop />
         <footer className="bg-slate-700 border-t border-slate-600">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="text-center text-slate-400">
               <p>&copy; {new Date().getFullYear()} owais.io. All rights reserved.</p>
               <div className="flex justify-center gap-4 mt-3 mb-4 text-sm">
