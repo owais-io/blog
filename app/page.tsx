@@ -1,6 +1,7 @@
 import { Metadata } from 'next'
 import HomePageClient from './components/HomePageClient'
 import { getPostsMeta, getAllCategories, type CategorySortOrder } from './lib/blog'
+import { getAllSeries } from './lib/series'
 
 export const metadata: Metadata = {
   title: 'AI, Cloud & DevOps Tutorials - Tech Blog',
@@ -28,12 +29,16 @@ export default function HomePage() {
   const featuredPosts = posts.slice(0, 2)
   const gridPosts = posts.slice(2)
 
+  // Get all series for Learning Tracks section
+  const allSeries = getAllSeries()
+
   // Pass data to client component for filtering
   return (
     <HomePageClient
       featuredPosts={featuredPosts}
       gridPosts={gridPosts}
       allCategories={allCategories}
+      allSeries={allSeries}
     />
   )
 }

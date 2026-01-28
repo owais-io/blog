@@ -51,6 +51,38 @@ export function isSeriesCategory(category: string): category is SeriesCategory {
 /**
  * Get series data for a post if it belongs to a series
  */
+export interface SeriesInfo {
+  category: SeriesCategory
+  meta: typeof SERIES_META[SeriesCategory]
+  postCount: number
+  firstPostSlug: string
+  totalReadingTime: number
+}
+
+/**
+ * Get all series with their metadata and post counts
+ */
+export function getAllSeries(): SeriesInfo[] {
+  return SERIES_CATEGORIES.map(category => {
+    const posts = getPostsByCategory(category)
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+
+    // Calculate total reading time in minutes
+    const totalReadingTime = posts.reduce((total, post) => {
+      const minutes = parseInt(post.readingTime.replace(/\D/g, '')) || 0
+      return total + minutes
+    }, 0)
+
+    return {
+      category,
+      meta: SERIES_META[category],
+      postCount: posts.length,
+      firstPostSlug: posts[0]?.slug || '',
+      totalReadingTime,
+    }
+  }).filter(series => series.postCount > 0)
+}
+
 export function getSeriesData(currentSlug: string, categories: string[]): SeriesData | null {
   // Find if this post belongs to any series category
   const seriesCategory = categories.find(cat => isSeriesCategory(cat)) as SeriesCategory | undefined

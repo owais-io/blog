@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { format } from 'date-fns'
 import LazyPostsGrid from './LazyPostsGrid'
 import CategoryPills from './CategoryPills'
+import LearningTracks from './LearningTracks'
 
 interface Post {
   slug: string
@@ -16,16 +17,30 @@ interface Post {
   readingTime: string
 }
 
+interface SeriesInfo {
+  category: string
+  meta: {
+    title: string
+    description: string
+    icon: string
+  }
+  postCount: number
+  firstPostSlug: string
+  totalReadingTime: number
+}
+
 interface HomePageClientProps {
   featuredPosts: Post[]
   gridPosts: Post[]
   allCategories: string[]
+  allSeries?: SeriesInfo[]
 }
 
 export default function HomePageClient({
   featuredPosts,
   gridPosts,
-  allCategories
+  allCategories,
+  allSeries = []
 }: HomePageClientProps) {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
 
@@ -120,6 +135,11 @@ export default function HomePageClient({
               ))}
             </div>
           </section>
+        )}
+
+        {/* Learning Tracks Section */}
+        {allSeries.length > 0 && !selectedCategory && (
+          <LearningTracks series={allSeries} />
         )}
 
         {/* Categories Section */}
