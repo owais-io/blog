@@ -4,11 +4,14 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { format } from 'date-fns'
 import { getPostBySlug, getAllPosts, getRelatedPosts } from '../../lib/blog'
+import { getSeriesData } from '../../lib/series'
 import { MDXRemote } from 'next-mdx-remote/rsc'
 import { mdxComponents } from '../../components/MDXComponents'
 import RelatedPosts from '../../components/RelatedPosts'
 import ShareButton from '../../components/ShareButton'
 import TableOfContents, { CompactTableOfContents } from '../../components/TableOfContents'
+import SeriesNavigation, { CompactSeriesNavigation } from '../../components/SeriesNavigation'
+import SeriesPrevNext from '../../components/SeriesPrevNext'
 import { generateArticleSchema, generateBreadcrumbSchema } from '../../lib/schema'
 import Breadcrumb from '../../components/Breadcrumb'
 import SponsorAd from '../../components/SponsorAd'
@@ -62,6 +65,7 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
   }
 
   const relatedPosts = getRelatedPosts(params.slug, 4)
+  const seriesData = getSeriesData(params.slug, post.categories)
 
   // Generate JSON-LD structured data
   const postUrl = `https://owais.io/blog/${params.slug}`
@@ -173,6 +177,20 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
               </div>
             )}
 
+            {/* Mobile Series Navigation */}
+            {seriesData && (
+              <div className="lg:hidden mb-8">
+                <CompactSeriesNavigation seriesData={seriesData} />
+              </div>
+            )}
+
+            {/* Series Prev/Next - Top */}
+            {seriesData && (
+              <div className="max-w-4xl mx-auto mb-8">
+                <SeriesPrevNext seriesData={seriesData} variant="compact" />
+              </div>
+            )}
+
             {/* Article Content */}
             <article className="max-w-4xl mx-auto">
               <div className="prose-enhanced max-w-none">
@@ -246,11 +264,27 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
               </div>
             </section>
 
+            {/* Series Prev/Next - Bottom */}
+            {seriesData && (
+              <div className="max-w-4xl mx-auto mb-16">
+                <SeriesPrevNext seriesData={seriesData} variant="full" />
+              </div>
+            )}
+
             {/* Sponsor Ad - After Blog Post */}
             <div className="max-w-4xl mx-auto mb-16">
               <SponsorAd />
             </div>
           </main>
+
+          {/* Desktop Series Sidebar - Right Side */}
+          {seriesData && (
+            <aside className="hidden lg:block w-72 flex-shrink-0">
+              <div className="sticky top-24">
+                <SeriesNavigation seriesData={seriesData} />
+              </div>
+            </aside>
+          )}
 
         </div>
       </div>
