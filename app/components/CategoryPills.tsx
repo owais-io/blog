@@ -24,7 +24,7 @@ export default function CategoryPills({
         className={`px-4 py-2 rounded-lg font-medium transition-colors ${
           !selectedCategory
             ? 'bg-cyan-600 text-white'
-            : 'bg-slate-700 text-slate-300 hover:bg-slate-500'
+            : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-500'
         }`}
       >
         All Posts
@@ -36,7 +36,7 @@ export default function CategoryPills({
           className={`px-4 py-2 rounded-lg font-medium transition-colors ${
             selectedCategory === category
               ? 'bg-cyan-600 text-white'
-              : 'bg-slate-700 text-slate-300 hover:bg-slate-500'
+              : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-500'
           }`}
         >
           {category}

@@ -31,7 +31,6 @@ export default function TableOfContents({ headings, className = '' }: TableOfCon
 
     const observer = new IntersectionObserver(observerCallback, observerOptions)
 
-    // Observe all heading elements
     headings.forEach((heading) => {
       const element = document.getElementById(heading.anchor)
       if (element) {
@@ -44,18 +43,15 @@ export default function TableOfContents({ headings, className = '' }: TableOfCon
     }
   }, [headings])
 
-  // Auto-expand section containing active heading (smart collapse)
   useEffect(() => {
     if (!activeId || !mounted) return
 
     const activeHeading = headings.find(h => h.anchor === activeId)
     if (!activeHeading) return
 
-    // Find the parent h2 for this heading
     let parentH2Anchor: string | null = null
 
     if (activeHeading.level === 3) {
-      // Find the nearest h2 before this h3
       const activeIndex = headings.findIndex(h => h.anchor === activeId)
       for (let i = activeIndex - 1; i >= 0; i--) {
         if (headings[i].level === 2) {
@@ -67,13 +63,11 @@ export default function TableOfContents({ headings, className = '' }: TableOfCon
       parentH2Anchor = activeHeading.anchor
     }
 
-    // Only keep the active section expanded
     if (parentH2Anchor) {
       setExpandedSections(new Set([parentH2Anchor]))
     }
   }, [activeId, headings, mounted])
 
-  // Auto-scroll TOC to keep active item in view
   useEffect(() => {
     if (!activeId || !mounted) return
 
@@ -84,7 +78,6 @@ export default function TableOfContents({ headings, className = '' }: TableOfCon
       const containerRect = tocContainer.getBoundingClientRect()
       const buttonRect = activeButton.getBoundingClientRect()
 
-      // Check if button is outside the visible area
       const isAbove = buttonRect.top < containerRect.top
       const isBelow = buttonRect.bottom > containerRect.bottom
 
@@ -101,7 +94,7 @@ export default function TableOfContents({ headings, className = '' }: TableOfCon
   const scrollToHeading = (anchor: string) => {
     const element = document.getElementById(anchor)
     if (element) {
-      const offsetTop = element.offsetTop - 100 // Offset for fixed header
+      const offsetTop = element.offsetTop - 100
       window.scrollTo({
         top: offsetTop,
         behavior: 'smooth'
@@ -122,15 +115,12 @@ export default function TableOfContents({ headings, className = '' }: TableOfCon
     })
   }
 
-  // Helper to check if a heading should be visible
   const isHeadingVisible = (heading: TOCHeading, index: number): boolean => {
     if (heading.level === 1 || heading.level === 2) {
-      return true // Always show h1 and h2
+      return true
     }
 
-    // For h3, check if parent h2 is expanded
     if (heading.level === 3) {
-      // Find the nearest h2 before this h3
       for (let i = index - 1; i >= 0; i--) {
         if (headings[i].level === 2) {
           return expandedSections.has(headings[i].anchor)
@@ -141,11 +131,9 @@ export default function TableOfContents({ headings, className = '' }: TableOfCon
     return false
   }
 
-  // Helper to check if h2 has children (h3s)
   const hasChildren = (heading: TOCHeading, index: number): boolean => {
     if (heading.level !== 2) return false
 
-    // Check if next heading is h3
     if (index + 1 < headings.length && headings[index + 1].level === 3) {
       return true
     }
@@ -162,7 +150,6 @@ export default function TableOfContents({ headings, className = '' }: TableOfCon
       style={{ maxHeight: 'calc(100vh - 8rem)' }}
       aria-label="Table of Contents"
     >
-      {/* Scrollable Content */}
       <div
         className="overflow-y-auto scrollbar-thin toc-scrollable-container"
         style={{
@@ -181,9 +168,9 @@ export default function TableOfContents({ headings, className = '' }: TableOfCon
             if (!isVisible) return null
 
             const levelClasses = {
-              1: 'ml-0 text-slate-100 font-medium',
-              2: 'ml-4 text-slate-300',
-              3: 'ml-8 text-slate-400',
+              1: 'ml-0 text-slate-800 dark:text-slate-100 font-medium',
+              2: 'ml-4 text-slate-600 dark:text-slate-300',
+              3: 'ml-8 text-slate-500 dark:text-slate-400',
             }
 
             return (
@@ -192,7 +179,7 @@ export default function TableOfContents({ headings, className = '' }: TableOfCon
                   {hasChildHeadings && (
                     <button
                       onClick={(e) => toggleSection(heading.anchor, e)}
-                      className="flex-shrink-0 w-4 h-4 mr-1 text-slate-500 hover:text-slate-300 transition-transform duration-200"
+                      className="flex-shrink-0 w-4 h-4 mr-1 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-transform duration-200"
                       aria-label={isExpanded ? 'Collapse section' : 'Expand section'}
                       style={{ marginLeft: heading.level === 2 ? '1rem' : '0' }}
                     >
@@ -209,10 +196,10 @@ export default function TableOfContents({ headings, className = '' }: TableOfCon
                     onClick={() => scrollToHeading(heading.anchor)}
                     className={`
                       block w-full text-left py-1.5 text-sm transition-colors duration-150
-                      hover:text-slate-100
+                      hover:text-slate-800 dark:hover:text-slate-100
                       ${levelClasses[heading.level as keyof typeof levelClasses]}
                       ${isActive
-                        ? 'text-cyan-400 border-l-2 border-cyan-400 -ml-px pl-4'
+                        ? 'text-cyan-600 dark:text-cyan-400 border-l-2 border-cyan-500 dark:border-cyan-400 -ml-px pl-4'
                         : ''
                       }
                       ${!hasChildHeadings && heading.level === 2 ? 'ml-5' : ''}
@@ -268,18 +255,15 @@ export function CompactTableOfContents({ headings, className = '' }: TableOfCont
     }
   }, [headings])
 
-  // Auto-expand section containing active heading (smart collapse)
   useEffect(() => {
     if (!activeId || !mounted) return
 
     const activeHeading = headings.find(h => h.anchor === activeId)
     if (!activeHeading) return
 
-    // Find the parent h2 for this heading
     let parentH2Anchor: string | null = null
 
     if (activeHeading.level === 3) {
-      // Find the nearest h2 before this h3
       const activeIndex = headings.findIndex(h => h.anchor === activeId)
       for (let i = activeIndex - 1; i >= 0; i--) {
         if (headings[i].level === 2) {
@@ -291,13 +275,11 @@ export function CompactTableOfContents({ headings, className = '' }: TableOfCont
       parentH2Anchor = activeHeading.anchor
     }
 
-    // Only keep the active section expanded
     if (parentH2Anchor) {
       setExpandedSections(new Set([parentH2Anchor]))
     }
   }, [activeId, headings, mounted])
 
-  // Auto-scroll TOC to keep active item in view (for compact version)
   useEffect(() => {
     if (!activeId || !mounted || !isOpen) return
 
@@ -346,15 +328,12 @@ export function CompactTableOfContents({ headings, className = '' }: TableOfCont
     })
   }
 
-  // Helper to check if a heading should be visible
   const isHeadingVisible = (heading: TOCHeading, index: number): boolean => {
     if (heading.level === 1 || heading.level === 2) {
-      return true // Always show h1 and h2
+      return true
     }
 
-    // For h3, check if parent h2 is expanded
     if (heading.level === 3) {
-      // Find the nearest h2 before this h3
       for (let i = index - 1; i >= 0; i--) {
         if (headings[i].level === 2) {
           return expandedSections.has(headings[i].anchor)
@@ -365,11 +344,9 @@ export function CompactTableOfContents({ headings, className = '' }: TableOfCont
     return false
   }
 
-  // Helper to check if h2 has children (h3s)
   const hasChildren = (heading: TOCHeading, index: number): boolean => {
     if (heading.level !== 2) return false
 
-    // Check if next heading is h3
     if (index + 1 < headings.length && headings[index + 1].level === 3) {
       return true
     }
@@ -410,7 +387,7 @@ export function CompactTableOfContents({ headings, className = '' }: TableOfCont
       {/* Old button kept for backward compatibility */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between p-3 bg-slate-700 border border-slate-600 rounded-lg shadow-sm hover:shadow-md transition-shadow"
+        className="w-full flex items-center justify-between p-3 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg shadow-sm hover:shadow-md transition-shadow"
         aria-expanded={isOpen}
         aria-label="Toggle table of contents"
         style={{ display: 'none' }}
@@ -433,10 +410,10 @@ export function CompactTableOfContents({ headings, className = '' }: TableOfCont
       </button>
 
       {isOpen && (
-        <div className="fixed inset-x-4 top-20 bottom-20 bg-slate-700 border border-slate-600 rounded-lg shadow-xl z-50 flex flex-col compact-toc-container">
-          <div className="p-4 border-b border-slate-600 flex-shrink-0">
+        <div className="fixed inset-x-4 top-20 bottom-20 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg shadow-xl z-50 flex flex-col compact-toc-container">
+          <div className="p-4 border-b border-slate-200 dark:border-slate-600 flex-shrink-0">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-slate-100 flex items-center">
+              <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100 flex items-center">
                 <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
                 </svg>
@@ -444,7 +421,7 @@ export function CompactTableOfContents({ headings, className = '' }: TableOfCont
               </h3>
               <button
                 onClick={() => setIsOpen(false)}
-                className="p-2 text-slate-500 hover:text-slate-300 rounded-full hover:bg-slate-500 transition-colors"
+                className="p-2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 rounded-full hover:bg-slate-100 dark:hover:bg-slate-500 transition-colors"
                 aria-label="Close table of contents"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -476,7 +453,7 @@ export function CompactTableOfContents({ headings, className = '' }: TableOfCont
                       {hasChildHeadings && (
                         <button
                           onClick={(e) => toggleSection(heading.anchor, e)}
-                          className="flex-shrink-0 w-6 h-6 mr-1 text-slate-500 hover:text-slate-300 transition-transform duration-200"
+                          className="flex-shrink-0 w-6 h-6 mr-1 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-transform duration-200"
                           aria-label={isExpanded ? 'Collapse section' : 'Expand section'}
                           style={{ marginLeft: heading.level === 2 ? '1rem' : '0' }}
                         >
@@ -493,12 +470,12 @@ export function CompactTableOfContents({ headings, className = '' }: TableOfCont
                         onClick={() => scrollToHeading(heading.anchor)}
                         className={`
                           block w-full text-left py-3 px-3 rounded-lg text-sm transition-colors
-                          hover:bg-slate-500
-                          hover:text-cyan-400
+                          hover:bg-slate-100 dark:hover:bg-slate-500
+                          hover:text-cyan-600 dark:hover:text-cyan-400
                           ${levelClasses[heading.level as keyof typeof levelClasses]}
                           ${isActive
-                            ? 'text-cyan-400 bg-slate-700 font-medium'
-                            : 'text-slate-300'
+                            ? 'text-cyan-600 dark:text-cyan-400 bg-slate-100 dark:bg-slate-700 font-medium'
+                            : 'text-slate-600 dark:text-slate-300'
                           }
                           ${!hasChildHeadings && heading.level === 2 ? 'ml-7' : ''}
                         `}
@@ -513,14 +490,14 @@ export function CompactTableOfContents({ headings, className = '' }: TableOfCont
           </div>
 
           {/* Progress indicator for mobile */}
-          <div className="p-4 border-t border-slate-600 flex-shrink-0">
-            <div className="flex items-center text-xs text-slate-400 mb-2">
+          <div className="p-4 border-t border-slate-200 dark:border-slate-600 flex-shrink-0">
+            <div className="flex items-center text-xs text-slate-500 dark:text-slate-400 mb-2">
               <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
               Reading Progress
             </div>
-            <div className="w-full bg-slate-700 rounded-full h-2">
+            <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
               <div
                 className="bg-gradient-to-r from-cyan-500 to-cyan-400 h-2 rounded-full transition-all duration-300"
                 style={{

@@ -23,12 +23,12 @@ export default function Breadcrumb({ items }: BreadcrumbProps) {
                 <>
                   <Link
                     href={item.href}
-                    className="text-slate-300 hover:text-cyan-400 transition-colors truncate max-w-[120px] sm:max-w-none"
+                    className="text-slate-500 dark:text-slate-300 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors truncate max-w-[120px] sm:max-w-none"
                   >
                     {item.name}
                   </Link>
                   <svg
-                    className="w-3 h-3 sm:w-4 sm:h-4 text-slate-600 flex-shrink-0"
+                    className="w-3 h-3 sm:w-4 sm:h-4 text-slate-400 dark:text-slate-600 flex-shrink-0"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -43,7 +43,7 @@ export default function Breadcrumb({ items }: BreadcrumbProps) {
                 </>
               ) : (
                 <span
-                  className="text-slate-100 font-medium truncate max-w-[180px] sm:max-w-[300px] md:max-w-none"
+                  className="text-slate-800 dark:text-slate-100 font-medium truncate max-w-[180px] sm:max-w-[300px] md:max-w-none"
                   aria-current="page"
                 >
                   {item.name}

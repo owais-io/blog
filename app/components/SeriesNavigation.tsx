@@ -13,14 +13,14 @@ export default function SeriesNavigation({ seriesData }: SeriesNavigationProps) 
   const { meta, posts, currentIndex } = seriesData
 
   return (
-    <nav className="bg-slate-700 rounded-xl border border-slate-600 overflow-hidden">
+    <nav className="bg-white dark:bg-slate-700 rounded-xl border border-slate-200 dark:border-slate-600 overflow-hidden">
       {/* Header */}
-      <div className="bg-slate-600 px-4 py-3 border-b border-slate-500">
+      <div className="bg-slate-100 dark:bg-slate-600 px-4 py-3 border-b border-slate-200 dark:border-slate-500">
         <div className="flex items-center gap-2">
           <span className="text-xl">{meta.icon}</span>
           <div>
-            <h3 className="text-sm font-semibold text-slate-100">{meta.title}</h3>
-            <p className="text-xs text-slate-400">{posts.length} posts in series</p>
+            <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">{meta.title}</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400">{posts.length} posts in series</p>
           </div>
         </div>
       </div>
@@ -41,18 +41,18 @@ export default function SeriesNavigation({ seriesData }: SeriesNavigationProps) 
                   href={`/blog/${post.slug}`}
                   className={`flex items-start gap-3 px-4 py-3 transition-colors ${
                     isCurrent
-                      ? 'bg-cyan-900/50 border-l-4 border-cyan-400'
-                      : 'hover:bg-slate-600 border-l-4 border-transparent'
+                      ? 'bg-cyan-50 dark:bg-cyan-900/50 border-l-4 border-cyan-500 dark:border-cyan-400'
+                      : 'hover:bg-slate-100 dark:hover:bg-slate-600 border-l-4 border-transparent'
                   }`}
                 >
                   {/* Order Number / Check */}
                   <span
                     className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
                       isCurrent
-                        ? 'bg-cyan-500 text-slate-900'
+                        ? 'bg-cyan-500 text-white dark:text-slate-900'
                         : isCompleted
                         ? 'bg-green-600 text-white'
-                        : 'bg-slate-600 text-slate-300'
+                        : 'bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-300'
                     }`}
                   >
                     {isCompleted ? (
@@ -69,8 +69,8 @@ export default function SeriesNavigation({ seriesData }: SeriesNavigationProps) 
                     <p
                       className={`text-sm leading-snug line-clamp-2 ${
                         isCurrent
-                          ? 'text-cyan-300 font-medium'
-                          : 'text-slate-300'
+                          ? 'text-cyan-700 dark:text-cyan-300 font-medium'
+                          : 'text-slate-600 dark:text-slate-300'
                       }`}
                     >
                       {post.title}
@@ -85,12 +85,12 @@ export default function SeriesNavigation({ seriesData }: SeriesNavigationProps) 
       </div>
 
       {/* Progress */}
-      <div className="px-4 py-3 border-t border-slate-600 bg-slate-700">
-        <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
+      <div className="px-4 py-3 border-t border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700">
+        <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 mb-2">
           <span>Progress</span>
           <span>{currentIndex + 1} of {posts.length}</span>
         </div>
-        <div className="w-full bg-slate-600 rounded-full h-2">
+        <div className="w-full bg-slate-200 dark:bg-slate-600 rounded-full h-2">
           <div
             className="bg-gradient-to-r from-cyan-500 to-cyan-400 h-2 rounded-full transition-all duration-300"
             style={{ width: `${((currentIndex + 1) / posts.length) * 100}%` }}
@@ -107,17 +107,17 @@ export function CompactSeriesNavigation({ seriesData }: SeriesNavigationProps) {
   const { meta, posts, currentIndex } = seriesData
 
   return (
-    <div className="bg-slate-700 rounded-xl border border-slate-600 overflow-hidden">
+    <div className="bg-white dark:bg-slate-700 rounded-xl border border-slate-200 dark:border-slate-600 overflow-hidden">
       {/* Collapsible Header */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-600 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors"
       >
         <div className="flex items-center gap-2">
           <span className="text-lg">{meta.icon}</span>
           <div className="text-left">
-            <h3 className="text-sm font-semibold text-slate-100">{meta.title}</h3>
-            <p className="text-xs text-slate-400">
+            <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">{meta.title}</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               Part {currentIndex + 1} of {posts.length}
             </p>
           </div>
@@ -134,7 +134,7 @@ export function CompactSeriesNavigation({ seriesData }: SeriesNavigationProps) {
 
       {/* Collapsible Content */}
       {isOpen && (
-        <div className="border-t border-slate-600">
+        <div className="border-t border-slate-200 dark:border-slate-600">
           <ul className="py-2 max-h-64 overflow-y-auto">
             {posts.map((post, index) => {
               const isCurrent = index === currentIndex
@@ -146,18 +146,18 @@ export function CompactSeriesNavigation({ seriesData }: SeriesNavigationProps) {
                     href={`/blog/${post.slug}`}
                     className={`flex items-center gap-3 px-4 py-2.5 transition-colors ${
                       isCurrent
-                        ? 'bg-cyan-900/50 border-l-4 border-cyan-400'
-                        : 'hover:bg-slate-600 border-l-4 border-transparent'
+                        ? 'bg-cyan-50 dark:bg-cyan-900/50 border-l-4 border-cyan-500 dark:border-cyan-400'
+                        : 'hover:bg-slate-100 dark:hover:bg-slate-600 border-l-4 border-transparent'
                     }`}
                     onClick={() => setIsOpen(false)}
                   >
                     <span
                       className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs font-medium ${
                         isCurrent
-                          ? 'bg-cyan-500 text-slate-900'
+                          ? 'bg-cyan-500 text-white dark:text-slate-900'
                           : isCompleted
                           ? 'bg-green-600 text-white'
-                          : 'bg-slate-600 text-slate-300'
+                          : 'bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-300'
                       }`}
                     >
                       {isCompleted ? (
@@ -170,7 +170,7 @@ export function CompactSeriesNavigation({ seriesData }: SeriesNavigationProps) {
                     </span>
                     <span
                       className={`text-sm line-clamp-1 ${
-                        isCurrent ? 'text-cyan-300 font-medium' : 'text-slate-300'
+                        isCurrent ? 'text-cyan-700 dark:text-cyan-300 font-medium' : 'text-slate-600 dark:text-slate-300'
                       }`}
                     >
                       {post.title}
@@ -182,8 +182,8 @@ export function CompactSeriesNavigation({ seriesData }: SeriesNavigationProps) {
           </ul>
 
           {/* Progress Bar */}
-          <div className="px-4 py-3 border-t border-slate-600">
-            <div className="w-full bg-slate-600 rounded-full h-1.5">
+          <div className="px-4 py-3 border-t border-slate-200 dark:border-slate-600">
+            <div className="w-full bg-slate-200 dark:bg-slate-600 rounded-full h-1.5">
               <div
                 className="bg-cyan-500 h-1.5 rounded-full transition-all duration-300"
                 style={{ width: `${((currentIndex + 1) / posts.length) * 100}%` }}

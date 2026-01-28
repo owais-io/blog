@@ -37,7 +37,7 @@ export const mdxComponents = {
     return (
       <h1
         id={id}
-        className="text-3xl font-bold text-slate-100 mb-6 mt-8 first:mt-0 scroll-mt-24"
+        className="text-3xl font-bold text-slate-800 dark:text-slate-100 mb-6 mt-8 first:mt-0 scroll-mt-24"
         {...props}
       >
         {props.children}
@@ -52,7 +52,7 @@ export const mdxComponents = {
     return (
       <h2
         id={id}
-        className="text-2xl font-semibold text-slate-100 mb-4 mt-8 scroll-mt-24"
+        className="text-2xl font-semibold text-slate-800 dark:text-slate-100 mb-4 mt-8 scroll-mt-24"
         {...props}
       >
         {props.children}
@@ -67,7 +67,7 @@ export const mdxComponents = {
     return (
       <h3
         id={id}
-        className="text-xl font-semibold text-slate-100 mb-3 mt-6 scroll-mt-24"
+        className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-3 mt-6 scroll-mt-24"
         {...props}
       >
         {props.children}
@@ -82,7 +82,7 @@ export const mdxComponents = {
     return (
       <h4
         id={id}
-        className="text-lg font-semibold text-slate-100 mb-2 mt-4 scroll-mt-24"
+        className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-2 mt-4 scroll-mt-24"
         {...props}
       >
         {props.children}
@@ -91,7 +91,7 @@ export const mdxComponents = {
   },
 
   p: (props: any) => (
-    <p className="text-slate-300 leading-relaxed mb-4" {...props} />
+    <p className="text-slate-600 dark:text-slate-300 leading-relaxed mb-4" {...props} />
   ),
 
   a: (props: any) => {
@@ -102,7 +102,7 @@ export const mdxComponents = {
       return (
         <a
           {...props}
-          className="text-cyan-400 hover:text-cyan-300 underline"
+          className="text-cyan-600 dark:text-cyan-400 hover:text-cyan-500 dark:hover:text-cyan-300 underline"
           target="_blank"
           rel="noopener noreferrer"
         />
@@ -112,7 +112,7 @@ export const mdxComponents = {
     return (
       <Link
         href={props.href}
-        className="text-cyan-400 hover:text-cyan-300 underline"
+        className="text-cyan-600 dark:text-cyan-400 hover:text-cyan-500 dark:hover:text-cyan-300 underline"
         {...props}
       />
     )
@@ -127,11 +127,11 @@ export const mdxComponents = {
   ),
 
   li: (props: any) => (
-    <li className="text-slate-300" {...props} />
+    <li className="text-slate-600 dark:text-slate-300" {...props} />
   ),
 
   blockquote: (props: any) => (
-    <blockquote className="border-l-4 border-cyan-500 pl-4 py-2 mb-4 italic text-slate-300 bg-slate-700 rounded-r-lg" {...props} />
+    <blockquote className="border-l-4 border-cyan-500 pl-4 py-2 mb-4 italic text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 rounded-r-lg" {...props} />
   ),
 
   code: (props: any) => {
@@ -145,28 +145,28 @@ export const mdxComponents = {
 
   table: (props: any) => (
     <div className="overflow-x-auto mb-6">
-      <table className="min-w-full divide-y divide-slate-700" {...props} />
+      <table className="min-w-full divide-y divide-slate-300 dark:divide-slate-700" {...props} />
     </div>
   ),
 
   thead: (props: any) => (
-    <thead className="bg-slate-700" {...props} />
+    <thead className="bg-slate-200 dark:bg-slate-700" {...props} />
   ),
 
   tbody: (props: any) => (
-    <tbody className="bg-slate-700 divide-y divide-slate-700" {...props} />
+    <tbody className="bg-white dark:bg-slate-700 divide-y divide-slate-200 dark:divide-slate-700" {...props} />
   ),
 
   th: (props: any) => (
-    <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider" {...props} />
+    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider" {...props} />
   ),
 
   td: (props: any) => (
-    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300" {...props} />
+    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600 dark:text-slate-300" {...props} />
   ),
 
   hr: (props: any) => (
-    <hr className="my-8 border-slate-600" {...props} />
+    <hr className="my-8 border-slate-300 dark:border-slate-600" {...props} />
   ),
 
   // Custom div with className support for MDX
@@ -179,27 +179,27 @@ export const mdxComponents = {
   Callout: ({ children, type = 'info' }: { children: React.ReactNode; type?: 'info' | 'warning' | 'error' | 'success' }) => {
     const styles = {
       info: {
-        bg: 'bg-cyan-900/30',
-        border: 'border-cyan-700',
-        text: 'text-cyan-200',
+        bg: 'bg-cyan-100 dark:bg-cyan-900/30',
+        border: 'border-cyan-400 dark:border-cyan-700',
+        text: 'text-cyan-800 dark:text-cyan-200',
         icon: '💡'
       },
       warning: {
-        bg: 'bg-yellow-900/30',
-        border: 'border-yellow-700',
-        text: 'text-yellow-200',
+        bg: 'bg-yellow-100 dark:bg-yellow-900/30',
+        border: 'border-yellow-400 dark:border-yellow-700',
+        text: 'text-yellow-800 dark:text-yellow-200',
         icon: '⚠️'
       },
       error: {
-        bg: 'bg-red-900/30',
-        border: 'border-red-700',
-        text: 'text-red-200',
+        bg: 'bg-red-100 dark:bg-red-900/30',
+        border: 'border-red-400 dark:border-red-700',
+        text: 'text-red-800 dark:text-red-200',
         icon: '🚨'
       },
       success: {
-        bg: 'bg-green-900/30',
-        border: 'border-green-700',
-        text: 'text-green-200',
+        bg: 'bg-green-100 dark:bg-green-900/30',
+        border: 'border-green-400 dark:border-green-700',
+        text: 'text-green-800 dark:text-green-200',
         icon: '✅'
       }
     }
@@ -235,15 +235,15 @@ export const mdxComponents = {
   // Highlight box component
   HighlightBox: ({ children, color = 'blue' }: { children: React.ReactNode; color?: 'blue' | 'green' | 'yellow' | 'red' | 'purple' }) => {
     const colors = {
-      blue: 'bg-cyan-900/30 border-cyan-700',
-      green: 'bg-green-900/30 border-green-700',
-      yellow: 'bg-yellow-900/30 border-yellow-700',
-      red: 'bg-red-900/30 border-red-700',
-      purple: 'bg-purple-900/30 border-purple-700'
+      blue: 'bg-cyan-100 dark:bg-cyan-900/30 border-cyan-400 dark:border-cyan-700',
+      green: 'bg-green-100 dark:bg-green-900/30 border-green-400 dark:border-green-700',
+      yellow: 'bg-yellow-100 dark:bg-yellow-900/30 border-yellow-400 dark:border-yellow-700',
+      red: 'bg-red-100 dark:bg-red-900/30 border-red-400 dark:border-red-700',
+      purple: 'bg-purple-100 dark:bg-purple-900/30 border-purple-400 dark:border-purple-700'
     }
 
     return (
-      <div className={`p-6 rounded-lg border-2 my-6 text-slate-200 ${colors[color]}`}>
+      <div className={`p-6 rounded-lg border-2 my-6 text-slate-700 dark:text-slate-200 ${colors[color]}`}>
         {children}
       </div>
     )
@@ -252,7 +252,7 @@ export const mdxComponents = {
   // Gradient box component for gradient backgrounds
   GradientBox: ({ children }: { children: React.ReactNode }) => {
     return (
-      <div className="bg-gradient-to-r from-slate-800 to-slate-700 text-slate-200 p-6 rounded-lg my-6 border border-slate-600">
+      <div className="bg-gradient-to-r from-slate-200 dark:from-slate-800 to-slate-100 dark:to-slate-700 text-slate-700 dark:text-slate-200 p-6 rounded-lg my-6 border border-slate-300 dark:border-slate-600">
         {children}
       </div>
     )
@@ -261,11 +261,11 @@ export const mdxComponents = {
   // Diagram Components - Mobile-first responsive design
   DiagramBox: ({ children, color = 'blue', className = '' }: { children: React.ReactNode; color?: 'blue' | 'green' | 'purple' | 'gray' | 'yellow'; className?: string }) => {
     const colors = {
-      blue: 'bg-cyan-900/50 border-cyan-700 text-cyan-200',
-      green: 'bg-green-900/50 border-green-700 text-green-200',
-      purple: 'bg-purple-900/50 border-purple-700 text-purple-200',
-      gray: 'bg-slate-700 border-slate-600 text-slate-200',
-      yellow: 'bg-yellow-900/50 border-yellow-700 text-yellow-200',
+      blue: 'bg-cyan-100 dark:bg-cyan-900/50 border-cyan-400 dark:border-cyan-700 text-cyan-800 dark:text-cyan-200',
+      green: 'bg-green-100 dark:bg-green-900/50 border-green-400 dark:border-green-700 text-green-800 dark:text-green-200',
+      purple: 'bg-purple-100 dark:bg-purple-900/50 border-purple-400 dark:border-purple-700 text-purple-800 dark:text-purple-200',
+      gray: 'bg-slate-200 dark:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200',
+      yellow: 'bg-yellow-100 dark:bg-yellow-900/50 border-yellow-400 dark:border-yellow-700 text-yellow-800 dark:text-yellow-200',
     }
 
     return (
@@ -292,11 +292,11 @@ export const mdxComponents = {
 
     return (
       <div className={`flex ${directionClasses[direction]} gap-1 sm:gap-2 my-2 sm:my-3`}>
-        <span className="text-2xl sm:text-3xl text-slate-400 font-bold">
+        <span className="text-2xl sm:text-3xl text-slate-500 dark:text-slate-400 font-bold">
           {arrows[direction]}
         </span>
         {label && (
-          <span className="text-xs sm:text-sm text-slate-400 italic">
+          <span className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 italic">
             {label}
           </span>
         )}
@@ -308,11 +308,11 @@ export const mdxComponents = {
     return (
       <div className={`my-6 sm:my-8 ${className}`}>
         {title && (
-          <h4 className="text-base sm:text-lg font-semibold text-slate-200 mb-3 sm:mb-4 text-center">
+          <h4 className="text-base sm:text-lg font-semibold text-slate-700 dark:text-slate-200 mb-3 sm:mb-4 text-center">
             {title}
           </h4>
         )}
-        <div className="bg-slate-700 border-2 border-slate-600 rounded-lg p-4 sm:p-6 overflow-x-auto">
+        <div className="bg-slate-100 dark:bg-slate-700 border-2 border-slate-300 dark:border-slate-600 rounded-lg p-4 sm:p-6 overflow-x-auto">
           <div className="flex flex-col items-center min-w-min">
             {children}
           </div>
@@ -323,8 +323,8 @@ export const mdxComponents = {
 
   ProcessGroup: ({ children, title }: { children: React.ReactNode; title: string }) => {
     return (
-      <div className="w-full border-2 border-slate-600 rounded-lg p-3 sm:p-4 my-3 sm:my-4 bg-slate-700">
-        <div className="text-sm sm:text-base font-bold text-slate-200 mb-2 sm:mb-3 border-b border-slate-600 pb-2">
+      <div className="w-full border-2 border-slate-300 dark:border-slate-600 rounded-lg p-3 sm:p-4 my-3 sm:my-4 bg-white dark:bg-slate-700">
+        <div className="text-sm sm:text-base font-bold text-slate-700 dark:text-slate-200 mb-2 sm:mb-3 border-b border-slate-300 dark:border-slate-600 pb-2">
           {title}
         </div>
         <div className="space-y-2">
@@ -336,9 +336,9 @@ export const mdxComponents = {
 
   ProcessItem: ({ children, port }: { children: React.ReactNode; port?: string }) => {
     return (
-      <div className="flex items-center justify-between text-xs sm:text-sm text-slate-300 px-2 sm:px-3 py-1 sm:py-2 bg-slate-700 rounded">
+      <div className="flex items-center justify-between text-xs sm:text-sm text-slate-600 dark:text-slate-300 px-2 sm:px-3 py-1 sm:py-2 bg-slate-100 dark:bg-slate-700 rounded">
         <span>{children}</span>
-        {port && <span className="text-cyan-400 font-mono text-xs">{port}</span>}
+        {port && <span className="text-cyan-600 dark:text-cyan-400 font-mono text-xs">{port}</span>}
       </div>
     )
   },
@@ -347,7 +347,7 @@ export const mdxComponents = {
     return (
       <div className="my-6 sm:my-8">
         {title && (
-          <h4 className="text-base sm:text-lg font-semibold text-slate-200 mb-3 sm:mb-4">
+          <h4 className="text-base sm:text-lg font-semibold text-slate-700 dark:text-slate-200 mb-3 sm:mb-4">
             {title}
           </h4>
         )}
@@ -368,11 +368,11 @@ export const mdxComponents = {
 
     return (
       <div className="relative">
-        <div className={`absolute -left-[1.65rem] sm:-left-[2.15rem] w-3 h-3 sm:w-4 sm:h-4 rounded-full ${status ? statusColors[status] : 'bg-slate-500'} border-2 sm:border-4 border-slate-900`} />
-        <div className="text-xs sm:text-sm font-mono text-slate-400 mb-1">
+        <div className={`absolute -left-[1.65rem] sm:-left-[2.15rem] w-3 h-3 sm:w-4 sm:h-4 rounded-full ${status ? statusColors[status] : 'bg-slate-400 dark:bg-slate-500'} border-2 sm:border-4 border-white dark:border-slate-900`} />
+        <div className="text-xs sm:text-sm font-mono text-slate-500 dark:text-slate-400 mb-1">
           {time}
         </div>
-        <div className="text-sm sm:text-base text-slate-300">
+        <div className="text-sm sm:text-base text-slate-600 dark:text-slate-300">
           {children}
         </div>
       </div>
@@ -382,21 +382,21 @@ export const mdxComponents = {
   ComparisonBox: ({ children, title, type = 'good' }: { children: React.ReactNode; title: string; type?: 'good' | 'bad' | 'neutral' }) => {
     const styles = {
       good: {
-        border: 'border-green-700',
-        bg: 'bg-green-900/30',
-        title: 'text-green-300',
+        border: 'border-green-400 dark:border-green-700',
+        bg: 'bg-green-100 dark:bg-green-900/30',
+        title: 'text-green-700 dark:text-green-300',
         icon: '✅'
       },
       bad: {
-        border: 'border-red-700',
-        bg: 'bg-red-900/30',
-        title: 'text-red-300',
+        border: 'border-red-400 dark:border-red-700',
+        bg: 'bg-red-100 dark:bg-red-900/30',
+        title: 'text-red-700 dark:text-red-300',
         icon: '❌'
       },
       neutral: {
-        border: 'border-slate-600',
-        bg: 'bg-slate-700',
-        title: 'text-slate-200',
+        border: 'border-slate-300 dark:border-slate-600',
+        bg: 'bg-slate-100 dark:bg-slate-700',
+        title: 'text-slate-700 dark:text-slate-200',
         icon: '📋'
       }
     }
@@ -409,7 +409,7 @@ export const mdxComponents = {
           <span className="text-lg sm:text-xl">{currentStyle.icon}</span>
           <span>{title}</span>
         </div>
-        <div className="text-sm sm:text-base text-slate-300 space-y-2">
+        <div className="text-sm sm:text-base text-slate-600 dark:text-slate-300 space-y-2">
           {children}
         </div>
       </div>
@@ -426,7 +426,7 @@ export const mdxComponents = {
 
   CodeLabel: ({ children }: { children: React.ReactNode }) => {
     return (
-      <span className="font-mono text-xs sm:text-sm bg-slate-700 px-2 py-1 rounded text-slate-200">
+      <span className="font-mono text-xs sm:text-sm bg-slate-200 dark:bg-slate-700 px-2 py-1 rounded text-slate-700 dark:text-slate-200">
         {children}
       </span>
     )

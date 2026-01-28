@@ -29,10 +29,10 @@ export default function CategoriesPage() {
         <div className="lg:col-span-3 mt-8 lg:mt-0">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-slate-100 sm:text-4xl">
+            <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 sm:text-4xl">
               Browse by Categories
             </h1>
-            <p className="mt-4 text-lg text-slate-300">
+            <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">
               Explore all {totalPosts} articles organized by categories and topic areas.
             </p>
           </div>
@@ -40,15 +40,15 @@ export default function CategoriesPage() {
           {/* Blog Posts */}
           {posts.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-slate-400 text-lg">
+              <p className="text-slate-500 dark:text-slate-400 text-lg">
                 No posts available yet.
               </p>
             </div>
           ) : (
             <div className="space-y-8">
               {posts.map((post) => (
-                <article key={post.slug} className="bg-slate-700 rounded-lg border border-slate-600 p-6 hover:shadow-md transition-shadow">
-                  <div className="flex items-center gap-4 text-sm text-slate-400 mb-3">
+                <article key={post.slug} className="bg-white dark:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-600 p-6 hover:shadow-md transition-shadow">
+                  <div className="flex items-center gap-4 text-sm text-slate-500 dark:text-slate-400 mb-3">
                     <time dateTime={post.date}>
                       {format(new Date(post.date), 'MMM d, yyyy')}
                     </time>
@@ -56,17 +56,17 @@ export default function CategoriesPage() {
                     <span>{post.readingTime}</span>
                   </div>
 
-                  <h2 className="text-xl font-semibold text-slate-100 mb-3">
+                  <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-3">
                     <Link
                       href={`/blog/${post.slug}`}
-                      className="hover:text-cyan-400 transition-colors"
+                      className="hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors"
                     >
                       {post.title}
                     </Link>
                   </h2>
 
                   {post.description && (
-                    <p className="text-slate-300 mb-4 leading-relaxed">
+                    <p className="text-slate-600 dark:text-slate-300 mb-4 leading-relaxed">
                       {post.description}
                     </p>
                   )}
@@ -78,7 +78,7 @@ export default function CategoriesPage() {
                         <Link
                           key={category}
                           href={`/categories?category=${encodeURIComponent(category)}`}
-                          className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-900/50 text-green-300 hover:bg-green-800/50 transition-colors"
+                          className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-800/50 transition-colors"
                         >
                           📁 {category}
                         </Link>
@@ -89,13 +89,13 @@ export default function CategoriesPage() {
                         <Link
                           key={tag}
                           href={`/tags?tag=${encodeURIComponent(tag)}`}
-                          className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-cyan-900/50 text-cyan-300 hover:bg-cyan-800/50 transition-colors"
+                          className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-cyan-100 dark:bg-cyan-900/50 text-cyan-700 dark:text-cyan-300 hover:bg-cyan-200 dark:hover:bg-cyan-800/50 transition-colors"
                         >
                           #{tag}
                         </Link>
                       ))}
                       {post.tags.length > 3 && (
-                        <span className="text-sm text-slate-400">
+                        <span className="text-sm text-slate-500 dark:text-slate-400">
                           +{post.tags.length - 3} tags
                         </span>
                       )}
@@ -103,7 +103,7 @@ export default function CategoriesPage() {
 
                     <Link
                       href={`/blog/${post.slug}`}
-                      className="text-cyan-400 hover:text-cyan-300 font-medium text-sm"
+                      className="text-cyan-600 dark:text-cyan-400 hover:text-cyan-500 dark:hover:text-cyan-300 font-medium text-sm"
                     >
                       Read more →
                     </Link>

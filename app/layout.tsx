@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import Header from './components/Header'
 import ScrollToTop from './components/ScrollToTop'
+import ThemeProvider from './components/ThemeProvider'
 import { GoogleAnalytics } from '@next/third-parties/google'
 import Script from 'next/script'
 import { generateOrganizationSchema, generateWebsiteSchema } from './lib/schema'
@@ -104,7 +105,7 @@ export default function RootLayout({
   const websiteSchema = generateWebsiteSchema('https://owais.io', 'Owais.io')
 
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <Script
           async
@@ -123,25 +124,26 @@ export default function RootLayout({
         />
       </head>
       <body className={inter.className}>
-        <Header />
-        <main className="min-h-screen">
-          {children}
-        </main>
-        <ScrollToTop />
-        <footer className="bg-slate-700 border-t border-slate-600">
+        <ThemeProvider>
+          <Header />
+          <main className="min-h-screen">
+            {children}
+          </main>
+          <ScrollToTop />
+          <footer className="bg-slate-100 dark:bg-slate-700 border-t border-slate-200 dark:border-slate-600">
           <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div className="text-center text-slate-400">
+            <div className="text-center text-slate-500 dark:text-slate-400">
               <p>&copy; {new Date().getFullYear()} owais.io. All rights reserved.</p>
               <div className="flex justify-center gap-4 mt-3 mb-4 text-sm">
-                <a href="/privacy" className="hover:text-primary-400 transition-colors">
+                <a href="/privacy" className="hover:text-primary-500 dark:hover:text-primary-400 transition-colors">
                   Privacy Policy
                 </a>
                 <span>•</span>
-                <a href="/about" className="hover:text-primary-400 transition-colors">
+                <a href="/about" className="hover:text-primary-500 dark:hover:text-primary-400 transition-colors">
                   About
                 </a>
                 <span>•</span>
-                <a href="/contact" className="hover:text-primary-400 transition-colors">
+                <a href="/contact" className="hover:text-primary-500 dark:hover:text-primary-400 transition-colors">
                   Contact
                 </a>
               </div>
@@ -150,7 +152,7 @@ export default function RootLayout({
                   href="https://linkedin.com/in/owais-io"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="hover:text-slate-100 transition-colors"
+                  className="hover:text-slate-800 dark:hover:text-slate-100 transition-colors"
                   aria-label="LinkedIn Profile"
                 >
                   <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -161,7 +163,7 @@ export default function RootLayout({
                   href="https://github.com/owais-io"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="hover:text-slate-100 transition-colors"
+                  className="hover:text-slate-800 dark:hover:text-slate-100 transition-colors"
                   aria-label="GitHub Profile"
                 >
                   <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -172,6 +174,7 @@ export default function RootLayout({
             </div>
           </div>
         </footer>
+        </ThemeProvider>
         <GoogleAnalytics gaId="G-GTL0QED6PK" />
       </body>
     </html>

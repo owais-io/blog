@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
+import ThemeToggle from './ThemeToggle'
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -38,7 +39,7 @@ export default function Header() {
       className={`sticky top-0 z-50 transition-all duration-300 ${
         isScrolled
           ? 'glass shadow-medium backdrop-blur-xl'
-          : 'bg-slate-700/80 backdrop-blur-sm'
+          : 'bg-slate-100/80 dark:bg-slate-700/80 backdrop-blur-sm'
       }`}
     >
       <nav className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
@@ -46,7 +47,7 @@ export default function Header() {
           {/* Logo - Left Side */}
           <div className="flex-shrink-0">
             <Link href="/" className="flex items-center group">
-              <div className="text-2xl font-bold text-slate-100 transition-all duration-200 group-hover:scale-105">
+              <div className="text-2xl font-bold text-slate-800 dark:text-slate-100 transition-all duration-200 group-hover:scale-105">
                 owais<span className="text-gradient">.io</span>
               </div>
             </Link>
@@ -60,25 +61,26 @@ export default function Header() {
                 href={item.href}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 relative group ${
                   isActive(item.href)
-                    ? 'text-primary-400 bg-primary-500/20'
-                    : 'text-slate-300 hover:text-primary-400 hover:bg-slate-500'
+                    ? 'text-primary-600 dark:text-primary-400 bg-primary-100 dark:bg-primary-500/20'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-slate-200 dark:hover:bg-slate-500'
                 }`}
               >
                 {item.label}
                 {isActive(item.href) && (
-                  <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-6 h-0.5 bg-primary-400 rounded-full" />
+                  <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-6 h-0.5 bg-primary-500 dark:bg-primary-400 rounded-full" />
                 )}
               </Link>
             ))}
           </div>
 
-          {/* Social Icons - Right Side */}
+          {/* Right Side - Theme Toggle & Social Icons */}
           <div className="hidden md:flex md:items-center md:space-x-3">
+            <ThemeToggle />
             <a
               href="https://linkedin.com/in/owais-io"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-slate-300 hover:text-primary-400 transition-colors"
+              className="text-slate-500 dark:text-slate-300 hover:text-primary-500 dark:hover:text-primary-400 transition-colors"
               aria-label="LinkedIn Profile"
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -89,7 +91,7 @@ export default function Header() {
               href="https://github.com/owais-io"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-slate-300 hover:text-primary-400 transition-colors"
+              className="text-slate-500 dark:text-slate-300 hover:text-primary-500 dark:hover:text-primary-400 transition-colors"
               aria-label="GitHub Profile"
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -99,7 +101,8 @@ export default function Header() {
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden flex items-center space-x-3">
+          <div className="md:hidden flex items-center space-x-2">
+            <ThemeToggle />
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="btn-ghost p-2 rounded-lg"
@@ -132,36 +135,27 @@ export default function Header() {
             isMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
           }`}
         >
-          <div className="px-2 pt-2 pb-3 space-y-1 border-t border-slate-600 bg-slate-600/50 backdrop-blur-sm rounded-b-lg">
+          <div className="px-2 pt-2 pb-3 space-y-1 border-t border-slate-200 dark:border-slate-600 bg-slate-100/50 dark:bg-slate-600/50 backdrop-blur-sm rounded-b-lg">
             {navItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
                 className={`block px-4 py-3 rounded-lg text-base font-medium transition-all duration-200 ${
                   isActive(item.href)
-                    ? 'text-primary-400 bg-primary-500/20'
-                    : 'text-slate-300 hover:text-primary-400 hover:bg-slate-500'
+                    ? 'text-primary-600 dark:text-primary-400 bg-primary-100 dark:bg-primary-500/20'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-slate-200 dark:hover:bg-slate-500'
                 }`}
                 onClick={() => setIsMenuOpen(false)}
               >
                 {item.label}
               </Link>
             ))}
-            {/* <a
-              href="/resume.pdf"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block px-4 py-3 rounded-lg text-base font-medium text-slate-300 hover:text-primary-400 hover:bg-slate-500 transition-all duration-200"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Resume ↗
-            </a> */}
-            <div className="flex justify-center space-x-6 px-4 py-3 border-t border-slate-600">
+            <div className="flex justify-center space-x-6 px-4 py-3 border-t border-slate-200 dark:border-slate-600">
               <a
                 href="https://linkedin.com/in/owais-io"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-slate-300 hover:text-primary-400 transition-colors"
+                className="text-slate-500 dark:text-slate-300 hover:text-primary-500 dark:hover:text-primary-400 transition-colors"
                 aria-label="LinkedIn Profile"
               >
                 <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -172,7 +166,7 @@ export default function Header() {
                 href="https://github.com/owais-io"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-slate-300 hover:text-primary-400 transition-colors"
+                className="text-slate-500 dark:text-slate-300 hover:text-primary-500 dark:hover:text-primary-400 transition-colors"
                 aria-label="GitHub Profile"
               >
                 <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">

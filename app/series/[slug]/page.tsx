@@ -70,13 +70,13 @@ export default async function SeriesDetailPage({ params }: SeriesDetailPageProps
     <div className="min-h-screen">
       {/* Hero Section */}
       <section className="relative overflow-hidden py-12 sm:py-16">
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900" />
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-100 via-slate-50 to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900" />
         <div className="relative max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
           {/* Breadcrumb */}
           <nav className="mb-6">
-            <ol className="flex items-center gap-2 text-sm text-slate-400">
+            <ol className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
               <li>
-                <Link href="/" className="hover:text-cyan-400 transition-colors">Home</Link>
+                <Link href="/" className="hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">Home</Link>
               </li>
               <li>
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -84,27 +84,27 @@ export default async function SeriesDetailPage({ params }: SeriesDetailPageProps
                 </svg>
               </li>
               <li>
-                <Link href="/series" className="hover:text-cyan-400 transition-colors">Series</Link>
+                <Link href="/series" className="hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">Series</Link>
               </li>
               <li>
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
                 </svg>
               </li>
-              <li className="text-slate-300">{meta.title}</li>
+              <li className="text-slate-700 dark:text-slate-300">{meta.title}</li>
             </ol>
           </nav>
 
           <div className="flex items-start gap-6">
             <span className="text-6xl">{meta.icon}</span>
             <div>
-              <h1 className="text-3xl sm:text-4xl font-bold text-slate-100 mb-3">
+              <h1 className="text-3xl sm:text-4xl font-bold text-slate-800 dark:text-slate-100 mb-3">
                 {meta.title}
               </h1>
-              <p className="text-lg text-slate-300 mb-4 max-w-2xl">
+              <p className="text-lg text-slate-600 dark:text-slate-300 mb-4 max-w-2xl">
                 {meta.description}
               </p>
-              <div className="flex items-center gap-6 text-sm text-slate-400">
+              <div className="flex items-center gap-6 text-sm text-slate-500 dark:text-slate-400">
                 <div className="flex items-center gap-2">
                   <svg className="w-5 h-5 text-cyan-500" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" />
@@ -128,11 +128,11 @@ export default async function SeriesDetailPage({ params }: SeriesDetailPageProps
         <div className="max-w-4xl mx-auto">
           {/* Start CTA */}
           {posts.length > 0 && (
-            <div className="mb-8 p-4 rounded-xl bg-cyan-500/10 border border-cyan-500/20">
+            <div className="mb-8 p-4 rounded-xl bg-cyan-50 dark:bg-cyan-500/10 border border-cyan-200 dark:border-cyan-500/20">
               <div className="flex items-center justify-between flex-wrap gap-4">
                 <div>
-                  <p className="text-slate-300 font-medium">Ready to start learning?</p>
-                  <p className="text-sm text-slate-400">Begin from the first post and work your way through.</p>
+                  <p className="text-slate-700 dark:text-slate-300 font-medium">Ready to start learning?</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Begin from the first post and work your way through.</p>
                 </div>
                 <Link
                   href={`/blog/${posts[0].slug}`}
@@ -153,20 +153,20 @@ export default async function SeriesDetailPage({ params }: SeriesDetailPageProps
               <Link
                 key={post.slug}
                 href={`/blog/${post.slug}`}
-                className="group flex gap-4 p-4 rounded-xl border border-slate-700/50 bg-slate-800/30 hover:bg-slate-800/60 hover:border-cyan-500/30 transition-all"
+                className="group flex gap-4 p-4 rounded-xl border border-slate-200 dark:border-slate-700/50 bg-white/30 dark:bg-slate-800/30 hover:bg-white dark:hover:bg-slate-800/60 hover:border-cyan-500/30 transition-all"
               >
                 {/* Order number */}
-                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center text-sm font-bold text-slate-300 group-hover:bg-cyan-500 group-hover:text-slate-900 transition-colors">
+                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-sm font-bold text-slate-600 dark:text-slate-300 group-hover:bg-cyan-500 group-hover:text-slate-900 transition-colors">
                   {index + 1}
                 </div>
 
                 {/* Content */}
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-lg font-semibold text-slate-100 group-hover:text-cyan-400 transition-colors line-clamp-1 mb-1">
+                  <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors line-clamp-1 mb-1">
                     {post.title}
                   </h3>
                   {post.description && (
-                    <p className="text-sm text-slate-400 line-clamp-2 mb-2">
+                    <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-2 mb-2">
                       {post.description}
                     </p>
                   )}
@@ -178,7 +178,7 @@ export default async function SeriesDetailPage({ params }: SeriesDetailPageProps
 
                 {/* Arrow */}
                 <div className="flex-shrink-0 self-center">
-                  <svg className="w-5 h-5 text-slate-600 group-hover:text-cyan-400 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-slate-400 dark:text-slate-600 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </div>
