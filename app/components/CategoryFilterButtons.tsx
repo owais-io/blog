@@ -20,10 +20,10 @@ interface CategoryFilterButtonsProps {
   onCategoryToggle: (category: string) => void
 }
 
-export default function CategoryFilterButtons({ 
-  categories, 
-  selectedCategories, 
-  onCategoryToggle 
+export default function CategoryFilterButtons({
+  categories,
+  selectedCategories,
+  onCategoryToggle
 }: CategoryFilterButtonsProps) {
   const [isExpanded, setIsExpanded] = useState(false)
 
@@ -39,30 +39,30 @@ export default function CategoryFilterButtons({
       <div className="md:hidden">
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="w-full flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 mb-2"
+          className="w-full flex items-center justify-between p-4 bg-slate-700 rounded-lg border border-slate-600 mb-2"
         >
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            <h3 className="text-lg font-semibold text-slate-100">
               Categories
             </h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <p className="text-sm text-slate-400">
               {selectedCount > 0 ? `${selectedCount} selected` : 'None selected'}
             </p>
           </div>
           {isExpanded ? (
-            <ChevronUpIcon className="h-5 w-5 text-gray-500" />
+            <ChevronUpIcon className="h-5 w-5 text-slate-400" />
           ) : (
-            <ChevronDownIcon className="h-5 w-5 text-gray-500" />
+            <ChevronDownIcon className="h-5 w-5 text-slate-400" />
           )}
         </button>
       </div>
 
       {/* Desktop Header */}
       <div className="hidden md:block mb-4">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+        <h3 className="text-lg font-semibold text-slate-100">
           Filter by Categories
         </h3>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+        <p className="text-sm text-slate-400 mt-1">
           {selectedCount > 0 ? `${selectedCount} selected` : 'Select categories to filter'}
         </p>
       </div>
@@ -71,9 +71,9 @@ export default function CategoryFilterButtons({
       <div className={`${
         !isExpanded ? 'hidden md:block' : 'block'
       } transition-all duration-200 ease-in-out`}>
-        <div className="flex flex-wrap gap-2 p-4 md:p-0 bg-white md:bg-transparent dark:bg-gray-800 md:dark:bg-transparent rounded-lg md:rounded-none border md:border-0 border-gray-200 dark:border-gray-700">
+        <div className="flex flex-wrap gap-2 p-4 md:p-0 bg-slate-700 md:bg-transparent rounded-lg md:rounded-none border md:border-0 border-slate-600">
           {categories.length === 0 ? (
-            <p className="text-gray-500 dark:text-gray-400 text-sm">
+            <p className="text-slate-400 text-sm">
               No categories available
             </p>
           ) : (
@@ -85,8 +85,8 @@ export default function CategoryFilterButtons({
                   onClick={() => handleCategoryClick(category)}
                   className={`px-3 py-2 rounded-full text-sm font-medium transition-colors ${
                     isSelected
-                      ? 'bg-blue-600 text-white hover:bg-blue-700'
-                      : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                      ? 'bg-cyan-600 text-white hover:bg-cyan-700'
+                      : 'bg-slate-700 text-slate-300 hover:bg-slate-500'
                   }`}
                 >
                   {category}
@@ -95,12 +95,12 @@ export default function CategoryFilterButtons({
             })
           )}
         </div>
-        
+
         {selectedCount > 0 && (
           <div className="mt-3 p-4 md:p-0">
             <button
               onClick={() => selectedCategories.forEach(cat => onCategoryToggle(cat))}
-              className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium"
+              className="text-sm text-cyan-400 hover:text-cyan-300 font-medium"
             >
               Clear all categories
             </button>

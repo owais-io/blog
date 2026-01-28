@@ -122,10 +122,10 @@ export default function TagsPageClient({
         <div className="lg:col-span-3">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white sm:text-4xl">
+            <h1 className="text-3xl font-bold text-slate-100 sm:text-4xl">
               Browse by Tags
             </h1>
-            <p className="mt-4 text-lg text-gray-600 dark:text-gray-300">
+            <p className="mt-4 text-lg text-slate-300">
               Explore articles organized by categories and tags.
             </p>
           </div>
@@ -146,7 +146,7 @@ export default function TagsPageClient({
                   section.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
                 }
               }}
-              className="w-full flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              className="w-full flex items-center justify-between px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg hover:bg-slate-500 transition-colors"
             >
               <span className="flex items-center gap-2">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -154,7 +154,7 @@ export default function TagsPageClient({
                 </svg>
                 <span className="font-medium">Filter by Tags</span>
                 {selectedTags.length > 0 && (
-                  <span className="bg-blue-500 text-white text-xs px-2 py-0.5 rounded-full font-semibold">
+                  <span className="bg-cyan-600 text-white text-xs px-2 py-0.5 rounded-full font-semibold">
                     {selectedTags.length}
                   </span>
                 )}
@@ -175,9 +175,9 @@ export default function TagsPageClient({
 
           {/* Enhanced Active Filters Bar */}
           {(selectedTags.length > 0 || selectedCategories.length > 0) && (
-            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+            <div className="bg-cyan-900/30 border border-cyan-700 rounded-lg p-4 mb-6">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                <h3 className="text-sm font-semibold text-slate-200">
                   Active Filters ({selectedTags.length + selectedCategories.length})
                 </h3>
                 <button
@@ -185,7 +185,7 @@ export default function TagsPageClient({
                     setSelectedTags([])
                     setSelectedCategories([])
                   }}
-                  className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium flex items-center gap-1"
+                  className="text-xs text-cyan-400 hover:text-cyan-300 font-medium flex items-center gap-1"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -197,13 +197,13 @@ export default function TagsPageClient({
                 {selectedCategories.map((category) => (
                   <span
                     key={category}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 border border-green-300 dark:border-green-700"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium bg-green-900/50 text-green-300 border border-green-700"
                   >
                     <span className="text-xs">📁</span>
                     {category}
                     <button
                       onClick={() => handleCategoryToggle(category)}
-                      className="ml-1 hover:text-green-900 dark:hover:text-green-100 font-bold"
+                      className="ml-1 hover:text-green-200 font-bold"
                       aria-label={`Remove ${category} filter`}
                     >
                       ✕
@@ -213,13 +213,13 @@ export default function TagsPageClient({
                 {selectedTags.map((tag) => (
                   <span
                     key={tag}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 border border-blue-300 dark:border-blue-700"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium bg-cyan-900/50 text-cyan-300 border border-cyan-700"
                   >
                     <span className="text-xs">#</span>
                     {tag}
                     <button
                       onClick={() => handleTagToggle(tag)}
-                      className="ml-1 hover:text-blue-900 dark:hover:text-blue-100 font-bold"
+                      className="ml-1 hover:text-cyan-200 font-bold"
                       aria-label={`Remove ${tag} filter`}
                     >
                       ✕
@@ -231,15 +231,15 @@ export default function TagsPageClient({
           )}
 
           {/* Results Counter */}
-          <div className="flex items-center justify-between mb-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between mb-6 p-4 bg-slate-700 rounded-lg border border-slate-600">
             <div>
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+              <h2 className="text-lg font-semibold text-slate-100">
                 {filteredPosts.length === 0 ? 'No posts found' :
                  filteredPosts.length === 1 ? '1 post found' :
                  `${filteredPosts.length} posts found`}
               </h2>
               {(selectedTags.length > 0 || selectedCategories.length > 0) && (
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                <p className="text-sm text-slate-400 mt-1">
                   Matching your {selectedTags.length + selectedCategories.length} filter
                   {selectedTags.length + selectedCategories.length !== 1 ? 's' : ''}
                 </p>
@@ -251,7 +251,7 @@ export default function TagsPageClient({
                   setSelectedTags([])
                   setSelectedCategories([])
                 }}
-                className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium text-sm"
+                className="text-cyan-400 hover:text-cyan-300 font-medium text-sm"
               >
                 Clear filters
               </button>
@@ -261,7 +261,7 @@ export default function TagsPageClient({
           {/* Blog Posts with Lazy Loading */}
           {filteredPosts.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-gray-500 dark:text-gray-400 text-lg">
+              <p className="text-slate-400 text-lg">
                 No posts found with the selected filters.
               </p>
               <button
@@ -269,7 +269,7 @@ export default function TagsPageClient({
                   setSelectedTags([])
                   setSelectedCategories([])
                 }}
-                className="mt-4 inline-flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+                className="mt-4 inline-flex items-center text-cyan-400 hover:text-cyan-300"
               >
                 ← Clear all filters
               </button>

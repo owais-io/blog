@@ -79,7 +79,7 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
   ])
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-950">
+    <div className="min-h-screen bg-slate-700">
       {/* JSON-LD Structured Data for SEO */}
       <script
         type="application/ld+json"
@@ -90,11 +90,11 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
       {/* Back Navigation */}
-      <div className="sticky top-0 z-30 bg-white/95 dark:bg-gray-950/95 backdrop-blur-sm border-b border-gray-200 dark:border-gray-800">
+      <div className="sticky top-0 z-30 bg-slate-700/95 backdrop-blur-sm border-b border-slate-600">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <Link
             href="/"
-            className="inline-flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors group"
+            className="inline-flex items-center text-slate-300 hover:text-slate-100 transition-colors group"
           >
             <svg className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -105,7 +105,6 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
       </div>
 
       {/* Main Layout Container */}
-      {/* <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8"> */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Breadcrumb Navigation */}
         <div className="pt-6 pb-4">
@@ -123,7 +122,6 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
           {/* Desktop TOC Sidebar */}
           {post.tocEnabled && post.toc.hasContent && (
             <aside className="hidden lg:block w-80 flex-shrink-0">
-            {/* <aside className="hidden lg:block w-80 flex-shrink-0"> */}
               <div className="sticky top-24">
                 <TableOfContents headings={post.toc.headings} />
               </div>
@@ -135,18 +133,17 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
             {/* Article Header */}
             <header className="mb-12 text-center">
               <div className="max-w-4xl mx-auto">
-              {/* <div className="max-w-5xl mx-auto"> */}
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-6 leading-tight">
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-100 mb-6 leading-tight">
                   {post.title}
                 </h1>
 
                 {post.description && (
-                  <p className="text-xl sm:text-2xl text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
+                  <p className="text-xl sm:text-2xl text-slate-300 mb-8 leading-relaxed">
                     {post.description}
                   </p>
                 )}
 
-                <div className="flex flex-wrap items-center justify-center gap-6 text-gray-500 dark:text-gray-400 mb-8">
+                <div className="flex flex-wrap items-center justify-center gap-6 text-slate-400 mb-8">
                   <div className="inline-flex items-center">
                     <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
@@ -178,20 +175,19 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
 
             {/* Article Content */}
             <article className="max-w-4xl mx-auto">
-            {/* <article className="max-w-7xl mx-auto"> */}
               <div className="prose-enhanced max-w-none">
                 <MDXRemote source={post.content} components={mdxComponents} />
               </div>
             </article>
 
             {/* Article Footer */}
-            <footer className="max-w-4xl mx-auto border-t border-gray-200 dark:border-gray-700 pt-12 mt-16 mb-16">
+            <footer className="max-w-4xl mx-auto border-t border-slate-600 pt-12 mt-16 mb-16">
               <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
                 <div className="text-center sm:text-left">
-                  <p className="text-gray-600 dark:text-gray-400 mb-2">
+                  <p className="text-slate-300 mb-2">
                     Thank you for reading!
                   </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-500">
+                  <p className="text-sm text-slate-400">
                     Published on {format(new Date(post.date), 'MMMM d, yyyy')}
                   </p>
                 </div>
@@ -206,7 +202,7 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
             </footer>
 
             {/* Author Bio */}
-            <section className="max-w-4xl mx-auto bg-gradient-to-r from-primary-50 to-accent-50 dark:from-gray-900 dark:to-gray-800 rounded-2xl p-8 mb-16">
+            <section className="max-w-4xl mx-auto bg-gradient-to-r from-slate-800 to-slate-800 rounded-2xl p-8 mb-16">
               <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
                 <div className="w-20 h-20 rounded-full overflow-hidden flex-shrink-0">
                   <Image
@@ -218,10 +214,10 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
                   />
                 </div>
                 <div className="text-center sm:text-left">
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                  <h3 className="text-xl font-semibold text-slate-100 mb-2">
                     Written by Owais
                   </h3>
-                  <div className="text-gray-600 dark:text-gray-300 mb-4 leading-relaxed space-y-3">
+                  <div className="text-slate-300 mb-4 leading-relaxed space-y-3">
                     <p>
                       I'm an AIOps Engineer with a passion for AI, Operating Systems, Cloud, and Security—sharing insights that matter in today's tech world.
                     </p>
@@ -238,16 +234,13 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
                       It's not just a diploma—it's a career accelerator.
                     </p>
                     <p>
-                      👉 <a href="https://alnafi.com/?al_aid=6d5529727bec42a" target="_blank" rel="noopener noreferrer" className="text-primary-600 dark:text-primary-400 hover:underline font-medium">Start your journey today with a 7-day free trial</a>
+                      👉 <a href="https://alnafi.com/?al_aid=6d5529727bec42a" target="_blank" rel="noopener noreferrer" className="text-cyan-500 hover:underline font-medium">Start your journey today with a 7-day free trial</a>
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
                     <Link href="/about" className="btn-ghost text-sm">
                       About Me
                     </Link>
-                    {/* <Link href="/projects" className="btn-ghost text-sm">
-                      Projects
-                    </Link> */}
                   </div>
                 </div>
               </div>

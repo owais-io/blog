@@ -12,23 +12,23 @@ interface PaginationProps {
 export default function Pagination({ currentPage, totalPages, tag, category, basePath = '/', preserveParams }: PaginationProps) {
   const createPageUrl = (page: number) => {
     const params = new URLSearchParams()
-    
+
     // Add page parameter only if it's not page 1
     if (page > 1) {
       params.set('page', page.toString())
     }
-    
+
     // Legacy support for single tag/category
     if (tag) params.set('tag', tag)
     if (category) params.set('category', category)
-    
+
     // New support for preserving multiple parameters
     if (preserveParams) {
       Object.entries(preserveParams).forEach(([key, value]) => {
         if (value) params.set(key, value)
       })
     }
-    
+
     const queryString = params.toString()
     return queryString ? `${basePath}?${queryString}` : basePath
   }
@@ -95,7 +95,7 @@ export default function Pagination({ currentPage, totalPages, tag, category, bas
               return (
                 <span
                   key={`dots-${index}`}
-                  className="relative inline-flex items-center px-2 md:px-3 py-2 text-sm font-medium text-gray-500 dark:text-gray-400"
+                  className="relative inline-flex items-center px-2 md:px-3 py-2 text-sm font-medium text-slate-400"
                 >
                   •••
                 </span>
@@ -111,8 +111,8 @@ export default function Pagination({ currentPage, totalPages, tag, category, bas
                 href={createPageUrl(pageNumber)}
                 className={`relative inline-flex items-center justify-center w-9 h-9 md:w-10 md:h-10 text-sm font-medium rounded-lg transition-all duration-200 ${
                   isActive
-                    ? 'bg-primary-600 dark:bg-primary-500 text-white shadow-medium scale-110'
-                    : 'text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:scale-105'
+                    ? 'bg-primary-600 text-white shadow-medium scale-110'
+                    : 'text-slate-300 hover:text-cyan-400 hover:bg-slate-500 hover:scale-105'
                 }`}
                 aria-label={`Page ${pageNumber}`}
                 aria-current={isActive ? 'page' : undefined}

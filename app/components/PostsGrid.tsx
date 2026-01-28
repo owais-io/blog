@@ -31,7 +31,7 @@ export default function PostsGrid({ posts, selectedCategory, showTitle = true }:
   return (
     <section>
       {showTitle && (
-        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-8 sm:mb-10 tracking-tight">
+        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-100 mb-8 sm:mb-10 tracking-tight">
           {selectedCategory ? `Posts in "${selectedCategory}"` : 'More Posts'}
         </h2>
       )}
@@ -60,14 +60,14 @@ export default function PostsGrid({ posts, selectedCategory, showTitle = true }:
                 {/* Content */}
                 <div className="p-4 sm:p-6">
                   {/* Date and Reading Time */}
-                  <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400 mb-2 sm:mb-3">
+                  <div className="flex items-center gap-3 text-xs text-slate-400 mb-2 sm:mb-3">
                     <div className="flex items-center gap-1.5">
                       <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
                       </svg>
                       <span>{format(new Date(post.date), 'MMM d, yyyy')}</span>
                     </div>
-                    <span className="text-gray-400 dark:text-gray-600">•</span>
+                    <span className="text-slate-600">•</span>
                     <div className="flex items-center gap-1.5">
                       <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
@@ -77,13 +77,13 @@ export default function PostsGrid({ posts, selectedCategory, showTitle = true }:
                   </div>
 
                   {/* Title */}
-                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-2 sm:mb-3 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors line-clamp-2 leading-snug">
+                  <h3 className="text-lg sm:text-xl font-semibold text-slate-100 mb-2 sm:mb-3 group-hover:text-cyan-400 transition-colors line-clamp-2 leading-snug">
                     {post.title}
                   </h3>
 
                   {/* Description */}
                   {post.description && (
-                    <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 mb-3 sm:mb-4 line-clamp-3 leading-relaxed">
+                    <p className="text-sm sm:text-base text-slate-300 mb-3 sm:mb-4 line-clamp-3 leading-relaxed">
                       {post.description}
                     </p>
                   )}
@@ -93,7 +93,7 @@ export default function PostsGrid({ posts, selectedCategory, showTitle = true }:
                     {post.categories.slice(0, 2).map((category) => (
                       <span
                         key={category}
-                        className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200"
+                        className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-900 text-green-300"
                       >
                         {category}
                       </span>
