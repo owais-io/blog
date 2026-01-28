@@ -32,7 +32,9 @@
       "Bash(fi)",
       "Bash(python:*)",
       "Bash(xargs -I {} sh -c 'grep -m1 \"\"^date:\"\" \"\"{}\"\" | sed \"\"s/date: //\"\" | tr -d \"\"\\\\\"\"\"\" | xargs -I @ echo \"\"@ {}\"\"')",
-      "Bash(npm run lint:*)"
+      "Bash(npm run lint:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm install:*)"
     ],
     "deny": [],
     "ask": []
