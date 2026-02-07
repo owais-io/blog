@@ -16,7 +16,7 @@ export default function CodeBlock({ children, className, ...props }: CodeBlockPr
     if (typeof node === 'number') return node.toString()
     if (Array.isArray(node)) return node.map(getTextContent).join('')
     if (node && typeof node === 'object' && 'props' in node) {
-      return getTextContent(node.props.children)
+      return getTextContent((node.props as { children?: ReactNode }).children)
     }
     return ''
   }

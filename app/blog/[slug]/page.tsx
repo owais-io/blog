@@ -17,9 +17,9 @@ import Breadcrumb from '../../components/Breadcrumb'
 import SponsorAd from '../../components/SponsorAd'
 
 interface BlogPostPageProps {
-  params: {
+  params: Promise<{
     slug: string
-  }
+  }>
 }
 
 export async function generateStaticParams() {
@@ -30,7 +30,8 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: BlogPostPageProps): Promise<Metadata> {
-  const post = getPostBySlug(params.slug)
+  const { slug } = await params
+  const post = getPostBySlug(slug)
 
   if (!post) {
     return {
@@ -57,18 +58,19 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
   }
 }
 
-export default function BlogPostPage({ params }: BlogPostPageProps) {
-  const post = getPostBySlug(params.slug)
+export default async function BlogPostPage({ params }: BlogPostPageProps) {
+  const { slug } = await params
+  const post = getPostBySlug(slug)
 
   if (!post || !post.published) {
     notFound()
   }
 
-  const relatedPosts = getRelatedPosts(params.slug, 4)
-  const seriesData = getSeriesData(params.slug, post.categories)
+  const relatedPosts = getRelatedPosts(slug, 4)
+  const seriesData = getSeriesData(slug, post.categories)
 
   // Generate JSON-LD structured data
-  const postUrl = `https://owais.io/blog/${params.slug}`
+  const postUrl = `https://owais.io/blog/${slug}`
 
   const articleSchema = generateArticleSchema({
     post,
@@ -116,7 +118,7 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
             items={[
               { name: 'Home', href: '/' },
               { name: 'Blog', href: '/' },
-              { name: post.title, href: `/blog/${params.slug}`, current: true },
+              { name: post.title, href: `/blog/${slug}`, current: true },
             ]}
           />
         </div>
